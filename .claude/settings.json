@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "model": "claude-opus-4-6",
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Read(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "Bash(ls *)",
+      "Bash(ls)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(pwd)",
+      "Bash(echo *)",
+      "Bash(mkdir -p *)",
+      "Bash(touch *)",
+      "Bash(date *)",
+      "Bash(date)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git show*)",
+      "Bash(git remote*)",
+      "Bash(pnpm install)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm remove *)",
+      "Bash(pnpm run *)",
+      "Bash(pnpm exec *)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm test)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm build)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm format)",
+      "Bash(pnpm format *)",
+      "Bash(pnpm db:*)",
+      "Bash(pnpm seed)",
+      "Bash(pnpm seed:*)",
+      "Bash(node *)",
+      "Bash(npx create-next-app*)",
+      "Bash(npx shadcn*)"
+    ],
+    "deny": [
+      "Bash(npm *)",
+      "Bash(npm)",
+      "Bash(yarn *)",
+      "Bash(yarn)",
+      "Bash(git push*)",
+      "Bash(git reset --hard*)",
+      "Bash(git commit*)",
+      "Bash(git rebase*)",
+      "Bash(git merge*)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~*)",
+      "Bash(rm -rf .git*)",
+      "Bash(rm -rf node_modules*)",
+      "Bash(rm -rf .claude*)",
+      "Bash(sudo *)",
+      "Bash(chmod 777*)",
+      "Bash(curl http://*)",
+      "Edit(.env)",
+      "Edit(.env.local)",
+      "Edit(.env.development)",
+      "Edit(.env.production)",
+      "Edit(.env.test)",
+      "Edit(.git/**)",
+      "Edit(node_modules/**)",
+      "Edit(pnpm-lock.yaml)",
+      "Edit(package-lock.json)",
+      "Edit(yarn.lock)",
+      "Edit(CURRENT_PHASE.md)",
+      "Edit(CLAUDE.md)",
+      "Edit(.claude/**)",
+      "Edit(docs/atlaskings-v2-rebuild-plan-final.md)",
+      "Write(.env)",
+      "Write(.env.test)",
+      "Write(.env.local)",
+      "Write(.env.development)",
+      "Write(.env.production)",
+      "Write(.git/**)",
+      "Write(CURRENT_PHASE.md)",
+      "Write(CLAUDE.md)",
+      "Write(.claude/**)",
+      "Write(docs/atlaskings-v2-rebuild-plan-final.md)",
+      "MultiEdit(.env.local)",
+      "MultiEdit(.env)",
+      "MultiEdit(.env.development)",
+      "MultiEdit(.env.production)",
+      "MultiEdit(.env.test)",
+      "MultiEdit(.git/**)",
+      "MultiEdit(CURRENT_PHASE.md)",
+      "MultiEdit(CLAUDE.md)",
+      "MultiEdit(.claude/**)",
+      "MultiEdit(docs/atlaskings-v2-rebuild-plan-final.md)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '=== Active phase ===' && cat CURRENT_PHASE.md && echo '' && echo '=== Recent backlog ===' && tail -n 5 BACKLOG.md 2>/dev/null || echo '(no backlog yet)'",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/enforce-no-protected-paths.sh",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/enforce-phase.sh",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/enforce-propose-then-implement.sh",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/enforce-single-write.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/enforce-pnpm.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mkdir -p .claude/state && date -Iseconds >> .claude/state/last-write.log",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
