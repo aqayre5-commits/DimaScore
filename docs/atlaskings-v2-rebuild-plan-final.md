@@ -284,15 +284,15 @@ All accent colours pass WCAG AA on `--bg-surface` at body sizes.
 | Fonts | Inter (FR/EN), IBM Plex Sans Arabic (AR), tabular numerals via `font-feature-settings: 'tnum'` |
 | Charts | Recharts + D3 |
 | State | Zustand (UI) + SWR (server-state polling) |
-| Realtime | Supabase Realtime (Postgres WAL → WebSocket) |
-| Database | Supabase Postgres |
+| Realtime | Realtime layer TBD — Pusher/Ably or LISTEN/NOTIFY (Phase 3 decision) (Postgres WAL → WebSocket) |
+| Database | Neon Postgres |
 | ORM | Drizzle |
 | Cache | Vercel Data Cache + Upstash Redis (quota tracking + live state) |
 | Cron | Vercel Cron (≥1min) + Railway worker (15s live poller) |
 | i18n | next-intl (FR default, EN, AR) |
 | Search | Meilisearch self-hosted on Railway, trilingual tokenization |
-| Auth | Supabase Auth (email magic link + Google) — only needed for Favorites and Admin |
-| **Media admin** | Tiny in-app admin route (`/admin/media`) protected by Supabase Auth + role check. **No Payload CMS, no Sanity, no editorial workflow.** Just paste-a-URL with oEmbed enrichment. |
+| Auth | Clerk or Auth.js for user auth (Phase 10 decision) (email magic link + Google) — only needed for Favorites and Admin |
+| **Media admin** | Tiny in-app admin route (`/admin/media`) protected by Clerk or Auth.js for user auth (Phase 10 decision) + role check. **No Payload CMS, no Sanity, no editorial workflow.** Just paste-a-URL with oEmbed enrichment. |
 | Analytics | Plausible + Vercel Analytics |
 | Image CDN | Cloudinary |
 | Hosting | Vercel (frontend) + Railway (live poller, Meilisearch) |
@@ -334,7 +334,7 @@ Every **competition**, **team**, **match**, and **player** has a Media tab. Insi
 
 ### E.2 Adding videos (the admin)
 
-A single page at `/admin/media` (Supabase Auth + role=`editor` required, gated by middleware):
+A single page at `/admin/media` (Clerk or Auth.js for user auth (Phase 10 decision) + role=`editor` required, gated by middleware):
 
 1. Editor pastes a YouTube URL.
 2. Backend parses the video id from the URL (`youtube.com/watch?v=X`, `youtu.be/X`, or `youtube.com/embed/X`).
@@ -483,7 +483,7 @@ The rotation is data-driven — the hero component reads from a small `featured_
 ### F.6 Cross-cutting
 
 - **Global search** (teams, players, competitions, videos) via Meilisearch with trilingual tokenization
-- **Favorites** (followed teams, leagues, players) — Supabase Auth + a `user_favorites` table
+- **Favorites** (followed teams, leagues, players) — Clerk or Auth.js for user auth (Phase 10 decision) + a `user_favorites` table
 - **Push notifications** Phase 11 — Web Push API + service worker
 - **Match calendar export (.ics)** — one route handler
 - **Light/dark mode** — dark on data pages, light on media-heavy and About pages
@@ -504,13 +504,13 @@ The rotation is data-driven — the hero component reads from a small `featured_
                        ▼
 ┌─────────────────────────────────────────────────────────┐
 │  EDGE: app/api/v1/* (Next.js route handlers)            │
-│  - Reads from Supabase                                  │
+│  - Reads from Neon                                  │
 │  - NEVER calls api-football directly from the client    │
 └──────────────────────┬──────────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│  SUPABASE Postgres + Realtime channels                  │
+│  NEON Postgres (Realtime layer TBD)                           │
 │  - 13 tables (Part H schema)                            │
 │  - Realtime: fixtures channel pushes in-play deltas     │
 └──────────────────────┬──────────────────────────────────┘
@@ -530,7 +530,7 @@ The rotation is data-driven — the hero component reads from a small `featured_
 │   • live-poller           every 15s                     │
 │     → /fixtures?live=all                                │
 │     → /fixtures?id={liveId} per live match              │
-│     → diff vs Supabase, write deltas                    │
+│     → diff vs Neon, write deltas                        │
 │     → Realtime broadcasts automatically (Postgres WAL)  │
 └──────────────────────┬──────────────────────────────────┘
                        │
@@ -1077,14 +1077,14 @@ After the move, manually merge the scaffolded `.gitignore` additions into the ex
 
 **Task list:**
 1. Scaffold (per the rsync sequence above).
-2. Install core dependencies: `next-intl`, Radix primitives (slot/dialog/dropdown-menu/tabs/accordion/tooltip/select/popover), `lucide-react`, `drizzle-orm`, `@supabase/supabase-js`, `zustand`, `swr`, `class-variance-authority`, `clsx`, `tailwind-merge`. Dev: `drizzle-kit`, `vitest`, `@vitejs/plugin-react`, `prettier`, `husky`, `lint-staged`.
+2. Install core dependencies: `next-intl`, Radix primitives (slot/dialog/dropdown-menu/tabs/accordion/tooltip/select/popover), `lucide-react`, `drizzle-orm`, `@neondatabase/serverless`, `zustand`, `swr`, `class-variance-authority`, `clsx`, `tailwind-merge`. Dev: `drizzle-kit`, `vitest`, `@vitejs/plugin-react`, `prettier`, `husky`, `lint-staged`.
 3. Initialize shadcn/ui via `pnpm dlx shadcn@latest init` with Tailwind v4 settings.
 4. Create `src/styles/tokens.css` with all Atlas Royal palette CSS variables (dark mode default, light mode override) inside an `@theme` block.
 5. Import `tokens.css` from `src/app/globals.css`. Set dark mode as default on `:root`. Add `[data-theme="light"]` override.
 6. Configure next-intl: `src/lib/i18n/config.ts`, `routing.ts`, `messages/{fr,en,ar}.json`, `src/middleware.ts`. FR is default, no locale prefix.
 7. Move `src/app/layout.tsx` to `src/app/[locale]/layout.tsx` with `NextIntlClientProvider`. Configure `next/font/google` for Inter (Latin) and IBM Plex Sans Arabic, applied conditionally by locale. Set `font-feature-settings: 'tnum'` globally.
 8. Drizzle config: `drizzle.config.ts`, `src/lib/db/client.ts`, `src/lib/db/schema.ts` (empty — populated in Phase 2).
-9. `.env.example` with `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `API_FOOTBALL_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `MEILISEARCH_URL`, `MEILISEARCH_API_KEY`.
+9. `.env.example` with `DATABASE_URL`, `DIRECT_URL`, `NEON_DATABASE_URL` (deferred — Neon connection lives in `DATABASE_URL`), `API_FOOTBALL_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `MEILISEARCH_URL`, `MEILISEARCH_API_KEY`.
 10. Build `/dev/style-guide` route — renders every palette token (swatch + hex + variable name), the 6-step typography scale, Radix primitives, in all three locales with switcher. Tabular numerals demo. RTL demo for AR.
 11. ESLint + Prettier + Husky + lint-staged. `pnpm exec husky init`. Pre-commit runs `pnpm exec lint-staged` targeting `*.{ts,tsx}` with eslint + prettier.
 12. Configure `next.config.ts` — wrap with `next-intl` plugin, add `images.remotePatterns` for API-Football media, YouTube thumbnails, Cloudinary.
@@ -1125,9 +1125,9 @@ After the move, manually merge the scaffolded `.gitignore` additions into the ex
 ### Phase 3 — Live poller worker (2 days)
 1. Railway service in `workers/live-poller`.
 2. 15s loop: `/fixtures?live=all` → for each live, `/fixtures?id=X`.
-3. Diff vs Supabase, write deltas.
+3. Diff vs Neon, write deltas.
 4. Idle: 60s sleep when no live matches.
-5. Supabase Realtime auto-broadcasts WAL changes.
+5. Realtime layer TBD — Pusher/Ably or LISTEN/NOTIFY (Phase 3 decision) auto-broadcasts WAL changes.
 
 **Exit:** subscribe from a test client → write a fake live row → push received within 2s.
 
@@ -1205,7 +1205,7 @@ After the move, manually merge the scaffolded `.gitignore` additions into the ex
 1. Meilisearch self-hosted on Railway.
 2. Sync teams, players, competitions, videos via Drizzle hooks; trilingual tokenization via normalization engine.
 3. `/search` page + nav autocomplete.
-4. Supabase Auth — magic link + Google.
+4. Clerk or Auth.js for user auth (Phase 10 decision) — magic link + Google.
 5. Favorites schema (Part H). Star buttons everywhere.
 6. Personalised homepage section: "Your fixtures."
 
