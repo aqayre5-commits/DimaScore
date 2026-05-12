@@ -13,6 +13,8 @@ export const EVENTS = {
 
 export interface ScoreUpdatePayload {
   fixtureId: number;
+  homeName?: string;
+  awayName?: string;
   homeScore: number | null;
   awayScore: number | null;
   statusCode: string;
