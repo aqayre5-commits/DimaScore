@@ -12,3 +12,4 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
 
 <!-- Entries are appended below. Keep them one line each. -->
 - [2026-05-12][phase 0] Deferred §J.0 task 14 (Vercel deploy). Will be picked up when there's a meaningful deployment to test, or as part of Phase 12 launch readiness. v1 Vercel project remains untouched for now.
+- [2026-05-12][phase 1] API_FOOTBALL_KEY must be in .env.local before integration tests can run. User-managed (protected path).
