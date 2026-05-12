@@ -10,6 +10,45 @@
     "favorites": "Favorites",
     "language": "Language"
   },
+  "chrome": {
+    "competitions": "Competitions",
+    "teams": "Teams",
+    "players": "Players",
+    "live": "Live",
+    "comingSoon": "Coming soon",
+    "football": "Football",
+    "basketball": "Basketball",
+    "tennis": "Tennis"
+  },
+  "footer": {
+    "legalNotice": "Legal notice",
+    "privacyPolicy": "Privacy policy",
+    "contact": "Contact",
+    "loi0908": "This site complies with Law 09-08 on the protection of personal data.",
+    "copyright": "© {year} Atlas Kings. All rights reserved."
+  },
+  "liveTicker": {
+    "live": "LIVE"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "dark": "Dark mode",
+    "light": "Light mode"
+  },
+  "search": {
+    "trigger": "Search"
+  },
+  "dateStrip": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow"
+  },
+  "leftRail": {
+    "featured": "Featured",
+    "morocco": "Morocco",
+    "countries": "Countries",
+    "comingSoon": "Coming soon"
+  },
   "styleGuide": {
     "title": "Style Guide",
     "palette": "Atlas Royal Palette",

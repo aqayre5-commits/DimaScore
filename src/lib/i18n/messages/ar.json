@@ -10,6 +10,45 @@
     "favorites": "المفضلة",
     "language": "اللغة"
   },
+  "chrome": {
+    "competitions": "المسابقات",
+    "teams": "الفرق",
+    "players": "اللاعبون",
+    "live": "مباشر",
+    "comingSoon": "قريبًا",
+    "football": "كرة القدم",
+    "basketball": "كرة السلة",
+    "tennis": "تنس"
+  },
+  "footer": {
+    "legalNotice": "إشعار قانوني",
+    "privacyPolicy": "سياسة الخصوصية",
+    "contact": "اتصل بنا",
+    "loi0908": "يلتزم هذا الموقع بالقانون رقم 09-08 المتعلق بحماية البيانات الشخصية.",
+    "copyright": "© {year} أطلس كينغز. جميع الحقوق محفوظة."
+  },
+  "liveTicker": {
+    "live": "مباشر"
+  },
+  "theme": {
+    "toggle": "تغيير المظهر",
+    "dark": "الوضع الداكن",
+    "light": "الوضع الفاتح"
+  },
+  "search": {
+    "trigger": "بحث"
+  },
+  "dateStrip": {
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "tomorrow": "غدًا"
+  },
+  "leftRail": {
+    "featured": "أبرز الأخبار",
+    "morocco": "المغرب",
+    "countries": "البلدان",
+    "comingSoon": "قريبًا"
+  },
   "styleGuide": {
     "title": "دليل الأنماط",
     "palette": "لوحة أطلس الملكية",
