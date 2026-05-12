@@ -1,0 +1,87 @@
+/*
+ * Atlas Royal — design tokens
+ * Single source of truth for all colours, mapped to Tailwind via @theme.
+ * Dark mode is the default (data pages). Light mode for Media/About pages.
+ *
+ * Part C of docs/atlaskings-v2-rebuild-plan-final.md
+ */
+
+/* ─── Dark mode (default) ─── */
+
+:root {
+  --bg-canvas: #0B1220;
+  --bg-surface: #111A2E;
+  --bg-surface-2: #18243D;
+  --bg-surface-3: #1F2D4B;
+  --border-subtle: #1F2D4B;
+  --border-strong: #2A3B5F;
+  --text-primary: #F5F7FA;
+  --text-secondary: #A8B3CC;
+  --text-tertiary: #6B7894;
+  --accent-gold: #D4A24C;
+  --accent-gold-bright: #E8B85A;
+  --accent-gold-deep: #A37D32;
+  --accent-crimson: #C8102E;
+  --accent-emerald: #0B6E4F;
+  --accent-emerald-bright: #13A074;
+  --accent-azure: #3B82C4;
+  --accent-amber: #E8A23A;
+  --accent-violet: #7C5DC8;
+  --score-live: #FF4D5E;
+  --score-live-bg: #2D1419;
+}
+
+/* ─── Light mode (Media tab, About pages) ─── */
+
+[data-theme='light'] {
+  --bg-canvas: #F7F5F0;
+  --bg-surface: #FFFFFF;
+  --bg-surface-2: #F0EDE6;
+  --bg-surface-3: #E8E4DC;
+  --border-subtle: #E0DCD4;
+  --border-strong: #C8C3BA;
+  --text-primary: #0B1220;
+  --text-secondary: #4A5468;
+  --text-tertiary: #6B7894;
+  --accent-gold: #A37D32;
+  --accent-gold-bright: #B8923E;
+  --accent-gold-deep: #8A6928;
+  --accent-crimson: #C8102E;
+  --accent-emerald: #0B6E4F;
+  --accent-emerald-bright: #13A074;
+  --accent-azure: #2B6BA3;
+  --accent-amber: #D4922E;
+  --accent-violet: #6B4DB3;
+  --score-live: #E8102E;
+  --score-live-bg: #FDE8EA;
+}
+
+/* ─── Tailwind @theme mapping ─── */
+
+@theme {
+  /* Atlas Royal palette */
+  --color-bg-canvas: var(--bg-canvas);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-2: var(--bg-surface-2);
+  --color-bg-surface-3: var(--bg-surface-3);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-gold-bright: var(--accent-gold-bright);
+  --color-accent-gold-deep: var(--accent-gold-deep);
+  --color-accent-crimson: var(--accent-crimson);
+  --color-accent-emerald: var(--accent-emerald);
+  --color-accent-emerald-bright: var(--accent-emerald-bright);
+  --color-accent-azure: var(--accent-azure);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-violet: var(--accent-violet);
+  --color-score-live: var(--score-live);
+  --color-score-live-bg: var(--score-live-bg);
+
+  /* Fonts */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+}

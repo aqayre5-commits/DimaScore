@@ -1,0 +1,55 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (NEVER commit these — also blocked by .claude/settings.json deny rules)
+.env
+.env*.local
+.env.development
+.env.production
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Claude Code state — keep approval log local, do NOT commit
+.claude/state/approvals.log
+.claude/state/last-write.log
+.claude/state/active-phase
+
+# but DO commit .claude/settings.json and hooks
+!.claude/settings.json
+!.claude/hooks/
+!.claude/hooks/*.sh
+
+# OS
+Thumbs.db

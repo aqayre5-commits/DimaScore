@@ -1,0 +1,3 @@
+# This directory holds runtime state for Claude Code hooks.
+# Contents (approvals.log, last-write.log, active-phase) are gitignored.
+# This .gitkeep ensures the directory exists in fresh clones so hooks can write to it.

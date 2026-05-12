@@ -1,0 +1,30 @@
+{
+  "app": {
+    "name": "أطلس كينغز",
+    "tagline": "كرة القدم المغربية وما بعدها"
+  },
+  "nav": {
+    "home": "الرئيسية",
+    "football": "كرة القدم",
+    "search": "بحث",
+    "favorites": "المفضلة",
+    "language": "اللغة"
+  },
+  "styleGuide": {
+    "title": "دليل الأنماط",
+    "palette": "لوحة أطلس الملكية",
+    "typography": "مقياس الخطوط",
+    "primitives": "العناصر الأساسية",
+    "darkMode": "الوضع الداكن",
+    "lightMode": "الوضع الفاتح",
+    "tabularNumerals": "الأرقام الجدولية",
+    "display": "عرض",
+    "headline": "عنوان",
+    "subhead": "عنوان فرعي",
+    "body": "نص",
+    "caption": "تسمية",
+    "micro": "مصغر",
+    "sampleText": "أطلس كينغز — كرة القدم المغربية",
+    "sampleNumber": "٠١٢٣٤٥٦٧٨٩"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "app": {
+    "name": "Atlas Kings",
+    "tagline": "Le football marocain et au-delà"
+  },
+  "nav": {
+    "home": "Accueil",
+    "football": "Football",
+    "search": "Rechercher",
+    "favorites": "Favoris",
+    "language": "Langue"
+  },
+  "styleGuide": {
+    "title": "Guide de style",
+    "palette": "Palette Atlas Royal",
+    "typography": "Échelle typographique",
+    "primitives": "Primitives UI",
+    "darkMode": "Mode sombre",
+    "lightMode": "Mode clair",
+    "tabularNumerals": "Chiffres tabulaires",
+    "display": "Display",
+    "headline": "Headline",
+    "subhead": "Subhead",
+    "body": "Body",
+    "caption": "Caption",
+    "micro": "Micro",
+    "sampleText": "Atlas Kings — Le football marocain",
+    "sampleNumber": "0123456789"
+  }
+}

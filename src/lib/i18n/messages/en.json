@@ -1,0 +1,30 @@
+{
+  "app": {
+    "name": "Atlas Kings",
+    "tagline": "Moroccan football and beyond"
+  },
+  "nav": {
+    "home": "Home",
+    "football": "Football",
+    "search": "Search",
+    "favorites": "Favorites",
+    "language": "Language"
+  },
+  "styleGuide": {
+    "title": "Style Guide",
+    "palette": "Atlas Royal Palette",
+    "typography": "Type Scale",
+    "primitives": "UI Primitives",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "tabularNumerals": "Tabular Numerals",
+    "display": "Display",
+    "headline": "Headline",
+    "subhead": "Subhead",
+    "body": "Body",
+    "caption": "Caption",
+    "micro": "Micro",
+    "sampleText": "Atlas Kings — Moroccan Football",
+    "sampleNumber": "0123456789"
+  }
+}
