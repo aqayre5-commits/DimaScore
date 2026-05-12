@@ -10,6 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run --project integration",
+    "seed": "tsx scripts/seed.ts",
+    "seed:wc": "tsx scripts/seed-wc.ts",
     "prepare": "husky"
   },
   "dependencies": {
@@ -56,6 +58,7 @@
     "msw": "^2.14.6",
     "prettier": "^3.8.3",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.6"
   },
