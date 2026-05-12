@@ -29,7 +29,7 @@ export function mapFixtureToInsert(f: NormalizedFixture) {
     awayScoreEt: f.score.extratime.away,
     homeScorePen: f.score.penalty.home,
     awayScorePen: f.score.penalty.away,
-    venueId: f.venue.id,
+    venueId: f.venue.id || null,
     referee: f.referee,
   };
 }

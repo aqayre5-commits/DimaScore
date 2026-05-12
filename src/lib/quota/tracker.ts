@@ -12,7 +12,12 @@ export interface QuotaSnapshot {
 
 let redis: Redis | null = null;
 
-function getRedis(): Redis {
+function isConfigured(): boolean {
+  return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+}
+
+function getRedis(): Redis | null {
+  if (!isConfigured()) return null;
   if (!redis) {
     redis = new Redis({
       url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -24,6 +29,7 @@ function getRedis(): Redis {
 
 export async function setQuota(snapshot: QuotaSnapshot): Promise<void> {
   const r = getRedis();
+  if (!r) return;
   await Promise.all([
     r.set(DAILY_KEY, JSON.stringify(snapshot.daily), { ex: DAILY_TTL }),
     r.set(MINUTE_KEY, JSON.stringify(snapshot.minute), { ex: MINUTE_TTL }),
@@ -32,6 +38,7 @@ export async function setQuota(snapshot: QuotaSnapshot): Promise<void> {
 
 export async function getQuota(): Promise<QuotaSnapshot | null> {
   const r = getRedis();
+  if (!r) return null;
   const [daily, minute] = await Promise.all([
     r.get<{ limit: number; remaining: number }>(DAILY_KEY),
     r.get<{ limit: number; remaining: number }>(MINUTE_KEY),

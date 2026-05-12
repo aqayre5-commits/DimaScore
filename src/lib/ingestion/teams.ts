@@ -4,31 +4,36 @@ import type { NormalizedTeam, NormalizedVenue } from '@/lib/data/types';
 import * as schema from '@/lib/db/schema';
 import type { SyncStats } from './types';
 import { slugify } from './slug';
+import { buildCountryLookup, resolveCountryCode } from './country-lookup';
 
 // ─── Mappers (exported for testing) ───
 
-export function mapVenueToInsert(v: NormalizedVenue) {
+export function mapVenueToInsert(v: NormalizedVenue, countryLookup?: Map<string, string>) {
   return {
     id: v.id,
     name: v.name,
     city: v.city,
-    countryCode: v.country,
+    countryCode: countryLookup ? resolveCountryCode(countryLookup, v.country) : null,
     capacity: v.capacity,
     imageUrl: v.image,
   };
 }
 
-export function mapTeamToInsert(t: NormalizedTeam, isWomen: boolean) {
+export function mapTeamToInsert(
+  t: NormalizedTeam,
+  isWomen: boolean,
+  countryLookup?: Map<string, string>,
+) {
   return {
     id: t.id,
-    slug: slugify(t.name),
+    slug: `${slugify(t.name)}-${t.id}`,
     name: { en: t.name } as Record<string, string>,
     shortName: { en: t.code ?? t.name } as Record<string, string>,
     code: t.code,
-    countryCode: t.country,
+    countryCode: countryLookup ? resolveCountryCode(countryLookup, t.country) : null,
     founded: t.founded,
     logoUrl: t.logo,
-    venueId: t.venue?.id ?? null,
+    venueId: t.venue?.id || null,
     isNational: t.national,
     isWomen,
   };
@@ -41,14 +46,15 @@ export async function syncTeams(
   db: NeonHttpDatabase<typeof schema>,
   params: { leagueId: number; season: number; isWomen: boolean },
 ): Promise<SyncStats> {
+  const countryLookup = await buildCountryLookup(db);
   const teams = await provider.getTeams({ league: params.leagueId, season: params.season });
   const inserted = 0;
   let updated = 0;
 
   for (const t of teams) {
-    // Upsert venue first (side-effect)
-    if (t.venue) {
-      const venueRow = mapVenueToInsert(t.venue);
+    // Upsert venue first (side-effect) — skip if venue id is null
+    if (t.venue?.id) {
+      const venueRow = mapVenueToInsert(t.venue, countryLookup);
       await db
         .insert(schema.venues)
         .values(venueRow)
@@ -65,7 +71,7 @@ export async function syncTeams(
     }
 
     // Upsert team
-    const teamRow = mapTeamToInsert(t, params.isWomen);
+    const teamRow = mapTeamToInsert(t, params.isWomen, countryLookup);
     await db
       .insert(schema.teams)
       .values(teamRow)

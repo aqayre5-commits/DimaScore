@@ -74,7 +74,10 @@ describe('syncSquad (integration)', () => {
       .from(schema.players)
       .where(eq(schema.players.currentTeamId, TEAM_ID));
     expect(players).toHaveLength(2);
-    expect(players.map((p) => p.slug).sort()).toEqual(['player-one', 'player-two']);
+    expect(players.map((p) => p.slug).sort()).toEqual([
+      `player-one-${PLAYER_ID_1}`,
+      `player-two-${PLAYER_ID_2}`,
+    ]);
   });
 
   it('upserts currentTeamId when player moves', async () => {

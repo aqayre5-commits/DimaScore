@@ -84,7 +84,7 @@ describe('syncTeams (integration)', () => {
 
     const teams = await testDb.select().from(schema.teams).where(eq(schema.teams.id, TEAM_ID_1));
     expect(teams).toHaveLength(1);
-    expect(teams[0].slug).toBe('test-fc');
+    expect(teams[0].slug).toBe(`test-fc-${TEAM_ID_1}`);
     expect(teams[0].venueId).toBe(VENUE_ID_1);
     expect(teams[0].isWomen).toBe(false);
   });
@@ -98,6 +98,6 @@ describe('syncTeams (integration)', () => {
 
     const teams = await testDb.select().from(schema.teams).where(eq(schema.teams.id, TEAM_ID_1));
     expect(teams[0].name).toEqual({ en: 'Test FC Renamed' });
-    expect(teams[0].slug).toBe('test-fc-renamed');
+    expect(teams[0].slug).toBe(`test-fc-renamed-${TEAM_ID_1}`);
   });
 });

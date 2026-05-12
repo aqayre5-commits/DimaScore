@@ -160,7 +160,7 @@ export interface NormalizedPlayerStatistics {
 
 export interface NormalizedSquadPlayer {
   id: number;
-  name: string;
+  name: string | null;
   age: number | null;
   number: number | null;
   position: string | null;

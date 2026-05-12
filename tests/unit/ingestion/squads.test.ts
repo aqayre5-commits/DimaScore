@@ -15,7 +15,7 @@ describe('mapSquadPlayerToInsert', () => {
   it('maps all fields', () => {
     const result = mapSquadPlayerToInsert(player, 31, false);
     expect(result.id).toBe(9);
-    expect(result.slug).toBe('a-hakimi');
+    expect(result.slug).toBe('a-hakimi-9');
     expect(result.name).toEqual({ en: 'A. Hakimi' });
     expect(result.photoUrl).toBe('https://img.io/hakimi.png');
     expect(result.currentTeamId).toBe(31);

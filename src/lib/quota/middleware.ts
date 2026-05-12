@@ -38,10 +38,14 @@ export function createQuotaResponseInterceptor() {
 
     const quota = extractQuotaHeaders(headers);
     if (quota) {
-      await setQuota({
-        daily: { limit: quota.dailyLimit, remaining: quota.dailyRemaining },
-        minute: { limit: quota.minuteLimit, remaining: quota.minuteRemaining },
-      });
+      try {
+        await setQuota({
+          daily: { limit: quota.dailyLimit, remaining: quota.dailyRemaining },
+          minute: { limit: quota.minuteLimit, remaining: quota.minuteRemaining },
+        });
+      } catch {
+        // Redis unconfigured or unreachable — skip quota tracking
+      }
 
       if (quota.minuteRemaining <= 0) {
         throw new RateLimitExceededError('minute', quota.minuteRemaining);

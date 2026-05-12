@@ -8,10 +8,14 @@ import { slugify } from './slug';
 // ─── Mapper (exported for testing) ───
 
 export function mapSquadPlayerToInsert(p: NormalizedSquadPlayer, teamId: number, isWomen: boolean) {
+  if (p.name === null) {
+    console.warn(`[squad] player id=${p.id} has null name, inserted as stub`);
+  }
+  const safeName = p.name ?? 'Unknown';
   return {
     id: p.id,
-    slug: slugify(p.name),
-    name: { en: p.name } as Record<string, string>,
+    slug: `${slugify(safeName)}-${p.id}`,
+    name: { en: safeName } as Record<string, string>,
     photoUrl: p.photo,
     currentTeamId: teamId,
     position: p.position,
