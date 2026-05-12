@@ -1,1 +1,1 @@
-Phase 0 — Greenfield setup. See docs/atlaskings-v2-rebuild-plan-final.md §J.0.
+Phase 1 — Data provider adapter. See docs/atlaskings-v2-rebuild-plan-final.md §J.1.
