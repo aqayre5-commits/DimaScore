@@ -50,6 +50,9 @@
     "countries": "Countries",
     "comingSoon": "Coming soon"
   },
+  "homepage": {
+    "emptyState": "Matches coming soon"
+  },
   "styleGuide": {
     "title": "Style Guide",
     "palette": "Atlas Royal Palette",

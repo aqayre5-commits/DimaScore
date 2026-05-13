@@ -3,7 +3,7 @@ import { Inter, IBM_Plex_Sans_Arabic } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from '@/lib/i18n/routing';
-import { isRtl } from '@/lib/i18n/config';
+import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
 import type { Locale } from '@/lib/i18n/config';
 import '../globals.css';
 
@@ -20,10 +20,45 @@ const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: 'Atlas Kings',
-  description: 'Moroccan football and beyond',
-};
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+
+  const languages: Record<string, string> = {};
+  for (const loc of locales) {
+    languages[loc] = `${baseUrl}/${loc}`;
+  }
+  languages['x-default'] = `${baseUrl}/${defaultLocale}`;
+
+  return {
+    title: 'Atlas Kings',
+    description:
+      locale === 'ar'
+        ? 'كرة القدم المغربية وما بعدها'
+        : locale === 'en'
+          ? 'Moroccan football and beyond'
+          : 'Le football marocain et au-delà',
+    alternates: {
+      languages,
+    },
+  };
+}
+
+const themeScript = `
+  (function() {
+    try {
+      var t = localStorage.getItem('atlas-theme');
+      if (t === 'light') {
+        document.documentElement.dataset.theme = 'light';
+      }
+    } catch (e) {}
+  })();
+`;
 
 export default async function LocaleLayout({
   children,
@@ -53,6 +88,9 @@ export default async function LocaleLayout({
       dir={dir}
       className={`${inter.variable} ${ibmPlexSansArabic.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className={`${fontClass} min-h-full flex flex-col`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}

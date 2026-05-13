@@ -50,6 +50,9 @@
     "countries": "البلدان",
     "comingSoon": "قريبًا"
   },
+  "homepage": {
+    "emptyState": "المباريات قادمة قريبًا"
+  },
   "styleGuide": {
     "title": "دليل الأنماط",
     "palette": "لوحة أطلس الملكية",
