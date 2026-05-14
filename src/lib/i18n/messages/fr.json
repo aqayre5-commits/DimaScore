@@ -15,10 +15,57 @@
     "teams": "Équipes",
     "players": "Joueurs",
     "live": "Live",
-    "comingSoon": "Bientôt",
+    "football": "Football"
+  },
+  "topbar": {
+    "home": "Accueil",
+    "botolaProShort": "Botola Pro",
+    "competitions": "Compétitions",
+    "allCompetitions": "Toutes les compétitions"
+  },
+  "topStrip": {
+    "days": "J",
+    "hours": "H",
+    "minutes": "M",
+    "seconds": "S",
+    "group": "Groupe"
+  },
+  "megaMenu": {
+    "morocco": "Maroc",
+    "international": "International",
+    "africa": "Afrique",
+    "europe": "Europe",
+    "botolaPro": "Botola Pro",
+    "botola2": "Botola Pro 2",
+    "coupeDuTrone": "Coupe du Trône",
+    "worldCup2026": "Coupe du Monde 2026",
+    "wcQualAfrica": "Qualif. CM Afrique",
+    "saudiProLeague": "Saudi Pro League",
+    "egyptPremierLeague": "Premier League Égypte",
+    "afcon": "CAN 2027",
+    "afconQualifiers": "Qualif. CAN",
+    "wafcon2026": "CAN Féminine 2026",
+    "cafChampionsLeague": "Ligue des Champions CAF",
+    "cafConfederationCup": "Coupe de la Confédération CAF",
+    "premierLeague": "Premier League",
+    "laLiga": "LaLiga",
+    "bundesliga": "Bundesliga",
+    "serieA": "Serie A",
+    "ligue1": "Ligue 1",
+    "championsLeague": "Ligue des Champions",
+    "europaLeague": "Ligue Europa",
+    "conferenceLeague": "Ligue Europa Conférence"
+  },
+  "mobileTabBar": {
+    "matches": "Matchs",
+    "search": "Recherche",
+    "favorites": "Favoris",
+    "settings": "Paramètres"
+  },
+  "breadcrumb": {
     "football": "Football",
-    "basketball": "Basketball",
-    "tennis": "Tennis"
+    "international": "International",
+    "morocco": "Maroc"
   },
   "footer": {
     "tagline": "Le football marocain et au-delà",
@@ -26,7 +73,16 @@
     "privacyPolicy": "Politique de confidentialité",
     "contact": "Contact",
     "loi0908": "Ce site respecte la loi n° 09-08 relative à la protection des données à caractère personnel.",
-    "copyright": "© {year} Atlas Kings. Tous droits réservés."
+    "copyright": "© {year} Atlas Kings. Tous droits réservés.",
+    "competitions": "Compétitions",
+    "resources": "Ressources",
+    "about": "À propos",
+    "aboutUs": "Qui sommes-nous",
+    "faq": "FAQ"
+  },
+  "placeholder": {
+    "pageComingSoon": "Cette page sera disponible prochainement",
+    "competitionComingSoon": "Cette compétition sera disponible prochainement"
   },
   "liveTicker": {
     "live": "EN DIRECT"
@@ -43,12 +99,6 @@
     "today": "Aujourd'hui",
     "yesterday": "Hier",
     "tomorrow": "Demain"
-  },
-  "leftRail": {
-    "featured": "À la une",
-    "morocco": "Maroc",
-    "countries": "Pays",
-    "comingSoon": "À venir"
   },
   "homepage": {
     "emptyState": "Les matchs arrivent bientôt"

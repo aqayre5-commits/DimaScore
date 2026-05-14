@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, IBM_Plex_Sans_Arabic } from 'next/font/google';
+import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, Fraunces } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from '@/lib/i18n/routing';
@@ -7,8 +7,9 @@ import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
 import type { Locale } from '@/lib/i18n/config';
 import '../globals.css';
 
-const inter = Inter({
-  variable: '--font-inter',
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: '--font-ibm-plex-sans',
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   display: 'swap',
 });
@@ -17,6 +18,12 @@ const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   variable: '--font-ibm-plex-arabic',
   weight: ['400', '500', '600', '700'],
   subsets: ['arabic'],
+  display: 'swap',
+});
+
+const fraunces = Fraunces({
+  variable: '--font-fraunces',
+  subsets: ['latin'],
   display: 'swap',
 });
 
@@ -78,7 +85,7 @@ export default async function LocaleLayout({
   const fontClass =
     typedLocale === 'ar'
       ? `${ibmPlexSansArabic.variable} font-[family-name:var(--font-ibm-plex-arabic)]`
-      : `${inter.variable} font-[family-name:var(--font-inter)]`;
+      : `${ibmPlexSans.variable} font-[family-name:var(--font-ibm-plex-sans)]`;
 
   const messages = (await import(`@/lib/i18n/messages/${locale}.json`)).default;
 
@@ -86,7 +93,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={dir}
-      className={`${inter.variable} ${ibmPlexSansArabic.variable} h-full antialiased`}
+      className={`${ibmPlexSans.variable} ${ibmPlexSansArabic.variable} ${fraunces.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

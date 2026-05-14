@@ -4,11 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { Menu } from 'lucide-react';
+import { Menu, ChevronDown } from 'lucide-react';
 import { isRtl, type Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
@@ -18,33 +17,25 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
+import {
+  MEGA_MENU_SECTIONS,
+  getFeaturedSlots,
+  buildCompetitionHref,
+} from '@/lib/constants/competitions-mega-menu';
 import { LangSwitcher } from './LangSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 
-const navItems = [
-  { key: 'competitions', href: '/competitions' },
-  { key: 'teams', href: '/teams' },
-  { key: 'players', href: '/players' },
-  { key: 'live', href: '/live' },
-] as const;
-
-const sports = [
-  { key: 'football', active: true },
-  { key: 'basketball', active: false },
-  { key: 'tennis', active: false },
-] as const;
-
 export function MobileDrawer() {
-  const t = useTranslations('chrome');
+  const t = useTranslations('topbar');
   const tApp = useTranslations('app');
-  const locale = useLocale();
+  const tMega = useTranslations('megaMenu');
+  const locale = useLocale() as Locale;
   const pathname = usePathname();
-  const side = isRtl(locale as Locale) ? 'right' : 'left';
+  const side = isRtl(locale) ? 'right' : 'left';
   const [open, setOpen] = useState(false);
+  const [competitionsOpen, setCompetitionsOpen] = useState(false);
 
-  function isActive(href: string) {
-    return pathname.startsWith(`/${locale}${href}`);
-  }
+  const featuredSlots = getFeaturedSlots();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -59,44 +50,70 @@ export function MobileDrawer() {
 
         {/* Nav links */}
         <nav className="flex flex-col gap-1 px-4">
-          {navItems.map((item) => (
+          {/* Home */}
+          <Link
+            href={`/${locale}`}
+            onClick={() => setOpen(false)}
+            className={cn(
+              'block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+              pathname === `/${locale}` || pathname === `/${locale}/`
+                ? 'bg-bg-surface-2 text-accent-gold'
+                : 'text-text-secondary hover:bg-bg-surface-2 hover:text-text-primary',
+            )}
+          >
+            {t('home')}
+          </Link>
+
+          {/* Botola Pro — permanent anchor */}
+          <Link
+            href={buildCompetitionHref(MEGA_MENU_SECTIONS[0].entries[0], locale)}
+            onClick={() => setOpen(false)}
+            className="block rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+          >
+            {t('botolaProShort')}
+          </Link>
+
+          {/* Featured slots */}
+          {featuredSlots.map((entry) => (
             <Link
-              key={item.key}
-              href={`/${locale}${item.href}`}
+              key={entry.competitionId}
+              href={buildCompetitionHref(entry, locale)}
               onClick={() => setOpen(false)}
-              className={cn(
-                'block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive(item.href)
-                  ? 'bg-bg-surface-2 text-accent-gold'
-                  : 'text-text-secondary hover:bg-bg-surface-2 hover:text-text-primary',
-              )}
+              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
             >
-              {t(item.key)}
+              {tMega(entry.labelKey)}
             </Link>
           ))}
-        </nav>
 
-        <Separator className="mx-4" />
-
-        {/* Sport selector */}
-        <div className="flex flex-col gap-1 px-4">
-          {sports.map((sport) => (
-            <div
-              key={sport.key}
-              className={cn(
-                'flex items-center justify-between rounded-lg px-3 py-2.5 text-sm',
-                sport.active ? 'font-medium text-text-primary' : 'text-text-tertiary',
-              )}
-            >
-              {t(sport.key)}
-              {!sport.active && (
-                <Badge variant="secondary" className="text-[10px] leading-none">
-                  {t('comingSoon')}
-                </Badge>
+          {/* Competitions expandable */}
+          <button
+            onClick={() => setCompetitionsOpen((v) => !v)}
+            className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+          >
+            {t('competitions')}
+            <ChevronDown
+              className={cn('size-4 transition-transform', competitionsOpen && 'rotate-180')}
+            />
+          </button>
+          {competitionsOpen && (
+            <div className="flex flex-col gap-0.5 ps-4">
+              {MEGA_MENU_SECTIONS.flatMap((section) =>
+                section.entries
+                  .filter((e) => e.isCurrentlyVisible)
+                  .map((entry) => (
+                    <Link
+                      key={entry.competitionId}
+                      href={buildCompetitionHref(entry, locale)}
+                      onClick={() => setOpen(false)}
+                      className="block rounded-lg px-3 py-2 text-sm text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+                    >
+                      {tMega(entry.labelKey)}
+                    </Link>
+                  )),
               )}
             </div>
-          ))}
-        </div>
+          )}
+        </nav>
 
         <Separator className="mx-4" />
 

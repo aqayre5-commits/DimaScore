@@ -15,10 +15,57 @@
     "teams": "الفرق",
     "players": "اللاعبون",
     "live": "مباشر",
-    "comingSoon": "قريبًا",
+    "football": "كرة القدم"
+  },
+  "topbar": {
+    "home": "الرئيسية",
+    "botolaProShort": "البطولة الاحترافية",
+    "competitions": "المسابقات",
+    "allCompetitions": "جميع المسابقات"
+  },
+  "topStrip": {
+    "days": "ي",
+    "hours": "س",
+    "minutes": "د",
+    "seconds": "ث",
+    "group": "المجموعة"
+  },
+  "megaMenu": {
+    "morocco": "المغرب",
+    "international": "دولي",
+    "africa": "أفريقيا",
+    "europe": "أوروبا",
+    "botolaPro": "البطولة الاحترافية",
+    "botola2": "القسم الثاني",
+    "coupeDuTrone": "كأس العرش",
+    "worldCup2026": "كأس العالم 2026",
+    "wcQualAfrica": "تصفيات كأس العالم أفريقيا",
+    "saudiProLeague": "دوري المحترفين السعودي",
+    "egyptPremierLeague": "الدوري المصري الممتاز",
+    "afcon": "كأس أمم إفريقيا 2027",
+    "afconQualifiers": "تصفيات كأس أمم إفريقيا",
+    "wafcon2026": "كأس أمم إفريقيا للسيدات 2026",
+    "cafChampionsLeague": "دوري أبطال أفريقيا",
+    "cafConfederationCup": "كأس الكونفدرالية الأفريقية",
+    "premierLeague": "الدوري الإنجليزي الممتاز",
+    "laLiga": "الدوري الإسباني",
+    "bundesliga": "الدوري الألماني",
+    "serieA": "الدوري الإيطالي",
+    "ligue1": "الدوري الفرنسي",
+    "championsLeague": "دوري أبطال أوروبا",
+    "europaLeague": "الدوري الأوروبي",
+    "conferenceLeague": "دوري المؤتمر الأوروبي"
+  },
+  "mobileTabBar": {
+    "matches": "المباريات",
+    "search": "بحث",
+    "favorites": "المفضلة",
+    "settings": "الإعدادات"
+  },
+  "breadcrumb": {
     "football": "كرة القدم",
-    "basketball": "كرة السلة",
-    "tennis": "تنس"
+    "international": "دولي",
+    "morocco": "المغرب"
   },
   "footer": {
     "tagline": "كرة القدم المغربية وما وراءها",
@@ -26,7 +73,16 @@
     "privacyPolicy": "سياسة الخصوصية",
     "contact": "اتصل بنا",
     "loi0908": "يلتزم هذا الموقع بالقانون رقم 09-08 المتعلق بحماية البيانات الشخصية.",
-    "copyright": "© {year} أطلس كينغز. جميع الحقوق محفوظة."
+    "copyright": "© {year} أطلس كينغز. جميع الحقوق محفوظة.",
+    "competitions": "المسابقات",
+    "resources": "الموارد",
+    "about": "حول",
+    "aboutUs": "من نحن",
+    "faq": "الأسئلة الشائعة"
+  },
+  "placeholder": {
+    "pageComingSoon": "ستكون هذه الصفحة متاحة قريبًا",
+    "competitionComingSoon": "ستكون صفحة هذه المسابقة متاحة قريبًا"
   },
   "liveTicker": {
     "live": "مباشر"
@@ -43,12 +99,6 @@
     "today": "اليوم",
     "yesterday": "أمس",
     "tomorrow": "غدًا"
-  },
-  "leftRail": {
-    "featured": "أبرز الأخبار",
-    "morocco": "المغرب",
-    "countries": "البلدان",
-    "comingSoon": "قريبًا"
   },
   "homepage": {
     "emptyState": "المباريات قادمة قريبًا"

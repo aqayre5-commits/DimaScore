@@ -15,10 +15,57 @@
     "teams": "Teams",
     "players": "Players",
     "live": "Live",
-    "comingSoon": "Coming soon",
+    "football": "Football"
+  },
+  "topbar": {
+    "home": "Home",
+    "botolaProShort": "Botola Pro",
+    "competitions": "Competitions",
+    "allCompetitions": "All competitions"
+  },
+  "topStrip": {
+    "days": "D",
+    "hours": "H",
+    "minutes": "M",
+    "seconds": "S",
+    "group": "Group"
+  },
+  "megaMenu": {
+    "morocco": "Morocco",
+    "international": "International",
+    "africa": "Africa",
+    "europe": "Europe",
+    "botolaPro": "Botola Pro",
+    "botola2": "Botola Pro 2",
+    "coupeDuTrone": "Coupe du Trone",
+    "worldCup2026": "World Cup 2026",
+    "wcQualAfrica": "WC Qual. Africa",
+    "saudiProLeague": "Saudi Pro League",
+    "egyptPremierLeague": "Egyptian Premier League",
+    "afcon": "AFCON 2027",
+    "afconQualifiers": "AFCON Qualifiers",
+    "wafcon2026": "WAFCON 2026",
+    "cafChampionsLeague": "CAF Champions League",
+    "cafConfederationCup": "CAF Confederation Cup",
+    "premierLeague": "Premier League",
+    "laLiga": "LaLiga",
+    "bundesliga": "Bundesliga",
+    "serieA": "Serie A",
+    "ligue1": "Ligue 1",
+    "championsLeague": "Champions League",
+    "europaLeague": "Europa League",
+    "conferenceLeague": "Conference League"
+  },
+  "mobileTabBar": {
+    "matches": "Matches",
+    "search": "Search",
+    "favorites": "Favorites",
+    "settings": "Settings"
+  },
+  "breadcrumb": {
     "football": "Football",
-    "basketball": "Basketball",
-    "tennis": "Tennis"
+    "international": "International",
+    "morocco": "Morocco"
   },
   "footer": {
     "tagline": "Moroccan football and beyond",
@@ -26,7 +73,16 @@
     "privacyPolicy": "Privacy policy",
     "contact": "Contact",
     "loi0908": "This site complies with Law 09-08 on the protection of personal data.",
-    "copyright": "© {year} Atlas Kings. All rights reserved."
+    "copyright": "© {year} Atlas Kings. All rights reserved.",
+    "competitions": "Competitions",
+    "resources": "Resources",
+    "about": "About",
+    "aboutUs": "About us",
+    "faq": "FAQ"
+  },
+  "placeholder": {
+    "pageComingSoon": "This page is coming soon",
+    "competitionComingSoon": "This competition page is coming soon"
   },
   "liveTicker": {
     "live": "LIVE"
@@ -43,12 +99,6 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "tomorrow": "Tomorrow"
-  },
-  "leftRail": {
-    "featured": "Featured",
-    "morocco": "Morocco",
-    "countries": "Countries",
-    "comingSoon": "Coming soon"
   },
   "homepage": {
     "emptyState": "Matches coming soon"
