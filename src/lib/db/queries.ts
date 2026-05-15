@@ -1,6 +1,296 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, asc, inArray } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
+
+// ── Shared types ──
+
+type TeamSnapshot = {
+  id: number;
+  name: Record<string, string>;
+  shortName: Record<string, string>;
+  code: string | null;
+  countryCode: string | null;
+  logoUrl: string | null;
+  isNational: boolean | null;
+};
+
+type VenueSnapshot = {
+  id: number;
+  name: string | null;
+  city: string | null;
+};
+
+export interface FixtureWithTeams {
+  id: number;
+  round: string | null;
+  roundNumber: number | null;
+  kickoffAt: Date;
+  statusCode: string;
+  homeTeamId: number | null;
+  awayTeamId: number | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  homeScoreHt: number | null;
+  awayScoreHt: number | null;
+  venueId: number | null;
+  homeTeam: TeamSnapshot | null;
+  awayTeam: TeamSnapshot | null;
+  venue: VenueSnapshot | null;
+}
+
+export interface StandingRow {
+  groupLabel: string;
+  teamId: number | null;
+  rank: number;
+  points: number;
+  played: number;
+  won: number | null;
+  drawn: number | null;
+  lost: number | null;
+  goalsFor: number | null;
+  goalsAgainst: number | null;
+  goalDiff: number | null;
+  form: string | null;
+  team: TeamSnapshot | null;
+}
+
+// ── Q1: Featured match ──
+
+/**
+ * Get the featured match for a competition.
+ * Algorithm (WC 2026 pre-tournament): first Morocco fixture by kickoff.
+ * Returns null if no fixtures found.
+ *
+ * NOTE: This function takes a specific team ID (moroccoTeamId) which couples
+ * it to a Morocco-first selection strategy. When competition-league.md is
+ * instantiated for Botola Pro, the featured match algorithm will need
+ * different logic (e.g. Wydad/Raja next match, or stakes-weighted selection).
+ * Generalize in Phase 6 league sub-task — see BACKLOG.
+ */
+export async function getFeaturedMatch(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+  moroccoTeamId: number,
+): Promise<FixtureWithTeams | null> {
+  // Find first upcoming Morocco fixture
+  const moroccoFixtures = await db
+    .select()
+    .from(schema.fixtures)
+    .where(
+      and(
+        eq(schema.fixtures.competitionId, competitionId),
+        eq(schema.fixtures.seasonYear, seasonYear),
+        sql`(${schema.fixtures.homeTeamId} = ${moroccoTeamId} OR ${schema.fixtures.awayTeamId} = ${moroccoTeamId})`,
+      ),
+    )
+    .orderBy(asc(schema.fixtures.kickoffAt))
+    .limit(1);
+
+  if (moroccoFixtures.length === 0) {
+    // Fallback: first fixture overall
+    const firstFixture = await db
+      .select()
+      .from(schema.fixtures)
+      .where(
+        and(
+          eq(schema.fixtures.competitionId, competitionId),
+          eq(schema.fixtures.seasonYear, seasonYear),
+        ),
+      )
+      .orderBy(asc(schema.fixtures.kickoffAt))
+      .limit(1);
+
+    if (firstFixture.length === 0) return null;
+    return hydrateFixtures(db, firstFixture).then((r) => r[0] ?? null);
+  }
+
+  return hydrateFixtures(db, moroccoFixtures).then((r) => r[0] ?? null);
+}
+
+// ── Q2: Fixtures by round ──
+
+/**
+ * Get all fixtures for a competition round, hydrated with team + venue data.
+ * Batched: 3 queries total (fixtures + teams + venues), not N+1.
+ */
+export async function getFixturesByRound(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+  roundNumber: number,
+): Promise<FixtureWithTeams[]> {
+  const rows = await db
+    .select()
+    .from(schema.fixtures)
+    .where(
+      and(
+        eq(schema.fixtures.competitionId, competitionId),
+        eq(schema.fixtures.seasonYear, seasonYear),
+        eq(schema.fixtures.roundNumber, roundNumber),
+      ),
+    )
+    .orderBy(asc(schema.fixtures.kickoffAt));
+
+  return hydrateFixtures(db, rows);
+}
+
+// ── Q3: Standings by competition ──
+
+/**
+ * Get all standings rows for a competition season, ordered by group then rank.
+ */
+export async function getStandings(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+): Promise<StandingRow[]> {
+  const rows = await db
+    .select()
+    .from(schema.standings)
+    .where(
+      and(
+        eq(schema.standings.competitionId, competitionId),
+        eq(schema.standings.seasonYear, seasonYear),
+      ),
+    )
+    .orderBy(asc(schema.standings.groupLabel), asc(schema.standings.rank));
+
+  const teamIds = [...new Set(rows.map((r) => r.teamId).filter((id): id is number => id != null))];
+  const teamsMap = await getTeamsMap(db, teamIds);
+
+  return rows.map((r) => ({
+    groupLabel: r.groupLabel.replace(/^Group\s+/i, ''),
+    teamId: r.teamId,
+    rank: r.rank,
+    points: r.points,
+    played: r.played,
+    won: r.won,
+    drawn: r.drawn,
+    lost: r.lost,
+    goalsFor: r.goalsFor,
+    goalsAgainst: r.goalsAgainst,
+    goalDiff: r.goalDiff,
+    form: r.form,
+    team: r.teamId ? (teamsMap.get(r.teamId) ?? null) : null,
+  }));
+}
+
+// ── Q4: Morocco team lookup ──
+
+/**
+ * Find Morocco's team ID for national team tournaments.
+ * Returns null if not found.
+ */
+export async function getMoroccoTeamId(
+  db: NeonHttpDatabase<typeof schema>,
+): Promise<number | null> {
+  const rows = await db
+    .select({ id: schema.teams.id })
+    .from(schema.teams)
+    .where(and(eq(schema.teams.code, 'MA'), eq(schema.teams.isNational, true)))
+    .limit(1);
+
+  return rows.length > 0 ? rows[0].id : null;
+}
+
+// ── Batch hydration helpers ──
+
+/**
+ * Hydrate an array of raw fixture rows with team + venue data in batch.
+ * Collects all distinct team IDs and venue IDs, runs ONE team query and
+ * ONE venue query, then assembles in memory. Total: fixtures query + 2.
+ */
+async function hydrateFixtures(
+  db: NeonHttpDatabase<typeof schema>,
+  fixtures: (typeof schema.fixtures.$inferSelect)[],
+): Promise<FixtureWithTeams[]> {
+  if (fixtures.length === 0) return [];
+
+  // Collect distinct IDs
+  const teamIdSet = new Set<number>();
+  const venueIdSet = new Set<number>();
+  for (const f of fixtures) {
+    if (f.homeTeamId != null) teamIdSet.add(f.homeTeamId);
+    if (f.awayTeamId != null) teamIdSet.add(f.awayTeamId);
+    if (f.venueId != null) venueIdSet.add(f.venueId);
+  }
+
+  // Batch fetch teams and venues in parallel
+  const [teamsMap, venuesMap] = await Promise.all([
+    getTeamsMap(db, [...teamIdSet]),
+    getVenuesMap(db, [...venueIdSet]),
+  ]);
+
+  return fixtures.map((f) => ({
+    id: f.id,
+    round: f.round,
+    roundNumber: f.roundNumber,
+    kickoffAt: f.kickoffAt,
+    statusCode: f.statusCode,
+    homeTeamId: f.homeTeamId,
+    awayTeamId: f.awayTeamId,
+    homeScore: f.homeScore,
+    awayScore: f.awayScore,
+    homeScoreHt: f.homeScoreHt,
+    awayScoreHt: f.awayScoreHt,
+    venueId: f.venueId,
+    homeTeam: f.homeTeamId ? (teamsMap.get(f.homeTeamId) ?? null) : null,
+    awayTeam: f.awayTeamId ? (teamsMap.get(f.awayTeamId) ?? null) : null,
+    venue: f.venueId ? (venuesMap.get(f.venueId) ?? null) : null,
+  }));
+}
+
+async function getTeamsMap(
+  db: NeonHttpDatabase<typeof schema>,
+  teamIds: number[],
+): Promise<Map<number, TeamSnapshot>> {
+  if (teamIds.length === 0) return new Map();
+
+  const teams = await db
+    .select({
+      id: schema.teams.id,
+      name: schema.teams.name,
+      shortName: schema.teams.shortName,
+      code: schema.teams.code,
+      countryCode: schema.teams.countryCode,
+      logoUrl: schema.teams.logoUrl,
+      isNational: schema.teams.isNational,
+    })
+    .from(schema.teams)
+    .where(inArray(schema.teams.id, teamIds));
+
+  const map = new Map<number, TeamSnapshot>();
+  for (const t of teams) {
+    map.set(t.id, t);
+  }
+  return map;
+}
+
+async function getVenuesMap(
+  db: NeonHttpDatabase<typeof schema>,
+  venueIds: number[],
+): Promise<Map<number, VenueSnapshot>> {
+  if (venueIds.length === 0) return new Map();
+
+  const venues = await db
+    .select({
+      id: schema.venues.id,
+      name: schema.venues.name,
+      city: schema.venues.city,
+    })
+    .from(schema.venues)
+    .where(inArray(schema.venues.id, venueIds));
+
+  const map = new Map<number, VenueSnapshot>();
+  for (const v of venues) {
+    map.set(v.id, v);
+  }
+  return map;
+}
+
+// ── Original query ──
 
 export async function getCurrentSeasons(db: NeonHttpDatabase<typeof schema>): Promise<
   {

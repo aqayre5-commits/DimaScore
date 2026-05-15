@@ -7,13 +7,15 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = rawSlug.map(decodeURIComponent);
   const display = slug.join(' / ').replace(/-/g, ' ');
   return { title: `${display} | Atlas Kings` };
 }
 
 export default async function TeamPlaceholderPage({ params }: PageProps) {
-  const { locale, slug } = await params;
+  const { locale, slug: rawSlug } = await params;
+  const slug = rawSlug.map(decodeURIComponent);
   const t = await getTranslations({ locale, namespace: 'placeholder' });
   const tBc = await getTranslations({ locale, namespace: 'breadcrumb' });
 

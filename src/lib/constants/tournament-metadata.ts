@@ -41,6 +41,7 @@ export interface CupMetadata extends BaseTournamentMetadata {
   homeAwayMeaningful: boolean;
   knockoutStartsRound: 'r32' | 'r16' | 'qf';
   hasThirdPlaceMatch: boolean;
+  hasBestThirdPlace: boolean;
   groups: GroupDefinition[];
   historicalWinners: HistoricalWinner[];
   relatedCompetitionIds: number[];
@@ -73,6 +74,7 @@ const WC_2026: CupMetadata = {
   homeAwayMeaningful: false,
   knockoutStartsRound: 'r32',
   hasThirdPlaceMatch: true,
+  hasBestThirdPlace: true,
   groups: [
     { label: 'A', teamCodes: ['MX', 'ZA', 'KR', 'CZ'], isMoroccoGroup: false },
     { label: 'B', teamCodes: ['CA', 'BA', 'IR', 'CH'], isMoroccoGroup: false },

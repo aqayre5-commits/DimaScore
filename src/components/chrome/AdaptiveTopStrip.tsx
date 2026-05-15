@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { getMetadataForCompetition, type CupMetadata } from '@/lib/constants/tournament-metadata';
+import { codeToFlag } from '@/lib/flags';
 import { cn } from '@/lib/utils';
 
 // ── Mode type definitions (homepage.md Section 1) ──
@@ -59,14 +60,6 @@ function getCountdownStripMode(today: Date): StripMode {
   }
 
   return { mode: 'fallback' };
-}
-
-/** Country code to flag emoji via regional indicator symbols. */
-function codeToFlag(code: string): string {
-  // Handle 2-letter codes
-  const c = code.toUpperCase();
-  if (c.length !== 2) return c;
-  return String.fromCodePoint(...Array.from(c).map((ch) => 0x1f1e6 + ch.charCodeAt(0) - 65));
 }
 
 function CountdownTimer({ kickoffDate }: { kickoffDate: string }) {
