@@ -24,11 +24,10 @@
     "allCompetitions": "جميع المسابقات"
   },
   "topStrip": {
-    "days": "ي",
-    "hours": "س",
-    "minutes": "د",
-    "seconds": "ث",
-    "group": "المجموعة"
+    "live": "مباشر",
+    "emptyState": "نتائج كرة القدم المباشرة من المغرب والعالم.",
+    "scrollLeft": "تمرير لليسار",
+    "scrollRight": "تمرير لليمين"
   },
   "megaMenu": {
     "morocco": "المغرب",

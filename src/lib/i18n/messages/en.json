@@ -24,11 +24,10 @@
     "allCompetitions": "All competitions"
   },
   "topStrip": {
-    "days": "D",
-    "hours": "H",
-    "minutes": "M",
-    "seconds": "S",
-    "group": "Group"
+    "live": "LIVE",
+    "emptyState": "Live football scores from Morocco and around the world.",
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right"
   },
   "megaMenu": {
     "morocco": "Morocco",

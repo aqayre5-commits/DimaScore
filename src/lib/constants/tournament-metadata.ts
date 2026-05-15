@@ -67,7 +67,7 @@ const WC_2026: CupMetadata = {
   format: 'groups_and_knockout',
   groupsCount: 12,
   teamsCount: 48,
-  hostCountryCodes: ['US', 'CA', 'MX', 'MA'],
+  hostCountryCodes: ['US', 'CA', 'MX'],
   kickoffDate: '2026-06-11',
   finalDate: '2026-07-19',
   fifaRankingApplicable: true,

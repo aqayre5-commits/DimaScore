@@ -42,24 +42,24 @@ const WC_2026_META: Record<Locale, { title: string; description: string }> = {
   fr: {
     title: 'Coupe du Monde 2026 — Calendrier, groupes, classement et phase finale | Atlas Kings',
     description:
-      "Suivez la Coupe du Monde FIFA 2026 en direct: calendrier des 104 matchs, les 12 groupes, classement de chaque groupe, phase a elimination directe. Le Maroc dans le Groupe C avec l'Argentine, l'Arabie saoudite et l'Egypte.",
+      "Suivez la Coupe du Monde FIFA 2026 en direct: calendrier des 104 matchs, les 12 groupes, classement de chaque groupe, phase a elimination directe. Le Maroc dans le Groupe C avec le Bresil, Haiti et l'Ecosse.",
   },
   en: {
     title: 'FIFA World Cup 2026 — Fixtures, groups, standings and knockout | Atlas Kings',
     description:
-      'Follow the FIFA World Cup 2026 live: 104-match schedule, 12 groups, standings per group, knockout bracket. Morocco in Group C with Argentina, Saudi Arabia, and Egypt.',
+      'Follow the FIFA World Cup 2026 live: 104-match schedule, 12 groups, standings per group, knockout bracket. Morocco in Group C with Brazil, Haiti, and Scotland.',
   },
   ar: {
     title: 'كأس العالم 2026 — الجدول، المجموعات، الترتيب ومرحلة الإقصاء | أطلس كينغز',
     description:
-      'تابعوا كأس العالم فيفا 2026 مباشرة: جدول 104 مباريات، 12 مجموعة، ترتيب كل مجموعة، الأدوار الإقصائية. المغرب في المجموعة C مع الأرجنتين والمملكة العربية السعودية ومصر.',
+      'تابعوا كأس العالم فيفا 2026 مباشرة: جدول 104 مباريات، 12 مجموعة، ترتيب كل مجموعة، الأدوار الإقصائية. المغرب في المجموعة C مع البرازيل وهايتي واسكتلندا.',
   },
 };
 
 const WC_2026_INTRO: Record<Locale, string> = {
-  fr: "La Coupe du Monde FIFA 2026 reunit 48 equipes nationales aux Etats-Unis, au Canada, au Mexique et au Maroc, premier hote africain de l'histoire. Suivez le calendrier complet, les 12 groupes, les classements et la phase a elimination directe en direct.",
-  en: 'The FIFA World Cup 2026 brings 48 national teams to the United States, Canada, Mexico, and Morocco — the first African co-host in tournament history. Follow the full schedule, 12 groups, standings, and knockout bracket live.',
-  ar: 'يجمع كأس العالم فيفا 2026 48 منتخباً وطنياً في الولايات المتحدة وكندا والمكسيك والمغرب، أول دولة إفريقية تستضيف في تاريخ البطولة. تابعوا الجدول الكامل، 12 مجموعة، الترتيب ومرحلة الأدوار الإقصائية مباشرة.',
+  fr: 'La Coupe du Monde FIFA 2026 reunit 48 equipes nationales aux Etats-Unis, au Canada et au Mexique — la premiere edition a 48 equipes au lieu de 32. Suivez le calendrier complet, les 12 groupes, les classements et la phase a elimination directe en direct.',
+  en: 'The FIFA World Cup 2026 brings 48 national teams to the United States, Canada, and Mexico — the first edition with 48 teams instead of 32. Follow the full schedule, 12 groups, standings, and knockout bracket live.',
+  ar: 'يجمع كأس العالم فيفا 2026 ثمانية وأربعين منتخباً وطنياً في الولايات المتحدة وكندا والمكسيك — أول نسخة بمشاركة 48 منتخباً بدلاً من 32. تابعوا الجدول الكامل، 12 مجموعة، الترتيب ومرحلة الأدوار الإقصائية مباشرة.',
 };
 
 const WC_2026_TITLES: Record<Locale, string> = {
@@ -104,30 +104,27 @@ const WC_2026_FACTS: Record<Locale, string[]> = {
     '12 groupes de 4 equipes',
     '104 matchs au total',
     '16 villes hotes',
-    '4 pays organisateurs',
+    '3 pays organisateurs (USA, Canada, Mexique)',
     '11 juin → 19 juillet 2026',
     'Format elargi: 1ere edition a 48 equipes',
-    "1ere presence d'un pays africain comme hote (Maroc, co-organisateur)",
   ],
   en: [
     '48 national teams',
     '12 groups of 4 teams',
     '104 total matches',
     '16 host cities',
-    '4 host countries',
+    '3 host countries (USA, Canada, Mexico)',
     '11 June → 19 July 2026',
     'Expanded format: first 48-team edition',
-    'First African co-host in tournament history (Morocco)',
   ],
   ar: [
     '48 منتخباً وطنياً',
     '12 مجموعة من 4 فرق',
     '104 مباريات إجمالاً',
     '16 مدينة مستضيفة',
-    '4 دول مستضيفة',
+    '3 دول مستضيفة (الولايات المتحدة، كندا، المكسيك)',
     '11 يونيو → 19 يوليو 2026',
     'صيغة موسعة: أول نسخة بـ48 منتخباً',
-    'أول دولة إفريقية مستضيفة في تاريخ البطولة (المغرب)',
   ],
 };
 

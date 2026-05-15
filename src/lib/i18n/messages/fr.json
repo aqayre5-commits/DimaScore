@@ -24,11 +24,10 @@
     "allCompetitions": "Toutes les compétitions"
   },
   "topStrip": {
-    "days": "J",
-    "hours": "H",
-    "minutes": "M",
-    "seconds": "S",
-    "group": "Groupe"
+    "live": "EN DIRECT",
+    "emptyState": "Scores de football en direct du Maroc et du monde entier.",
+    "scrollLeft": "Défiler à gauche",
+    "scrollRight": "Défiler à droite"
   },
   "megaMenu": {
     "morocco": "Maroc",

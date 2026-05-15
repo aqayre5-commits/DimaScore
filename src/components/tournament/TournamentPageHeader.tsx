@@ -73,22 +73,6 @@ export function TournamentPageHeader({
           </div>
         </div>
 
-        {/* Sub-zone C: Status descriptor */}
-        <div className="mt-3">
-          <StatusDescriptor tournamentPhase={tournamentPhase} />
-        </div>
-
-        {/* Sub-zone D: Morocco context line */}
-        {moroccoGroup && (
-          <div className="mt-2">
-            <MoroccoContextLine
-              groupLabel={moroccoGroup.label}
-              rivals={moroccoGroup.rivals}
-              locale={locale}
-            />
-          </div>
-        )}
-
         {/* Intro paragraph */}
         <p className="mt-4 max-w-[720px] text-[15px] leading-relaxed text-text-secondary">
           {introText}
