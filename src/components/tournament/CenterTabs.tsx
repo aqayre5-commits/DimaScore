@@ -38,7 +38,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
   return (
     <div>
       {/* Tabs row */}
-      <div className="flex gap-1 border-b border-border-subtle" role="tablist">
+      <div className="grid grid-cols-4 border-b border-border-subtle" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -46,7 +46,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
             aria-selected={tab.key === activeKey}
             onClick={() => handleTabClick(tab)}
             className={cn(
-              'relative px-4 py-3 text-sm font-medium transition-colors',
+              'relative px-4 py-3 text-center text-sm font-medium transition-colors',
               tab.key === activeKey
                 ? 'font-semibold text-text-primary'
                 : 'text-text-tertiary hover:text-text-secondary',
