@@ -104,3 +104,14 @@
     @apply font-sans scroll-smooth;
   }
 }
+
+/* Hash-fragment scroll highlight — 2s ring pulse then fade */
+.hash-highlight {
+  animation: hash-ring 2s ease-out;
+}
+
+@keyframes hash-ring {
+  0% { box-shadow: 0 0 0 2px var(--accent-gold); }
+  70% { box-shadow: 0 0 0 2px var(--accent-gold); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}

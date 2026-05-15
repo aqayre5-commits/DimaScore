@@ -5,6 +5,7 @@ interface InnerPageShellProps {
   leftRail: ReactNode;
   center: ReactNode;
   rightRail: ReactNode;
+  belowCenter?: ReactNode;
 }
 
 /**
@@ -15,7 +16,13 @@ interface InnerPageShellProps {
  *
  * NOT used by the homepage (single-column layout).
  */
-export function InnerPageShell({ pageHeader, leftRail, center, rightRail }: InnerPageShellProps) {
+export function InnerPageShell({
+  pageHeader,
+  leftRail,
+  center,
+  rightRail,
+  belowCenter,
+}: InnerPageShellProps) {
   return (
     <div className="mx-auto w-full max-w-[1280px] px-4">
       {pageHeader && <div className="mb-4">{pageHeader}</div>}
@@ -30,6 +37,8 @@ export function InnerPageShell({ pageHeader, leftRail, center, rightRail }: Inne
         {/* Right rail — hidden below xl breakpoint */}
         <aside className="order-3 hidden xl:block">{rightRail}</aside>
       </div>
+
+      {belowCenter}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { codeToFlag } from '@/lib/flags';
+import { ShareButton } from '@/components/shared/ShareButton';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -6,6 +7,7 @@ interface FeaturedMatchCardProps {
   fixture: FixtureWithTeams;
   locale: Locale;
   cardTitle: string;
+  shareHash?: string;
 }
 
 /** Full localized name: name[locale] → name['en'] → shortName[locale] → shortName['en'] → code → '—' */
@@ -25,7 +27,12 @@ function resolveFullName(team: FixtureWithTeams['homeTeam'], locale: Locale): st
  * Featured match card — left rail Card 1 for cup/tournament pages.
  * Shows next/current match with team flags, kickoff time, and full team names.
  */
-export function FeaturedMatchCard({ fixture, locale, cardTitle }: FeaturedMatchCardProps) {
+export function FeaturedMatchCard({
+  fixture,
+  locale,
+  cardTitle,
+  shareHash,
+}: FeaturedMatchCardProps) {
   const { homeTeam, awayTeam, kickoffAt, venue } = fixture;
 
   const homeName = resolveFullName(homeTeam, locale);
@@ -48,13 +55,12 @@ export function FeaturedMatchCard({ fixture, locale, cardTitle }: FeaturedMatchC
   });
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-surface">
-      {/* Card header */}
-      <div className="border-b border-border-subtle px-4 py-2.5">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-accent-gold">
-          {cardTitle}
-        </h3>
-      </div>
+    <div id={shareHash} className="relative rounded-lg border border-border-subtle bg-bg-surface">
+      {shareHash && (
+        <div className="absolute end-2 top-2 z-10">
+          <ShareButton title={cardTitle || 'Match'} hash={shareHash} />
+        </div>
+      )}
 
       <div className="flex flex-col items-center gap-3 px-4 py-5">
         {/* Kickoff time */}

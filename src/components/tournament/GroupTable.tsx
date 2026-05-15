@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
+import { ShareButton } from '@/components/shared/ShareButton';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
@@ -40,18 +41,27 @@ export function GroupTable({
   }
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-surface">
+    <div
+      id={`group-${groupLabel.toLowerCase()}`}
+      className="rounded-lg border border-border-subtle bg-bg-surface"
+    >
       {/* Group header */}
       <div className="border-b border-border-subtle px-4 py-2.5">
-        <h3
-          className={cn(
-            'text-xs font-semibold uppercase tracking-wider',
-            isMoroccoGroup ? 'text-accent-gold' : 'text-text-primary',
-          )}
-        >
-          {t('groupLabel', { label: groupLabel })}
-          {isMoroccoGroup && <span className="ml-1">&#9733;</span>}
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3
+            className={cn(
+              'text-xs font-semibold uppercase tracking-wider',
+              isMoroccoGroup ? 'text-accent-gold' : 'text-text-primary',
+            )}
+          >
+            {t('groupLabel', { label: groupLabel })}
+            {isMoroccoGroup && <span className="ml-1">&#9733;</span>}
+          </h3>
+          <ShareButton
+            title={t('groupLabel', { label: groupLabel })}
+            hash={`group-${groupLabel.toLowerCase()}`}
+          />
+        </div>
       </div>
 
       <div className="overflow-x-auto">

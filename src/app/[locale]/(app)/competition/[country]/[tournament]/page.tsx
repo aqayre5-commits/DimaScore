@@ -14,6 +14,12 @@ import { OverviewTab } from '@/components/tournament/OverviewTab';
 import { StandingsTab } from '@/components/tournament/StandingsTab';
 import { KnockoutTab } from '@/components/tournament/KnockoutTab';
 import { BestThirdTab } from '@/components/tournament/BestThirdTab';
+import { RightRail } from '@/components/tournament/RightRail';
+import { VideosSection } from '@/components/tournament/VideosSection';
+import { AboutCard } from '@/components/tournament/AboutCard';
+import { SportsEventJsonLd } from '@/components/seo/SportsEventJsonLd';
+import { HashScrollHighlight } from '@/components/shared/HashScrollHighlight';
+import { getAboutContent } from '@/lib/constants/about-content';
 import { computeBestThirdPlaced } from '@/lib/standings/best-third';
 import type { TournamentPhase } from '@/components/tournament/StatusDescriptor';
 import { db } from '@/lib/db/client';
@@ -286,6 +292,9 @@ export default async function CompetitionPage({ params }: PageProps) {
 
   const breadcrumb = <SeoBreadcrumb segments={breadcrumbSegments} />;
 
+  // About card content
+  const aboutContent = getAboutContent(competitionId, typedLocale);
+
   // Tab data
   const hashes = TAB_HASHES[typedLocale];
   const facts = WC_2026_FACTS[typedLocale];
@@ -362,6 +371,7 @@ export default async function CompetitionPage({ params }: PageProps) {
               fixture={featuredMatch}
               locale={typedLocale}
               cardTitle={tT('featured')}
+              shareHash="featured"
             />
           )}
 
@@ -372,11 +382,25 @@ export default async function CompetitionPage({ params }: PageProps) {
       }
       center={<CenterTabs tabs={tabs} />}
       rightRail={
-        <div className="space-y-4">
-          <div className="rounded-lg border border-border-subtle bg-bg-surface p-4">
-            <p className="text-sm text-text-tertiary">{tT('rightRailPlaceholder')}</p>
-          </div>
-        </div>
+        <RightRail
+          metadata={metadata}
+          standings={standings}
+          locale={typedLocale}
+          tournamentName={pageTitle}
+        />
+      }
+      belowCenter={
+        <>
+          <HashScrollHighlight />
+          <VideosSection youtubeIds={metadata.mediaYoutubeIds} />
+          {aboutContent && <AboutCard content={aboutContent} />}
+          <SportsEventJsonLd
+            metadata={metadata}
+            tournamentName={pageTitle}
+            alternateNames={Object.values(WC_2026_TITLES).filter((t) => t !== pageTitle)}
+            canonicalUrl={`${baseUrl}/fr/competition/fifa/coupe-du-monde-2026`}
+          />
+        </>
       }
     />
   );
