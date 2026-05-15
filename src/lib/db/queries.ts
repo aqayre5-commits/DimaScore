@@ -290,6 +290,123 @@ async function getVenuesMap(
   return map;
 }
 
+// ── Q5: Ticker fixtures (live or upcoming across all competitions) ──
+
+type CompetitionSnapshot = {
+  id: number;
+  name: Record<string, string>;
+  logoUrl: string | null;
+  slug: string;
+};
+
+export interface TickerFixture {
+  id: number;
+  kickoffAt: Date;
+  statusCode: string;
+  minute: number | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  homeTeam: TeamSnapshot | null;
+  awayTeam: TeamSnapshot | null;
+  competition: CompetitionSnapshot;
+}
+
+export type TickerResult = { mode: 'fixtures'; fixtures: TickerFixture[] } | { mode: 'empty' };
+
+const LIVE_STATUSES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+
+const TICKER_SELECT = {
+  id: schema.fixtures.id,
+  kickoffAt: schema.fixtures.kickoffAt,
+  statusCode: schema.fixtures.statusCode,
+  minute: schema.fixtures.minute,
+  homeTeamId: schema.fixtures.homeTeamId,
+  awayTeamId: schema.fixtures.awayTeamId,
+  homeScore: schema.fixtures.homeScore,
+  awayScore: schema.fixtures.awayScore,
+  compId: schema.competitions.id,
+  compName: schema.competitions.name,
+  compLogo: schema.competitions.logoUrl,
+  compSlug: schema.competitions.slug,
+} as const;
+
+/**
+ * Get fixtures for the global ticker strip.
+ * Runs live + upcoming queries in parallel, concatenates (live first),
+ * caps at max(15, liveCount). Hydrates teams in one batch. 3 queries total.
+ */
+export async function getTickerFixtures(
+  db: NeonHttpDatabase<typeof schema>,
+): Promise<TickerResult> {
+  const [liveRows, upcomingRows] = await Promise.all([
+    db
+      .select(TICKER_SELECT)
+      .from(schema.fixtures)
+      .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+      .where(inArray(schema.fixtures.statusCode, LIVE_STATUSES))
+      .orderBy(asc(schema.fixtures.kickoffAt)),
+    db
+      .select(TICKER_SELECT)
+      .from(schema.fixtures)
+      .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+      .where(and(eq(schema.fixtures.statusCode, 'NS'), sql`${schema.fixtures.kickoffAt} > NOW()`))
+      .orderBy(asc(schema.fixtures.kickoffAt))
+      .limit(15),
+  ]);
+
+  const upcomingSlack = Math.max(0, 15 - liveRows.length);
+  const combined = [...liveRows, ...upcomingRows.slice(0, upcomingSlack)];
+
+  if (combined.length === 0) return { mode: 'empty' };
+
+  const fixtures = await hydrateTickerRows(db, combined);
+  return { mode: 'fixtures', fixtures };
+}
+
+type TickerRow = {
+  id: number;
+  kickoffAt: Date;
+  statusCode: string;
+  minute: number | null;
+  homeTeamId: number | null;
+  awayTeamId: number | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  compId: number;
+  compName: Record<string, string>;
+  compLogo: string | null;
+  compSlug: string;
+};
+
+async function hydrateTickerRows(
+  db: NeonHttpDatabase<typeof schema>,
+  rows: TickerRow[],
+): Promise<TickerFixture[]> {
+  const teamIds = new Set<number>();
+  for (const r of rows) {
+    if (r.homeTeamId != null) teamIds.add(r.homeTeamId);
+    if (r.awayTeamId != null) teamIds.add(r.awayTeamId);
+  }
+  const teamsMap = await getTeamsMap(db, [...teamIds]);
+
+  return rows.map((r) => ({
+    id: r.id,
+    kickoffAt: r.kickoffAt,
+    statusCode: r.statusCode,
+    minute: r.minute,
+    homeScore: r.homeScore,
+    awayScore: r.awayScore,
+    homeTeam: r.homeTeamId ? (teamsMap.get(r.homeTeamId) ?? null) : null,
+    awayTeam: r.awayTeamId ? (teamsMap.get(r.awayTeamId) ?? null) : null,
+    competition: {
+      id: r.compId,
+      name: r.compName,
+      logoUrl: r.compLogo,
+      slug: r.compSlug,
+    },
+  }));
+}
+
 // ── Original query ──
 
 export async function getCurrentSeasons(db: NeonHttpDatabase<typeof schema>): Promise<

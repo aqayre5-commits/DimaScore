@@ -115,3 +115,50 @@
   70% { box-shadow: 0 0 0 2px var(--accent-gold); }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
+
+/* Live-match ticker pulse */
+.live-pulse {
+  animation: live-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Auto-scroll ticker (marquee) */
+.ticker-track {
+  animation: ticker-scroll var(--ticker-duration, 35s) linear infinite;
+}
+
+.ticker:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* RTL: scroll in the opposite direction */
+[dir="rtl"] .ticker-track {
+  animation-name: ticker-scroll-rtl;
+}
+
+@keyframes ticker-scroll-rtl {
+  from { transform: translateX(0); }
+  to { transform: translateX(50%); }
+}
+
+/* Accessibility: stop animation for reduced-motion, fall back to manual scroll */
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none !important;
+  }
+  .ticker {
+    overflow-x: auto;
+  }
+  .ticker .ticker-duplicate {
+    display: none;
+  }
+}
