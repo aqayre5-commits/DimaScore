@@ -9,6 +9,7 @@ export interface BracketMatch {
   matchId: string;
   phase: KnockoutPhase;
   matchNumber: number;
+  fifaMatchNumber?: number;
   homeLabel: string;
   awayLabel: string;
   homeScore?: number | null;
@@ -16,10 +17,12 @@ export interface BracketMatch {
   status: 'upcoming' | 'live' | 'finished' | 'placeholder';
   statusLabel?: string;
   feedsInto?: string;
+  loserFeedsInto?: string;
   side: BracketSide;
   venue?: string | null;
   date?: string | null;
   roundLabel: string;
+  ariaLabel: string;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -42,36 +45,34 @@ export function BracketMatchCell({ match, className }: BracketMatchCellProps) {
   return (
     <div
       data-match-id={match.matchId}
+      aria-label={match.ariaLabel}
+      title={match.ariaLabel}
       className={cn(
-        'w-[140px] rounded-lg border border-border-subtle bg-bg-surface p-2',
+        'w-[160px] rounded-lg border border-border-subtle bg-bg-surface p-2 text-center',
         className,
       )}
     >
-      {/* Header: round · match number · date */}
-      <p className="mb-1 truncate text-[10px] font-medium uppercase tracking-wider text-text-tertiary">
-        {match.roundLabel} · M{match.matchNumber}
-        {match.date && ` · ${match.date}`}
+      {/* Header: match number */}
+      <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-text-tertiary">
+        M{match.fifaMatchNumber ?? match.matchNumber}
       </p>
 
-      {/* Teams */}
-      <div className="space-y-px">
-        <div className="flex items-center justify-between gap-1 text-xs">
-          <span className="truncate text-text-secondary">{match.homeLabel}</span>
-          {showScores && (
-            <span className="shrink-0 font-semibold tabular-nums text-text-primary">
-              {match.homeScore ?? '–'}
-            </span>
-          )}
+      {/* Teams — horizontal layout */}
+      {showScores ? (
+        <div className="flex items-center gap-1 text-xs">
+          <span className="truncate font-medium text-text-primary">{match.homeLabel}</span>
+          <span className="shrink-0 font-semibold tabular-nums text-text-primary">
+            {match.homeScore ?? '–'}–{match.awayScore ?? '–'}
+          </span>
+          <span className="truncate font-medium text-text-primary">{match.awayLabel}</span>
         </div>
-        <div className="flex items-center justify-between gap-1 text-xs">
-          <span className="truncate text-text-secondary">{match.awayLabel}</span>
-          {showScores && (
-            <span className="shrink-0 font-semibold tabular-nums text-text-primary">
-              {match.awayScore ?? '–'}
-            </span>
-          )}
+      ) : (
+        <div className="truncate text-xs">
+          <span className="font-medium text-text-primary">{match.homeLabel}</span>
+          <span className="mx-1 text-text-tertiary">vs</span>
+          <span className="font-medium text-text-primary">{match.awayLabel}</span>
         </div>
-      </div>
+      )}
 
       {/* Footer: status + venue (rendered only when data exists) */}
       {match.statusLabel && (

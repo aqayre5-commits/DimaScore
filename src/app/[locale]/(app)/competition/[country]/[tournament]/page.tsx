@@ -209,7 +209,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 // ── Page ──
 
 export default async function CompetitionPage({ params }: PageProps) {
-  const { locale, tournament: rawTournament } = await params;
+  const { locale, country: rawCountry, tournament: rawTournament } = await params;
   const tournament = decodeURIComponent(rawTournament);
   const typedLocale = locale as Locale;
   const t = await getTranslations({ locale, namespace: 'breadcrumb' });
@@ -344,7 +344,13 @@ export default async function CompetitionPage({ params }: PageProps) {
       key: 'knockout',
       hash: hashes.knockout,
       labelKey: 'knockout',
-      content: <KnockoutTab metadata={metadata} locale={typedLocale} />,
+      content: (
+        <KnockoutTab
+          metadata={metadata}
+          locale={typedLocale}
+          bracketHref={`/${locale}/competition/${rawCountry}/${rawTournament}/bracket`}
+        />
+      ),
     },
   ];
 

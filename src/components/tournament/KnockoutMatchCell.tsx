@@ -9,6 +9,8 @@ interface KnockoutMatchCellProps {
  * Single knockout bracket match cell (pre-tournament placeholder).
  * Per competition-cup.md Section 7 Tab 3.
  * Shows placeholder team labels like "[1er Groupe A] vs [2ème Groupe B]".
+ *
+ * @deprecated Use BracketMatchCell instead. Retained for potential non-WC2026 bracket use.
  */
 export function KnockoutMatchCell({
   matchNumber,

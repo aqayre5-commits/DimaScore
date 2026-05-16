@@ -67,13 +67,6 @@ export function BracketConnectors({ containerRef, matches }: BracketConnectorsPr
 
         if (sourceRects.length < 2) continue;
 
-        // Direction-aware edge logic:
-        // LTR left-side: connectors go right (source right edge -> target left edge)
-        // RTL left-side: connectors go left (source left edge -> target right edge)
-        // dir="rtl" flips column visual order, so edges must also flip.
-        const isLeftSide = sourceRects[0].match.side === 'left';
-        const goRight = isLeftSide !== isRtl;
-
         const toRel = (r: DOMRect) => ({
           x: r.left - rect.left,
           y: r.top - rect.top,
@@ -88,6 +81,30 @@ export function BracketConnectors({ containerRef, matches }: BracketConnectorsPr
         const s1cy = s1.y + s1.h / 2;
         const s2cy = s2.y + s2.h / 2;
         const tcy = t.y + t.h / 2;
+
+        // Detect opposite-side sources (e.g. SF-L col 4 + SF-R col 6 → Final col 5).
+        // These should draw two independent lines, not one merged L-connector.
+        const horizontalGap = Math.abs(s1.x + s1.w / 2 - (s2.x + s2.w / 2));
+        if (horizontalGap > 200) {
+          // Source 1 (left side) → target left edge
+          newPaths.push({
+            key: `${sourceRects[0].match.matchId}-${targetId}`,
+            d: `M ${s1.x + s1.w} ${s1cy} H ${t.x} V ${tcy}`,
+          });
+          // Source 2 (right side) → target right edge
+          newPaths.push({
+            key: `${sourceRects[1].match.matchId}-${targetId}`,
+            d: `M ${s2.x} ${s2cy} H ${t.x + t.w} V ${tcy}`,
+          });
+          continue;
+        }
+
+        // Direction-aware edge logic for same-column pairs:
+        // LTR left-side: connectors go right (source right edge -> target left edge)
+        // RTL left-side: connectors go left (source left edge -> target right edge)
+        // dir="rtl" flips column visual order, so edges must also flip.
+        const isLeftSide = sourceRects[0].match.side === 'left';
+        const goRight = isLeftSide !== isRtl;
 
         // Source edge: right edge when going right, left edge when going left
         const s1x = goRight ? s1.x + s1.w : s1.x;
@@ -104,6 +121,37 @@ export function BracketConnectors({ containerRef, matches }: BracketConnectorsPr
             `M ${midX} ${s1cy} V ${s2cy}`,
             `M ${midX} ${tcy} H ${tx}`,
           ].join(' '),
+        });
+      }
+
+      // Loser connectors (SF → 3rd place) — same style as winner connectors.
+      // Mirrors the opposite-side logic used for SF→Final: each SF draws an
+      // independent L-shaped line to the 3rd-place cell in the center column.
+      for (const m of matches) {
+        if (!m.loserFeedsInto) continue;
+        const sourceRect = cellRects.get(m.matchId);
+        const targetRect = cellRects.get(m.loserFeedsInto);
+        if (!sourceRect || !targetRect) continue;
+
+        const toRel = (r: DOMRect) => ({
+          x: r.left - rect.left,
+          y: r.top - rect.top,
+          w: r.width,
+          h: r.height,
+        });
+
+        const s = toRel(sourceRect);
+        const t = toRel(targetRect);
+        const scy = s.y + s.h / 2;
+        const tcy = t.y + t.h / 2;
+
+        // SF inner edge (toward center column) → 3rd-place facing edge
+        const sx = m.side === 'left' ? s.x + s.w : s.x;
+        const tx = m.side === 'left' ? t.x : t.x + t.w;
+
+        newPaths.push({
+          key: `loser-${m.matchId}-${m.loserFeedsInto}`,
+          d: `M ${sx} ${scy} H ${tx} V ${tcy}`,
         });
       }
 
