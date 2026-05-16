@@ -42,7 +42,7 @@ const WC_2026_META: Record<Locale, { title: string; description: string }> = {
   fr: {
     title: 'Coupe du Monde 2026 — Calendrier, groupes, classement et phase finale | Atlas Kings',
     description:
-      "Suivez la Coupe du Monde FIFA 2026 en direct: calendrier des 104 matchs, les 12 groupes, classement de chaque groupe, phase a elimination directe. Le Maroc dans le Groupe C avec le Bresil, Haiti et l'Ecosse.",
+      "Suivez la Coupe du Monde FIFA 2026 en direct : calendrier des 104 matchs, les 12 groupes, classement de chaque groupe, phase à élimination directe. Le Maroc dans le Groupe C avec le Brésil, Haïti et l'Écosse.",
   },
   en: {
     title: 'FIFA World Cup 2026 — Fixtures, groups, standings and knockout | Atlas Kings',
@@ -57,7 +57,7 @@ const WC_2026_META: Record<Locale, { title: string; description: string }> = {
 };
 
 const WC_2026_INTRO: Record<Locale, string> = {
-  fr: 'La Coupe du Monde FIFA 2026 reunit 48 equipes nationales aux Etats-Unis, au Canada et au Mexique — la premiere edition a 48 equipes au lieu de 32. Suivez le calendrier complet, les 12 groupes, les classements et la phase a elimination directe en direct.',
+  fr: 'La Coupe du Monde FIFA 2026 réunit 48 équipes nationales aux États-Unis, au Canada et au Mexique — la première édition à 48 équipes au lieu de 32. Suivez le calendrier complet, les 12 groupes, les classements et la phase à élimination directe en direct.',
   en: 'The FIFA World Cup 2026 brings 48 national teams to the United States, Canada, and Mexico — the first edition with 48 teams instead of 32. Follow the full schedule, 12 groups, standings, and knockout bracket live.',
   ar: 'يجمع كأس العالم فيفا 2026 ثمانية وأربعين منتخباً وطنياً في الولايات المتحدة وكندا والمكسيك — أول نسخة بمشاركة 48 منتخباً بدلاً من 32. تابعوا الجدول الكامل، 12 مجموعة، الترتيب ومرحلة الأدوار الإقصائية مباشرة.',
 };
@@ -100,13 +100,13 @@ const HISTORICAL_TEAM_NAMES: Record<Locale, Record<string, string>> = {
 // Per-locale facts (competition-cup.md Section 7 Tab 1 Block 5)
 const WC_2026_FACTS: Record<Locale, string[]> = {
   fr: [
-    '48 equipes nationales',
-    '12 groupes de 4 equipes',
+    '48 équipes nationales',
+    '12 groupes de 4 équipes',
     '104 matchs au total',
-    '16 villes hotes',
+    '16 villes hôtes',
     '3 pays organisateurs (USA, Canada, Mexique)',
     '11 juin → 19 juillet 2026',
-    'Format elargi: 1ere edition a 48 equipes',
+    'Format élargi : 1ère édition à 48 équipes',
   ],
   en: [
     '48 national teams',

@@ -197,7 +197,7 @@ export function MiniStandingsPreview({
           window.location.hash = standingsHash;
           window.dispatchEvent(new HashChangeEvent('hashchange'));
         }}
-        className="text-xs font-medium text-accent-gold hover:text-accent-gold-bright"
+        className="inline-flex min-h-[44px] items-center text-xs font-medium text-accent-gold hover:text-accent-gold-bright"
       >
         {t('viewAllGroups')} &rarr;
       </button>

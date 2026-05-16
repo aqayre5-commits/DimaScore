@@ -59,7 +59,7 @@ export function TournamentPageHeader({
         <div className="flex items-start justify-between gap-4">
           {/* Sub-zone A: Identity */}
           <div className="min-w-0 flex-1">
-            <h1 className="text-[32px] font-semibold leading-tight text-text-primary">
+            <h1 className="text-2xl font-semibold leading-tight text-text-primary md:text-[32px]">
               {pageTitle}
             </h1>
             <p className="mt-1 text-sm text-text-secondary">

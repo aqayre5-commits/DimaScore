@@ -28,7 +28,7 @@ export function PhaseSelector({ phases, activePhase, onPhaseChange }: PhaseSelec
           aria-selected={key === activePhase}
           onClick={() => onPhaseChange(key)}
           className={cn(
-            'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+            'min-h-[44px] rounded-full px-3 py-1 text-xs font-medium transition-colors',
             key === activePhase
               ? 'bg-accent-gold/15 text-accent-gold'
               : 'text-text-tertiary hover:bg-bg-surface-2 hover:text-text-secondary',

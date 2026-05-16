@@ -30,7 +30,10 @@ export function SeoBreadcrumb({ segments }: SeoBreadcrumbProps) {
     <nav aria-label="breadcrumb" className="px-4 py-1">
       <ol className="flex items-center gap-1 text-[13px] text-text-tertiary">
         {segments.map((seg, i) => (
-          <li key={i} className="flex items-center gap-1">
+          <li
+            key={i}
+            className={`flex items-center gap-1${i > 0 && i < segments.length - 1 ? ' hidden md:flex' : ''}`}
+          >
             {i > 0 && (
               <span aria-hidden="true" className="text-text-tertiary">
                 ›
