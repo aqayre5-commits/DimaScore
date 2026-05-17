@@ -175,7 +175,7 @@ export function BracketConnectors({ containerRef, matches }: BracketConnectorsPr
       aria-hidden="true"
     >
       {paths.map((p) => (
-        <path key={p.key} d={p.d} fill="none" stroke="var(--border-subtle)" strokeWidth={1.5} />
+        <path key={p.key} d={p.d} fill="none" stroke="var(--text-tertiary)" strokeWidth={1.5} />
       ))}
     </svg>
   );

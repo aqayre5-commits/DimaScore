@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { Locale } from '@/lib/i18n/config';
 import { BracketColumn } from './BracketColumn';
 import {
@@ -10,11 +10,13 @@ import {
   type BracketSide,
 } from './BracketMatchCell';
 import { BracketConnectors } from './BracketConnectors';
+import { ROUND_LABELS } from '@/lib/constants/wc2026-bracket-builder';
 
 interface DesktopBracketProps {
   matches: BracketMatch[];
   thirdPlaceMatch?: BracketMatch;
   locale: Locale;
+  activePhase?: KnockoutPhase;
 }
 
 /** Column config: grid column index, phase, side, row span per cell. */
@@ -35,34 +37,79 @@ const COLUMNS: Array<{
   { col: 9, phase: 'r32', side: 'right', rowSpan: 2 },
 ];
 
+/** Header labels per grid column (1-indexed). */
+const HEADER_COLUMNS: Array<{ col: number; phase: KnockoutPhase }> = [
+  { col: 1, phase: 'r32' },
+  { col: 2, phase: 'r16' },
+  { col: 3, phase: 'qf' },
+  { col: 4, phase: 'sf' },
+  { col: 5, phase: 'final' },
+  { col: 6, phase: 'sf' },
+  { col: 7, phase: 'qf' },
+  { col: 8, phase: 'r16' },
+  { col: 9, phase: 'r32' },
+];
+
 /**
- * Desktop knockout bracket — 9-column x 16-row CSS Grid.
+ * Desktop knockout bracket — 9-column CSS Grid.
+ * Row 1: header labels. Rows 2-17: match cells (16 data rows).
  * Left half converges rightward, right half converges leftward.
- * Final and 3rd-place occupy the center column (5) at offset
- * vertical positions: Final at rows 4–8 (upper), 3rd at rows
- * 10–14 (lower), framed by SF cells in columns 4 and 6.
+ * Final and 3rd-place occupy the center column (5).
  *
  * RTL (Arabic): dir="rtl" on grid reverses column visual order.
  * BracketConnectors reads computed direction for edge logic.
  */
-export function DesktopBracket({ matches, thirdPlaceMatch, locale }: DesktopBracketProps) {
+export function DesktopBracket({
+  matches,
+  thirdPlaceMatch,
+  locale,
+  activePhase,
+}: DesktopBracketProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
   const isRtl = locale === 'ar';
   const finalMatch = matches.find((m) => m.phase === 'final');
+  const labels = ROUND_LABELS[locale] ?? ROUND_LABELS.en;
+
+  // Scroll to active phase column on chip click (skip initial mount)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (!activePhase || !containerRef.current) return;
+    const target = containerRef.current.querySelector<HTMLElement>(`[data-phase="${activePhase}"]`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, [activePhase]);
 
   return (
-    <div className="overflow-x-auto">
+    <div ref={scrollRef} className="relative overflow-x-auto">
       <div
         ref={containerRef}
         dir={isRtl ? 'rtl' : undefined}
         className="relative grid min-w-[1500px] gap-x-2 gap-y-1"
         style={{
           gridTemplateColumns: 'repeat(9, 1fr)',
-          gridTemplateRows: 'repeat(16, minmax(48px, auto))',
+          gridTemplateRows: 'auto repeat(16, minmax(48px, auto))',
           transform: 'scale(var(--bracket-scale, 1))',
           transformOrigin: 'top left',
         }}
       >
+        {/* Header row — grid row 1 */}
+        {HEADER_COLUMNS.map(({ col, phase }) => (
+          <div
+            key={`hdr-${col}`}
+            className="flex items-center justify-center py-2 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary"
+            style={{ gridColumn: col, gridRow: 1 }}
+          >
+            {labels[phase]}
+          </div>
+        ))}
+
+        {/* Match columns — grid rows 2+ */}
         {COLUMNS.map(({ col, phase, side, rowSpan }) => {
           const colMatches = matches.filter((m) => m.phase === phase && m.side === side);
           if (colMatches.length === 0) return null;
@@ -72,6 +119,7 @@ export function DesktopBracket({ matches, thirdPlaceMatch, locale }: DesktopBrac
               matches={colMatches}
               gridColumn={col}
               rowSpan={rowSpan}
+              phase={phase}
             />
           );
         })}
@@ -79,8 +127,9 @@ export function DesktopBracket({ matches, thirdPlaceMatch, locale }: DesktopBrac
         {/* Final — upper center column */}
         {finalMatch && (
           <div
+            data-phase="final"
             className="flex items-center justify-center self-center"
-            style={{ gridColumn: 5, gridRow: '4 / span 5' }}
+            style={{ gridColumn: 5, gridRow: '5 / span 5' }}
           >
             <BracketMatchCell match={finalMatch} />
           </div>
@@ -89,8 +138,9 @@ export function DesktopBracket({ matches, thirdPlaceMatch, locale }: DesktopBrac
         {/* 3rd place — lower center column */}
         {thirdPlaceMatch && (
           <div
+            data-phase="3rd"
             className="flex items-center justify-center self-center"
-            style={{ gridColumn: 5, gridRow: '10 / span 5' }}
+            style={{ gridColumn: 5, gridRow: '11 / span 5' }}
           >
             <BracketMatchCell match={thirdPlaceMatch} />
           </div>
@@ -98,6 +148,17 @@ export function DesktopBracket({ matches, thirdPlaceMatch, locale }: DesktopBrac
 
         <BracketConnectors containerRef={containerRef} matches={matches} />
       </div>
+
+      {/* Scroll affordance gradient — signals horizontal scrollability */}
+      <div
+        className="pointer-events-none absolute inset-y-0 z-10 w-[60px]"
+        style={{
+          [isRtl ? 'left' : 'right']: 0,
+          background: isRtl
+            ? 'linear-gradient(to left, transparent, var(--bg-canvas))'
+            : 'linear-gradient(to right, transparent, var(--bg-canvas))',
+        }}
+      />
     </div>
   );
 }

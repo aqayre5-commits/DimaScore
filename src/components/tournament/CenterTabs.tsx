@@ -48,13 +48,13 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
             className={cn(
               'relative px-4 py-3 text-center text-sm font-medium transition-colors',
               tab.key === activeKey
-                ? 'font-semibold text-text-primary'
+                ? 'rounded-t-md bg-bg-surface-2 font-semibold text-text-primary'
                 : 'text-text-tertiary hover:text-text-secondary',
             )}
           >
             {t(tab.labelKey)}
             {tab.key === activeKey && (
-              <span className="absolute inset-x-0 bottom-0 h-0.5 bg-accent-gold" />
+              <span className="absolute inset-x-0 bottom-0 h-[3px] bg-accent-gold" />
             )}
           </button>
         ))}

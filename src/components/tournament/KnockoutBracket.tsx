@@ -29,7 +29,12 @@ export function KnockoutBracket({
   return (
     <>
       <div className="hidden md:block">
-        <DesktopBracket matches={matches} thirdPlaceMatch={thirdPlaceMatch} locale={locale} />
+        <DesktopBracket
+          matches={matches}
+          thirdPlaceMatch={thirdPlaceMatch}
+          locale={locale}
+          activePhase={activePhase}
+        />
       </div>
       <div className="block md:hidden">
         <MobileBracket

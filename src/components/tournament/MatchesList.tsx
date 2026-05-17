@@ -20,9 +20,7 @@ export function MatchesList({ fixtures, locale }: MatchesListProps) {
   return (
     <div className="rounded-lg border border-border-subtle bg-bg-surface">
       <div className="border-b border-border-subtle px-4 py-2.5">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-primary">
-          {t('matches')}
-        </h3>
+        <h3 className="label-caps">{t('matches')}</h3>
       </div>
 
       <div className="divide-y divide-border-subtle px-4">

@@ -47,9 +47,7 @@ export function MiniStandingsPreview({
     <div className="space-y-3">
       {/* Header: title + selector */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-primary">
-          {t('standingsPreview')}
-        </h3>
+        <h3 className="label-caps">{t('standingsPreview')}</h3>
         <select
           value={selectedGroup ?? ''}
           onChange={(e) => setSelectedGroup(e.target.value || null)}
@@ -95,7 +93,7 @@ export function MiniStandingsPreview({
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border-subtle text-[10px] text-text-tertiary">
-                    <th className="w-5 py-1 text-start font-medium">#</th>
+                    <th className="w-5 py-1 pl-4 text-start font-medium md:pl-6">#</th>
                     <th className="py-1 text-start font-medium">{t('team')}</th>
                     <th className="w-6 py-1 text-center font-medium">P</th>
                     <th className="w-6 py-1 text-center font-medium">W</th>
@@ -133,7 +131,7 @@ export function MiniStandingsPreview({
                           isMorocco && 'font-semibold',
                         )}
                       >
-                        <td className="py-1.5 text-start tabular-nums text-text-tertiary">
+                        <td className="py-1.5 pl-4 pr-2 text-start tabular-nums text-text-tertiary md:pl-6">
                           {row.rank}
                         </td>
                         <td className="py-1.5">

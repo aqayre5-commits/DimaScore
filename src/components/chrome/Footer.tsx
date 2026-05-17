@@ -191,9 +191,7 @@ export function Footer() {
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
             {/* Competitions */}
             <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-                {t('competitions')}
-              </h3>
+              <h3 className="label-caps mb-2">{t('competitions')}</h3>
               <ul className="flex flex-col gap-1">
                 {competitionLinks.map(({ labelKey, entry }) => (
                   <li key={entry.competitionId}>
@@ -210,9 +208,7 @@ export function Footer() {
 
             {/* Resources */}
             <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-                {t('resources')}
-              </h3>
+              <h3 className="label-caps mb-2">{t('resources')}</h3>
               <ul className="flex flex-col gap-1">
                 {legalLinks.map((link) => (
                   <li key={link.key}>
@@ -229,9 +225,7 @@ export function Footer() {
 
             {/* About */}
             <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-                {t('about')}
-              </h3>
+              <h3 className="label-caps mb-2">{t('about')}</h3>
               <ul className="flex flex-col gap-1">
                 <li>
                   <a

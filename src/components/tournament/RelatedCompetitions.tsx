@@ -31,9 +31,7 @@ export function RelatedCompetitions({ competitionIds, locale }: RelatedCompetiti
   return (
     <div className="rounded-lg border border-border-subtle bg-bg-surface">
       <div className="border-b border-border-subtle px-4 py-2.5">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-primary">
-          {tTournament('relatedCompetitions')}
-        </h3>
+        <h3 className="label-caps">{tTournament('relatedCompetitions')}</h3>
       </div>
 
       <div className="divide-y divide-border-subtle">

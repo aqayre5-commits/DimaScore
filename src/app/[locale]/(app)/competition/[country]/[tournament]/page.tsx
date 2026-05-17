@@ -346,7 +346,6 @@ export default async function CompetitionPage({ params }: PageProps) {
       labelKey: 'knockout',
       content: (
         <KnockoutTab
-          metadata={metadata}
           locale={typedLocale}
           bracketHref={`/${locale}/competition/${rawCountry}/${rawTournament}/bracket`}
         />

@@ -39,9 +39,7 @@ function MegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void }) 
       <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-6 px-6 py-5 md:grid-cols-4">
         {MEGA_MENU_SECTIONS.map((section) => (
           <div key={section.titleKey}>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-              {t(section.titleKey)}
-            </h3>
+            <h3 className="label-caps mb-2">{t(section.titleKey)}</h3>
             <ul className="flex flex-col gap-0.5">
               {section.entries
                 .filter((e) => e.isCurrentlyVisible)

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 // ── Shared bracket types (re-exported for sibling components) ──────────────
 
@@ -38,15 +39,17 @@ interface BracketMatchCellProps {
  *
  * data-match-id enables BracketConnectors to query cell positions
  * for SVG connector lines without ref-drilling.
+ *
+ * Radix Tooltip shows the localized expanded form of the FIFA slot
+ * codes on hover/focus (e.g. "Winner of M97 vs Winner of M98").
  */
 export function BracketMatchCell({ match, className }: BracketMatchCellProps) {
   const showScores = match.status === 'finished' || match.status === 'live';
 
-  return (
+  const cell = (
     <div
       data-match-id={match.matchId}
       aria-label={match.ariaLabel}
-      title={match.ariaLabel}
       className={cn(
         'w-[160px] rounded-lg border border-border-subtle bg-bg-surface p-2 text-center',
         className,
@@ -82,5 +85,14 @@ export function BracketMatchCell({ match, className }: BracketMatchCellProps) {
         </p>
       )}
     </div>
+  );
+
+  return (
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>{cell}</TooltipTrigger>
+        <TooltipContent>{match.ariaLabel}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

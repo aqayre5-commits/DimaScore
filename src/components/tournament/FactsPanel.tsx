@@ -17,9 +17,7 @@ export function FactsPanel({ facts }: FactsPanelProps) {
   return (
     <div className="rounded-lg border border-border-subtle bg-bg-surface">
       <div className="border-b border-border-subtle px-4 py-2.5">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-primary">
-          {t('facts')}
-        </h3>
+        <h3 className="label-caps">{t('facts')}</h3>
       </div>
 
       <ul className="divide-y divide-border-subtle px-4">

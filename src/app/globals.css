@@ -105,6 +105,17 @@
   }
 }
 
+/* Label-caps: visual treatment for section labels (h3 in card headers). */
+@layer components {
+  .label-caps {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    font-weight: 600;
+  }
+}
+
 /* Hash-fragment scroll highlight — 2s ring pulse then fade */
 .hash-highlight {
   animation: hash-ring 2s ease-out;

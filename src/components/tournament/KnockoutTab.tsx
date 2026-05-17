@@ -1,62 +1,39 @@
-'use client';
-
-import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { WC_2026_BRACKETS_BY_LOCALE } from '@/lib/constants/wc2026-bracket-builder';
 import { KnockoutBracket } from './KnockoutBracket';
-import { PhaseSelector } from './PhaseSelector';
-import type { CupMetadata } from '@/lib/constants/tournament-metadata';
 import type { Locale } from '@/lib/i18n/config';
-import type { KnockoutPhase } from './BracketMatchCell';
 
 interface KnockoutTabProps {
-  metadata: CupMetadata;
   locale: Locale;
   bracketHref?: string;
 }
 
-const PHASE_LABEL_KEYS: Record<KnockoutPhase, string> = {
-  r32: 'roundOf32',
-  r16: 'roundOf16',
-  qf: 'quarterFinals',
-  sf: 'semiFinals',
-  final: 'finalMatch',
-  '3rd': 'thirdPlace',
-};
-
-const PHASE_KEYS: KnockoutPhase[] = ['r32', 'r16', 'qf', 'sf', 'final', '3rd'];
-
 /**
- * Knockout tab — phase selector + converging bracket visualization.
+ * Knockout tab — converging bracket visualization.
  * In-tab preview of the bracket. Links to dedicated /bracket page
  * for full-viewport view when bracketHref is provided.
  */
-export function KnockoutTab({ metadata, locale, bracketHref }: KnockoutTabProps) {
+export function KnockoutTab({ locale, bracketHref }: KnockoutTabProps) {
   const t = useTranslations('tournament');
-  const [activePhase, setActivePhase] = useState<KnockoutPhase>('r32');
 
   const { matches, thirdPlaceMatch } = WC_2026_BRACKETS_BY_LOCALE[locale];
 
-  const phases = PHASE_KEYS.filter(
-    (k) => metadata.knockoutStartsRound === 'r32' || k !== 'r32',
-  ).map((k) => ({ key: k, label: t(PHASE_LABEL_KEYS[k]) }));
-
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <PhaseSelector phases={phases} activePhase={activePhase} onPhaseChange={setActivePhase} />
-        {bracketHref && (
-          <Link href={bracketHref} className="text-xs font-medium text-accent-gold hover:underline">
-            {t('viewFullBracket')} →
-          </Link>
-        )}
-      </div>
+      {bracketHref && (
+        <Link
+          href={bracketHref}
+          className="inline-flex items-center gap-1 rounded-lg border border-accent-gold/30 bg-accent-gold/10 px-3 py-1.5 text-xs font-medium text-accent-gold transition-colors hover:bg-accent-gold/20"
+        >
+          {t('viewFullBracket')} →
+        </Link>
+      )}
       <KnockoutBracket
         matches={matches}
         thirdPlaceMatch={thirdPlaceMatch}
         locale={locale}
-        activePhase={activePhase}
+        activePhase="r32"
       />
     </div>
   );

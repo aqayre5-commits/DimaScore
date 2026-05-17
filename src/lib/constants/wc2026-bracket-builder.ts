@@ -152,7 +152,7 @@ export function expandSlotLabelVerbose(slot: string, locale: Locale): string {
 
 // ── Round labels (pure lookup, no i18n hooks) ─────────────────────────────
 
-const ROUND_LABELS: Record<string, Record<KnockoutPhase, string>> = {
+export const ROUND_LABELS: Record<string, Record<KnockoutPhase, string>> = {
   en: {
     r32: 'Round of 32',
     r16: 'Round of 16',

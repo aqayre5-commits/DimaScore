@@ -22,7 +22,7 @@ interface GroupTableProps {
 /**
  * Single group standings table with qualification zone color bands.
  * Per competition-cup.md Section 7 Tab 2.
- * 10-column layout: zone · # · flag · team · P · W · D · L · GD · PTS
+ * 13-column layout: zone · # · team · P · W · D · L · GF · GA · GD · Pts · Form
  */
 export function GroupTable({
   groupLabel,
@@ -50,7 +50,7 @@ export function GroupTable({
         <div className="flex items-center justify-between">
           <h3
             className={cn(
-              'text-xs font-semibold uppercase tracking-wider',
+              'text-xs font-semibold',
               isMoroccoGroup ? 'text-accent-gold' : 'text-text-primary',
             )}
           >
@@ -69,14 +69,17 @@ export function GroupTable({
           <thead>
             <tr className="border-b border-border-subtle text-text-tertiary">
               <th className="w-1" />
-              <th className="w-7 py-2 text-center font-medium">#</th>
+              <th className="w-7 py-2 pl-4 text-center font-medium md:pl-6">#</th>
               <th className="py-2 text-start font-medium">{t('team')}</th>
               <th className="w-8 py-2 text-center font-medium">P</th>
               <th className="w-8 py-2 text-center font-medium">W</th>
               <th className="w-8 py-2 text-center font-medium">D</th>
               <th className="w-8 py-2 text-center font-medium">L</th>
-              <th className="w-9 py-2 text-center font-medium">GD</th>
-              <th className="w-10 py-2 text-center font-medium">Pts</th>
+              <th className="w-6 py-2 text-center font-medium">GF</th>
+              <th className="w-6 py-2 text-center font-medium">GA</th>
+              <th className="w-7 py-2 text-center font-medium">GD</th>
+              <th className="w-7 py-2 text-center font-semibold">Pts</th>
+              <th className="w-16 py-2 text-center font-medium">Form</th>
             </tr>
           </thead>
           <tbody>
@@ -93,6 +96,9 @@ export function GroupTable({
                   : null;
               const isMorocco = row.team?.code === 'MA';
               const zoneColor = getZoneColor(row.rank);
+              const formChars = row.form
+                ? row.form.split('').slice(-5)
+                : ['\u2014', '\u2014', '\u2014', '\u2014', '\u2014'];
 
               return (
                 <tr
@@ -108,7 +114,9 @@ export function GroupTable({
                       <div className="h-full w-1" style={{ backgroundColor: zoneColor }} />
                     )}
                   </td>
-                  <td className="py-2 text-center tabular-nums text-text-tertiary">{row.rank}</td>
+                  <td className="py-2 pl-4 pr-2 text-center tabular-nums text-text-tertiary md:pl-6">
+                    {row.rank}
+                  </td>
                   <td className="py-2">
                     <span className="flex items-center gap-1.5">
                       {flag && <span className="shrink-0 text-sm leading-none">{flag}</span>}
@@ -133,6 +141,12 @@ export function GroupTable({
                     {row.lost ?? 0}
                   </td>
                   <td className="py-2 text-center tabular-nums text-text-tertiary">
+                    {row.goalsFor ?? 0}
+                  </td>
+                  <td className="py-2 text-center tabular-nums text-text-tertiary">
+                    {row.goalsAgainst ?? 0}
+                  </td>
+                  <td className="py-2 text-center tabular-nums text-text-tertiary">
                     {row.goalDiff ?? 0}
                   </td>
                   <td
@@ -142,6 +156,9 @@ export function GroupTable({
                     )}
                   >
                     {row.points}
+                  </td>
+                  <td className="py-2 text-center font-mono text-[10px] text-text-tertiary">
+                    {formChars.join(' ')}
                   </td>
                 </tr>
               );

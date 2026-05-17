@@ -107,7 +107,7 @@ export default async function BracketPage({ params }: PageProps) {
       </div>
 
       <div className="w-full px-4 pb-8">
-        <BracketPageClient metadata={metadata} locale={typedLocale} />
+        <BracketPageClient locale={typedLocale} />
       </div>
 
       <script
