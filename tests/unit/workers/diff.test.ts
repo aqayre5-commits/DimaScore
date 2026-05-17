@@ -25,7 +25,6 @@ function makeFixture(overrides: Partial<NormalizedFixture> & { id: number }): No
 
 function makeDbRow(overrides: Partial<FixtureRow> & { id: number }): FixtureRow {
   return {
-    id: overrides.id,
     homeScore: 0,
     awayScore: 0,
     statusCode: '1H',

@@ -9,7 +9,7 @@
  */
 export const WC_2026_TEAM_NAMES: Record<
   number,
-  { fr: string; ar: string; frShort?: string; arShort?: string }
+  { fr: string; ar: string; en?: string; frShort?: string; arShort?: string }
 > = {
   // Group A: MEX, SOU, KOR, CZE
   16: { fr: 'Mexique', ar: 'المكسيك' },
@@ -55,7 +55,7 @@ export const WC_2026_TEAM_NAMES: Record<
 
   // Group H: SPA, CAP, SAU, URU
   9: { fr: 'Espagne', ar: 'إسبانيا' },
-  1533: { fr: 'Cap-Vert', ar: 'الرأس الأخضر' },
+  1533: { fr: 'Cap-Vert', ar: 'الرأس الأخضر', en: 'Cape Verde' },
   23: { fr: 'Arabie saoudite', ar: 'السعودية', frShort: 'Arabie sao.' },
   7: { fr: 'Uruguay', ar: 'الأوروغواي' },
 

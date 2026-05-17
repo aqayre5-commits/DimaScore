@@ -60,12 +60,14 @@ async function main() {
     const existingShort = team.shortName as Record<string, string>;
 
     // Check if already populated
-    if (existingName.fr === lookup.fr && existingName.ar === lookup.ar) {
+    const enMatch = !lookup.en || existingName.en === lookup.en;
+    if (existingName.fr === lookup.fr && existingName.ar === lookup.ar && enMatch) {
       console.log(`  [skip] ${team.code ?? '??'} (id=${team.id}) — already has fr+ar`);
       continue;
     }
 
     const newName = { ...existingName, fr: lookup.fr, ar: lookup.ar };
+    if (lookup.en) newName.en = lookup.en;
     const newShort = { ...existingShort };
     if (lookup.frShort) newShort.fr = lookup.frShort;
     if (lookup.arShort) newShort.ar = lookup.arShort;
