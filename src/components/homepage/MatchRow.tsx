@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { DayFixture } from '@/lib/db/queries/fixtures-by-day';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 
 interface MatchRowProps {
   fixture: DayFixture;
@@ -9,31 +10,12 @@ interface MatchRowProps {
 const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE']);
 const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN', 'AWD', 'WO']);
 
-function getTeamLabel(
-  team: {
-    shortName: Record<string, string>;
-    name: Record<string, string>;
-    code: string | null;
-  } | null,
-  locale: string,
-): string {
-  if (!team) return '???';
-  return (
-    team.shortName[locale] ||
-    team.name[locale] ||
-    team.shortName.en ||
-    team.name.en ||
-    team.code ||
-    '???'
-  );
-}
-
 export function MatchRow({ fixture, locale }: MatchRowProps) {
   const isLive = LIVE_STATUSES.has(fixture.statusCode);
   const isFinished = FINISHED_STATUSES.has(fixture.statusCode);
 
-  const homeLabel = getTeamLabel(fixture.homeTeam, locale);
-  const awayLabel = getTeamLabel(fixture.awayTeam, locale);
+  const homeLabel = getTeamDisplayName(fixture.homeTeam, locale);
+  const awayLabel = getTeamDisplayName(fixture.awayTeam, locale);
 
   const homeWins =
     isFinished &&

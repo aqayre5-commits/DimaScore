@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 import { MatchRow } from './MatchRow';
 import type { CompetitionGroup } from '@/lib/db/queries/fixtures-by-day';
+import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
+import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
 
 interface MatchRowGroupProps {
   group: CompetitionGroup;
@@ -16,7 +18,8 @@ export function MatchRowGroup({ group, locale, defaultExpanded }: MatchRowGroupP
   const [expanded, setExpanded] = useState(defaultExpanded);
   const { competition, fixtures } = group;
 
-  const compName = competition.name[locale] || competition.name.en || competition.slug;
+  const compName = getLocalizedCompetitionName(competition, locale);
+  const countryLabel = getLocalizedCountryName(competition.countryCode, locale);
 
   return (
     <div className="border-b border-border-subtle">
@@ -43,10 +46,8 @@ export function MatchRowGroup({ group, locale, defaultExpanded }: MatchRowGroupP
         </Link>
 
         {/* Country (non-clickable per deferred-affordance rule) */}
-        {competition.countryCode && (
-          <span className="hidden text-xs text-text-tertiary sm:inline">
-            {competition.countryCode}
-          </span>
+        {countryLabel && (
+          <span className="hidden text-xs text-text-tertiary sm:inline">{countryLabel}</span>
         )}
 
         {/* Spacer */}

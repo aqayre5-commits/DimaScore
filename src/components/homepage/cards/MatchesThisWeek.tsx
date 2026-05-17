@@ -3,29 +3,12 @@ import { db } from '@/lib/db/client';
 import { asc, and, eq, gte, lt } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/lib/db/schema';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import type { Locale } from '@/lib/i18n/config';
 
 interface MatchesThisWeekProps {
   locale: Locale;
-}
-
-function getTeamLabel(
-  team: {
-    shortName: Record<string, string>;
-    name: Record<string, string>;
-    code: string | null;
-  } | null,
-  locale: string,
-): string {
-  if (!team) return '???';
-  return (
-    team.shortName[locale] ||
-    team.name[locale] ||
-    team.shortName.en ||
-    team.name.en ||
-    team.code ||
-    '???'
-  );
 }
 
 export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
@@ -38,7 +21,9 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
       kickoffAt: schema.fixtures.kickoffAt,
       homeTeamId: schema.fixtures.homeTeamId,
       awayTeamId: schema.fixtures.awayTeamId,
+      compId: schema.competitions.id,
       compName: schema.competitions.name,
+      compSlug: schema.competitions.slug,
     })
     .from(schema.fixtures)
     .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
@@ -95,7 +80,10 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
       {rows.map((row) => {
         const home = teamsMap.get(row.homeTeamId ?? -1) ?? null;
         const away = teamsMap.get(row.awayTeamId ?? -1) ?? null;
-        const compName = row.compName[locale] || row.compName.en || '';
+        const compName = getLocalizedCompetitionName(
+          { id: row.compId, name: row.compName, slug: row.compSlug },
+          locale,
+        );
         const dayLabel = row.kickoffAt.toLocaleDateString(locale, { weekday: 'short' });
         const timeLabel = row.kickoffAt.toLocaleTimeString(locale, {
           hour: '2-digit',
@@ -109,7 +97,7 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
               className="block rounded-lg px-3 py-2 transition-colors hover:bg-bg-surface-2"
             >
               <p className="text-sm font-medium text-text-primary">
-                {getTeamLabel(home, locale)} – {getTeamLabel(away, locale)}
+                {getTeamDisplayName(home, locale)} – {getTeamDisplayName(away, locale)}
               </p>
               <p className="mt-0.5 text-xs text-text-tertiary">
                 {compName} · {dayLabel} {timeLabel}

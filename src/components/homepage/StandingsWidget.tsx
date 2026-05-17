@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { StandingRow } from '@/lib/db/queries';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 import type { Locale } from '@/lib/i18n/config';
 
 interface StandingsWidgetProps {
@@ -12,25 +13,6 @@ interface StandingsWidgetProps {
   teamLabel: string;
   playedLabel: string;
   pointsLabel: string;
-}
-
-function getTeamName(
-  team: {
-    shortName: Record<string, string>;
-    name: Record<string, string>;
-    code: string | null;
-  } | null,
-  locale: string,
-): string {
-  if (!team) return '???';
-  return (
-    team.shortName[locale] ||
-    team.name[locale] ||
-    team.shortName.en ||
-    team.name.en ||
-    team.code ||
-    '???'
-  );
 }
 
 export function StandingsWidget({
@@ -81,7 +63,7 @@ export function StandingsWidget({
                       </span>
                     )}
                     <span className="truncate text-text-primary">
-                      {getTeamName(row.team, locale)}
+                      {getTeamDisplayName(row.team, locale)}
                     </span>
                   </div>
                 </td>

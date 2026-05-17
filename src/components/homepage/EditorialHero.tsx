@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { db } from '@/lib/db/client';
 import { getEditorialHeroData, type EditorialHeroData } from '@/lib/db/queries/editorial-hero';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 import type { Locale } from '@/lib/i18n/config';
 
 interface EditorialHeroProps {
@@ -13,25 +14,6 @@ const WC_2026_PATHS: Record<Locale, string> = {
   en: '/en/competition/fifa/world-cup-2026',
   ar: '/ar/competition/فيفا/كأس-العالم-2026',
 };
-
-function getTeamLabel(
-  team: {
-    name: Record<string, string>;
-    shortName: Record<string, string>;
-    code: string | null;
-  } | null,
-  locale: string,
-): string {
-  if (!team) return '???';
-  return (
-    team.shortName[locale] ||
-    team.name[locale] ||
-    team.shortName.en ||
-    team.name.en ||
-    team.code ||
-    '???'
-  );
-}
 
 export async function EditorialHero({ locale }: EditorialHeroProps) {
   const [data, t] = await Promise.all([
@@ -65,8 +47,8 @@ function resolveContent(
   switch (data.mode) {
     case 'A': {
       const { fixture } = data;
-      const home = getTeamLabel(fixture.homeTeam, locale);
-      const away = getTeamLabel(fixture.awayTeam, locale);
+      const home = getTeamDisplayName(fixture.homeTeam, locale);
+      const away = getTeamDisplayName(fixture.awayTeam, locale);
       const compName = fixture.competitionName[locale] || fixture.competitionName.en || '';
       return {
         content: (
@@ -92,8 +74,8 @@ function resolveContent(
 
     case 'B': {
       const { fixture, daysUntil } = data;
-      const home = getTeamLabel(fixture.homeTeam, locale);
-      const away = getTeamLabel(fixture.awayTeam, locale);
+      const home = getTeamDisplayName(fixture.homeTeam, locale);
+      const away = getTeamDisplayName(fixture.awayTeam, locale);
       const compName = fixture.competitionName[locale] || fixture.competitionName.en || '';
       const kickoffTime = fixture.kickoffAt.toLocaleTimeString(locale, {
         hour: '2-digit',
@@ -117,8 +99,8 @@ function resolveContent(
 
     case 'C': {
       const { fixture } = data;
-      const home = getTeamLabel(fixture.homeTeam, locale);
-      const away = getTeamLabel(fixture.awayTeam, locale);
+      const home = getTeamDisplayName(fixture.homeTeam, locale);
+      const away = getTeamDisplayName(fixture.awayTeam, locale);
       const kickoffTime = fixture.kickoffAt.toLocaleTimeString(locale, {
         hour: '2-digit',
         minute: '2-digit',
