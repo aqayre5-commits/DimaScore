@@ -17,11 +17,19 @@ export default async function AppLayout({
 
   return (
     <>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent-gold focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-bg-canvas"
+      >
+        Skip to content
+      </a>
       <Suspense fallback={<div className="sticky top-0 z-50 h-10 bg-[#0c0c0d]" />}>
         <AdaptiveTopStrip locale={locale} />
       </Suspense>
       <Topbar />
-      <main className="flex-1 min-w-0">{children}</main>
+      <main id="main" className="flex-1 min-w-0">
+        {children}
+      </main>
       <Footer />
       <MobileBottomTabBar />
     </>

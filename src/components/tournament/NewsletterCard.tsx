@@ -29,7 +29,11 @@ export function NewsletterCard({ tournamentName }: NewsletterCardProps) {
           // TODO: Phase 5+ — wire to newsletter backend
         }}
       >
+        <label htmlFor="newsletter-email" className="sr-only">
+          {t('emailPlaceholder')}
+        </label>
         <input
+          id="newsletter-email"
           type="email"
           placeholder={t('emailPlaceholder')}
           className="min-w-0 flex-1 rounded-md border border-border-subtle bg-bg-surface-2 px-3 py-1.5 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent-gold focus:outline-none"

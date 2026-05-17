@@ -44,6 +44,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
             key={tab.key}
             role="tab"
             aria-selected={tab.key === activeKey}
+            aria-controls={`tabpanel-${tab.key}`}
             onClick={() => handleTabClick(tab)}
             className={cn(
               'relative px-4 py-3 text-center text-sm font-medium transition-colors',
@@ -61,7 +62,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
       </div>
 
       {/* Active tab content */}
-      <div role="tabpanel" className="pt-4">
+      <div role="tabpanel" id={`tabpanel-${activeTab?.key}`} className="pt-4">
         {activeTab?.content}
       </div>
     </div>

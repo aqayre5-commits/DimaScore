@@ -22,19 +22,43 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
       <table className="w-full text-xs">
         <thead>
           <tr className="border-b border-border-subtle text-text-tertiary">
-            <th className="w-1" />
-            <th className="w-7 py-2 text-center font-medium">#</th>
-            <th className="w-9 py-2 text-center font-medium">{t('bestThirdGroupCol')}</th>
-            <th className="py-2 text-start font-medium">{t('team')}</th>
-            <th className="w-8 py-2 text-center font-medium">P</th>
-            <th className="w-8 py-2 text-center font-medium">W</th>
-            <th className="w-8 py-2 text-center font-medium">D</th>
-            <th className="w-8 py-2 text-center font-medium">L</th>
-            <th className="w-8 py-2 text-center font-medium">GF</th>
-            <th className="w-8 py-2 text-center font-medium">GA</th>
-            <th className="w-9 py-2 text-center font-medium">GD</th>
-            <th className="w-10 py-2 text-center font-semibold">Pts</th>
-            <th className="w-16 py-2 text-center font-medium">Form</th>
+            <th scope="col" className="w-1" />
+            <th scope="col" className="w-7 py-2 text-center font-medium">
+              #
+            </th>
+            <th scope="col" className="w-9 py-2 text-center font-medium">
+              {t('bestThirdGroupCol')}
+            </th>
+            <th scope="col" className="py-2 text-start font-medium">
+              {t('team')}
+            </th>
+            <th scope="col" className="w-8 py-2 text-center font-medium">
+              P
+            </th>
+            <th scope="col" className="w-8 py-2 text-center font-medium">
+              W
+            </th>
+            <th scope="col" className="w-8 py-2 text-center font-medium">
+              D
+            </th>
+            <th scope="col" className="w-8 py-2 text-center font-medium">
+              L
+            </th>
+            <th scope="col" className="w-8 py-2 text-center font-medium">
+              GF
+            </th>
+            <th scope="col" className="w-8 py-2 text-center font-medium">
+              GA
+            </th>
+            <th scope="col" className="w-9 py-2 text-center font-medium">
+              GD
+            </th>
+            <th scope="col" className="w-10 py-2 text-center font-semibold">
+              Pts
+            </th>
+            <th scope="col" className="w-16 py-2 text-center font-medium">
+              Form
+            </th>
           </tr>
         </thead>
         <tbody>

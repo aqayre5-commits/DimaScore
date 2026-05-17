@@ -27,7 +27,8 @@
     "live": "EN DIRECT",
     "emptyState": "Scores de football en direct du Maroc et du monde entier.",
     "scrollLeft": "Défiler à gauche",
-    "scrollRight": "Défiler à droite"
+    "scrollRight": "Défiler à droite",
+    "tickerLabel": "Défilé des scores en direct"
   },
   "megaMenu": {
     "morocco": "Maroc",

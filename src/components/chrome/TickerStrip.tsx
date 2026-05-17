@@ -149,7 +149,11 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
   }
 
   return (
-    <div className="ticker relative h-full overflow-hidden">
+    <div
+      role="marquee"
+      aria-label={t('tickerLabel')}
+      className="ticker relative h-full overflow-hidden"
+    >
       <div ref={trackRef} className="ticker-track flex h-full w-max items-center">
         {/* Original copy — measured for duration calc */}
         <span ref={copyRef} className="flex shrink-0 items-center">
