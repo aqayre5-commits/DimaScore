@@ -490,71 +490,404 @@ const WC_2026_EN: AboutContent = {
   ],
 };
 
-// ── FR (legacy shape, migrated in Chunk C) ──
+// ── FR ──
 
-const WC_2026_FR_LEGACY: LegacyAboutContent = {
-  sections: [
+const WC_2026_FR: AboutContent = {
+  cards: [
     {
-      heading: 'A propos de la Coupe du Monde FIFA 2026',
-      body: "La Coupe du Monde FIFA 2026 est la 23eme edition du tournoi mondial de football masculin. Elle se deroule du 11 juin au 19 juillet 2026 dans 3 pays \u2014 les Etats-Unis, le Canada et le Mexique. C'est la premiere edition a 48 equipes, contre 32 lors des editions precedentes.",
+      id: 'quick-facts',
+      heading: null,
+      blocks: [
+        { type: 'stat-card', label: '\u00c9quipes', value: '48' },
+        { type: 'stat-card', label: 'Groupes', value: '12' },
+        { type: 'stat-card', label: 'Matchs', value: '104' },
+        { type: 'stat-card', label: 'Stades', value: '16' },
+        { type: 'stat-card', label: 'Dates', value: '11 juin \u2013 19 juil.' },
+        { type: 'stat-card', label: 'Dur\u00e9e', value: '39 jours' },
+      ],
     },
     {
-      heading: 'Format de la competition',
-      body: '48 equipes nationales reparties en 12 groupes de 4. Chaque equipe joue 3 matchs de phase de groupes. Les deux premiers de chaque groupe (24 equipes) plus les 8 meilleurs troisiemes (sur les 12) se qualifient pour la phase a elimination directe a partir des 1/16e de finale. 104 matchs au total.',
+      id: 'about-format',
+      heading: 'Le format \u00e0 48 \u00e9quipes',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'La Coupe du Monde 2026 est la premi\u00e8re \u00e0 48 \u00e9quipes, contre 32 pr\u00e9c\u00e9demment. Les \u00e9quipes sont r\u00e9parties en 12 groupes de 4. Chaque \u00e9quipe dispute 3 matchs de phase de groupes. Les 2 premiers de chaque groupe (24 \u00e9quipes) plus les 8 meilleurs troisi\u00e8mes acc\u00e8dent \u00e0 un tableau \u00e0 \u00e9limination directe de 32 \u00e9quipes.',
+        },
+        {
+          type: 'prose',
+          text: "La phase \u00e0 \u00e9limination directe d\u00e9bute aux 1/16e de finale, suivis des 1/8e, quarts de finale, demi-finales, match pour la 3e place et finale. Prolongations et tirs au but s'appliquent \u00e0 tous les matchs \u00e0 \u00e9limination directe.",
+        },
+        {
+          type: 'table',
+          headers: ['Priorit\u00e9', 'Crit\u00e8re de d\u00e9partage'],
+          rows: [
+            ['1', 'Points (3 pour une victoire, 1 pour un nul)'],
+            ['2', 'Diff\u00e9rence de buts'],
+            ['3', 'Buts marqu\u00e9s'],
+            ['4', 'Points en confrontation directe'],
+            ['5', 'Diff\u00e9rence de buts en confrontation directe'],
+            ['6', 'Buts marqu\u00e9s en confrontation directe'],
+            ['7', 'Points fair-play (cartons jaunes/rouges)'],
+            ['8', 'Tirage au sort par la FIFA'],
+          ],
+        },
+        {
+          type: 'callout',
+          variant: 'info',
+          text: 'Par rapport \u00e0 2022 : 16 \u00e9quipes suppl\u00e9mentaires, 40 matchs de plus, les nouveaux 1/16e de finale, et un syst\u00e8me de qualification des meilleurs troisi\u00e8mes qui r\u00e9compense les performances comp\u00e9titives.',
+        },
+      ],
     },
     {
-      heading: 'Le Maroc dans la Coupe du Monde 2026',
-      body: "Le Maroc participe dans le Groupe C aux cotes du Bresil, d'Haiti et de l'Ecosse. Apres une demi-finale historique lors de la Coupe du Monde 2022 au Qatar (4eme place), les Lions de l'Atlas reviennent sur la scene mondiale avec l'ambition d'un nouvel exploit. Le Maroc co-organisera la Coupe du Monde 2030 avec l'Espagne et le Portugal.",
+      id: 'about-venues',
+      heading: 'Villes h\u00f4tes et stades',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'Les matchs se d\u00e9roulent dans 16 stades r\u00e9partis entre 3 pays. Les \u00c9tats-Unis accueillent la majorit\u00e9 avec 11 sites, le Mexique en offre 3 et le Canada 2. La finale se joue au MetLife Stadium dans le New Jersey.',
+        },
+        {
+          type: 'table',
+          headers: ['Ville', 'Pays', 'Stade', 'Capacit\u00e9'],
+          rows: [
+            ['New York/NJ', '\u00c9tats-Unis', 'MetLife Stadium', '82 500'],
+            ['Los Angeles', '\u00c9tats-Unis', 'SoFi Stadium', '70 240'],
+            ['Dallas', '\u00c9tats-Unis', 'AT&T Stadium', '80 000'],
+            ['Boston/Foxborough', '\u00c9tats-Unis', 'Gillette Stadium', '65 878'],
+            ['Houston', '\u00c9tats-Unis', 'NRG Stadium', '72 220'],
+            ['Miami', '\u00c9tats-Unis', 'Hard Rock Stadium', '64 767'],
+            ['Philadelphie', '\u00c9tats-Unis', 'Lincoln Financial Field', '69 176'],
+            ['Seattle', '\u00c9tats-Unis', 'Lumen Field', '68 740'],
+            ['Atlanta', '\u00c9tats-Unis', 'Mercedes-Benz Stadium', '71 000'],
+            ['San Francisco', '\u00c9tats-Unis', "Levi's Stadium", '68 500'],
+            ['Kansas City', '\u00c9tats-Unis', 'Arrowhead Stadium', '76 416'],
+            ['Mexico', 'Mexique', 'Estadio Azteca', '87 523'],
+            ['Guadalajara', 'Mexique', 'Estadio Akron', '49 850'],
+            ['Monterrey', 'Mexique', 'Estadio BBVA', '53 500'],
+            ['Toronto', 'Canada', 'BMO Field', '45 736'],
+            ['Vancouver', 'Canada', 'BC Place', '54 500'],
+          ],
+        },
+      ],
     },
     {
-      heading: 'Stades et villes hotes',
-      body: '16 villes hotes au total: 11 aux Etats-Unis (incl. New York, Los Angeles, Dallas, Boston, Houston, Miami, Philadelphia, Seattle, Atlanta, San Francisco, Kansas City), 3 au Mexique (Mexico City, Guadalajara, Monterrey) et 2 au Canada (Toronto, Vancouver). La finale aura lieu au MetLife Stadium dans le New Jersey.',
+      id: 'about-morocco',
+      heading: 'Le Maroc \u00e0 la Coupe du Monde',
+      blocks: [
+        {
+          type: 'prose',
+          text: "Le Maroc participe dans le Groupe C aux c\u00f4t\u00e9s du Br\u00e9sil, d'Ha\u00efti et de l'\u00c9cosse. Les Lions de l'Atlas portent l'\u00e9lan de leur campagne historique de 2022 au Qatar, o\u00f9 ils sont devenus la premi\u00e8re \u00e9quipe africaine et arabe \u00e0 atteindre une demi-finale de Coupe du Monde, terminant 4es.",
+        },
+        {
+          type: 'prose',
+          text: "L'\u00e9quipe actuelle m\u00eale exp\u00e9rience et jeunesse. Achraf Hakimi, Noussair Mazraoui et Sofyan Amrabat forment la colonne vert\u00e9brale, tandis qu'une nouvelle g\u00e9n\u00e9ration pousse aux portes de la s\u00e9lection. Le syst\u00e8me de contre-attaque et la d\u00e9fense organis\u00e9e du s\u00e9lectionneur Walid Regragui restent la marque de fabrique de l'\u00e9quipe.",
+        },
+        {
+          type: 'prose',
+          text: "Au-del\u00e0 de 2026, le Maroc co-organisera la Coupe du Monde 2030 avec l'Espagne et le Portugal, devenant le premier pays africain \u00e0 accueillir le tournoi. La diaspora marocaine en Europe et en Am\u00e9rique du Nord devrait transformer les stades du Groupe C en v\u00e9ritables ambiances \u00e0 domicile.",
+        },
+        {
+          type: 'timeline',
+          events: [
+            {
+              date: '13 juin 2026',
+              label: 'Br\u00e9sil \u2013 Maroc',
+              detail: 'Groupe C, Journ\u00e9e 1',
+            },
+            {
+              date: '18 juin 2026',
+              label: 'Maroc \u2013 Ha\u00efti',
+              detail: 'Groupe C, Journ\u00e9e 2',
+            },
+            {
+              date: '22 juin 2026',
+              label: '\u00c9cosse \u2013 Maroc',
+              detail: 'Groupe C, Journ\u00e9e 3',
+            },
+          ],
+        },
+      ],
     },
     {
-      heading: 'Vainqueurs precedents',
-      body: "L'Argentine est tenante du titre (2022), avec 3 titres au total. Le Bresil detient le record avec 5 titres. L'Allemagne et l'Italie suivent avec 4 titres chacun. La France compte 2 titres. Aucune equipe africaine n'a remporte la competition; le Maroc a atteint la demi-finale en 2022 (meilleur resultat africain avec le Ghana en 2010).",
+      id: 'about-teams',
+      heading: '\u00c9quipes qualifi\u00e9es',
+      blocks: [
+        {
+          type: 'prose',
+          text: "Le format \u00e9largi \u00e0 48 \u00e9quipes offre une repr\u00e9sentation mondiale sans pr\u00e9c\u00e9dent. L'Afrique et l'Asie ont re\u00e7u des places suppl\u00e9mentaires, et plusieurs nations se qualifient pour la premi\u00e8re fois de leur histoire.",
+        },
+        {
+          type: 'list',
+          items: [
+            'D\u00e9butants : Indon\u00e9sie, Cap-Vert, Cura\u00e7ao, Tanzanie',
+            'Retours attendus : \u00c9cosse (28 ans), Irak (40+ ans)',
+            'Afrique : 9 \u00e9quipes (contre 5 en 2022)',
+            'Asie : 8 \u00e9quipes (contre 6 en 2022)',
+            'Europe : 16 \u00e9quipes',
+            'Am\u00e9rique du Sud : 6 \u00e9quipes',
+            'Am\u00e9rique du Nord, centrale et Cara\u00efbes : 6 \u00e9quipes (dont 3 h\u00f4tes)',
+            'Oc\u00e9anie : 1 \u00e9quipe (Nouvelle-Z\u00e9lande)',
+          ],
+        },
+      ],
     },
     {
-      heading: 'Atlas Kings sur la Coupe du Monde 2026',
-      body: "Atlas Kings couvre la Coupe du Monde 2026 avec un focus particulier sur le parcours des Lions de l'Atlas, les Marocains a l'etranger participant pour leur selection, et les histoires de joueurs et entraineurs du continent africain.",
+      id: 'about-storylines',
+      heading: 'R\u00e9cits \u00e0 suivre',
+      blocks: [
+        {
+          type: 'prose',
+          text: "La Coupe du Monde 2026 arrive \u00e0 un moment charnière du football. Le format \u00e9largi promet une participation mondiale plus large mais soul\u00e8ve des questions sur l'\u00e9quilibre comp\u00e9titif \u00e0 travers 104 matchs.",
+        },
+        {
+          type: 'list',
+          items: [
+            'Probable derni\u00e8re Coupe du Monde pour Messi et Ronaldo, cl\u00f4turant une \u00e8re qui a d\u00e9fini le sport pendant deux d\u00e9cennies',
+            "La qu\u00eate de l'Argentine pour d\u00e9fendre son titre de 2022, visant deux sacres cons\u00e9cutifs",
+            'La premi\u00e8re Coupe du Monde co-organis\u00e9e par trois nations, sur 5 000 km de Vancouver \u00e0 Mexico',
+            "L'\u00e9lan du Maroc : les demi-finalistes de 2022 peuvent-ils aller plus loin dans un groupe avec le Br\u00e9sil ?",
+            'Des nations d\u00e9butantes face aux puissances \u00e9tablies pour la premi\u00e8re fois sur la sc\u00e8ne mondiale',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'about-tickets',
+      heading: 'Billets et hospitalit\u00e9',
+      blocks: [
+        {
+          type: 'prose',
+          text: "La FIFA g\u00e8re toutes les ventes de billets via sa plateforme officielle. Les prix varient selon la cat\u00e9gorie du match, l'emplacement dans le stade et le stade du tournoi.",
+        },
+        {
+          type: 'list',
+          items: [
+            'Cat\u00e9gorie 4 (phase de groupes) : \u00e0 partir de ~60 $ USD',
+            'Cat\u00e9gorie 1 (phase de groupes) : \u00e0 partir de ~300 $ USD',
+            'Phase \u00e0 \u00e9limination directe : de ~150 \u00e0 600+ $ USD selon le tour',
+            'Finale : de ~600 \u00e0 1 800+ $ USD',
+            'Packages hospitalit\u00e9 via On Location (partenaire officiel FIFA) : si\u00e8ges premium, salons et forfaits voyage',
+          ],
+        },
+        {
+          type: 'callout',
+          variant: 'warning',
+          text: 'Achetez vos billets uniquement sur FIFA.com/tickets ou aupr\u00e8s de revendeurs agr\u00e9\u00e9s. Les plateformes tierces pr\u00e9sentent des risques de billets contrefaits et de prix gonfl\u00e9s. La FIFA a annul\u00e9 des billets obtenus par des canaux non autoris\u00e9s lors des tournois pr\u00e9c\u00e9dents.',
+        },
+      ],
+    },
+    {
+      id: 'about-watch',
+      heading: 'En direct \u00e0 la TV et en streaming',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'La Coupe du Monde 2026 sera diffus\u00e9e dans le monde entier. FIFA+ propose le streaming gratuit de certains matchs. Les diffuseurs r\u00e9gionaux d\u00e9tiennent les droits exclusifs par territoire.',
+        },
+        {
+          type: 'table',
+          headers: ['R\u00e9gion', 'Diffuseur(s)'],
+          rows: [
+            ['Maroc', 'Arryadia TV, SNRT (gratuit), beIN Sports MENA'],
+            ['France', 'TF1, beIN Sports'],
+            ['\u00c9tats-Unis / Canada', 'FOX, Telemundo, TSN / RDS'],
+            ['Royaume-Uni', 'BBC, ITV'],
+            ['MENA', 'beIN Sports'],
+            ['Afrique subsaharienne', 'SuperSport, Canal+'],
+            ['Am\u00e9rique latine', 'Televisa, DIRECTV Sports'],
+            ['Asie', 'Sony Sports (Inde), divers selon pays'],
+            ['Mondial (gratuit)', 'FIFA+ (matchs s\u00e9lectionn\u00e9s)'],
+          ],
+        },
+        {
+          type: 'callout',
+          variant: 'info',
+          text: "Conseil diaspora marocaine : beIN Sports MENA et Arryadia sont disponibles par satellite et IPTV en Europe et en Am\u00e9rique du Nord. V\u00e9rifiez la disponibilit\u00e9 aupr\u00e8s de vos fournisseurs locaux. Tous les matchs se jouent entre 12h00 et 21h00 heure de l'Est (ET).",
+        },
+      ],
+    },
+    {
+      id: 'about-travel',
+      heading: 'Voyager, visas et fan zones',
+      blocks: [
+        {
+          type: 'prose',
+          text: "La Coupe du Monde 2026 s'\u00e9tend sur environ 5 000 km du nord au sud \u00e0 travers trois pays. Planifier ses d\u00e9placements entre les sites n\u00e9cessite de prendre en compte les exigences de visa, les distances et les transports locaux.",
+        },
+        {
+          type: 'table',
+          headers: ['Passeport', '\u00c9tats-Unis', 'Canada', 'Mexique'],
+          rows: [
+            ['Marocain', 'Visa requis (B1/B2)', 'Visa requis (TRV)', 'Exempt\u00e9 (180 jours)'],
+            ['UE / Schengen', 'ESTA (exemption)', 'AVE', 'Exempt\u00e9 (180 jours)'],
+            ['Royaume-Uni', 'ESTA (exemption)', 'AVE', 'Exempt\u00e9 (180 jours)'],
+            [
+              'Ressortissants CCG',
+              'Visa requis (B1/B2)',
+              'Visa requis (TRV)',
+              'Exempt\u00e9 (180 jours)',
+            ],
+          ],
+        },
+        {
+          type: 'list',
+          items: [
+            "Budget : auberges et h\u00e9bergements partag\u00e9s \u00e0 partir de ~40\u201380 $/nuit dans les villes h\u00f4tes secondaires ; vols int\u00e9rieurs d\u00e8s ~80 $ l'aller r\u00e9serv\u00e9 t\u00f4t",
+            'Milieu de gamme : h\u00f4tels pr\u00e8s des stades de ~150\u2013300 $/nuit ; location de voiture pour les circuits multi-villes',
+            'Premium : packages hospitalit\u00e9 FIFA officiels incluant h\u00e9bergement, transferts et billets',
+          ],
+        },
+        {
+          type: 'callout',
+          variant: 'info',
+          text: "Des fan zones avec \u00e9crans g\u00e9ants et animations seront install\u00e9es dans chaque ville h\u00f4te. L'acc\u00e8s est gratuit et offre une exp\u00e9rience conviviale les jours de match pour les fans sans billet de stade.",
+        },
+      ],
+    },
+    {
+      id: 'about-predictions',
+      heading: 'Pronostics et favoris',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'Les analyses pr\u00e9-tournoi d\u00e9signent un plateau tr\u00e8s serr\u00e9. Le format \u00e9largi rend les surprises plus probables, et la domination historique est moins pr\u00e9dictive dans un tableau \u00e0 48 \u00e9quipes.',
+        },
+        {
+          type: 'table',
+          headers: ['\u00c9quipe', 'Atout', 'Facteur cl\u00e9'],
+          rows: [
+            [
+              'Espagne',
+              'Champions d\u2019Europe en titre',
+              'Profondeur g\u00e9n\u00e9rationnelle au milieu avec Yamal, Pedri, Gavi',
+            ],
+            [
+              'France',
+              'Double championne, finaliste r\u00e9guli\u00e8re',
+              'Attaque men\u00e9e par Mbapp\u00e9, exp\u00e9rience des tournois',
+            ],
+            [
+              'Angleterre',
+              'Double finaliste de l\u2019Euro',
+              'Profondeur d\u2019effectif dans les meilleurs clubs de Premier League',
+            ],
+            [
+              'Argentine',
+              'Tenante du titre',
+              'Tourn\u00e9e d\u2019adieu de Messi, maturit\u00e9 du syst\u00e8me Scaloni',
+            ],
+            [
+              'Br\u00e9sil',
+              '5 fois champion',
+              'Renouvellement des talents sous nouvelle direction',
+            ],
+            [
+              'Allemagne',
+              'Avantage continental',
+              '\u00c9lan de reconstruction apr\u00e8s l\u2019Euro 2024',
+            ],
+            [
+              'Maroc',
+              'Espoir africain',
+              'P\u00e9digr\u00e9e de la demi-finale 2022, syst\u00e8me d\u00e9fensif de Regragui',
+            ],
+          ],
+        },
+        {
+          type: 'list',
+          items: [
+            'Outsiders : Colombie, Nigeria, Japon, \u00c9tats-Unis (avantage du pays h\u00f4te)',
+            'Candidats au Soulier d\u2019or : Mbapp\u00e9, Haaland, Vinicius Jr, En-Nesyri',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'about-legacy',
+      heading: 'H\u00e9ritage du tournoi et perspectives 2030',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'La Coupe du Monde 2026 devrait g\u00e9n\u00e9rer un impact \u00e9conomique significatif dans les trois pays h\u00f4tes. La FIFA pr\u00e9voit plus de 5 millions de spectateurs en tribunes et des milliards de t\u00e9l\u00e9spectateurs dans le monde. Les revenus li\u00e9s aux droits TV, au sponsoring et au tourisme irrigueront les \u00e9conomies locales des villes h\u00f4tes.',
+        },
+        {
+          type: 'prose',
+          text: "Le mod\u00e8le tri-national cr\u00e9e un pr\u00e9c\u00e9dent pour les futurs m\u00e9ga-\u00e9v\u00e9nements. Partager les co\u00fbts d'infrastructure et la logistique entre pays rend l'organisation plus accessible, bien que cela introduise une complexit\u00e9 li\u00e9e aux d\u00e9placements transfrontaliers. La Coupe du Monde 2030 suivra une approche similaire avec l'Espagne, le Portugal et le Maroc comme h\u00f4tes, avec des matchs d'ouverture en Argentine, en Uruguay et au Paraguay pour marquer le centenaire du tournoi.",
+        },
+        {
+          type: 'prose',
+          text: "Pour le Maroc, 2026 est \u00e0 la fois une sc\u00e8ne comp\u00e9titive et une r\u00e9p\u00e9tition g\u00e9n\u00e9rale. L'exp\u00e9rience de participer en tant qu'\u00e9quipe, combin\u00e9e aux le\u00e7ons organisationnelles tir\u00e9es de l'observation d'un \u00e9v\u00e9nement tri-national, alimente directement les pr\u00e9paratifs du Maroc pour 2030. Les projets d'infrastructure \u00e0 Casablanca, Rabat, Marrakech, Tanger, F\u00e8s et Agadir sont d\u00e9j\u00e0 en cours.",
+        },
+      ],
     },
   ],
+
   faqs: [
     {
-      question: 'Quand commence et finit la Coupe du Monde 2026 ?',
-      answer: 'Du 11 juin au 19 juillet 2026.',
-    },
-    {
-      question: 'Dans quel groupe est le Maroc a la Coupe du Monde 2026 ?',
-      answer: "Le Maroc est dans le Groupe C avec le Bresil, Haiti et l'Ecosse.",
-    },
-    {
-      question: "Combien d'equipes participent a la Coupe du Monde 2026 ?",
+      question: 'Comment fonctionne le format \u00e0 48 \u00e9quipes ?',
       answer:
-        "48 equipes nationales, soit 16 de plus qu'en 2022. C'est la 1ere edition au format elargi.",
+        '48 \u00e9quipes sont r\u00e9parties en 12 groupes de 4. Les 2 premiers de chaque groupe plus les 8 meilleurs troisi\u00e8mes acc\u00e8dent \u00e0 un tableau \u00e0 \u00e9limination directe de 32 \u00e9quipes, \u00e0 partir des 1/16e de finale.',
     },
     {
-      question: 'Ou regarder la Coupe du Monde 2026 au Maroc ?',
-      answer: 'Les matchs sont diffuses sur Arryadia TV et SNRT (chaines publiques marocaines).',
-    },
-    {
-      question: 'Ou se joue la finale de la Coupe du Monde 2026 ?',
-      answer: 'Au MetLife Stadium a East Rutherford, New Jersey, Etats-Unis.',
-    },
-    {
-      question: "Quels Marocains de l'etranger jouent pour le Maroc ?",
+      question: 'Quand joue le Maroc \u00e0 la Coupe du Monde 2026 ?',
       answer:
-        'Achraf Hakimi (PSG), Brahim Diaz (Bayern), Noussair Mazraoui (Man Utd), Youssef En-Nesyri (Fenerbahce), Sofyan Amrabat (Real Betis), Nayef Aguerd (Real Sociedad), entre autres.',
+        'Le Maroc affronte le Br\u00e9sil le 13 juin, Ha\u00efti le 18 juin et l\u2019\u00c9cosse le 22 juin. Tous les matchs sont dans le Groupe C.',
     },
     {
-      question: 'Comment fonctionne la qualification au 1/16e de finale ?',
+      question: 'O\u00f9 regarder la Coupe du Monde au Maroc ?',
       answer:
-        'Top 2 de chaque groupe + 8 meilleurs troisiemes (parmi les 12 groupes) = 32 equipes en 1/16e.',
+        'Arryadia TV et SNRT diffusent les matchs en clair. beIN Sports MENA couvre tous les matchs. FIFA+ propose le streaming gratuit de certains matchs.',
     },
     {
-      question: 'Le Maroc organisera-t-il une Coupe du Monde ?',
+      question: 'Des billets sont-ils encore disponibles ?',
       answer:
-        "Le Maroc co-organisera la Coupe du Monde 2030 avec l'Espagne et le Portugal, devenant le premier pays africain a accueillir le tournoi.",
+        'Consultez FIFA.com/tickets pour les derni\u00e8res disponibilit\u00e9s. Les billets de phase de groupes d\u00e9butent \u00e0 environ 60 $ USD. N\u2019achetez que via les canaux officiels.',
+    },
+    {
+      question: 'Ai-je besoin d\u2019un visa pour assister aux matchs ?',
+      answer:
+        'Cela d\u00e9pend de votre nationalit\u00e9 et du pays h\u00f4te visit\u00e9. Les titulaires d\u2019un passeport marocain ont besoin d\u2019un visa pour les \u00c9tats-Unis et le Canada mais peuvent entrer au Mexique sans visa. Les citoyens europ\u00e9ens b\u00e9n\u00e9ficient de l\u2019ESTA (\u00c9tats-Unis) et de l\u2019AVE (Canada).',
+    },
+    {
+      question: 'Le groupe du Maroc sera-t-il difficile ?',
+      answer:
+        'Le Groupe C comprend le Br\u00e9sil (5 fois champion), Ha\u00efti (d\u00e9butant) et l\u2019\u00c9cosse (de retour apr\u00e8s 28 ans). Le Br\u00e9sil est le grand favori, mais le p\u00e9digr\u00e9e du Maroc en 2022 en fait un s\u00e9rieux candidat \u00e0 la 2e place.',
+    },
+    {
+      question: 'Quelles sont les r\u00e8gles de d\u00e9partage ?',
+      answer:
+        'Les groupes sont d\u00e9cid\u00e9s par : points, diff\u00e9rence de buts, buts marqu\u00e9s, confrontation directe, points fair-play, puis tirage au sort. Les meilleurs troisi\u00e8mes sont class\u00e9s entre les 12 groupes selon les m\u00eames crit\u00e8res.',
+    },
+    {
+      question: 'Pourquoi trois pays organisateurs ?',
+      answer:
+        'Les \u00c9tats-Unis, le Canada et le Mexique ont soumis une candidature conjointe (United 2026) s\u00e9lectionn\u00e9e par la FIFA en 2018. Le mod\u00e8le tri-national r\u00e9partit les co\u00fbts et les infrastructures. Il cr\u00e9e un pr\u00e9c\u00e9dent suivi par la Coupe du Monde 2030 (Espagne, Portugal, Maroc).',
+    },
+    {
+      question: 'Quel stade accueille la finale ?',
+      answer:
+        'Le MetLife Stadium \u00e0 East Rutherford, New Jersey, d\u2019une capacit\u00e9 de 82 500 places. Il accueille \u00e9galement une demi-finale.',
+    },
+    {
+      question: 'Le tournoi est-il accessible aux personnes handicap\u00e9es ?',
+      answer:
+        'La FIFA exige que tous les stades offrent des si\u00e8ges, entr\u00e9es et installations accessibles. Des billets accessibles sont disponibles via la plateforme officielle \u00e0 tarif r\u00e9duit. Chaque stade dispose de coordinateurs d\u2019accessibilit\u00e9.',
+    },
+    {
+      question: 'Voyager en famille ?',
+      answer:
+        'Les villes h\u00f4tes proposent des fan zones familiales avec animations gratuites. De nombreux stades sont proches des transports en commun. R\u00e9server h\u00e9bergement et vols int\u00e9rieurs t\u00f4t est fortement recommand\u00e9 vu la fen\u00eatre de 39 jours du tournoi.',
+    },
+    {
+      question: 'Le calendrier peut-il changer \u00e0 la derni\u00e8re minute ?',
+      answer:
+        'La FIFA se r\u00e9serve le droit d\u2019ajuster les horaires des matchs. Consultez toujours FIFA.com pour le calendrier officiel \u00e0 jour. Atlas Kings met \u00e0 jour automatiquement les horaires depuis les flux de donn\u00e9es officiels.',
+    },
+    {
+      question: 'Que se passe-t-il apr\u00e8s 2026 pour le Maroc ?',
+      answer:
+        'Le Maroc co-organise la Coupe du Monde 2030 avec l\u2019Espagne et le Portugal, devenant le premier pays africain \u00e0 accueillir le tournoi. Des matchs d\u2019ouverture se tiendront en Argentine, en Uruguay et au Paraguay pour c\u00e9l\u00e9brer le centenaire de la premi\u00e8re Coupe du Monde.',
     },
   ],
 };
@@ -647,12 +980,12 @@ const WC_2026_AR_LEGACY: LegacyAboutContent = {
 
 // ── Registry ──
 
-// New shape for EN, legacy for FR/AR until Chunk C
+// New shape for EN + FR, legacy for AR until Chunk D
 const ABOUT_CONTENT_REGISTRY: Record<number, Record<Locale, AboutContent>> = {
   1: {
     en: WC_2026_EN,
-    // FR and AR: convert legacy to new shape at runtime
-    fr: legacyToNew(WC_2026_FR_LEGACY),
+    fr: WC_2026_FR,
+    // AR: convert legacy to new shape at runtime
     ar: legacyToNew(WC_2026_AR_LEGACY),
   },
 };
