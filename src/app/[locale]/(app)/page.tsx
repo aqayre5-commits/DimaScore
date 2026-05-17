@@ -7,6 +7,9 @@ import { EditorialHero } from '@/components/homepage/EditorialHero';
 import { FixtureList } from '@/components/homepage/FixtureList';
 import { EditorialCards } from '@/components/homepage/EditorialCards';
 import { RightRail } from '@/components/homepage/RightRail';
+import { AboutCard } from '@/components/tournament/AboutCard';
+import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
+import { getHomepageAboutContent } from '@/lib/constants/homepage-about-content';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -105,9 +108,15 @@ export default async function HomePage({ params }: PageProps) {
         </div>
       </div>
 
+      {/* About / SEO block (homepage.md §9) */}
+      <div className="mx-auto w-full max-w-[1280px] px-4 pb-12">
+        <AboutCard content={getHomepageAboutContent(typedLocale)} />
+      </div>
+
       {/* Structured data */}
       <WebSiteJsonLd baseUrl={baseUrl} locale={typedLocale} />
       <OrganizationJsonLd baseUrl={baseUrl} />
+      <FaqPageJsonLd faqs={getHomepageAboutContent(typedLocale).faqs} />
     </>
   );
 }
