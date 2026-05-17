@@ -1,55 +1,53 @@
 import { useTranslations } from 'next-intl';
 import { ShareButton } from '@/components/shared/ShareButton';
-import type { AboutContent } from '@/lib/constants/about-content';
+import { BlockRenderer } from './about/BlockRenderer';
+import { QuickFactsStrip } from './about/QuickFactsStrip';
+import type { AboutContent, StatCardBlock } from '@/lib/constants/about-content';
 
 interface AboutCardProps {
   content: AboutContent;
 }
 
 /**
- * About card — long-form keyword-bearing content at page bottom.
- * Currently renders prose blocks only (Chunk A bridge).
- * Chunk B/C will add table, timeline, stat-card, list, callout renderers.
+ * About section — renders 12 thematic content cards with typed blocks.
+ * QuickFactsStrip renders as a standalone stat grid.
+ * Each remaining card renders as a bordered section with hash anchor.
  */
 export function AboutCard({ content }: AboutCardProps) {
   const t = useTranslations('tournament');
 
-  // Filter to cards that have headings (skip QuickFactsStrip for now)
-  const visibleCards = content.cards.filter((card) => card.heading);
-
   return (
-    <section id="about" className="mt-6 rounded-lg border border-border-subtle bg-bg-surface p-6">
-      {visibleCards[0] && (
-        <>
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-text-primary">{visibleCards[0].heading}</h2>
-            <ShareButton title={visibleCards[0].heading ?? 'About'} hash="about" />
-          </div>
-          {visibleCards[0].blocks
-            .filter((b) => b.type === 'prose')
-            .map((block, j) => (
-              <p key={j} className="mt-2 text-sm leading-relaxed text-text-secondary">
-                {block.text}
-              </p>
-            ))}
-        </>
-      )}
+    <div className="mt-6 space-y-4">
+      {content.cards.map((card) => {
+        // QuickFactsStrip: stat-card grid, no heading or card wrapper
+        if (card.id === 'quick-facts') {
+          const statBlocks = card.blocks.filter((b): b is StatCardBlock => b.type === 'stat-card');
+          return <QuickFactsStrip key={card.id} blocks={statBlocks} />;
+        }
 
-      {visibleCards.slice(1).map((card, i) => (
-        <div key={i} className="mt-6">
-          <h2 className="text-base font-semibold text-text-primary">{card.heading}</h2>
-          {card.blocks
-            .filter((b) => b.type === 'prose')
-            .map((block, j) => (
-              <p key={j} className="mt-2 text-sm leading-relaxed text-text-secondary">
-                {block.text}
-              </p>
+        // Standard content card
+        return (
+          <section
+            key={card.id}
+            id={card.id}
+            className="rounded-lg border border-border-subtle bg-bg-surface p-6"
+          >
+            {card.heading && (
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-text-primary">{card.heading}</h2>
+                <ShareButton title={card.heading} hash={card.id} />
+              </div>
+            )}
+            {card.blocks.map((block, j) => (
+              <BlockRenderer key={j} block={block} />
             ))}
-        </div>
-      ))}
+          </section>
+        );
+      })}
 
+      {/* FAQ accordion */}
       {content.faqs.length > 0 && (
-        <div id="faq" className="mt-8">
+        <section id="faq" className="rounded-lg border border-border-subtle bg-bg-surface p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-text-primary">{t('faqTitle')}</h2>
             <ShareButton title={t('faqTitle')} hash="faq" />
@@ -64,8 +62,8 @@ export function AboutCard({ content }: AboutCardProps) {
               </details>
             ))}
           </div>
-        </div>
+        </section>
       )}
-    </section>
+    </div>
   );
 }
