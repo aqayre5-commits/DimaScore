@@ -92,7 +92,7 @@ export function MiniStandingsPreview({
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-border-subtle text-[10px] text-text-tertiary">
+                  <tr className="border-b border-border-subtle text-[11px] text-text-secondary">
                     <th scope="col" className="w-5 py-1 pl-4 text-start font-medium md:pl-6">
                       #
                     </th>

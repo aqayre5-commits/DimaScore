@@ -66,7 +66,7 @@ export function FeaturedMatchCard({
         {/* Kickoff time */}
         <div className="text-center">
           <p className="text-lg font-semibold tabular-nums text-text-primary">{kickoffTime}</p>
-          <p className="text-xs uppercase text-text-tertiary">{kickoffDate}</p>
+          <p className="text-xs uppercase text-text-secondary">{kickoffDate}</p>
         </div>
 
         {/* Teams */}
@@ -77,7 +77,7 @@ export function FeaturedMatchCard({
             <span className="text-sm font-medium text-text-primary">{homeName}</span>
           </div>
 
-          <span className="text-xs font-medium text-text-tertiary">vs</span>
+          <span className="text-xs font-medium text-text-secondary">vs</span>
 
           {/* Away */}
           <div className="flex flex-col items-center gap-1.5 text-center">
