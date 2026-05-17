@@ -113,7 +113,9 @@
     "filterLive": "Live",
     "filterFinished": "Termin\u00e9s",
     "filterUpcoming": "\u00c0 venir",
-    "emptyState": "Aucun match aujourd'hui"
+    "emptyState": "Aucun match aujourd'hui",
+    "collapse": "R\u00e9duire",
+    "expand": "D\u00e9velopper"
   },
   "editorialCards": {
     "featuredMatches": "Matchs \u00e0 la une",

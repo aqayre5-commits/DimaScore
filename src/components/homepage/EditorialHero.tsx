@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { db } from '@/lib/db/client';
 import { getEditorialHeroData, type EditorialHeroData } from '@/lib/db/queries/editorial-hero';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import type { Locale } from '@/lib/i18n/config';
 
 interface EditorialHeroProps {
@@ -55,10 +56,10 @@ function resolveContent(
           <div className="flex items-center gap-3 overflow-hidden">
             <span className="flex shrink-0 items-center gap-1.5">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-score-live opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-score-live" />
               </span>
-              <span className="text-xs font-bold uppercase text-red-500">{t('live')}</span>
+              <span className="text-xs font-bold uppercase text-score-live">{t('live')}</span>
             </span>
             <h2 className="truncate text-sm font-semibold text-text-primary">
               {home} {fixture.homeScore} – {fixture.awayScore} {away}

@@ -9,44 +9,36 @@ interface EditorialCardsProps {
 export async function EditorialCards({ locale }: EditorialCardsProps) {
   const t = await getTranslations({ locale, namespace: 'editorialCards' });
 
+  const placeholders = [
+    t('featuredMatches'),
+    t('rankings'),
+    t('playerOfSeason'),
+    t('comparePlayers'),
+    t('compareTeams'),
+    t('topPerformances'),
+  ];
+
   return (
     <div className="flex flex-col gap-4">
-      {/* Card 1 — Featured matches */}
-      <Card heading={t('featuredMatches')}>
-        <p className="text-sm text-text-tertiary">{t('comingSoon')}</p>
-      </Card>
-
-      {/* Card 2 — International rankings */}
-      <Card heading={t('rankings')}>
-        <p className="text-sm text-text-tertiary">{t('comingSoon')}</p>
-      </Card>
-
-      {/* Card 3 — Players of the season */}
-      <Card heading={t('playerOfSeason')}>
-        <p className="text-sm text-text-tertiary">{t('comingSoon')}</p>
-      </Card>
-
-      {/* Card 4 — Compare players */}
-      <Card heading={t('comparePlayers')}>
-        <p className="text-sm text-text-tertiary">{t('comingSoon')}</p>
-      </Card>
-
-      {/* Card 5 — Compare teams */}
-      <Card heading={t('compareTeams')}>
-        <p className="text-sm text-text-tertiary">{t('comingSoon')}</p>
-      </Card>
-
-      {/* Card 6 — Matches this week (data-driven) */}
+      {/* Matches this week (data-driven) — promoted to top */}
       <Card heading={t('matchesThisWeek')}>
         <MatchesThisWeek locale={locale} />
       </Card>
 
-      {/* Card 7 — Top performances */}
-      <Card heading={t('topPerformances')}>
-        <p className="text-sm text-text-tertiary">{t('comingSoon')}</p>
-      </Card>
+      {/* Placeholder cards — compact 2-column grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {placeholders.map((label) => (
+          <div
+            key={label}
+            className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-3"
+          >
+            <h2 className="text-sm font-semibold text-text-primary">{label}</h2>
+            <p className="mt-1 text-xs text-text-tertiary">{t('comingSoon')}</p>
+          </div>
+        ))}
+      </div>
 
-      {/* Card 8 — Newsletter */}
+      {/* Newsletter */}
       <Card heading={t('newsletter')}>
         <p className="text-sm text-text-secondary">{t('newsletterCta')}</p>
         <div className="mt-3 flex gap-2">
@@ -59,7 +51,7 @@ export async function EditorialCards({ locale }: EditorialCardsProps) {
           <button
             type="button"
             disabled
-            className="shrink-0 rounded-lg bg-accent-gold px-4 py-2 text-sm font-medium text-bg-canvas opacity-50"
+            className="shrink-0 rounded-lg bg-bg-surface-3 px-4 py-2 text-sm font-medium text-text-tertiary cursor-not-allowed"
           >
             {t('subscribe')}
           </button>

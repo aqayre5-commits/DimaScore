@@ -113,7 +113,9 @@
     "filterLive": "Live",
     "filterFinished": "Finished",
     "filterUpcoming": "Upcoming",
-    "emptyState": "No matches today"
+    "emptyState": "No matches today",
+    "collapse": "Collapse",
+    "expand": "Expand"
   },
   "editorialCards": {
     "featuredMatches": "Featured matches",

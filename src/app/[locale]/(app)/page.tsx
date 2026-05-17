@@ -87,7 +87,7 @@ export default async function HomePage({ params }: PageProps) {
       <EditorialHero locale={typedLocale} />
 
       {/* H1 + intro block (homepage.md §4) */}
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-6 pb-4">
+      <div className="mx-auto w-full max-w-[1344px] px-4 pt-6 pb-4">
         <div className="max-w-[720px]">
           <h1 className="text-2xl font-semibold leading-tight text-text-primary">{t('h1')}</h1>
           <p className="mt-2 text-sm leading-relaxed text-text-secondary">{t('intro')}</p>
@@ -109,7 +109,7 @@ export default async function HomePage({ params }: PageProps) {
       </div>
 
       {/* About / SEO block (homepage.md §9) */}
-      <div className="mx-auto w-full max-w-[1280px] px-4 pb-12">
+      <div className="mx-auto w-full max-w-[1344px] px-4 pb-12">
         <AboutCard content={getHomepageAboutContent(typedLocale)} />
       </div>
 

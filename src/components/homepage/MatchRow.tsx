@@ -34,9 +34,9 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
       className="group flex min-h-[48px] items-center border-b border-border-subtle px-3 transition-colors hover:bg-bg-surface-2"
     >
       {/* Status / Time column */}
-      <div className="w-12 shrink-0 text-center">
+      <div className="w-14 shrink-0 text-center">
         {isLive ? (
-          <span className="text-xs font-bold text-red-500">
+          <span className="text-xs font-bold text-score-live">
             {fixture.statusCode === 'HT' ? 'HT' : `${fixture.minute ?? ''}'`}
           </span>
         ) : isFinished ? (
@@ -83,7 +83,7 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
           <span className="ms-auto shrink-0 tabular-nums">
             {(isLive || isFinished) && fixture.homeScore != null ? (
               <span
-                className={`text-sm font-semibold ${isLive ? 'text-red-500' : homeWins ? 'text-text-primary' : 'text-text-tertiary'}`}
+                className={`text-sm font-semibold ${isLive ? 'text-score-live' : homeWins ? 'text-text-primary' : 'text-text-tertiary'}`}
               >
                 {fixture.homeScore}
               </span>
@@ -121,7 +121,7 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
           <span className="ms-auto shrink-0 tabular-nums">
             {(isLive || isFinished) && fixture.awayScore != null ? (
               <span
-                className={`text-sm font-semibold ${isLive ? 'text-red-500' : awayWins ? 'text-text-primary' : 'text-text-tertiary'}`}
+                className={`text-sm font-semibold ${isLive ? 'text-score-live' : awayWins ? 'text-text-primary' : 'text-text-tertiary'}`}
               >
                 {fixture.awayScore}
               </span>

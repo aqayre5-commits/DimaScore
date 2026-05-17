@@ -21,19 +21,49 @@ export async function FixtureList({ locale }: FixtureListProps) {
       </div>
 
       {/* Filter pills (static — functional filtering deferred to Phase 7 Pusher) */}
-      <div className="flex gap-2 border-b border-border-subtle px-4 pb-3">
-        <span className="rounded-full bg-accent-gold/10 px-3 py-1 text-xs font-medium text-accent-gold">
+      <div
+        className="flex gap-2 border-b border-border-subtle px-4 pb-3"
+        role="tablist"
+        aria-label={t('h2Today')}
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected="true"
+          className="rounded-full bg-accent-gold/10 px-3 py-1 text-xs font-medium text-accent-gold"
+        >
           {t('filterAll')}
-        </span>
-        <span className="rounded-full bg-red-500/10 px-3 py-1 text-xs font-medium text-red-500">
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected="false"
+          disabled
+          aria-disabled="true"
+          className="rounded-full bg-score-live/10 px-3 py-1 text-xs font-medium text-score-live cursor-not-allowed"
+        >
           {t('filterLive')}
-        </span>
-        <span className="rounded-full px-3 py-1 text-xs font-medium text-text-tertiary">
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected="false"
+          disabled
+          aria-disabled="true"
+          className="rounded-full bg-bg-surface-2 px-3 py-1 text-xs font-medium text-text-tertiary cursor-not-allowed"
+        >
           {t('filterFinished')}
-        </span>
-        <span className="rounded-full px-3 py-1 text-xs font-medium text-text-tertiary">
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected="false"
+          disabled
+          aria-disabled="true"
+          className="rounded-full bg-bg-surface-2 px-3 py-1 text-xs font-medium text-text-tertiary cursor-not-allowed"
+        >
           {t('filterUpcoming')}
-        </span>
+        </button>
       </div>
 
       {/* Competition groups or empty state */}

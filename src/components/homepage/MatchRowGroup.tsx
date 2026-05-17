@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { MatchRow } from './MatchRow';
 import type { CompetitionGroup } from '@/lib/db/queries/fixtures-by-day';
@@ -16,6 +17,7 @@ interface MatchRowGroupProps {
 
 export function MatchRowGroup({ group, locale, defaultExpanded }: MatchRowGroupProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const t = useTranslations('fixtureList');
   const { competition, fixtures } = group;
 
   const compName = getLocalizedCompetitionName(competition, locale);
@@ -63,7 +65,7 @@ export function MatchRowGroup({ group, locale, defaultExpanded }: MatchRowGroupP
           onClick={() => setExpanded((v) => !v)}
           className="flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors hover:bg-bg-surface-2"
           aria-expanded={expanded}
-          aria-label={expanded ? 'Collapse' : 'Expand'}
+          aria-label={expanded ? t('collapse') : t('expand')}
         >
           <ChevronDown
             className={`h-4 w-4 text-text-tertiary transition-transform ${expanded ? 'rotate-180' : ''}`}
