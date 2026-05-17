@@ -105,6 +105,16 @@
     "intro": "Atlas Kings covers Botola Pro, the Morocco national team, World Cup 2026 qualifiers, AFCON, WAFCON, and Europe's top leagues. Live scores, standings, and statistics updated to the minute.",
     "emptyState": "Matches coming soon"
   },
+  "fixtureList": {
+    "h2Today": "Matches and results today",
+    "h2Tomorrow": "Matches and results tomorrow",
+    "h2Date": "Matches and results \u2014 {date}",
+    "filterAll": "All",
+    "filterLive": "Live",
+    "filterFinished": "Finished",
+    "filterUpcoming": "Upcoming",
+    "emptyState": "No matches today"
+  },
   "tournament": {
     "edition": "Edition",
     "preTournament": "Pre-tournament",

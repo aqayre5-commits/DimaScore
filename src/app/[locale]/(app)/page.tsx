@@ -4,6 +4,7 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { EditorialHero } from '@/components/homepage/EditorialHero';
+import { FixtureList } from '@/components/homepage/FixtureList';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -88,9 +89,17 @@ export default async function HomePage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Placeholder for fixture list + editorial cards + right rail (Sub-tasks 5.2-5.6) */}
-      <div className="mx-auto w-full max-w-[1280px] px-4 py-12">
-        <p className="text-sm text-text-tertiary">{t('emptyState')}</p>
+      {/* 3-column layout: fixture list (left) + editorial cards (center) + right rail */}
+      <div className="mx-auto w-full max-w-[1280px] px-4 pb-12">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[540px_1fr]">
+          {/* Left column — fixture list (homepage.md §6) */}
+          <FixtureList locale={typedLocale} />
+
+          {/* Center + right columns — placeholder for Sub-tasks 5.4-5.6 */}
+          <div className="hidden lg:block">
+            <p className="text-sm text-text-tertiary">{t('emptyState')}</p>
+          </div>
+        </div>
       </div>
 
       {/* Structured data */}
