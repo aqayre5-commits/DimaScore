@@ -18,7 +18,7 @@ export function NewsletterCard({ tournamentName }: NewsletterCardProps) {
 
   return (
     <div className="rounded-lg border border-border-subtle bg-bg-surface p-4">
-      <h3 className="label-caps">Newsletter</h3>
+      <h3 className="label-caps">{t('newsletterTitle')}</h3>
       <p className="mt-2 text-sm text-text-secondary">
         {t('newsletterCta', { tournament: tournamentName })}
       </p>

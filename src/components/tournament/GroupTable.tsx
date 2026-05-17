@@ -76,31 +76,31 @@ export function GroupTable({
                 {t('team')}
               </th>
               <th scope="col" className="w-8 py-2 text-center font-medium">
-                P
+                {t('colPlayed')}
               </th>
               <th scope="col" className="w-8 py-2 text-center font-medium">
-                W
+                {t('colWon')}
               </th>
               <th scope="col" className="w-8 py-2 text-center font-medium">
-                D
+                {t('colDrawn')}
               </th>
               <th scope="col" className="w-8 py-2 text-center font-medium">
-                L
+                {t('colLost')}
               </th>
               <th scope="col" className="w-6 py-2 text-center font-medium">
-                GF
+                {t('colGoalsFor')}
               </th>
               <th scope="col" className="w-6 py-2 text-center font-medium">
-                GA
+                {t('colGoalsAgainst')}
               </th>
               <th scope="col" className="w-7 py-2 text-center font-medium">
-                GD
+                {t('colGoalDiff')}
               </th>
               <th scope="col" className="w-7 py-2 text-center font-semibold">
-                Pts
+                {t('colPoints')}
               </th>
               <th scope="col" className="w-16 py-2 text-center font-medium">
-                Form
+                {t('colForm')}
               </th>
             </tr>
           </thead>
