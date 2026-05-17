@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +27,16 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
     const hash = window.location.hash.slice(1);
     return tabs.find((tab) => tab.hash === hash)?.key ?? tabs[0]?.key ?? '';
   });
+
+  useEffect(() => {
+    function onHashChange() {
+      const hash = window.location.hash.slice(1);
+      const match = tabs.find((tab) => tab.hash === hash);
+      if (match) setActiveKey(match.key);
+    }
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [tabs]);
 
   function handleTabClick(tab: TabDefinition) {
     setActiveKey(tab.key);
