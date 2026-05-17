@@ -101,6 +101,8 @@
     "tomorrow": "Demain"
   },
   "homepage": {
+    "h1": "Football marocain et international en direct",
+    "intro": "Atlas Kings suit la Botola Pro, l'équipe nationale du Maroc, les qualifications de la Coupe du Monde 2026, AFCON, WAFCON et les meilleures compétitions européennes. Scores en direct, classements et statistiques mises à jour à la minute.",
     "emptyState": "Les matchs arrivent bientôt"
   },
   "tournament": {
