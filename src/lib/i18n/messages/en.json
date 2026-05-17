@@ -129,6 +129,21 @@
     "emailPlaceholder": "Your email",
     "subscribe": "Subscribe"
   },
+  "rightRail": {
+    "botolaStandings": "Botola Pro standings",
+    "uclTopScorers": "UCL top scorers",
+    "eplStandings": "Premier League standings",
+    "laLigaStandings": "LaLiga standings",
+    "ligue1Standings": "Ligue 1 standings",
+    "bundesligaStandings": "Bundesliga standings",
+    "serieAStandings": "Serie A standings",
+    "viewAll": "View all",
+    "comingSoon": "Coming soon",
+    "rank": "#",
+    "team": "Team",
+    "played": "P",
+    "points": "Pts"
+  },
   "tournament": {
     "edition": "Edition",
     "preTournament": "Pre-tournament",

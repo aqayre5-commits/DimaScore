@@ -129,8 +129,23 @@
     "emailPlaceholder": "Votre email",
     "subscribe": "S'abonner"
   },
+  "rightRail": {
+    "botolaStandings": "Classement Botola Pro",
+    "uclTopScorers": "Meilleurs buteurs UCL",
+    "eplStandings": "Classement Premier League",
+    "laLigaStandings": "Classement LaLiga",
+    "ligue1Standings": "Classement Ligue 1",
+    "bundesligaStandings": "Classement Bundesliga",
+    "serieAStandings": "Classement Serie A",
+    "viewAll": "Voir tout",
+    "comingSoon": "Bient\u00f4t disponible",
+    "rank": "#",
+    "team": "\u00c9quipe",
+    "played": "J",
+    "points": "Pts"
+  },
   "tournament": {
-    "edition": "Édition",
+    "edition": "\u00c9dition",
     "preTournament": "Avant-tournoi",
     "kickoff": "Coup d'envoi",
     "daysUntilKickoff": "J-{days} jusqu'au coup d'envoi",

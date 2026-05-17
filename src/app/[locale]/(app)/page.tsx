@@ -6,6 +6,7 @@ import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { EditorialHero } from '@/components/homepage/EditorialHero';
 import { FixtureList } from '@/components/homepage/FixtureList';
 import { EditorialCards } from '@/components/homepage/EditorialCards';
+import { RightRail } from '@/components/homepage/RightRail';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -91,13 +92,16 @@ export default async function HomePage({ params }: PageProps) {
       </div>
 
       {/* 3-column layout: fixture list (left) + editorial cards (center) + right rail */}
-      <div className="mx-auto w-full max-w-[1280px] px-4 pb-12">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[540px_1fr]">
+      <div className="mx-auto w-full max-w-[1344px] px-4 pb-12">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[540px_1fr] 2xl:grid-cols-[540px_1fr_280px]">
           {/* Left column — fixture list (homepage.md §6) */}
           <FixtureList locale={typedLocale} />
 
           {/* Center column — editorial cards (homepage.md §7) */}
           <EditorialCards locale={typedLocale} />
+
+          {/* Right rail — standings widgets (homepage.md §8, >=1344px only) */}
+          <RightRail locale={typedLocale} />
         </div>
       </div>
 
