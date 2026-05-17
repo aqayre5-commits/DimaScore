@@ -8,30 +8,43 @@ interface AboutCardProps {
 
 /**
  * About card — long-form keyword-bearing content at page bottom.
- * 6 H2 sections + FAQ accordion using native <details>/<summary>.
- * Per competition-cup.md §11.
+ * Currently renders prose blocks only (Chunk A bridge).
+ * Chunk B/C will add table, timeline, stat-card, list, callout renderers.
  */
 export function AboutCard({ content }: AboutCardProps) {
   const t = useTranslations('tournament');
 
+  // Filter to cards that have headings (skip QuickFactsStrip for now)
+  const visibleCards = content.cards.filter((card) => card.heading);
+
   return (
     <section id="about" className="mt-6 rounded-lg border border-border-subtle bg-bg-surface p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-text-primary">
-          {content.sections[0]?.heading}
-        </h2>
-        <ShareButton title={content.sections[0]?.heading ?? 'About'} hash="about" />
-      </div>
-      {content.sections[0] && (
-        <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-          {content.sections[0].body}
-        </p>
+      {visibleCards[0] && (
+        <>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-text-primary">{visibleCards[0].heading}</h2>
+            <ShareButton title={visibleCards[0].heading ?? 'About'} hash="about" />
+          </div>
+          {visibleCards[0].blocks
+            .filter((b) => b.type === 'prose')
+            .map((block, j) => (
+              <p key={j} className="mt-2 text-sm leading-relaxed text-text-secondary">
+                {block.text}
+              </p>
+            ))}
+        </>
       )}
 
-      {content.sections.slice(1).map((section, i) => (
+      {visibleCards.slice(1).map((card, i) => (
         <div key={i} className="mt-6">
-          <h2 className="text-base font-semibold text-text-primary">{section.heading}</h2>
-          <p className="mt-2 text-sm leading-relaxed text-text-secondary">{section.body}</p>
+          <h2 className="text-base font-semibold text-text-primary">{card.heading}</h2>
+          {card.blocks
+            .filter((b) => b.type === 'prose')
+            .map((block, j) => (
+              <p key={j} className="mt-2 text-sm leading-relaxed text-text-secondary">
+                {block.text}
+              </p>
+            ))}
         </div>
       ))}
 
