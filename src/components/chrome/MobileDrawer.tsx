@@ -46,7 +46,7 @@ export function MobileDrawer() {
       </SheetTrigger>
       <SheetContent side={side}>
         <SheetHeader>
-          <SheetTitle className="text-accent-gold">{tApp('name')}</SheetTitle>
+          <SheetTitle className="text-text-primary">{tApp('name')}</SheetTitle>
           <SheetDescription>{tApp('tagline')}</SheetDescription>
         </SheetHeader>
 
@@ -59,7 +59,7 @@ export function MobileDrawer() {
             className={cn(
               'block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
               pathname === `/${locale}` || pathname === `/${locale}/`
-                ? 'bg-bg-surface-2 text-accent-gold'
+                ? 'bg-bg-surface-2 text-text-primary'
                 : 'text-text-secondary hover:bg-bg-surface-2 hover:text-text-primary',
             )}
           >

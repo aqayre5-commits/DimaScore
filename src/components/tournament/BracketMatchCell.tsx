@@ -56,7 +56,7 @@ export function BracketMatchCell({ match, className }: BracketMatchCellProps) {
       )}
     >
       {/* Header: match number */}
-      <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-text-tertiary">
+      <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
         M{match.fifaMatchNumber ?? match.matchNumber}
       </p>
 

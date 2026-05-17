@@ -153,7 +153,7 @@ export function MiniStandingsPreview({
                           isMorocco && 'font-semibold',
                         )}
                       >
-                        <td className="py-1.5 pl-4 pr-2 text-start tabular-nums text-text-tertiary md:pl-6">
+                        <td className="py-1.5 pl-4 pr-2 text-start tabular-nums text-text-secondary md:pl-6">
                           {row.rank}
                         </td>
                         <td className="py-1.5">
@@ -169,25 +169,25 @@ export function MiniStandingsPreview({
                             </span>
                           </span>
                         </td>
-                        <td className="py-1.5 text-center tabular-nums text-text-tertiary">
+                        <td className="py-1.5 text-center tabular-nums text-text-secondary">
                           {row.played}
                         </td>
-                        <td className="py-1.5 text-center tabular-nums text-text-tertiary">
+                        <td className="py-1.5 text-center tabular-nums text-text-secondary">
                           {row.won ?? 0}
                         </td>
-                        <td className="py-1.5 text-center tabular-nums text-text-tertiary">
+                        <td className="py-1.5 text-center tabular-nums text-text-secondary">
                           {row.drawn ?? 0}
                         </td>
-                        <td className="py-1.5 text-center tabular-nums text-text-tertiary">
+                        <td className="py-1.5 text-center tabular-nums text-text-secondary">
                           {row.lost ?? 0}
                         </td>
-                        <td className="py-1.5 text-center tabular-nums text-text-tertiary">
+                        <td className="py-1.5 text-center tabular-nums text-text-secondary">
                           {row.goalsFor ?? 0}
                         </td>
-                        <td className="py-1.5 text-center tabular-nums text-text-tertiary">
+                        <td className="py-1.5 text-center tabular-nums text-text-secondary">
                           {row.goalsAgainst ?? 0}
                         </td>
-                        <td className="py-1.5 text-center tabular-nums text-text-tertiary">
+                        <td className="py-1.5 text-center tabular-nums text-text-secondary">
                           {row.goalDiff ?? 0}
                         </td>
                         <td
@@ -217,7 +217,7 @@ export function MiniStandingsPreview({
           window.location.hash = standingsHash;
           window.dispatchEvent(new HashChangeEvent('hashchange'));
         }}
-        className="inline-flex min-h-[44px] items-center text-xs font-medium text-accent-gold hover:text-accent-gold-bright"
+        className="inline-flex min-h-[44px] items-center text-xs font-medium text-accent-azure hover:text-accent-azure/80"
       >
         {t('viewAllGroups')} &rarr;
       </button>

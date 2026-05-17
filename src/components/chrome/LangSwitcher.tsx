@@ -41,7 +41,7 @@ export function LangSwitcher() {
           <DropdownMenuItem
             key={code}
             onClick={() => switchLocale(code)}
-            className={locale === code ? 'font-semibold text-accent-gold' : ''}
+            className={locale === code ? 'font-semibold text-text-primary' : ''}
           >
             <span className="uppercase text-xs text-text-tertiary w-6">{code}</span>
             {label}

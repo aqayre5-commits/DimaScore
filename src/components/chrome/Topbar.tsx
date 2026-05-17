@@ -103,7 +103,7 @@ export function Topbar() {
         </div>
 
         {/* Logo */}
-        <Link href={`/${locale}`} className="text-lg font-bold text-accent-gold">
+        <Link href={`/${locale}`} className="text-lg font-bold text-text-primary">
           Atlas Kings
         </Link>
 
@@ -140,7 +140,7 @@ export function Topbar() {
               onClick={() => setMegaOpen((v) => !v)}
               className={cn(
                 'flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                megaOpen ? 'text-accent-gold' : 'text-text-secondary hover:text-text-primary',
+                megaOpen ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary',
               )}
             >
               {t('competitions')}

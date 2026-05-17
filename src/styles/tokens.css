@@ -9,51 +9,51 @@
 /* ─── Dark mode (default) ─── */
 
 :root {
-  --bg-canvas: #0B1220;
-  --bg-surface: #111A2E;
-  --bg-surface-2: #18243D;
-  --bg-surface-3: #1F2D4B;
-  --border-subtle: #1F2D4B;
-  --border-strong: #2A3B5F;
-  --text-primary: #F5F7FA;
-  --text-secondary: #A8B3CC;
-  --text-tertiary: #6B7894;
-  --accent-gold: #D4A24C;
-  --accent-gold-bright: #E8B85A;
-  --accent-gold-deep: #A37D32;
-  --accent-crimson: #E8334A;
-  --accent-emerald: #0B6E4F;
-  --accent-emerald-bright: #13A074;
-  --accent-azure: #3B82C4;
-  --accent-amber: #E8A23A;
-  --accent-violet: #9B7FE6;
-  --score-live: #FF4D5E;
-  --score-live-bg: #2D1419;
+  --bg-canvas: #0C0D10;
+  --bg-surface: #16181D;
+  --bg-surface-2: #1E2128;
+  --bg-surface-3: #272B33;
+  --border-subtle: #2A2E38;
+  --border-strong: #3A4050;
+  --text-primary: #ECEEF1;
+  --text-secondary: #B0B8C4;
+  --text-tertiary: #7A8290;
+  --accent-gold: #F2B84B;
+  --accent-gold-bright: #F7CC6E;
+  --accent-gold-deep: #C99A30;
+  --accent-crimson: #EF4444;
+  --accent-emerald: #16A765;
+  --accent-emerald-bright: #22C97A;
+  --accent-azure: #60A5FA;
+  --accent-amber: #F59E0B;
+  --accent-violet: #A78BFA;
+  --score-live: #EF4444;
+  --score-live-bg: #2D1A1A;
 }
 
 /* ─── Light mode (Media tab, About pages) ─── */
 
 [data-theme='light'] {
-  --bg-canvas: #F7F5F0;
+  --bg-canvas: #F8F9FB;
   --bg-surface: #FFFFFF;
-  --bg-surface-2: #F0EDE6;
-  --bg-surface-3: #E8E4DC;
-  --border-subtle: #E0DCD4;
-  --border-strong: #C8C3BA;
-  --text-primary: #0B1220;
-  --text-secondary: #4A5468;
-  --text-tertiary: #6B7894;
-  --accent-gold: #A37D32;
-  --accent-gold-bright: #B8923E;
-  --accent-gold-deep: #8A6928;
-  --accent-crimson: #C8102E;
-  --accent-emerald: #0B6E4F;
-  --accent-emerald-bright: #13A074;
-  --accent-azure: #2B6BA3;
-  --accent-amber: #D4922E;
-  --accent-violet: #6B4DB3;
-  --score-live: #E8102E;
-  --score-live-bg: #FDE8EA;
+  --bg-surface-2: #F1F3F7;
+  --bg-surface-3: #E8ECF2;
+  --border-subtle: #E2E6EE;
+  --border-strong: #CBD2DC;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-tertiary: #64748B;
+  --accent-gold: #F2B84B;
+  --accent-gold-bright: #F7CC6E;
+  --accent-gold-deep: #C99A30;
+  --accent-crimson: #D64545;
+  --accent-emerald: #16A765;
+  --accent-emerald-bright: #22C97A;
+  --accent-azure: #1E3A8A;
+  --accent-amber: #E2A12B;
+  --accent-violet: #7C3AED;
+  --score-live: #D64545;
+  --score-live-bg: #FDE8E8;
 }
 
 /* ─── Tailwind @theme mapping ─── */

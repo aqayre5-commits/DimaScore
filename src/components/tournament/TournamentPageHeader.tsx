@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import Image from 'next/image';
 import type { Locale } from '@/lib/i18n/config';
 import type { CupMetadata } from '@/lib/constants/tournament-metadata';
 import { codeToFlag } from '@/lib/flags';
@@ -58,13 +59,35 @@ export function TournamentPageHeader({
         {/* Row: Identity (left) + Edition selector (right) */}
         <div className="flex items-start justify-between gap-4">
           {/* Sub-zone A: Identity */}
-          <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-semibold leading-tight text-text-primary md:text-[32px]">
-              {pageTitle}
-            </h1>
-            <p className="mt-1 max-w-prose text-sm text-text-secondary">
-              {hostFlags} {confederationLabel} · {teamsLabel}
-            </p>
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            {metadata.competitionId === 1 && (
+              <>
+                <Image
+                  src="/competitions/wc-2026-trophy.png"
+                  alt=""
+                  width={96}
+                  height={148}
+                  className="hidden h-[96px] w-auto shrink-0 drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:block"
+                  priority
+                />
+                <Image
+                  src="/competitions/wc-2026-trophy.png"
+                  alt=""
+                  width={64}
+                  height={99}
+                  className="h-[64px] w-auto shrink-0 drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:hidden"
+                  priority
+                />
+              </>
+            )}
+            <div className="min-w-0">
+              <h1 className="text-2xl font-semibold leading-tight text-text-primary md:text-[32px]">
+                {pageTitle}
+              </h1>
+              <p className="mt-1 max-w-prose text-sm text-text-secondary">
+                {hostFlags} {confederationLabel} · {teamsLabel}
+              </p>
+            </div>
           </div>
 
           {/* Sub-zone B: Edition selector */}

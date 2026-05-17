@@ -19,14 +19,14 @@ export async function AdaptiveTopStrip({ locale }: AdaptiveTopStripProps) {
   if (result.mode === 'empty') {
     const t = await getTranslations({ locale, namespace: 'topStrip' });
     return (
-      <div className="sticky top-0 z-50 flex h-10 items-center justify-center bg-[#0c0c0d] px-4">
+      <div className="sticky top-0 z-50 flex h-10 items-center justify-center bg-bg-canvas px-4">
         <span className="text-sm text-text-secondary">{t('emptyState')}</span>
       </div>
     );
   }
 
   return (
-    <div className="sticky top-0 z-50 h-10 bg-[#0c0c0d]">
+    <div className="sticky top-0 z-50 h-10 bg-bg-canvas">
       <TickerStrip fixtures={result.fixtures} locale={locale} />
     </div>
   );

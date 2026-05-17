@@ -98,10 +98,10 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
                     }}
                   />
                 </td>
-                <td className="py-2 text-center tabular-nums text-text-tertiary">
+                <td className="py-2 text-center tabular-nums text-text-secondary">
                   {row.crossGroupRank}
                 </td>
-                <td className="py-2 text-center text-text-tertiary">{row.group}</td>
+                <td className="py-2 text-center text-text-secondary">{row.group}</td>
                 <td className="py-2">
                   <span className="flex items-center gap-1.5">
                     {flag && <span className="shrink-0 text-sm leading-none">{flag}</span>}
@@ -115,21 +115,23 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
                     </span>
                   </span>
                 </td>
-                <td className="py-2 text-center tabular-nums text-text-tertiary">{row.played}</td>
-                <td className="py-2 text-center tabular-nums text-text-tertiary">{row.won ?? 0}</td>
-                <td className="py-2 text-center tabular-nums text-text-tertiary">
+                <td className="py-2 text-center tabular-nums text-text-secondary">{row.played}</td>
+                <td className="py-2 text-center tabular-nums text-text-secondary">
+                  {row.won ?? 0}
+                </td>
+                <td className="py-2 text-center tabular-nums text-text-secondary">
                   {row.drawn ?? 0}
                 </td>
-                <td className="py-2 text-center tabular-nums text-text-tertiary">
+                <td className="py-2 text-center tabular-nums text-text-secondary">
                   {row.lost ?? 0}
                 </td>
-                <td className="py-2 text-center tabular-nums text-text-tertiary">
+                <td className="py-2 text-center tabular-nums text-text-secondary">
                   {row.goalsFor ?? 0}
                 </td>
-                <td className="py-2 text-center tabular-nums text-text-tertiary">
+                <td className="py-2 text-center tabular-nums text-text-secondary">
                   {row.goalsAgainst ?? 0}
                 </td>
-                <td className="py-2 text-center tabular-nums text-text-tertiary">
+                <td className="py-2 text-center tabular-nums text-text-secondary">
                   {row.goalDiff ?? 0}
                 </td>
                 <td

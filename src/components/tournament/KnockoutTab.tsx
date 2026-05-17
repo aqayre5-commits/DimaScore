@@ -26,7 +26,7 @@ export function KnockoutTab({ locale, bracketHref }: KnockoutTabProps) {
       {bracketHref && (
         <Link
           href={bracketHref}
-          className="inline-flex items-center gap-1 rounded-lg border border-accent-gold/30 bg-accent-gold/10 px-3 py-1.5 text-xs font-medium text-accent-gold transition-colors hover:bg-accent-gold/20"
+          className="inline-flex items-center gap-1 rounded-lg border border-accent-azure/30 bg-accent-azure/10 px-3 py-1.5 text-xs font-medium text-accent-azure transition-colors hover:bg-accent-azure/20"
         >
           {t('viewFullBracket')} →
         </Link>

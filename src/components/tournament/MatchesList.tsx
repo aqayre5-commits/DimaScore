@@ -26,7 +26,7 @@ export function MatchesList({ fixtures, locale }: MatchesListProps) {
       <div className="divide-y divide-border-subtle px-4">
         {byDate.map(([dateLabel, dayFixtures]) => (
           <div key={dateLabel}>
-            <p className="py-2 text-xs font-medium text-text-tertiary">{dateLabel}</p>
+            <p className="py-2 text-xs font-medium text-text-secondary">{dateLabel}</p>
             {dayFixtures.map((f) => (
               <FixtureRow
                 key={f.id}

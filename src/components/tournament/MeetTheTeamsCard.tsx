@@ -55,7 +55,7 @@ export function MeetTheTeamsCard({ metadata, standings, locale }: MeetTheTeamsCa
         })}
       </ul>
 
-      <p className="mt-3 text-xs text-accent-gold">{t('seeAllTeams')} &rarr;</p>
+      <p className="mt-3 text-xs text-accent-azure">{t('seeAllTeams')} &rarr;</p>
     </div>
   );
 }

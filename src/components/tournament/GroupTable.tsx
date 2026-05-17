@@ -136,7 +136,7 @@ export function GroupTable({
                       <div className="h-full w-1" style={{ backgroundColor: zoneColor }} />
                     )}
                   </td>
-                  <td className="py-2 pl-4 pr-2 text-center tabular-nums text-text-tertiary md:pl-6">
+                  <td className="py-2 pl-4 pr-2 text-center tabular-nums text-text-secondary md:pl-6">
                     {row.rank}
                   </td>
                   <td className="py-2">
@@ -152,23 +152,25 @@ export function GroupTable({
                       </span>
                     </span>
                   </td>
-                  <td className="py-2 text-center tabular-nums text-text-tertiary">{row.played}</td>
-                  <td className="py-2 text-center tabular-nums text-text-tertiary">
+                  <td className="py-2 text-center tabular-nums text-text-secondary">
+                    {row.played}
+                  </td>
+                  <td className="py-2 text-center tabular-nums text-text-secondary">
                     {row.won ?? 0}
                   </td>
-                  <td className="py-2 text-center tabular-nums text-text-tertiary">
+                  <td className="py-2 text-center tabular-nums text-text-secondary">
                     {row.drawn ?? 0}
                   </td>
-                  <td className="py-2 text-center tabular-nums text-text-tertiary">
+                  <td className="py-2 text-center tabular-nums text-text-secondary">
                     {row.lost ?? 0}
                   </td>
-                  <td className="py-2 text-center tabular-nums text-text-tertiary">
+                  <td className="py-2 text-center tabular-nums text-text-secondary">
                     {row.goalsFor ?? 0}
                   </td>
-                  <td className="py-2 text-center tabular-nums text-text-tertiary">
+                  <td className="py-2 text-center tabular-nums text-text-secondary">
                     {row.goalsAgainst ?? 0}
                   </td>
-                  <td className="py-2 text-center tabular-nums text-text-tertiary">
+                  <td className="py-2 text-center tabular-nums text-text-secondary">
                     {row.goalDiff ?? 0}
                   </td>
                   <td
