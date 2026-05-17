@@ -156,11 +156,13 @@
     "bestThird": "Meilleurs 3\u00e8mes",
     "bestThirdCaption": "Les 8 meilleurs troisi\u00e8mes se qualifient pour les 32es de finale.",
     "bestThirdGroupCol": "Grp",
+    "bestThirdRankCol": "Rang",
     "bestThirdDisclaimer": "Les \u00e9galit\u00e9s au-del\u00e0 des buts marqu\u00e9s utilisent un ordre de repli. La cha\u00eene compl\u00e8te de d\u00e9partages FIFA (fair-play, classement mondial) n\u00e9cessite des donn\u00e9es non encore disponibles.",
     "wc2026FullName": "Coupe du Monde FIFA 2026",
     "bracketPageTitle": "Phase \u00e0 \u00e9limination directe",
     "bracketPageIntro": "Du 32e de finale \u00e0 la finale au New York/New Jersey, suivez chaque match \u00e0 \u00e9limination directe de la Coupe du Monde FIFA 2026. Le tournoi comprend un match pour la 3\u00e8me place le 18 juillet \u00e0 Miami.",
-    "viewFullBracket": "Voir le tableau complet"
+    "viewFullBracket": "Voir le tableau complet",
+    "bracketIntroShort": "Suivez chaque match éliminatoire, des 32es de finale à la finale au MetLife Stadium."
   },
   "styleGuide": {
     "title": "Guide de style",

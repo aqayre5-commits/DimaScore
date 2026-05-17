@@ -24,7 +24,7 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
           <tr className="border-b border-border-subtle text-text-tertiary">
             <th scope="col" className="w-1" />
             <th scope="col" className="w-7 py-2 text-center font-medium">
-              #
+              {t('bestThirdRankCol')}
             </th>
             <th scope="col" className="w-9 py-2 text-center font-medium">
               {t('bestThirdGroupCol')}

@@ -38,7 +38,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
   return (
     <div>
       {/* Tabs row */}
-      <div className="grid grid-cols-4 border-b border-border-subtle" role="tablist">
+      <div className="flex overflow-x-auto border-b border-border-subtle" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -47,7 +47,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
             aria-controls={`tabpanel-${tab.key}`}
             onClick={() => handleTabClick(tab)}
             className={cn(
-              'relative px-4 py-3 text-center text-sm font-medium transition-colors',
+              'relative shrink-0 flex-1 px-4 py-3 text-center text-sm font-medium transition-colors',
               tab.key === activeKey
                 ? 'rounded-t-md bg-bg-surface-2 font-semibold text-text-primary'
                 : 'text-text-tertiary hover:text-text-secondary',

@@ -33,49 +33,47 @@ function teamLabel(team: TickerFixture['homeTeam']): string {
   );
 }
 
-function TeamCell({ team }: { team: TickerFixture['homeTeam'] }) {
+function TeamCell({ team, reverse }: { team: TickerFixture['homeTeam']; reverse?: boolean }) {
   if (!team) return <span className="text-sm text-text-tertiary">&mdash;</span>;
 
   const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
   const code = teamLabel(team);
 
+  const logo = flag ? (
+    <span className="text-base leading-none">{flag}</span>
+  ) : team.logoUrl ? (
+    <img src={team.logoUrl} alt="" className="size-4 object-contain" />
+  ) : null;
+
+  const name = <span className="text-sm font-medium text-text-primary">{code}</span>;
+
   return (
     <span className="flex items-center gap-1.5">
-      {flag ? (
-        <span className="text-base leading-none">{flag}</span>
-      ) : team.logoUrl ? (
-        <img src={team.logoUrl} alt="" className="size-4 object-contain" />
-      ) : null}
-      <span className="text-sm font-medium text-text-primary">{code}</span>
+      {reverse ? (
+        <>
+          {name}
+          {logo}
+        </>
+      ) : (
+        <>
+          {logo}
+          {name}
+        </>
+      )}
     </span>
   );
 }
 
 function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale: Locale }) {
   const live = isLiveStatus(fixture.statusCode as FixtureStatus);
-  const compName =
-    fixture.competition.name[locale] ?? fixture.competition.name['en'] ?? fixture.competition.slug;
-  const matchSlug = `${fixture.id}`;
+  const dir = locale === 'ar' ? 'rtl' : undefined;
 
   return (
     <Link
-      href={`/${locale}/match/${matchSlug}`}
+      href={`/${locale}/match/${fixture.id}`}
+      dir={dir}
       className="flex shrink-0 items-center gap-2 px-4 py-1 transition-colors hover:bg-white/5"
     >
-      {/* Competition shield */}
-      {fixture.competition.logoUrl ? (
-        <img
-          src={fixture.competition.logoUrl}
-          alt={compName}
-          loading="lazy"
-          className="size-5 shrink-0 object-contain"
-        />
-      ) : (
-        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-[8px] font-bold uppercase leading-none text-text-tertiary">
-          {compName.slice(0, 3)}
-        </span>
-      )}
-
       {/* Home team */}
       <TeamCell team={fixture.homeTeam} />
 
@@ -96,8 +94,8 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
         </span>
       )}
 
-      {/* Away team */}
-      <TeamCell team={fixture.awayTeam} />
+      {/* Away team — mirrored: code then logo */}
+      <TeamCell team={fixture.awayTeam} reverse />
     </Link>
   );
 }

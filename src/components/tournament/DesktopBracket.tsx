@@ -148,17 +148,6 @@ export function DesktopBracket({
 
         <BracketConnectors containerRef={containerRef} matches={matches} />
       </div>
-
-      {/* Scroll affordance gradient — signals horizontal scrollability */}
-      <div
-        className="pointer-events-none absolute inset-y-0 z-10 w-[60px]"
-        style={{
-          [isRtl ? 'left' : 'right']: 0,
-          background: isRtl
-            ? 'linear-gradient(to left, transparent, var(--bg-canvas))'
-            : 'linear-gradient(to right, transparent, var(--bg-canvas))',
-        }}
-      />
     </div>
   );
 }

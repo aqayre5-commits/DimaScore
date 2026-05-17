@@ -86,15 +86,21 @@ export function BracketConnectors({ containerRef, matches }: BracketConnectorsPr
         // These should draw two independent lines, not one merged L-connector.
         const horizontalGap = Math.abs(s1.x + s1.w / 2 - (s2.x + s2.w / 2));
         if (horizontalGap > 200) {
-          // Source 1 (left side) → target left edge
+          // Inner edges: toward center column. RTL flips which edge is "inner".
+          const s1Inner = isRtl ? s1.x : s1.x + s1.w;
+          const s2Inner = isRtl ? s2.x + s2.w : s2.x;
+          const tNear1 = isRtl ? t.x + t.w : t.x;
+          const tNear2 = isRtl ? t.x : t.x + t.w;
+
+          // Source 1 (left-side SF) → target near edge
           newPaths.push({
             key: `${sourceRects[0].match.matchId}-${targetId}`,
-            d: `M ${s1.x + s1.w} ${s1cy} H ${t.x} V ${tcy}`,
+            d: `M ${s1Inner} ${s1cy} H ${tNear1} V ${tcy}`,
           });
-          // Source 2 (right side) → target right edge
+          // Source 2 (right-side SF) → target far edge
           newPaths.push({
             key: `${sourceRects[1].match.matchId}-${targetId}`,
-            d: `M ${s2.x} ${s2cy} H ${t.x + t.w} V ${tcy}`,
+            d: `M ${s2Inner} ${s2cy} H ${tNear2} V ${tcy}`,
           });
           continue;
         }
@@ -146,8 +152,10 @@ export function BracketConnectors({ containerRef, matches }: BracketConnectorsPr
         const tcy = t.y + t.h / 2;
 
         // SF inner edge (toward center column) → 3rd-place facing edge
-        const sx = m.side === 'left' ? s.x + s.w : s.x;
-        const tx = m.side === 'left' ? t.x : t.x + t.w;
+        // RTL flips which edge is "inner" for each side.
+        const isLeftSide = m.side === 'left';
+        const sx = isLeftSide !== isRtl ? s.x + s.w : s.x;
+        const tx = isLeftSide !== isRtl ? t.x : t.x + t.w;
 
         newPaths.push({
           key: `loser-${m.matchId}-${m.loserFeedsInto}`,

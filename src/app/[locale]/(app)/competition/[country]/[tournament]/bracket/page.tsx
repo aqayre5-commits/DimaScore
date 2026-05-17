@@ -86,7 +86,7 @@ export default async function BracketPage({ params }: PageProps) {
 
   const tournamentName = tT('wc2026FullName');
   const bracketTitle = tT('bracketPageTitle');
-  const introText = tT('bracketPageIntro');
+  const introText = tT('bracketIntroShort');
 
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tB('football'), href: `/${locale}` },

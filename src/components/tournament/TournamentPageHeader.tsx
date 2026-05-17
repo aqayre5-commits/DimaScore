@@ -62,7 +62,7 @@ export function TournamentPageHeader({
             <h1 className="text-2xl font-semibold leading-tight text-text-primary md:text-[32px]">
               {pageTitle}
             </h1>
-            <p className="mt-1 text-sm text-text-secondary">
+            <p className="mt-1 max-w-prose text-sm text-text-secondary">
               {hostFlags} {confederationLabel} · {teamsLabel}
             </p>
           </div>
