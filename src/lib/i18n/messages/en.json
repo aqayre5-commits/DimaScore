@@ -176,6 +176,15 @@
     "viewFullBracket": "View full bracket",
     "bracketIntroShort": "Follow every knockout match from the Round of 32 through the Final at MetLife Stadium."
   },
+  "editorialHero": {
+    "label": "Editorial highlight",
+    "live": "LIVE",
+    "daysShort": "{days}d",
+    "botolaHighlight": "Botola Pro",
+    "modeD": "World Cup 2026 starts in {days} days",
+    "moroccoInGroup": "Morocco in Group {group}",
+    "modeE": "Atlas Lions — Arab Cup 2025 champions"
+  },
   "styleGuide": {
     "title": "Style Guide",
     "palette": "Atlas Royal Palette",

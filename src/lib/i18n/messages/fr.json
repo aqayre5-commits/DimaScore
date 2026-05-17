@@ -176,6 +176,15 @@
     "viewFullBracket": "Voir le tableau complet",
     "bracketIntroShort": "Suivez chaque match éliminatoire, des 32es de finale à la finale au MetLife Stadium."
   },
+  "editorialHero": {
+    "label": "Mise en avant \u00e9ditoriale",
+    "live": "EN DIRECT",
+    "daysShort": "J-{days}",
+    "botolaHighlight": "Botola Pro",
+    "modeD": "Coupe du Monde 2026 dans {days} jours",
+    "moroccoInGroup": "Maroc dans Groupe {group}",
+    "modeE": "Atlas Lions \u2014 Champions Coupe Arabe 2025"
+  },
   "styleGuide": {
     "title": "Guide de style",
     "palette": "Palette Atlas Royal",

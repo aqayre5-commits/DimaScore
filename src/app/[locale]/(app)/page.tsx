@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
+import { EditorialHero } from '@/components/homepage/EditorialHero';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -76,6 +77,9 @@ export default async function HomePage({ params }: PageProps) {
 
   return (
     <>
+      {/* Editorial hero (homepage.md §5) */}
+      <EditorialHero locale={typedLocale} />
+
       {/* H1 + intro block (homepage.md §4) */}
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-6 pb-4">
         <div className="max-w-[720px]">
