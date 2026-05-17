@@ -1,0 +1,34 @@
+import type { FaqEntry } from '@/lib/constants/about-content';
+
+interface FaqPageJsonLdProps {
+  faqs: FaqEntry[];
+}
+
+/**
+ * FAQPage JSON-LD structured data.
+ * Renders schema.org FAQPage with Question + Answer entities
+ * for Google rich results eligibility.
+ */
+export function FaqPageJsonLd({ faqs }: FaqPageJsonLdProps) {
+  if (faqs.length === 0) return null;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}

@@ -18,6 +18,7 @@ import { RightRail } from '@/components/tournament/RightRail';
 import { VideosSection } from '@/components/tournament/VideosSection';
 import { AboutCard } from '@/components/tournament/AboutCard';
 import { SportsEventJsonLd } from '@/components/seo/SportsEventJsonLd';
+import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
 import { HashScrollHighlight } from '@/components/shared/HashScrollHighlight';
 import { getAboutContent } from '@/lib/constants/about-content';
 import { computeBestThirdPlaced } from '@/lib/standings/best-third';
@@ -69,6 +70,12 @@ const WC_2026_TITLES: Record<Locale, string> = {
 };
 
 const WC_2026_SLUGS = ['coupe-du-monde-2026', 'world-cup-2026', 'كأس-العالم-2026'];
+
+const WC_2026_URLS: Record<Locale, string> = {
+  fr: `${baseUrl}/fr/competition/fifa/coupe-du-monde-2026`,
+  en: `${baseUrl}/en/competition/fifa/world-cup-2026`,
+  ar: `${baseUrl}/ar/competition/فيفا/كأس-العالم-2026`,
+};
 
 // Per-locale hash fragments (competition-cup.md Section 1)
 const TAB_HASHES: Record<
@@ -179,16 +186,34 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (isWc2026(tournament)) {
     const meta = WC_2026_META[typedLocale];
+    const pageUrl = WC_2026_URLS[typedLocale];
+    const ogImage = `${baseUrl}/competitions/wc-2026-trophy.png`;
     const languages: Record<string, string> = {};
-    languages['fr'] = `${baseUrl}/fr/competition/fifa/coupe-du-monde-2026`;
-    languages['en'] = `${baseUrl}/en/competition/fifa/world-cup-2026`;
-    languages['ar'] = `${baseUrl}/ar/competition/فيفا/كأس-العالم-2026`;
-    languages['x-default'] = languages[defaultLocale];
+    for (const loc of locales) {
+      languages[loc] = WC_2026_URLS[loc as Locale];
+    }
+    languages['x-default'] = WC_2026_URLS[defaultLocale];
 
     return {
       title: meta.title,
       description: meta.description,
-      alternates: { languages },
+      alternates: { canonical: pageUrl, languages },
+      robots: { index: true, follow: true },
+      openGraph: {
+        title: meta.title,
+        description: meta.description,
+        url: pageUrl,
+        siteName: 'Atlas Kings',
+        locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
+        type: 'website',
+        images: [{ url: ogImage, alt: WC_2026_TITLES[typedLocale] }],
+      },
+      twitter: {
+        card: 'summary_large_image' as const,
+        title: meta.title,
+        description: meta.description,
+        images: [ogImage],
+      },
     };
   }
 
@@ -400,8 +425,9 @@ export default async function CompetitionPage({ params }: PageProps) {
             metadata={metadata}
             tournamentName={pageTitle}
             alternateNames={Object.values(WC_2026_TITLES).filter((t) => t !== pageTitle)}
-            canonicalUrl={`${baseUrl}/fr/competition/fifa/coupe-du-monde-2026`}
+            canonicalUrl={WC_2026_URLS[typedLocale]}
           />
+          {aboutContent && <FaqPageJsonLd faqs={aboutContent.faqs} />}
         </>
       }
     />
