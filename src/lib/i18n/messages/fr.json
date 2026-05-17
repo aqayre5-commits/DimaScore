@@ -115,6 +115,20 @@
     "filterUpcoming": "\u00c0 venir",
     "emptyState": "Aucun match aujourd'hui"
   },
+  "editorialCards": {
+    "featuredMatches": "Matchs \u00e0 la une",
+    "rankings": "Classements internationaux",
+    "playerOfSeason": "Joueurs de la saison",
+    "comparePlayers": "Comparer les joueurs",
+    "compareTeams": "Comparer les \u00e9quipes",
+    "matchesThisWeek": "Matchs \u00e0 suivre cette semaine",
+    "topPerformances": "Top performances",
+    "newsletter": "Recevez l'actualit\u00e9",
+    "comingSoon": "Bient\u00f4t disponible",
+    "newsletterCta": "Recevez l'actu du football marocain directement.",
+    "emailPlaceholder": "Votre email",
+    "subscribe": "S'abonner"
+  },
   "tournament": {
     "edition": "Édition",
     "preTournament": "Avant-tournoi",

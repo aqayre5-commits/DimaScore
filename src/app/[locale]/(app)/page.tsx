@@ -5,6 +5,7 @@ import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { EditorialHero } from '@/components/homepage/EditorialHero';
 import { FixtureList } from '@/components/homepage/FixtureList';
+import { EditorialCards } from '@/components/homepage/EditorialCards';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -95,10 +96,8 @@ export default async function HomePage({ params }: PageProps) {
           {/* Left column — fixture list (homepage.md §6) */}
           <FixtureList locale={typedLocale} />
 
-          {/* Center + right columns — placeholder for Sub-tasks 5.4-5.6 */}
-          <div className="hidden lg:block">
-            <p className="text-sm text-text-tertiary">{t('emptyState')}</p>
-          </div>
+          {/* Center column — editorial cards (homepage.md §7) */}
+          <EditorialCards locale={typedLocale} />
         </div>
       </div>
 

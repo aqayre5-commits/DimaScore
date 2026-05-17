@@ -115,6 +115,20 @@
     "filterUpcoming": "Upcoming",
     "emptyState": "No matches today"
   },
+  "editorialCards": {
+    "featuredMatches": "Featured matches",
+    "rankings": "International rankings",
+    "playerOfSeason": "Players of the season",
+    "comparePlayers": "Compare players",
+    "compareTeams": "Compare teams",
+    "matchesThisWeek": "Matches to watch this week",
+    "topPerformances": "Top performances",
+    "newsletter": "Get the latest",
+    "comingSoon": "Coming soon",
+    "newsletterCta": "Get Moroccan football updates delivered to you.",
+    "emailPlaceholder": "Your email",
+    "subscribe": "Subscribe"
+  },
   "tournament": {
     "edition": "Edition",
     "preTournament": "Pre-tournament",
