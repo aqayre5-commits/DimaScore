@@ -254,7 +254,14 @@
     "penaltyMissed": "pen. raté",
     "varDecision": "VAR",
     "playerIn": "Entré",
-    "playerOut": "Sorti"
+    "playerOut": "Sorti",
+    "formation": "Disposition",
+    "coach": "Entraîneur",
+    "substitutes": "Remplaçants",
+    "goalkeeper": "GB",
+    "defender": "DÉF",
+    "midfielder": "MIL",
+    "attacker": "ATT"
   },
   "editorialHero": {
     "label": "Mise en avant \u00e9ditoriale",

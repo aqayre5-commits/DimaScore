@@ -254,7 +254,14 @@
     "penaltyMissed": "ج.ت ضائعة",
     "varDecision": "VAR",
     "playerIn": "دخل",
-    "playerOut": "خرج"
+    "playerOut": "خرج",
+    "formation": "التشكيلة",
+    "coach": "المدرب",
+    "substitutes": "البدلاء",
+    "goalkeeper": "ح.م",
+    "defender": "دفاع",
+    "midfielder": "وسط",
+    "attacker": "هجوم"
   },
   "editorialHero": {
     "label": "\u0627\u0644\u0645\u0642\u062a\u0637\u0641 \u0627\u0644\u062a\u062d\u0631\u064a\u0631\u064a",

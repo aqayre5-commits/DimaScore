@@ -254,7 +254,14 @@
     "penaltyMissed": "pen. missed",
     "varDecision": "VAR",
     "playerIn": "In",
-    "playerOut": "Out"
+    "playerOut": "Out",
+    "formation": "Formation",
+    "coach": "Coach",
+    "substitutes": "Substitutes",
+    "goalkeeper": "GK",
+    "defender": "DEF",
+    "midfielder": "MID",
+    "attacker": "FWD"
   },
   "editorialHero": {
     "label": "Editorial highlight",
