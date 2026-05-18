@@ -30,7 +30,7 @@ export function MatchRowGroup({ group, locale, defaultExpanded }: MatchRowGroupP
         {/* Competition logo + name (clickable → competition page) */}
         <Link
           href={`/${locale}/competition/${competition.countryCode?.toLowerCase() ?? 'fifa'}/${competition.slug}`}
-          className="flex min-w-0 items-center gap-2 transition-colors hover:text-accent-gold"
+          className="flex min-w-0 items-center gap-2 transition-colors hover:text-accent-green"
         >
           {competition.logoUrl ? (
             <img

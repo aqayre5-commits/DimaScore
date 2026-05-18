@@ -42,7 +42,7 @@ export default async function AdminMediaPage({
         </div>
         <Link
           href="/admin/media/new"
-          className="inline-flex h-8 items-center rounded-md bg-accent-gold px-3 text-sm font-medium text-bg-canvas transition-colors hover:bg-accent-gold/90"
+          className="inline-flex h-8 items-center rounded-md bg-accent-green px-3 text-sm font-medium text-bg-canvas transition-colors hover:bg-accent-green/90"
         >
           Add video
         </Link>

@@ -133,7 +133,7 @@ function StatRow({ stat }: { stat: PairedStat }) {
         <div className="flex h-1.5 gap-1 overflow-hidden rounded-full">
           <div className="flex flex-1 justify-end">
             <div
-              className="rounded-s-full bg-accent-gold transition-all"
+              className="rounded-s-full bg-accent-green transition-all"
               style={{ width: `${homeWidth}%` }}
             />
           </div>

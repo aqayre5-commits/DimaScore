@@ -58,13 +58,13 @@ export function PasteUrlForm({ onResult }: PasteUrlFormProps) {
               handleFetch();
             }
           }}
-          className="h-9 flex-1 rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-gold focus:ring-1 focus:ring-accent-gold"
+          className="h-9 flex-1 rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-green focus:ring-1 focus:ring-accent-green"
         />
         <button
           type="button"
           onClick={handleFetch}
           disabled={!url.trim() || loading}
-          className="h-9 shrink-0 rounded-md bg-accent-gold px-4 text-sm font-medium text-bg-canvas transition-colors hover:bg-accent-gold/90 disabled:opacity-50"
+          className="h-9 shrink-0 rounded-md bg-accent-green px-4 text-sm font-medium text-bg-canvas transition-colors hover:bg-accent-green/90 disabled:opacity-50"
         >
           {loading ? 'Fetching...' : 'Fetch'}
         </button>

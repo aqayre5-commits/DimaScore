@@ -64,7 +64,7 @@
   --card-foreground: var(--text-primary);
   --popover: var(--bg-surface-2);
   --popover-foreground: var(--text-primary);
-  --primary: var(--accent-gold);
+  --primary: var(--accent-green);
   --primary-foreground: var(--bg-canvas);
   --secondary: var(--bg-surface-2);
   --secondary-foreground: var(--text-primary);
@@ -75,8 +75,8 @@
   --destructive: var(--accent-crimson);
   --border: var(--border-subtle);
   --input: var(--border-strong);
-  --ring: var(--accent-gold);
-  --chart-1: var(--accent-gold);
+  --ring: var(--accent-green);
+  --chart-1: var(--accent-green);
   --chart-2: var(--accent-emerald);
   --chart-3: var(--accent-azure);
   --chart-4: var(--accent-amber);
@@ -84,12 +84,12 @@
   --radius: 0.5rem;
   --sidebar: var(--bg-surface);
   --sidebar-foreground: var(--text-primary);
-  --sidebar-primary: var(--accent-gold);
+  --sidebar-primary: var(--accent-green);
   --sidebar-primary-foreground: var(--bg-canvas);
   --sidebar-accent: var(--bg-surface-2);
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--border-subtle);
-  --sidebar-ring: var(--accent-gold);
+  --sidebar-ring: var(--accent-green);
 }
 
 @layer base {
@@ -122,8 +122,8 @@
 }
 
 @keyframes hash-ring {
-  0% { box-shadow: 0 0 0 2px var(--accent-gold); }
-  70% { box-shadow: 0 0 0 2px var(--accent-gold); }
+  0% { box-shadow: 0 0 0 2px var(--accent-green); }
+  70% { box-shadow: 0 0 0 2px var(--accent-green); }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 

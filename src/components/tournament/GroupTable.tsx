@@ -51,7 +51,7 @@ export function GroupTable({
           <h3
             className={cn(
               'text-xs font-semibold',
-              isMoroccoGroup ? 'text-accent-gold' : 'text-text-primary',
+              isMoroccoGroup ? 'text-accent-green' : 'text-text-primary',
             )}
           >
             {t('groupLabel', { label: groupLabel })}
@@ -145,7 +145,7 @@ export function GroupTable({
                       <span
                         className={cn(
                           'overflow-hidden text-ellipsis whitespace-nowrap',
-                          isMorocco ? 'text-accent-gold' : 'text-text-secondary',
+                          isMorocco ? 'text-accent-green' : 'text-text-secondary',
                         )}
                       >
                         {teamName}
@@ -176,7 +176,7 @@ export function GroupTable({
                   <td
                     className={cn(
                       'py-2 text-center tabular-nums font-semibold',
-                      isMorocco ? 'text-accent-gold' : 'text-text-primary',
+                      isMorocco ? 'text-accent-green' : 'text-text-primary',
                     )}
                   >
                     {row.points}

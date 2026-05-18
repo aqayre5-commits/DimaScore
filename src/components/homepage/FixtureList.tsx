@@ -30,7 +30,7 @@ export async function FixtureList({ locale }: FixtureListProps) {
           type="button"
           role="tab"
           aria-selected="true"
-          className="rounded-full bg-accent-gold/10 px-3 py-1 text-xs font-medium text-accent-gold"
+          className="rounded-full bg-accent-green/10 px-3 py-1 text-xs font-medium text-accent-green"
         >
           {t('filterAll')}
         </button>

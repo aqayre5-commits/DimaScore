@@ -55,7 +55,7 @@ export function AboutCard({ content }: AboutCardProps) {
           <div className="mt-3 divide-y divide-border-subtle">
             {content.faqs.map((faq, i) => (
               <details key={i} className="group py-3">
-                <summary className="cursor-pointer text-sm font-medium text-text-primary hover:text-accent-gold">
+                <summary className="cursor-pointer text-sm font-medium text-text-primary hover:text-accent-green">
                   {faq.question}
                 </summary>
                 <p className="mt-2 text-sm leading-relaxed text-text-secondary">{faq.answer}</p>

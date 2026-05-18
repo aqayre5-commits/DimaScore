@@ -97,14 +97,14 @@ export default async function HomePage({ params }: PageProps) {
 
       {/* 3-column layout: fixture list (left) + editorial cards (center) + right rail */}
       <div className="mx-auto w-full max-w-[1344px] px-4 pb-12">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[540px_1fr] 2xl:grid-cols-[540px_1fr_280px]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[540px_1fr] xl:grid-cols-[540px_1fr_280px]">
           {/* Left column — fixture list (homepage.md §6) */}
           <FixtureList locale={typedLocale} />
 
           {/* Center column — editorial cards (homepage.md §7) */}
           <EditorialCards locale={typedLocale} />
 
-          {/* Right rail — standings widgets (homepage.md §8, >=1344px only) */}
+          {/* Right rail — standings widgets (homepage.md §8, >=1280px only) */}
           <RightRail locale={typedLocale} />
         </div>
       </div>

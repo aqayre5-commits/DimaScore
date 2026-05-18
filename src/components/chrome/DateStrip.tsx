@@ -88,7 +88,7 @@ export function DateStrip({ onSelectDate }: DateStripProps) {
               className={cn(
                 'flex shrink-0 flex-col items-center rounded-lg px-3 py-1.5 text-xs transition-colors',
                 isToday
-                  ? 'bg-accent-gold text-bg-canvas font-semibold'
+                  ? 'bg-accent-green text-bg-canvas font-semibold'
                   : 'text-text-secondary hover:bg-bg-surface-2',
               )}
             >

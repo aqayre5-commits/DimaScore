@@ -66,7 +66,7 @@ export async function RightRail({ locale }: RightRailProps) {
   );
 
   return (
-    <div className="hidden flex-col gap-4 2xl:flex">
+    <div className="hidden flex-col gap-4 xl:flex">
       {/* Widget 1: Botola Pro standings */}
       <StandingsWidget
         heading={t('botolaStandings')}

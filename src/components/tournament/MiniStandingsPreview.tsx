@@ -80,7 +80,7 @@ export function MiniStandingsPreview({
               <div
                 className={cn(
                   'text-xs font-semibold',
-                  isMoroccoGroup ? 'text-accent-gold' : 'text-text-primary',
+                  isMoroccoGroup ? 'text-accent-green' : 'text-text-primary',
                 )}
               >
                 {t('groupLabel', { label: groupLabel })}
@@ -162,7 +162,7 @@ export function MiniStandingsPreview({
                             <span
                               className={cn(
                                 'overflow-hidden text-ellipsis whitespace-nowrap',
-                                isMorocco ? 'text-accent-gold' : 'text-text-secondary',
+                                isMorocco ? 'text-accent-green' : 'text-text-secondary',
                               )}
                             >
                               {teamName}
@@ -193,7 +193,7 @@ export function MiniStandingsPreview({
                         <td
                           className={cn(
                             'py-1.5 text-center tabular-nums font-semibold',
-                            isMorocco ? 'text-accent-gold' : 'text-text-primary',
+                            isMorocco ? 'text-accent-green' : 'text-text-primary',
                           )}
                         >
                           {row.points}

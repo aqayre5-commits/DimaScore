@@ -65,7 +65,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
           >
             {t(tab.labelKey)}
             {tab.key === activeKey && (
-              <span className="absolute inset-x-0 bottom-0 h-[3px] bg-accent-gold" />
+              <span className="absolute inset-x-0 bottom-0 h-[3px] bg-accent-green" />
             )}
           </button>
         ))}

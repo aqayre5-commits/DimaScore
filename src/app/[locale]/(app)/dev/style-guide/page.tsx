@@ -3,25 +3,25 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 const paletteTokens = [
-  { var: '--bg-canvas', hex: '#0C0D10', role: 'App background' },
-  { var: '--bg-surface', hex: '#16181D', role: 'Cards, panels' },
-  { var: '--bg-surface-2', hex: '#1E2128', role: 'Elevated (modals, dropdowns)' },
-  { var: '--bg-surface-3', hex: '#272B33', role: 'Table row hover, selected' },
-  { var: '--border-subtle', hex: '#2A2E38', role: '1px row dividers' },
-  { var: '--border-strong', hex: '#3A4050', role: 'Card borders, section dividers' },
-  { var: '--text-primary', hex: '#ECEEF1', role: 'Body text' },
-  { var: '--text-secondary', hex: '#C4CCD6', role: 'Meta, timestamps' },
-  { var: '--text-tertiary', hex: '#94A0B0', role: 'Captions, labels' },
-  { var: '--accent-gold', hex: '#F2B84B', role: 'Primary brand — editorial gold' },
-  { var: '--accent-gold-bright', hex: '#F7CC6E', role: 'Hover' },
-  { var: '--accent-gold-deep', hex: '#C99A30', role: 'Pressed' },
+  { var: '--bg-canvas', hex: '#101112', role: 'App background' },
+  { var: '--bg-surface', hex: '#1A1D20', role: 'Cards, panels' },
+  { var: '--bg-surface-2', hex: '#22262A', role: 'Elevated (modals, dropdowns)' },
+  { var: '--bg-surface-3', hex: '#2A2F34', role: 'Table row hover, selected' },
+  { var: '--border-subtle', hex: '#31363B', role: '1px row dividers' },
+  { var: '--border-strong', hex: '#42484F', role: 'Card borders, section dividers' },
+  { var: '--text-primary', hex: '#F5F3EE', role: 'Body text' },
+  { var: '--text-secondary', hex: '#D5D9DD', role: 'Meta, timestamps' },
+  { var: '--text-tertiary', hex: '#A3ABB2', role: 'Captions, labels' },
+  { var: '--accent-green', hex: '#6EBE9C', role: 'Primary brand — accent green' },
+  { var: '--accent-green-bright', hex: '#7FC9A7', role: 'Hover' },
+  { var: '--accent-green-deep', hex: '#55A889', role: 'Pressed' },
   { var: '--accent-crimson', hex: '#EF4444', role: 'Live, red cards, danger' },
   { var: '--accent-emerald', hex: '#16A765', role: 'Success, wins' },
   { var: '--accent-emerald-bright', hex: '#22C97A', role: 'Positive deltas, hover' },
   { var: '--accent-azure', hex: '#60A5FA', role: 'Links, info, UCL zone' },
   { var: '--accent-amber', hex: '#F59E0B', role: 'Warning, yellow cards' },
   { var: '--accent-violet', hex: '#A78BFA', role: 'Conference zone, MOTM' },
-  { var: '--score-live', hex: '#EF4444', role: 'Live score number' },
+  { var: '--score-live', hex: '#E06A63', role: 'Live score number' },
   { var: '--score-live-bg', hex: '#2D1A1A', role: 'Live row tint' },
 ];
 
@@ -48,7 +48,7 @@ export default function StyleGuidePage() {
       <div className="mx-auto max-w-5xl space-y-12">
         {/* Header + locale switcher */}
         <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-bold text-accent-gold">{t('title')}</h1>
+          <h1 className="text-4xl font-bold text-accent-green">{t('title')}</h1>
           <div className="flex gap-2">
             {localeLinks.map((l) => (
               <Link

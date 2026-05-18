@@ -21,7 +21,7 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className="group relative w-full overflow-hidden rounded-lg bg-bg-surface text-left transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:outline-none"
+      className="group relative w-full overflow-hidden rounded-lg bg-bg-surface text-left transition-shadow hover:shadow-md focus-visible:ring-2 focus-visible:ring-accent-green focus-visible:outline-none"
     >
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden">

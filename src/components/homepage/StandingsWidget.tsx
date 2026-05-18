@@ -86,7 +86,7 @@ export function StandingsWidget({
       <div className="border-t border-border-subtle px-3 py-2">
         <Link
           href={viewAllHref}
-          className="text-xs font-medium text-accent-gold transition-colors hover:text-accent-gold/80"
+          className="text-xs font-medium text-accent-green transition-colors hover:text-accent-green/80"
         >
           {viewAllLabel} →
         </Link>

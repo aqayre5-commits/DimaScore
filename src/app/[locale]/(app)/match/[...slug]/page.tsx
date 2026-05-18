@@ -145,7 +145,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
           <a
             key={tab.key}
             href={`#${tab.key}`}
-            className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-accent-gold hover:text-text-primary"
+            className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-accent-green hover:text-text-primary"
           >
             {tab.label}
           </a>

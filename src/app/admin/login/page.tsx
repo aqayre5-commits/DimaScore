@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-9 w-full rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-gold focus:ring-1 focus:ring-accent-gold"
+            className="h-9 w-full rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-green focus:ring-1 focus:ring-accent-green"
           />
         </div>
 
@@ -74,14 +74,14 @@ export default function AdminLoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-9 w-full rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-gold focus:ring-1 focus:ring-accent-gold"
+            className="h-9 w-full rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-green focus:ring-1 focus:ring-accent-green"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="h-9 w-full rounded-md bg-accent-gold px-4 text-sm font-medium text-bg-canvas transition-colors hover:bg-accent-gold/90 disabled:opacity-50"
+          className="h-9 w-full rounded-md bg-accent-green px-4 text-sm font-medium text-bg-canvas transition-colors hover:bg-accent-green/90 disabled:opacity-50"
         >
           {loading ? 'Signing in...' : 'Sign in'}
         </button>
