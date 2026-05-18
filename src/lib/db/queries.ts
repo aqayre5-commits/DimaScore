@@ -343,7 +343,12 @@ export async function getTickerFixtures(
       .select(TICKER_SELECT)
       .from(schema.fixtures)
       .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
-      .where(inArray(schema.fixtures.statusCode, LIVE_STATUSES))
+      .where(
+        and(
+          inArray(schema.fixtures.statusCode, LIVE_STATUSES),
+          sql`${schema.fixtures.updatedAt} > NOW() - INTERVAL '6 hours'`,
+        ),
+      )
       .orderBy(asc(schema.fixtures.kickoffAt)),
     db
       .select(TICKER_SELECT)

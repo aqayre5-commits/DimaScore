@@ -66,7 +66,7 @@ async function main() {
       continue;
     }
 
-    const newName = { ...existingName, fr: lookup.fr, ar: lookup.ar };
+    const newName: Record<string, string> = { ...existingName, fr: lookup.fr, ar: lookup.ar };
     if (lookup.en) newName.en = lookup.en;
     const newShort = { ...existingShort };
     if (lookup.frShort) newShort.fr = lookup.frShort;
