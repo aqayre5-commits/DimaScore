@@ -46,7 +46,6 @@ export interface CupMetadata extends BaseTournamentMetadata {
   historicalWinners: HistoricalWinner[];
   relatedCompetitionIds: number[];
   qualificationZones: QualificationZone[];
-  mediaYoutubeIds: string[];
 }
 
 export interface LeagueMetadata extends BaseTournamentMetadata {
@@ -102,7 +101,6 @@ const WC_2026: CupMetadata = {
     { positions: [3], type: 'playoff', color: 'var(--accent-amber)' },
     { positions: [4], type: 'eliminated', color: 'var(--accent-crimson)' },
   ],
-  mediaYoutubeIds: [],
 };
 
 const METADATA_REGISTRY: Map<number, TournamentMetadata> = new Map([[1, WC_2026]]);
