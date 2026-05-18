@@ -1,1 +1,1 @@
-Phase 7 — Live data + Pusher subscription, timezone handling, ticker pause, related competitions, stale-fixture cleanup. See docs/atlaskings-v2-rebuild-plan-final.md §J.7.
+Phase 8 — Match detail page. Canonical test case: Brazil vs Morocco, 13 June 2026 at MetLife Stadium. Sub-tasks: ScoreHeader (18 statuses), EventTimeline, LineupPitch (formations 4-3-3, 4-4-2, 3-5-2, 5-3-2, 4-2-3-1), StatsBars, PlayerRatingBadge. See docs/atlaskings-v2-rebuild-plan-final.md §J.8.
