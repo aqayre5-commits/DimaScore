@@ -1,4 +1,5 @@
 import { codeToFlag } from '@/lib/flags';
+import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import { ShareButton } from '@/components/shared/ShareButton';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
@@ -43,16 +44,8 @@ export function FeaturedMatchCard({
   const awayFlag =
     awayTeam?.isNational && awayTeam.countryCode ? codeToFlag(awayTeam.countryCode) : null;
 
-  const kickoffDate = kickoffAt.toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'long',
-  });
-  const kickoffTime = kickoffAt.toLocaleTimeString(locale === 'ar' ? 'ar-MA' : locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  const kickoffDate = formatMatchDate(kickoffAt, locale);
+  const kickoffTime = formatMatchTime(kickoffAt, locale);
 
   return (
     <div id={shareHash} className="relative rounded-lg border border-border-subtle bg-bg-surface">

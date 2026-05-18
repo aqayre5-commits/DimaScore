@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type { DayFixture } from '@/lib/db/queries/fixtures-by-day';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { formatMatchTime } from '@/lib/utils/date';
+import type { Locale } from '@/lib/i18n/config';
 
 interface MatchRowProps {
   fixture: DayFixture;
@@ -45,7 +47,7 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
           </span>
         ) : (
           <span className="text-xs text-text-tertiary">
-            {fixture.kickoffAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}
+            {formatMatchTime(fixture.kickoffAt, locale as Locale)}
           </span>
         )}
       </div>

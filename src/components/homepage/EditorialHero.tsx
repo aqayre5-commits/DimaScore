@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { db } from '@/lib/db/client';
 import { getEditorialHeroData, type EditorialHeroData } from '@/lib/db/queries/editorial-hero';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { formatMatchTime } from '@/lib/utils/date';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -78,10 +79,7 @@ function resolveContent(
       const home = getTeamDisplayName(fixture.homeTeam, locale);
       const away = getTeamDisplayName(fixture.awayTeam, locale);
       const compName = fixture.competitionName[locale] || fixture.competitionName.en || '';
-      const kickoffTime = fixture.kickoffAt.toLocaleTimeString(locale, {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      const kickoffTime = formatMatchTime(fixture.kickoffAt, locale);
       return {
         content: (
           <div className="flex items-center gap-3 overflow-hidden">
@@ -102,10 +100,7 @@ function resolveContent(
       const { fixture } = data;
       const home = getTeamDisplayName(fixture.homeTeam, locale);
       const away = getTeamDisplayName(fixture.awayTeam, locale);
-      const kickoffTime = fixture.kickoffAt.toLocaleTimeString(locale, {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+      const kickoffTime = formatMatchTime(fixture.kickoffAt, locale);
       return {
         content: (
           <div className="flex items-center gap-3 overflow-hidden">

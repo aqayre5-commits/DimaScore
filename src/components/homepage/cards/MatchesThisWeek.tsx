@@ -4,6 +4,7 @@ import { asc, and, eq, gte, lt } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/lib/db/schema';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { formatMatchTime } from '@/lib/utils/date';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -85,10 +86,7 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
           locale,
         );
         const dayLabel = row.kickoffAt.toLocaleDateString(locale, { weekday: 'short' });
-        const timeLabel = row.kickoffAt.toLocaleTimeString(locale, {
-          hour: '2-digit',
-          minute: '2-digit',
-        });
+        const timeLabel = formatMatchTime(row.kickoffAt, locale);
 
         return (
           <li key={row.id}>

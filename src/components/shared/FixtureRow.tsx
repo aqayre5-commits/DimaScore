@@ -1,4 +1,5 @@
 import { codeToFlag } from '@/lib/flags';
+import { formatMatchTime } from '@/lib/utils/date';
 import type { Locale } from '@/lib/i18n/config';
 
 interface FixtureTeam {
@@ -38,11 +39,7 @@ export function FixtureRow({
   const isLive = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'].includes(statusCode);
   const isUpcoming = !isFinished && !isLive;
 
-  const time = kickoffAt.toLocaleTimeString(locale === 'ar' ? 'ar-MA' : locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  const time = formatMatchTime(kickoffAt, locale);
 
   const homeName = resolveFullName(homeTeam, locale);
   const awayName = resolveFullName(awayTeam, locale);

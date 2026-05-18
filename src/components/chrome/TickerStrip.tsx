@@ -8,6 +8,7 @@ import { codeToFlag } from '@/lib/flags';
 import { isLiveStatus } from '@/lib/data/types';
 import type { TickerFixture } from '@/lib/db/queries';
 import { getCompactTeamLabel } from '@/lib/utils/team-name';
+import { formatMatchTime } from '@/lib/utils/date';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
@@ -39,15 +40,6 @@ function applyPatches(
 interface TickerStripProps {
   fixtures: TickerFixture[];
   locale: Locale;
-}
-
-function formatKickoffTime(date: Date, locale: Locale): string {
-  const lang = locale === 'ar' ? 'ar-MA' : locale === 'fr' ? 'fr-FR' : 'en-GB';
-  return new Intl.DateTimeFormat(lang, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(new Date(date));
 }
 
 function TeamCell({
@@ -115,7 +107,7 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
         </span>
       ) : (
         <span className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary">
-          {formatKickoffTime(fixture.kickoffAt, locale)}
+          {formatMatchTime(fixture.kickoffAt, locale)}
         </span>
       )}
 
