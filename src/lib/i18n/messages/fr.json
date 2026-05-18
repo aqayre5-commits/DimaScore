@@ -248,7 +248,13 @@
     "events": "Événements",
     "h2h": "Face à face",
     "prediction": "Pronostic",
-    "media": "Médias"
+    "media": "Médias",
+    "ownGoal": "CSC",
+    "penaltyGoal": "pen.",
+    "penaltyMissed": "pen. raté",
+    "varDecision": "VAR",
+    "playerIn": "Entré",
+    "playerOut": "Sorti"
   },
   "editorialHero": {
     "label": "Mise en avant \u00e9ditoriale",

@@ -248,7 +248,13 @@
     "events": "Events",
     "h2h": "H2H",
     "prediction": "Prediction",
-    "media": "Media"
+    "media": "Media",
+    "ownGoal": "OG",
+    "penaltyGoal": "pen.",
+    "penaltyMissed": "pen. missed",
+    "varDecision": "VAR",
+    "playerIn": "In",
+    "playerOut": "Out"
   },
   "editorialHero": {
     "label": "Editorial highlight",
