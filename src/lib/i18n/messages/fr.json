@@ -265,7 +265,9 @@
     "wins": "V",
     "draws": "N",
     "losses": "D",
-    "noH2H": "Aucune confrontation précédente"
+    "noH2H": "Aucune confrontation précédente",
+    "predictionComingSoon": "Disponible à l'approche du coup d'envoi",
+    "mediaComingSoon": "Résumé du match bientôt disponible"
   },
   "editorialHero": {
     "label": "Mise en avant \u00e9ditoriale",

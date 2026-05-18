@@ -265,7 +265,9 @@
     "wins": "W",
     "draws": "D",
     "losses": "L",
-    "noH2H": "No previous meetings"
+    "noH2H": "No previous meetings",
+    "predictionComingSoon": "Available closer to kick-off",
+    "mediaComingSoon": "Match highlights coming soon"
   },
   "editorialHero": {
     "label": "Editorial highlight",

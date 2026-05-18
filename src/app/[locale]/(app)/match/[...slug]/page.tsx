@@ -20,6 +20,8 @@ import { LineupPitch } from '@/components/match/LineupPitch';
 import { StatsBars } from '@/components/match/StatsBars';
 import { PlayerRatingsPanel } from '@/components/match/PlayerRatingBadge';
 import { H2HPanel } from '@/components/match/H2HPanel';
+import { PredictionCard } from '@/components/match/PredictionCard';
+import { MediaCard } from '@/components/match/MediaCard';
 import type { Locale } from '@/lib/i18n/config';
 
 interface PageProps {
@@ -207,18 +209,14 @@ export default async function MatchDetailPage({ params }: PageProps) {
         {coverage?.predictions && (
           <section id="prediction" className="scroll-mt-16">
             <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('prediction')}</h3>
-            <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-6 text-center text-sm text-text-tertiary">
-              {t('prediction')}
-            </div>
+            <PredictionCard />
           </section>
         )}
 
         {/* Media placeholder */}
         <section id="media" className="scroll-mt-16">
           <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('media')}</h3>
-          <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-6 text-center text-sm text-text-tertiary">
-            {t('media')}
-          </div>
+          <MediaCard />
         </section>
       </div>
     </div>
