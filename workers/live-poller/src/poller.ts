@@ -87,6 +87,8 @@ export async function pollLiveFixtures(): Promise<PollResult> {
 
     const payload: ScoreUpdatePayload = {
       fixtureId: delta.fixtureId,
+      homeName: fixture.homeTeam.name,
+      awayName: fixture.awayTeam.name,
       homeScore: fixture.goals.home,
       awayScore: fixture.goals.away,
       statusCode: fixture.status.short,
