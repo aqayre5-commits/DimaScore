@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { codeToFlag } from '@/lib/flags';
 import { isLiveStatus } from '@/lib/data/types';
 import type { TickerFixture } from '@/lib/db/queries';
+import { getCompactTeamLabel } from '@/lib/utils/team-name';
 import type { Locale } from '@/lib/i18n/config';
 import type { FixtureStatus } from '@/lib/data/types';
 
@@ -23,21 +24,19 @@ function formatKickoffTime(date: Date, locale: Locale): string {
   }).format(new Date(date));
 }
 
-function teamLabel(team: TickerFixture['homeTeam']): string {
-  if (!team) return '—';
-  return (
-    team.code ??
-    (team.shortName?.en ? team.shortName.en.slice(0, 4) : null) ??
-    (team.name?.en ? team.name.en.replace(/\s+/g, '').slice(0, 4).toUpperCase() : null) ??
-    '???'
-  );
-}
-
-function TeamCell({ team, reverse }: { team: TickerFixture['homeTeam']; reverse?: boolean }) {
+function TeamCell({
+  team,
+  locale,
+  reverse,
+}: {
+  team: TickerFixture['homeTeam'];
+  locale: Locale;
+  reverse?: boolean;
+}) {
   if (!team) return <span className="text-sm text-text-tertiary">&mdash;</span>;
 
   const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
-  const code = teamLabel(team);
+  const code = getCompactTeamLabel(team, locale);
 
   const logo = flag ? (
     <span className="text-base leading-none">{flag}</span>
@@ -75,7 +74,7 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
       className="flex shrink-0 items-center gap-2 px-4 py-1 transition-colors hover:bg-white/5"
     >
       {/* Home team */}
-      <TeamCell team={fixture.homeTeam} />
+      <TeamCell team={fixture.homeTeam} locale={locale} />
 
       {/* Score (live) or kickoff time (upcoming) */}
       {live ? (
@@ -95,7 +94,7 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
       )}
 
       {/* Away team — mirrored: code then logo */}
-      <TeamCell team={fixture.awayTeam} reverse />
+      <TeamCell team={fixture.awayTeam} locale={locale} reverse />
     </Link>
   );
 }
@@ -114,18 +113,18 @@ function TickerCells({ fixtures, locale }: TickerStripProps) {
   );
 }
 
-function isRenderable(f: TickerFixture): boolean {
+function isRenderable(f: TickerFixture, locale: string): boolean {
   if (!f.homeTeam || !f.awayTeam) return false;
-  const hasHome = f.homeTeam.name?.en || f.homeTeam.shortName?.en || f.homeTeam.code;
-  const hasAway = f.awayTeam.name?.en || f.awayTeam.shortName?.en || f.awayTeam.code;
-  return !!(hasHome && hasAway);
+  const hasName = (t: NonNullable<TickerFixture['homeTeam']>) =>
+    t.code || t.shortName?.[locale] || t.shortName?.en || t.name?.[locale] || t.name?.en;
+  return !!(hasName(f.homeTeam) && hasName(f.awayTeam));
 }
 
 export function TickerStrip({ fixtures, locale }: TickerStripProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('topStrip');
-  const renderable = fixtures.filter(isRenderable);
+  const renderable = fixtures.filter((f) => isRenderable(f, locale));
 
   // Duration = original copy width / speed (60 px/s).
   // translateX(-50%) scrolls exactly one copy width, then resets seamlessly.
