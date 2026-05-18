@@ -57,7 +57,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
             aria-controls={`tabpanel-${tab.key}`}
             onClick={() => handleTabClick(tab)}
             className={cn(
-              'relative shrink-0 flex-1 px-4 py-3 text-center text-sm font-medium transition-colors',
+              'relative shrink-0 flex-1 px-4 py-3 text-center text-base font-medium transition-colors',
               tab.key === activeKey
                 ? 'rounded-t-md bg-bg-surface-2 font-semibold text-text-primary'
                 : 'text-text-tertiary hover:text-text-secondary',

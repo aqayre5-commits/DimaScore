@@ -23,7 +23,7 @@ export function H2HPanel({
 
   if (fixtures.length === 0) {
     return (
-      <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-6 text-center text-sm text-text-tertiary">
+      <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-6 text-center text-base text-text-tertiary">
         {t('noH2H')}
       </div>
     );
@@ -109,7 +109,7 @@ function H2HRow({
 
       {/* Score */}
       <span
-        className={`w-14 shrink-0 text-center text-sm font-semibold tabular-nums ${
+        className={`w-14 shrink-0 text-center text-base font-semibold tabular-nums ${
           won ? 'text-accent-emerald' : lost ? 'text-score-loss' : 'text-text-primary'
         }`}
       >

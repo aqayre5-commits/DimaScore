@@ -79,7 +79,7 @@ export function ScoreHeader({ match, locale }: ScoreHeaderProps) {
                 loading="lazy"
               />
             )}
-            <span className="text-sm font-semibold text-text-primary">{homeName}</span>
+            <span className="text-base font-semibold text-text-primary">{homeName}</span>
           </div>
 
           {/* Score / status center */}
@@ -160,7 +160,7 @@ export function ScoreHeader({ match, locale }: ScoreHeaderProps) {
                 loading="lazy"
               />
             )}
-            <span className="text-sm font-semibold text-text-primary">{awayName}</span>
+            <span className="text-base font-semibold text-text-primary">{awayName}</span>
           </div>
         </div>
 

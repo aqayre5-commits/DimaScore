@@ -19,12 +19,12 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
   const homeLabel = getTeamDisplayName(fixture.homeTeam, locale);
   const awayLabel = getTeamDisplayName(fixture.awayTeam, locale);
 
-  const homeWins =
+  const homeWon =
     isFinished &&
     fixture.homeScore != null &&
     fixture.awayScore != null &&
     fixture.homeScore > fixture.awayScore;
-  const awayWins =
+  const awayWon =
     isFinished &&
     fixture.homeScore != null &&
     fixture.awayScore != null &&
@@ -33,114 +33,91 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
   return (
     <Link
       href={`/${locale}/match/${fixture.id}`}
-      className="group flex min-h-[48px] items-center border-b border-border-subtle px-3 transition-colors hover:bg-bg-surface-2"
+      className="flex items-center gap-2 border-b border-border-subtle px-3 py-2 text-base transition-colors hover:bg-bg-surface-2"
     >
-      {/* Status / Time column */}
-      <div className="w-14 shrink-0 text-center">
+      {/* Time / status */}
+      <div className="w-12 shrink-0 text-center">
         {isLive ? (
-          <span className="text-xs font-bold text-score-live">
+          <span className="flex items-center justify-center gap-1 text-xs font-bold text-score-live">
+            <span className="live-pulse size-1.5 rounded-full bg-score-live" />
             {fixture.statusCode === 'HT' ? 'HT' : `${fixture.minute ?? ''}'`}
           </span>
         ) : isFinished ? (
-          <span className="text-xs font-medium text-text-tertiary">
+          <span className="text-xs text-text-tertiary">
             {fixture.statusCode === 'PEN' ? 'Pen' : 'FT'}
           </span>
         ) : (
-          <span className="text-xs text-text-tertiary">
+          <span className="text-xs tabular-nums text-text-secondary">
             {formatMatchTime(fixture.kickoffAt, locale as Locale)}
           </span>
         )}
       </div>
 
-      {/* Divider */}
-      <div className="mx-2 h-8 w-px bg-border-subtle" />
+      {/* Home team */}
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 justify-end">
+        <span
+          className={`overflow-hidden text-ellipsis whitespace-nowrap text-base ${
+            isLive
+              ? 'font-medium text-text-primary'
+              : awayWon
+                ? 'text-text-tertiary'
+                : 'text-text-primary'
+          }`}
+        >
+          {homeLabel}
+        </span>
+        {fixture.homeTeam?.logoUrl ? (
+          <img
+            src={fixture.homeTeam.logoUrl}
+            alt=""
+            className="h-4 w-4 shrink-0 object-contain"
+            loading="lazy"
+          />
+        ) : (
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
+            {fixture.homeTeam?.code?.slice(0, 2) ?? '??'}
+          </span>
+        )}
+      </div>
 
-      {/* Teams + scores */}
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5 py-1.5">
-        {/* Home team row */}
-        <div className="flex items-center gap-2">
-          {fixture.homeTeam?.logoUrl ? (
-            <img
-              src={fixture.homeTeam.logoUrl}
-              alt=""
-              className="h-4 w-4 shrink-0 object-contain"
-              loading="lazy"
-            />
-          ) : (
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">
-              {fixture.homeTeam?.code?.slice(0, 2) ?? '??'}
-            </span>
-          )}
+      {/* Score or vs */}
+      <div className="w-10 shrink-0 text-center tabular-nums">
+        {isLive || isFinished ? (
           <span
-            className={`min-w-0 truncate text-sm ${
-              isLive
-                ? 'font-medium text-text-primary'
-                : awayWins
-                  ? 'text-text-tertiary'
-                  : 'text-text-primary'
-            }`}
+            className={`text-sm font-semibold ${isLive ? 'text-score-live' : 'text-text-primary'}`}
           >
-            {homeLabel}
+            {fixture.homeScore ?? 0} - {fixture.awayScore ?? 0}
           </span>
-          <span className="ms-auto shrink-0 tabular-nums">
-            {(isLive || isFinished) && fixture.homeScore != null ? (
-              <span
-                className={`text-sm font-semibold ${isLive ? 'text-score-live' : homeWins ? 'text-text-primary' : 'text-text-tertiary'}`}
-              >
-                {fixture.homeScore}
-              </span>
-            ) : (
-              <span className="text-sm text-text-tertiary">–</span>
-            )}
-          </span>
-        </div>
+        ) : (
+          <span className="text-xs text-text-tertiary">vs</span>
+        )}
+      </div>
 
-        {/* Away team row */}
-        <div className="flex items-center gap-2">
-          {fixture.awayTeam?.logoUrl ? (
-            <img
-              src={fixture.awayTeam.logoUrl}
-              alt=""
-              className="h-4 w-4 shrink-0 object-contain"
-              loading="lazy"
-            />
-          ) : (
-            <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">
-              {fixture.awayTeam?.code?.slice(0, 2) ?? '??'}
-            </span>
-          )}
-          <span
-            className={`min-w-0 truncate text-sm ${
-              isLive
-                ? 'font-medium text-text-primary'
-                : homeWins
-                  ? 'text-text-tertiary'
-                  : 'text-text-primary'
-            }`}
-          >
-            {awayLabel}
+      {/* Away team */}
+      <div className="flex min-w-0 flex-1 items-center gap-1.5">
+        {fixture.awayTeam?.logoUrl ? (
+          <img
+            src={fixture.awayTeam.logoUrl}
+            alt=""
+            className="h-4 w-4 shrink-0 object-contain"
+            loading="lazy"
+          />
+        ) : (
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
+            {fixture.awayTeam?.code?.slice(0, 2) ?? '??'}
           </span>
-          <span className="ms-auto shrink-0 tabular-nums">
-            {(isLive || isFinished) && fixture.awayScore != null ? (
-              <span
-                className={`text-sm font-semibold ${isLive ? 'text-score-live' : awayWins ? 'text-text-primary' : 'text-text-tertiary'}`}
-              >
-                {fixture.awayScore}
-              </span>
-            ) : (
-              <span className="text-sm text-text-tertiary">–</span>
-            )}
-          </span>
-        </div>
-
-        {/* Penalty indicator */}
-        {fixture.statusCode === 'PEN' &&
-          fixture.homeScorePen != null &&
-          fixture.awayScorePen != null && (
-            <div className="mt-0.5 text-center text-[10px] text-text-tertiary">
-              ({fixture.homeScorePen} – {fixture.awayScorePen} pen)
-            </div>
-          )}
+        )}
+        <span
+          className={`overflow-hidden text-ellipsis whitespace-nowrap text-base ${
+            isLive
+              ? 'font-medium text-text-primary'
+              : homeWon
+                ? 'text-text-tertiary'
+                : 'text-text-primary'
+          }`}
+        >
+          {awayLabel}
+        </span>
       </div>
     </Link>
   );

@@ -153,3 +153,133 @@ export async function getFixturesByDay(
   // Return sorted by displayPriority (already sorted from query, Map preserves insertion order)
   return [...groupsMap.values()];
 }
+
+// ── Multi-day query ──
+
+export interface DaySection {
+  date: string; // ISO date string YYYY-MM-DD
+  groups: CompetitionGroup[];
+}
+
+/**
+ * Get fixtures for multiple consecutive days, each day grouped by competition.
+ * Returns only days that have fixtures (empty days are skipped).
+ */
+export async function getFixturesMultiDay(
+  db: NeonHttpDatabase<typeof schema>,
+  startDate: Date,
+  days: number,
+): Promise<DaySection[]> {
+  const rangeStart = new Date(startDate);
+  rangeStart.setUTCHours(0, 0, 0, 0);
+  const rangeEnd = new Date(rangeStart);
+  rangeEnd.setUTCDate(rangeEnd.getUTCDate() + days);
+
+  const rows = await db
+    .select({
+      id: schema.fixtures.id,
+      kickoffAt: schema.fixtures.kickoffAt,
+      statusCode: schema.fixtures.statusCode,
+      minute: schema.fixtures.minute,
+      homeTeamId: schema.fixtures.homeTeamId,
+      awayTeamId: schema.fixtures.awayTeamId,
+      homeScore: schema.fixtures.homeScore,
+      awayScore: schema.fixtures.awayScore,
+      homeScorePen: schema.fixtures.homeScorePen,
+      awayScorePen: schema.fixtures.awayScorePen,
+      compId: schema.competitions.id,
+      compSlug: schema.competitions.slug,
+      compName: schema.competitions.name,
+      compCountryCode: schema.competitions.countryCode,
+      compLogoUrl: schema.competitions.logoUrl,
+      compDisplayPriority: schema.competitions.displayPriority,
+    })
+    .from(schema.fixtures)
+    .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+    .where(and(gte(schema.fixtures.kickoffAt, rangeStart), lt(schema.fixtures.kickoffAt, rangeEnd)))
+    .orderBy(asc(schema.fixtures.kickoffAt), asc(schema.competitions.displayPriority));
+
+  if (rows.length === 0) return [];
+
+  // Batch hydrate teams
+  const teamIds = new Set<number>();
+  for (const r of rows) {
+    if (r.homeTeamId != null) teamIds.add(r.homeTeamId);
+    if (r.awayTeamId != null) teamIds.add(r.awayTeamId);
+  }
+
+  const teamsMap = new Map<number, TeamSnapshot>();
+  if (teamIds.size > 0) {
+    const teams = await db
+      .select({
+        id: schema.teams.id,
+        name: schema.teams.name,
+        shortName: schema.teams.shortName,
+        code: schema.teams.code,
+        countryCode: schema.teams.countryCode,
+        logoUrl: schema.teams.logoUrl,
+        isNational: schema.teams.isNational,
+      })
+      .from(schema.teams)
+      .where(inArray(schema.teams.id, [...teamIds]));
+
+    for (const t of teams) {
+      teamsMap.set(t.id, t);
+    }
+  }
+
+  // Group by day, then by competition within each day
+  const dayMap = new Map<string, Map<number, CompetitionGroup>>();
+
+  for (const r of rows) {
+    const dateKey = r.kickoffAt.toISOString().slice(0, 10);
+
+    let compMap = dayMap.get(dateKey);
+    if (!compMap) {
+      compMap = new Map();
+      dayMap.set(dateKey, compMap);
+    }
+
+    let group = compMap.get(r.compId);
+    if (!group) {
+      group = {
+        competition: {
+          id: r.compId,
+          slug: r.compSlug,
+          name: r.compName,
+          countryCode: r.compCountryCode,
+          logoUrl: r.compLogoUrl,
+          displayPriority: r.compDisplayPriority ?? 100,
+        },
+        fixtures: [],
+      };
+      compMap.set(r.compId, group);
+    }
+
+    group.fixtures.push({
+      id: r.id,
+      kickoffAt: r.kickoffAt,
+      statusCode: r.statusCode,
+      minute: r.minute,
+      homeTeamId: r.homeTeamId,
+      awayTeamId: r.awayTeamId,
+      homeScore: r.homeScore,
+      awayScore: r.awayScore,
+      homeScorePen: r.homeScorePen,
+      awayScorePen: r.awayScorePen,
+      homeTeam: r.homeTeamId ? (teamsMap.get(r.homeTeamId) ?? null) : null,
+      awayTeam: r.awayTeamId ? (teamsMap.get(r.awayTeamId) ?? null) : null,
+    });
+  }
+
+  // Build sorted result — days in chronological order, competitions by priority within each day
+  const sections: DaySection[] = [];
+  for (const [dateKey, compMap] of dayMap) {
+    const groups = [...compMap.values()].sort(
+      (a, b) => a.competition.displayPriority - b.competition.displayPriority,
+    );
+    sections.push({ date: dateKey, groups });
+  }
+
+  return sections;
+}

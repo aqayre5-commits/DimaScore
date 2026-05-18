@@ -50,7 +50,7 @@ export function HistoricalWinners({ winners, teamNames, locale }: HistoricalWinn
 
       <div className="divide-y divide-border-subtle px-4">
         {winners.map((w) => (
-          <div key={w.year} className="flex items-center gap-3 py-2.5 text-sm">
+          <div key={w.year} className="flex items-center gap-3 py-2.5 text-base">
             <span className="w-10 shrink-0 tabular-nums text-text-tertiary">{w.year}</span>
             <span className="shrink-0">🏆</span>
             <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">

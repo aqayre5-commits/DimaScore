@@ -12,8 +12,8 @@ export function QuickFactsStrip({ blocks }: QuickFactsStripProps) {
           key={i}
           className="flex flex-col items-center rounded-lg border border-border-subtle bg-bg-surface px-3 py-3 text-center"
         >
-          <span className="text-lg font-bold tabular-nums text-text-primary">{block.value}</span>
-          <span className="text-[11px] font-medium text-text-secondary">{block.label}</span>
+          <span className="text-xl font-bold tabular-nums text-text-primary">{block.value}</span>
+          <span className="text-xs font-medium text-text-secondary">{block.label}</span>
         </div>
       ))}
     </div>

@@ -39,7 +39,7 @@ export function RelatedCompetitions({ competitionIds, locale }: RelatedCompetiti
           <a
             key={entry.competitionId}
             href={buildCompetitionHref(entry, locale)}
-            className="flex items-center justify-between px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+            className="flex items-center justify-between px-4 py-2.5 text-base text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
           >
             <span>{tMenu(entry.labelKey as never)}</span>
             <span className="text-text-tertiary">&rarr;</span>

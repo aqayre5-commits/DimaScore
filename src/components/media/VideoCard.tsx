@@ -39,7 +39,7 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
         </div>
         {/* Duration badge */}
         {duration && (
-          <span className="absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 font-[family-name:var(--font-ibm-plex-sans)] text-[11px] font-medium tabular-nums text-white">
+          <span className="absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 font-[family-name:var(--font-ibm-plex-sans)] text-xs font-medium tabular-nums text-white">
             {duration}
           </span>
         )}
@@ -47,7 +47,7 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
 
       {/* Info */}
       <div className="px-2.5 py-2">
-        <p className="truncate text-sm font-medium text-text-primary">{video.title}</p>
+        <p className="truncate text-base font-medium text-text-primary">{video.title}</p>
         {video.channelName && (
           <p className="mt-0.5 truncate text-xs text-text-tertiary">{video.channelName}</p>
         )}

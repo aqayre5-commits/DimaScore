@@ -47,6 +47,13 @@ export function FeaturedMatchCard({
   const kickoffDate = formatMatchDate(kickoffAt, locale);
   const kickoffTime = formatMatchTime(kickoffAt, locale);
 
+  const now = new Date();
+  const ko = new Date(kickoffAt);
+  const isToday =
+    ko.getFullYear() === now.getFullYear() &&
+    ko.getMonth() === now.getMonth() &&
+    ko.getDate() === now.getDate();
+
   return (
     <div id={shareHash} className="relative rounded-lg border border-border-subtle bg-bg-surface">
       {shareHash && (
@@ -58,8 +65,8 @@ export function FeaturedMatchCard({
       <div className="flex flex-col items-center gap-3 px-4 py-5">
         {/* Kickoff time */}
         <div className="text-center">
-          <p className="text-lg font-semibold tabular-nums text-text-primary">{kickoffTime}</p>
-          <p className="text-xs uppercase text-text-secondary">{kickoffDate}</p>
+          <p className="text-xl font-semibold tabular-nums text-text-primary">{kickoffTime}</p>
+          {!isToday && <p className="text-sm uppercase text-text-secondary">{kickoffDate}</p>}
         </div>
 
         {/* Teams */}
@@ -67,21 +74,21 @@ export function FeaturedMatchCard({
           {/* Home */}
           <div className="flex flex-col items-center gap-1.5 text-center">
             {homeFlag && <span className="text-3xl leading-none">{homeFlag}</span>}
-            <span className="text-sm font-medium text-text-primary">{homeName}</span>
+            <span className="text-base font-medium text-text-primary">{homeName}</span>
           </div>
 
-          <span className="text-xs font-medium text-text-secondary">vs</span>
+          <span className="text-sm font-medium text-text-secondary">vs</span>
 
           {/* Away */}
           <div className="flex flex-col items-center gap-1.5 text-center">
             {awayFlag && <span className="text-3xl leading-none">{awayFlag}</span>}
-            <span className="text-sm font-medium text-text-primary">{awayName}</span>
+            <span className="text-base font-medium text-text-primary">{awayName}</span>
           </div>
         </div>
 
         {/* Venue */}
         {venue && (venue.name || venue.city) && (
-          <p className="text-xs text-text-tertiary">
+          <p className="text-sm text-text-tertiary">
             📍 {[venue.name, venue.city].filter(Boolean).join(', ')}
           </p>
         )}

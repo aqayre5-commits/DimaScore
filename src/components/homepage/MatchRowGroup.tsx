@@ -44,7 +44,7 @@ export function MatchRowGroup({ group, locale, defaultExpanded }: MatchRowGroupP
               {competition.slug.slice(0, 2).toUpperCase()}
             </span>
           )}
-          <span className="truncate text-sm font-semibold text-text-primary">{compName}</span>
+          <span className="truncate text-base font-semibold text-text-primary">{compName}</span>
         </Link>
 
         {/* Country (non-clickable per deferred-affordance rule) */}

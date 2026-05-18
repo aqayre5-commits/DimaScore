@@ -95,7 +95,7 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
               className="block rounded-lg px-3 py-2 transition-colors hover:bg-bg-surface-2"
             >
               <p className="text-sm font-medium text-text-primary">
-                {getTeamDisplayName(home, locale)} – {getTeamDisplayName(away, locale)}
+                {getTeamDisplayName(home, locale)} vs {getTeamDisplayName(away, locale)}
               </p>
               <p className="mt-0.5 text-xs text-text-tertiary">
                 {compName} · {dayLabel} {timeLabel}

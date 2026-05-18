@@ -31,11 +31,11 @@ export function StandingsWidget({
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       <div className="px-3 pt-3 pb-2">
-        <h2 className="text-sm font-semibold text-text-primary">{heading}</h2>
+        <h2 className="text-base font-semibold text-text-primary">{heading}</h2>
       </div>
 
       {top6.length > 0 ? (
-        <table className="w-full text-xs">
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border-subtle text-text-tertiary">
               <th className="w-8 py-1.5 text-center font-medium">{rankLabel}</th>
@@ -86,7 +86,7 @@ export function StandingsWidget({
       <div className="border-t border-border-subtle px-3 py-2">
         <Link
           href={viewAllHref}
-          className="text-xs font-medium text-accent-green transition-colors hover:text-accent-green/80"
+          className="text-sm font-medium text-accent-green transition-colors hover:text-accent-green/80"
         >
           {viewAllLabel} →
         </Link>

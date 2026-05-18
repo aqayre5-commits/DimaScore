@@ -24,7 +24,7 @@ export function MoroccoContextLine({ groupLabel, rivals, locale }: MoroccoContex
   const t = useTranslations('tournament');
 
   return (
-    <p className="flex flex-wrap items-center gap-1.5 text-sm text-text-secondary">
+    <p className="flex flex-wrap items-center gap-1.5 text-base text-text-secondary">
       <span>{t('moroccoInGroup', { group: groupLabel })}</span>
       <span className="text-text-tertiary">{t('with')}</span>
       {rivals.map((rival, i) => (

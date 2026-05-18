@@ -115,6 +115,7 @@
     "featuredVideos": "Vidéos à la une"
   },
   "fixtureList": {
+    "matches": "Matchs",
     "h2Today": "Matchs et r\u00e9sultats aujourd'hui",
     "h2Tomorrow": "Matchs et r\u00e9sultats demain",
     "h2Date": "Matchs et r\u00e9sultats \u2014 {date}",

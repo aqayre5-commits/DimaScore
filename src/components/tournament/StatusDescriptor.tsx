@@ -35,13 +35,13 @@ export function StatusDescriptor({ tournamentPhase }: StatusDescriptorProps) {
         ? `${t('preTournament')} · ${t('kickoff')}: ${kickoffDateFormatted}`
         : `${t('preTournament')} · ${t('daysUntilKickoff', { days: daysUntilKickoff })}`;
 
-    return <p className="text-sm text-text-secondary">{label}</p>;
+    return <p className="text-base text-text-secondary">{label}</p>;
   }
 
   if (phase === 'group-stage') {
     const { currentRound, totalRounds, matchesToday } = tournamentPhase;
     return (
-      <p className="text-sm text-text-secondary">
+      <p className="text-base text-text-secondary">
         {t('groupStage')} · {t('round')} {currentRound}/{totalRounds}
         {matchesToday > 0 ? ` · ${t('matchesToday', { count: matchesToday })}` : ''}
       </p>
@@ -51,7 +51,7 @@ export function StatusDescriptor({ tournamentPhase }: StatusDescriptorProps) {
   if (phase === 'knockout') {
     const { roundLabel, isLive } = tournamentPhase;
     return (
-      <p className="text-sm text-text-secondary">
+      <p className="text-base text-text-secondary">
         {t('knockoutStage')} · {roundLabel}
         {isLive ? ` · ${t('inProgress')}` : ''}
       </p>
@@ -61,7 +61,7 @@ export function StatusDescriptor({ tournamentPhase }: StatusDescriptorProps) {
   if (phase === 'final') {
     const { matchLabel, kickoffFormatted } = tournamentPhase;
     return (
-      <p className="text-sm text-text-secondary">
+      <p className="text-base text-text-secondary">
         {t('final')} · {matchLabel} · {kickoffFormatted}
       </p>
     );
@@ -70,7 +70,7 @@ export function StatusDescriptor({ tournamentPhase }: StatusDescriptorProps) {
   // post-tournament
   const { winnerName, titleNumber } = tournamentPhase;
   return (
-    <p className="text-sm text-text-secondary">
+    <p className="text-base text-text-secondary">
       {t('tournamentComplete')} · {winnerName} {t('winner')}
       {titleNumber ? ` (${t('titleNumber', { n: titleNumber })})` : ''}
     </p>

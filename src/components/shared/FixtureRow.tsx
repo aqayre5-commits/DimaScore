@@ -52,7 +52,7 @@ export function FixtureRow({
   const awayWon = isFinished && awayScore != null && homeScore != null && awayScore > homeScore;
 
   return (
-    <div className="flex items-center gap-2 py-2 text-sm">
+    <div className="flex items-center gap-2 py-2 text-base">
       {/* Time / status column */}
       <div className="w-12 shrink-0 text-center">
         {isLive ? (
@@ -83,7 +83,7 @@ export function FixtureRow({
           <span className="text-xs text-text-tertiary">&ndash;</span>
         ) : (
           <span
-            className={`text-sm font-semibold ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
+            className={`text-base font-semibold ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
           >
             {homeScore ?? 0} - {awayScore ?? 0}
           </span>

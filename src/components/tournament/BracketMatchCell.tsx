@@ -56,7 +56,7 @@ export function BracketMatchCell({ match, className }: BracketMatchCellProps) {
       )}
     >
       {/* Header: match number */}
-      <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-text-secondary">
+      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-text-secondary">
         M{match.fifaMatchNumber ?? match.matchNumber}
       </p>
 
@@ -79,7 +79,7 @@ export function BracketMatchCell({ match, className }: BracketMatchCellProps) {
 
       {/* Footer: status + venue (rendered only when data exists) */}
       {match.statusLabel && (
-        <p className="mt-1 truncate text-[10px] text-text-tertiary">
+        <p className="mt-1 truncate text-xs text-text-tertiary">
           {match.statusLabel}
           {match.venue && ` · ${match.venue}`}
         </p>

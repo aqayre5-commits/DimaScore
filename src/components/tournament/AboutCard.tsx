@@ -34,7 +34,7 @@ export function AboutCard({ content }: AboutCardProps) {
           >
             {card.heading && (
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-text-primary">{card.heading}</h2>
+                <h2 className="text-lg font-semibold text-text-primary">{card.heading}</h2>
                 <ShareButton title={card.heading} hash={card.id} />
               </div>
             )}
@@ -49,16 +49,16 @@ export function AboutCard({ content }: AboutCardProps) {
       {content.faqs.length > 0 && (
         <section id="faq" className="rounded-lg border border-border-subtle bg-bg-surface p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-text-primary">{t('faqTitle')}</h2>
+            <h2 className="text-lg font-semibold text-text-primary">{t('faqTitle')}</h2>
             <ShareButton title={t('faqTitle')} hash="faq" />
           </div>
           <div className="mt-3 divide-y divide-border-subtle">
             {content.faqs.map((faq, i) => (
               <details key={i} className="group py-3">
-                <summary className="cursor-pointer text-sm font-medium text-text-primary hover:text-accent-green">
+                <summary className="cursor-pointer text-base font-medium text-text-primary hover:text-accent-green">
                   {faq.question}
                 </summary>
-                <p className="mt-2 text-sm leading-relaxed text-text-secondary">{faq.answer}</p>
+                <p className="mt-2 text-base leading-relaxed text-text-secondary">{faq.answer}</p>
               </details>
             ))}
           </div>

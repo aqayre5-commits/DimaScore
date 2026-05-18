@@ -18,7 +18,7 @@ export async function FeaturedVideosStrip({ locale }: FeaturedVideosStripProps) 
 
   return (
     <section className="mx-auto w-full max-w-[1344px] px-4 pb-12">
-      <h2 className="mb-4 text-lg font-semibold text-text-primary">{t('featuredVideos')}</h2>
+      <h2 className="mb-4 text-xl font-semibold text-text-primary">{t('featuredVideos')}</h2>
       <MediaGrid videos={videos} />
     </section>
   );

@@ -28,7 +28,7 @@ export function MeetTheTeamsCard({ metadata, standings, locale }: MeetTheTeamsCa
   return (
     <div id="meet-teams" className="rounded-lg border border-border-subtle bg-bg-surface p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-primary">{t('meetTheTeams')}</h3>
+        <h3 className="text-base font-semibold text-text-primary">{t('meetTheTeams')}</h3>
         <ShareButton title={t('meetTheTeams')} hash="meet-teams" />
       </div>
       <p className="mt-0.5 text-xs text-text-tertiary">
@@ -49,7 +49,7 @@ export function MeetTheTeamsCard({ metadata, standings, locale }: MeetTheTeamsCa
           return (
             <li key={row.teamId ?? row.groupLabel + row.rank} className="flex items-center gap-2">
               {flag && <span className="text-base">{flag}</span>}
-              <span className="text-sm text-text-primary">{name}</span>
+              <span className="text-base text-text-primary">{name}</span>
             </li>
           );
         })}

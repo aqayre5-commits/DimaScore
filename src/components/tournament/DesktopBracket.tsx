@@ -102,7 +102,7 @@ export function DesktopBracket({
         {HEADER_COLUMNS.map(({ col, phase }) => (
           <div
             key={`hdr-${col}`}
-            className="flex items-center justify-center py-2 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary"
+            className="flex items-center justify-center py-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary"
             style={{ gridColumn: col, gridRow: 1 }}
           >
             {labels[phase]}

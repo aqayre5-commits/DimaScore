@@ -81,7 +81,7 @@ export function TournamentPageHeader({
               </>
             )}
             <div className="min-w-0">
-              <h1 className="text-2xl font-semibold leading-tight text-text-primary md:text-[32px]">
+              <h1 className="text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
                 {pageTitle}
               </h1>
               <p className="mt-1 max-w-prose text-sm text-text-secondary">
@@ -97,7 +97,7 @@ export function TournamentPageHeader({
         </div>
 
         {/* Intro paragraph */}
-        <p className="mt-4 max-w-[720px] text-[15px] leading-relaxed text-text-secondary">
+        <p className="mt-4 max-w-[720px] text-base leading-relaxed text-text-secondary">
           {introText}
         </p>
       </div>

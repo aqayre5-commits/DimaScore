@@ -83,7 +83,7 @@ export async function RightRail({ locale }: RightRailProps) {
       {/* Widget 2: UCL top scorers (placeholder — needs player stats data) */}
       <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
         <div className="px-3 pt-3 pb-2">
-          <h2 className="text-sm font-semibold text-text-primary">{t('uclTopScorers')}</h2>
+          <h2 className="text-base font-semibold text-text-primary">{t('uclTopScorers')}</h2>
         </div>
         <div className="px-3 pb-3">
           <p className="text-xs text-text-tertiary">{t('comingSoon')}</p>

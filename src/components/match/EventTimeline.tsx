@@ -113,7 +113,7 @@ function resolveEventDisplay(
       return {
         icon: <Circle className="size-4 text-score-loss" />,
         content: (
-          <p className="text-sm text-text-secondary">
+          <p className="text-base text-text-secondary">
             <span className="font-medium text-text-primary">{name}</span>{' '}
             <span className="text-xs text-score-loss">({t('penaltyMissed')})</span>
           </p>
@@ -125,7 +125,7 @@ function resolveEventDisplay(
       return {
         icon: <Circle className="size-4 fill-score-loss text-score-loss" />,
         content: (
-          <p className="text-sm text-text-secondary">
+          <p className="text-base text-text-secondary">
             <span className="font-medium text-text-primary">{name}</span>{' '}
             <span className="text-xs text-score-loss">({t('ownGoal')})</span>
           </p>
@@ -137,7 +137,7 @@ function resolveEventDisplay(
     return {
       icon: <Circle className="size-4 fill-accent-emerald text-accent-emerald" />,
       content: (
-        <p className="text-sm">
+        <p className="text-base">
           <span className="font-semibold text-text-primary">{name}</span>
           {isPen && <span className="text-xs text-text-tertiary"> ({t('penaltyGoal')})</span>}
           {assistName && <span className="text-xs text-text-tertiary"> ({assistName})</span>}
@@ -167,7 +167,7 @@ function resolveEventDisplay(
           </span>
         ),
         content: (
-          <p className="text-sm">
+          <p className="text-base">
             <span className="font-medium text-text-primary">{name}</span>
           </p>
         ),
@@ -178,7 +178,7 @@ function resolveEventDisplay(
       return {
         icon: <Square className="size-4 fill-red-500 text-red-500" />,
         content: (
-          <p className="text-sm">
+          <p className="text-base">
             <span className="font-medium text-text-primary">{name}</span>
           </p>
         ),
@@ -189,7 +189,7 @@ function resolveEventDisplay(
     return {
       icon: <Square className="size-4 fill-yellow-400 text-yellow-400" />,
       content: (
-        <p className="text-sm">
+        <p className="text-base">
           <span className="font-medium text-text-primary">{name}</span>
         </p>
       ),
@@ -204,7 +204,7 @@ function resolveEventDisplay(
     return {
       icon: <ArrowRightLeft className="size-4 text-accent-emerald" />,
       content: (
-        <p className="text-sm">
+        <p className="text-base">
           <span className="font-medium text-accent-emerald">{playerIn}</span>
           {playerOut && (
             <>
@@ -224,7 +224,7 @@ function resolveEventDisplay(
     return {
       icon: <Monitor className="size-4 text-text-secondary" />,
       content: (
-        <p className="text-sm">
+        <p className="text-base">
           <span className="font-medium text-text-primary">{t('varDecision')}</span>
           {detail && <span className="text-xs text-text-tertiary"> — {detail}</span>}
         </p>
@@ -236,7 +236,7 @@ function resolveEventDisplay(
   return {
     icon: <Circle className="size-4 text-text-tertiary" />,
     content: (
-      <p className="text-sm text-text-secondary">
+      <p className="text-base text-text-secondary">
         {playerName(event.player, locale)}
         {detail && <span className="text-xs text-text-tertiary"> — {detail}</span>}
       </p>

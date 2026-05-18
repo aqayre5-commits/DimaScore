@@ -20,7 +20,7 @@ export function KnockoutMatchCell({
 }: KnockoutMatchCellProps) {
   return (
     <div className="rounded-lg border border-border-subtle bg-bg-surface p-3">
-      <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-text-tertiary">
+      <p className="mb-2 text-xs font-medium uppercase tracking-wider text-text-tertiary">
         {roundLabel} · Match {matchNumber}
       </p>
       <div className="space-y-1">

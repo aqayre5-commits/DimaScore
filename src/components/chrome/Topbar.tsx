@@ -48,7 +48,7 @@ function MegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void }) 
                     <Link
                       href={buildCompetitionHref(entry, locale)}
                       onClick={onClose}
-                      className="block rounded px-2 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+                      className="block rounded px-2 py-1.5 text-base text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
                     >
                       {t(entry.labelKey)}
                     </Link>
@@ -103,7 +103,7 @@ export function Topbar() {
         </div>
 
         {/* Logo */}
-        <Link href={`/${locale}`} className="text-lg font-bold text-text-primary">
+        <Link href={`/${locale}`} className="text-xl font-bold text-text-primary">
           Atlas Kings
         </Link>
 

@@ -8,7 +8,7 @@ export function ContentList({ block }: ContentListProps) {
   const Tag = block.ordered ? 'ol' : 'ul';
 
   return (
-    <Tag className="mt-3 space-y-1.5 pl-5 text-sm leading-relaxed text-text-secondary list-disc [&_ol]:list-decimal">
+    <Tag className="mt-3 space-y-1.5 pl-5 text-base leading-relaxed text-text-secondary list-disc [&_ol]:list-decimal">
       {block.items.map((item, i) => (
         <li key={i}>{item}</li>
       ))}

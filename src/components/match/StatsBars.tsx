@@ -116,13 +116,13 @@ function StatRow({ stat }: { stat: PairedStat }) {
       {/* Values + label */}
       <div className="mb-1.5 flex items-center justify-between">
         <span
-          className={`text-sm tabular-nums ${homeHigher ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
+          className={`text-base tabular-nums ${homeHigher ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
         >
           {formatDisplay(stat.homeValue)}
         </span>
         <span className="text-xs text-text-tertiary">{stat.label}</span>
         <span
-          className={`text-sm tabular-nums ${awayHigher ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
+          className={`text-base tabular-nums ${awayHigher ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
         >
           {formatDisplay(stat.awayValue)}
         </span>

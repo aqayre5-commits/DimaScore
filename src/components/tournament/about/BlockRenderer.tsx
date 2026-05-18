@@ -11,7 +11,7 @@ interface BlockRendererProps {
 export function BlockRenderer({ block }: BlockRendererProps) {
   switch (block.type) {
     case 'prose':
-      return <p className="mt-2 text-sm leading-relaxed text-text-secondary">{block.text}</p>;
+      return <p className="mt-2 text-base leading-relaxed text-text-secondary">{block.text}</p>;
     case 'table':
       return <ContentTable block={block} />;
     case 'list':

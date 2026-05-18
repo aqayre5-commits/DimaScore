@@ -142,7 +142,7 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
                 >
                   {row.points}
                 </td>
-                <td className="py-2 text-center font-mono text-[10px] text-text-tertiary">
+                <td className="py-2 text-center font-mono text-xs text-text-tertiary">
                   {formChars.join(' ')}
                 </td>
               </tr>

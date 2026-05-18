@@ -22,7 +22,7 @@ export function FactsPanel({ facts }: FactsPanelProps) {
 
       <ul className="divide-y divide-border-subtle px-4">
         {facts.map((fact, i) => (
-          <li key={i} className="py-2 text-sm text-text-secondary">
+          <li key={i} className="py-2 text-base text-text-secondary">
             {fact}
           </li>
         ))}

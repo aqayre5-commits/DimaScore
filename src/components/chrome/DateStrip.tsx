@@ -94,7 +94,7 @@ export function DateStrip({ onSelectDate }: DateStripProps) {
             >
               <span>{dayFormatter.format(date)}</span>
               <span className="text-sm font-medium">{numFormatter.format(date)}</span>
-              {isToday && <span className="mt-0.5 text-[10px]">{t('today')}</span>}
+              {isToday && <span className="mt-0.5 text-xs">{t('today')}</span>}
             </button>
           );
         })}

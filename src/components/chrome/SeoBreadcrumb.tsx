@@ -28,7 +28,7 @@ export function SeoBreadcrumb({ segments }: SeoBreadcrumbProps) {
 
   return (
     <nav aria-label="breadcrumb" className="px-4 py-1">
-      <ol className="flex items-center gap-1 text-[13px] text-text-secondary">
+      <ol className="flex items-center gap-1 text-sm text-text-secondary">
         {segments.map((seg, i) => (
           <li
             key={i}

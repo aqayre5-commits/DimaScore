@@ -42,7 +42,7 @@ export function MobileBottomTabBar() {
             )}
           >
             <Icon className="size-5" />
-            <span className="text-[10px] font-medium">{t(tab.key)}</span>
+            <span className="text-xs font-medium">{t(tab.key)}</span>
           </Link>
         );
       })}

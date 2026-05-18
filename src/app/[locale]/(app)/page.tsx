@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
-import { EditorialHero } from '@/components/homepage/EditorialHero';
 import { FixtureList } from '@/components/homepage/FixtureList';
 import { EditorialCards } from '@/components/homepage/EditorialCards';
 import { RightRail } from '@/components/homepage/RightRail';
@@ -84,20 +83,17 @@ export default async function HomePage({ params }: PageProps) {
 
   return (
     <>
-      {/* Editorial hero (homepage.md §5) */}
-      <EditorialHero locale={typedLocale} />
-
       {/* H1 + intro block (homepage.md §4) */}
-      <div className="mx-auto w-full max-w-[1344px] px-4 pt-6 pb-4">
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-6 pb-4">
         <div className="max-w-[720px]">
           <h1 className="text-2xl font-semibold leading-tight text-text-primary">{t('h1')}</h1>
-          <p className="mt-2 text-sm leading-relaxed text-text-secondary">{t('intro')}</p>
+          <p className="mt-2 text-base leading-relaxed text-text-secondary">{t('intro')}</p>
         </div>
       </div>
 
       {/* 3-column layout: fixture list (left) + editorial cards (center) + right rail */}
-      <div className="mx-auto w-full max-w-[1344px] px-4 pb-12">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[540px_1fr] xl:grid-cols-[540px_1fr_280px]">
+      <div className="mx-auto w-full max-w-[1280px] px-4 pb-12">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[480px_1fr] xl:grid-cols-[480px_1fr_320px]">
           {/* Left column — fixture list (homepage.md §6) */}
           <FixtureList locale={typedLocale} />
 
@@ -113,7 +109,7 @@ export default async function HomePage({ params }: PageProps) {
       <FeaturedVideosStrip locale={typedLocale} />
 
       {/* About / SEO block (homepage.md §9) */}
-      <div className="mx-auto w-full max-w-[1344px] px-4 pb-12">
+      <div className="mx-auto w-full max-w-[1280px] px-4 pb-12">
         <AboutCard content={getHomepageAboutContent(typedLocale)} />
       </div>
 
