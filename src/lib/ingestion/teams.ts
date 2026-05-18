@@ -28,7 +28,7 @@ export function mapTeamToInsert(
     id: t.id,
     slug: `${slugify(t.name)}-${t.id}`,
     name: { en: t.name } as Record<string, string>,
-    shortName: { en: t.code ?? t.name } as Record<string, string>,
+    shortName: { en: t.name } as Record<string, string>,
     code: t.code,
     countryCode: countryLookup ? resolveCountryCode(countryLookup, t.country) : null,
     founded: t.founded,

@@ -53,7 +53,7 @@ describe('mapTeamToInsert', () => {
     expect(result.id).toBe(968);
     expect(result.slug).toBe('wydad-ac-968');
     expect(result.name).toEqual({ en: 'Wydad AC' });
-    expect(result.shortName).toEqual({ en: 'WAC' });
+    expect(result.shortName).toEqual({ en: 'Wydad AC' });
     expect(result.code).toBe('WAC');
     expect(result.countryCode).toBe('MA');
     expect(result.founded).toBe(1937);
