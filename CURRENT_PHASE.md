@@ -1,1 +1,1 @@
-Phase 9 — Media admin. YouTube video curation, tagged to competition + fixture/team/player ids. First test entries are WC-related: Morocco highlights, group-stage analysis, post-match interviews. See docs/atlaskings-v2-rebuild-plan-final.md §J.9.
+Phase 10 — Search. Meilisearch index for teams, players, competitions, fixtures, videos. Priority: WC 2026 teams + Morocco squad players first. Trilingual search must return 'hakimi' / 'حكيمي' / 'Hakimi' → Achraf Hakimi as top result. See docs/atlaskings-v2-rebuild-plan-final.md §J.10.
