@@ -1,11 +1,14 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import type { NextRequest } from 'next/server';
-import type { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
-
 // ── Types ──
 
 export interface AdminSession {
   email: string;
+}
+
+/** Duck type for both RequestCookies (middleware) and ReadonlyRequestCookies (server components). */
+interface CookieStore {
+  get(name: string): { value: string } | undefined;
 }
 
 export interface ResponseCookie {
@@ -124,7 +127,7 @@ export async function requireAdmin(request: NextRequest): Promise<AdminSession |
 /**
  * For server components and middleware. Returns session or null.
  */
-export function getAdminSession(cookieStore: ReadonlyRequestCookies): AdminSession | null {
+export function getAdminSession(cookieStore: CookieStore): AdminSession | null {
   const cookie = cookieStore.get(COOKIE_NAME);
   if (!cookie?.value) return null;
   return decodeToken(cookie.value);

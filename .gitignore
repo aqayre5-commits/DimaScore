@@ -43,3 +43,8 @@ next-env.d.ts
 # OS
 Thumbs.db
 docs/fifa-source-data/*.pdf
+
+# nano/vim swap files for env
+.env*.save
+.env*.swp
+.env*.swo
