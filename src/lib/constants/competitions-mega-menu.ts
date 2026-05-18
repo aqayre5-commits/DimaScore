@@ -85,6 +85,72 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
         isCurrentlyVisible: true,
       },
       {
+        competitionId: 32,
+        labelKey: 'wcQualEurope',
+        countryKey: 'fifa',
+        slugs: {
+          fr: 'qualifications-cm-europe',
+          en: 'wc-qualifiers-europe',
+          ar: 'تصفيات-كأس-العالم-أوروبا',
+        },
+        isCurrentlyVisible: false,
+      },
+      {
+        competitionId: 31,
+        labelKey: 'wcQualConcacaf',
+        countryKey: 'fifa',
+        slugs: {
+          fr: 'qualifications-cm-concacaf',
+          en: 'wc-qualifiers-concacaf',
+          ar: 'تصفيات-كأس-العالم-كونكاكاف',
+        },
+        isCurrentlyVisible: false,
+      },
+      {
+        competitionId: 34,
+        labelKey: 'wcQualSouthAmerica',
+        countryKey: 'fifa',
+        slugs: {
+          fr: 'qualifications-cm-amerique-du-sud',
+          en: 'wc-qualifiers-south-america',
+          ar: 'تصفيات-كأس-العالم-أمريكا-الجنوبية',
+        },
+        isCurrentlyVisible: false,
+      },
+      {
+        competitionId: 30,
+        labelKey: 'wcQualAsia',
+        countryKey: 'fifa',
+        slugs: {
+          fr: 'qualifications-cm-asie',
+          en: 'wc-qualifiers-asia',
+          ar: 'تصفيات-كأس-العالم-آسيا',
+        },
+        isCurrentlyVisible: false,
+      },
+      {
+        competitionId: 33,
+        labelKey: 'wcQualOceania',
+        countryKey: 'fifa',
+        slugs: {
+          fr: 'qualifications-cm-oceanie',
+          en: 'wc-qualifiers-oceania',
+          ar: 'تصفيات-كأس-العالم-أوقيانوسيا',
+        },
+        isCurrentlyVisible: false,
+      },
+      {
+        competitionId: 37,
+        labelKey: 'wcQualIntercontinental',
+        countryKey: 'fifa',
+        slugs: {
+          fr: 'qualifications-cm-intercontinental',
+          en: 'wc-qualifiers-intercontinental',
+          ar: 'تصفيات-كأس-العالم-القارية',
+        },
+        isCurrentlyVisible: false,
+      },
+      {
         competitionId: 307,
         labelKey: 'saudiProLeague',
         countryKey: 'arabie-saoudite',
