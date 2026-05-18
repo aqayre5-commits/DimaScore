@@ -9,6 +9,7 @@ import { EditorialCards } from '@/components/homepage/EditorialCards';
 import { RightRail } from '@/components/homepage/RightRail';
 import { AboutCard } from '@/components/tournament/AboutCard';
 import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
+import { FeaturedVideosStrip } from '@/components/media/FeaturedVideosStrip';
 import { getHomepageAboutContent } from '@/lib/constants/homepage-about-content';
 
 interface PageProps {
@@ -107,6 +108,9 @@ export default async function HomePage({ params }: PageProps) {
           <RightRail locale={typedLocale} />
         </div>
       </div>
+
+      {/* Featured videos strip (§J.9 item 9) */}
+      <FeaturedVideosStrip locale={typedLocale} />
 
       {/* About / SEO block (homepage.md §9) */}
       <div className="mx-auto w-full max-w-[1344px] px-4 pb-12">
