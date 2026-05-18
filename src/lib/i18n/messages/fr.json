@@ -261,7 +261,11 @@
     "goalkeeper": "GB",
     "defender": "DÉF",
     "midfielder": "MIL",
-    "attacker": "ATT"
+    "attacker": "ATT",
+    "wins": "V",
+    "draws": "N",
+    "losses": "D",
+    "noH2H": "Aucune confrontation précédente"
   },
   "editorialHero": {
     "label": "Mise en avant \u00e9ditoriale",

@@ -261,7 +261,11 @@
     "goalkeeper": "GK",
     "defender": "DEF",
     "midfielder": "MID",
-    "attacker": "FWD"
+    "attacker": "FWD",
+    "wins": "W",
+    "draws": "D",
+    "losses": "L",
+    "noH2H": "No previous meetings"
   },
   "editorialHero": {
     "label": "Editorial highlight",

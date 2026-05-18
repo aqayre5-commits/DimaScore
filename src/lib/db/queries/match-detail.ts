@@ -382,6 +382,67 @@ export async function getMatchPlayerStats(
   }));
 }
 
+// ── Head to head ──
+
+export interface H2HFixture {
+  id: number;
+  kickoffAt: Date;
+  statusCode: string;
+  homeTeamId: number | null;
+  awayTeamId: number | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  competitionName: Record<string, string>;
+  competitionSlug: string;
+}
+
+export async function getHeadToHead(
+  db: NeonHttpDatabase<typeof schema>,
+  teamAId: number,
+  teamBId: number,
+  excludeFixtureId: number,
+): Promise<H2HFixture[]> {
+  const rows = await db
+    .select({
+      id: schema.fixtures.id,
+      kickoffAt: schema.fixtures.kickoffAt,
+      statusCode: schema.fixtures.statusCode,
+      homeTeamId: schema.fixtures.homeTeamId,
+      awayTeamId: schema.fixtures.awayTeamId,
+      homeScore: schema.fixtures.homeScore,
+      awayScore: schema.fixtures.awayScore,
+      compName: schema.competitions.name,
+      compSlug: schema.competitions.slug,
+    })
+    .from(schema.fixtures)
+    .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+    .where(
+      and(
+        sql`${schema.fixtures.id} != ${excludeFixtureId}`,
+        inArray(schema.fixtures.statusCode, ['FT', 'AET', 'PEN']),
+        sql`(
+          (${schema.fixtures.homeTeamId} = ${teamAId} AND ${schema.fixtures.awayTeamId} = ${teamBId})
+          OR
+          (${schema.fixtures.homeTeamId} = ${teamBId} AND ${schema.fixtures.awayTeamId} = ${teamAId})
+        )`,
+      ),
+    )
+    .orderBy(sql`${schema.fixtures.kickoffAt} DESC`)
+    .limit(10);
+
+  return rows.map((r) => ({
+    id: r.id,
+    kickoffAt: r.kickoffAt,
+    statusCode: r.statusCode,
+    homeTeamId: r.homeTeamId,
+    awayTeamId: r.awayTeamId,
+    homeScore: r.homeScore,
+    awayScore: r.awayScore,
+    competitionName: r.compName,
+    competitionSlug: r.compSlug,
+  }));
+}
+
 // ── Match coverage ──
 
 export interface MatchCoverage {
