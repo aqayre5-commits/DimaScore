@@ -26,6 +26,7 @@ interface HeroFixture {
   awayScore: number | null;
   homeTeam: TeamSnapshot | null;
   awayTeam: TeamSnapshot | null;
+  competitionId: number;
   competitionName: Record<string, string>;
   competitionSlug: string;
   venueName: string | null;
@@ -63,6 +64,7 @@ export async function getEditorialHeroData(
       awayTeamId: schema.fixtures.awayTeamId,
       homeScore: schema.fixtures.homeScore,
       awayScore: schema.fixtures.awayScore,
+      compId: schema.competitions.id,
       compName: schema.competitions.name,
       compSlug: schema.competitions.slug,
     })
@@ -96,6 +98,7 @@ export async function getEditorialHeroData(
       awayTeamId: schema.fixtures.awayTeamId,
       homeScore: schema.fixtures.homeScore,
       awayScore: schema.fixtures.awayScore,
+      compId: schema.competitions.id,
       compName: schema.competitions.name,
       compSlug: schema.competitions.slug,
     })
@@ -131,6 +134,7 @@ export async function getEditorialHeroData(
       awayTeamId: schema.fixtures.awayTeamId,
       homeScore: schema.fixtures.homeScore,
       awayScore: schema.fixtures.awayScore,
+      compId: schema.competitions.id,
       compName: schema.competitions.name,
       compSlug: schema.competitions.slug,
     })
@@ -177,6 +181,7 @@ type HeroRow = {
   awayTeamId: number | null;
   homeScore: number | null;
   awayScore: number | null;
+  compId: number;
   compName: Record<string, string>;
   compSlug: string;
 };
@@ -218,6 +223,7 @@ async function hydrateHeroRow(
     awayScore: row.awayScore,
     homeTeam: row.homeTeamId ? (teamsMap.get(row.homeTeamId) ?? null) : null,
     awayTeam: row.awayTeamId ? (teamsMap.get(row.awayTeamId) ?? null) : null,
+    competitionId: row.compId,
     competitionName: row.compName,
     competitionSlug: row.compSlug,
     venueName: null,

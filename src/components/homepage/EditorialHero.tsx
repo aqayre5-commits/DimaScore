@@ -51,7 +51,10 @@ function resolveContent(
       const { fixture } = data;
       const home = getTeamDisplayName(fixture.homeTeam, locale);
       const away = getTeamDisplayName(fixture.awayTeam, locale);
-      const compName = fixture.competitionName[locale] || fixture.competitionName.en || '';
+      const compName = getLocalizedCompetitionName(
+        { id: fixture.competitionId, name: fixture.competitionName, slug: fixture.competitionSlug },
+        locale,
+      );
       return {
         content: (
           <div className="flex items-center gap-3 overflow-hidden">
@@ -78,7 +81,10 @@ function resolveContent(
       const { fixture, daysUntil } = data;
       const home = getTeamDisplayName(fixture.homeTeam, locale);
       const away = getTeamDisplayName(fixture.awayTeam, locale);
-      const compName = fixture.competitionName[locale] || fixture.competitionName.en || '';
+      const compName = getLocalizedCompetitionName(
+        { id: fixture.competitionId, name: fixture.competitionName, slug: fixture.competitionSlug },
+        locale,
+      );
       const kickoffTime = formatMatchTime(fixture.kickoffAt, locale);
       return {
         content: (
