@@ -1,14 +1,39 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { codeToFlag } from '@/lib/flags';
 import { isLiveStatus } from '@/lib/data/types';
 import type { TickerFixture } from '@/lib/db/queries';
 import { getCompactTeamLabel } from '@/lib/utils/team-name';
+import { getPusherClient } from '@/lib/realtime/pusher-client';
+import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
+import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
 import type { Locale } from '@/lib/i18n/config';
 import type { FixtureStatus } from '@/lib/data/types';
+
+const TERMINAL_STATUSES = new Set(['FT', 'AET', 'PEN', 'PST', 'CANC', 'ABD', 'AWD', 'WO']);
+
+type ScorePatch = {
+  homeScore: number | null;
+  awayScore: number | null;
+  statusCode: string;
+  minute: number | null;
+};
+
+function applyPatches(
+  fixtures: TickerFixture[],
+  patches: Map<number, ScorePatch>,
+  removed: Set<number>,
+): TickerFixture[] {
+  return fixtures
+    .filter((f) => !removed.has(f.id))
+    .map((f) => {
+      const patch = patches.get(f.id);
+      return patch ? { ...f, ...patch } : f;
+    });
+}
 
 interface TickerStripProps {
   fixtures: TickerFixture[];
@@ -124,7 +149,56 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('topStrip');
-  const renderable = fixtures.filter((f) => isRenderable(f, locale));
+
+  // Pusher diffs stored as patches + removals. Props (fixtures) stay source of truth.
+  // Clear stale patches during render when props change (React docs: "adjusting state
+  // during rendering" — no useEffect, no cascading re-renders).
+  const fixtureIds = fixtures.map((f) => f.id).join(',');
+  const [prevFixtureIds, setPrevFixtureIds] = useState(fixtureIds);
+  const [patches, setPatches] = useState(() => new Map<number, ScorePatch>());
+  const [removed, setRemoved] = useState(() => new Set<number>());
+  if (prevFixtureIds !== fixtureIds) {
+    setPrevFixtureIds(fixtureIds);
+    setPatches(new Map());
+    setRemoved(new Set());
+  }
+
+  const handleScoreUpdate = useCallback((payload: ScoreUpdatePayload) => {
+    if (TERMINAL_STATUSES.has(payload.statusCode)) {
+      setRemoved((prev) => {
+        const next = new Set(prev);
+        next.add(payload.fixtureId);
+        return next;
+      });
+      return;
+    }
+    setPatches((prev) => {
+      const next = new Map(prev);
+      next.set(payload.fixtureId, {
+        homeScore: payload.homeScore,
+        awayScore: payload.awayScore,
+        statusCode: payload.statusCode,
+        minute: payload.minute,
+      });
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    const client = getPusherClient();
+    const channel = client.subscribe(CHANNELS.LIVE_SCORES);
+    channel.bind(EVENTS.SCORE_UPDATE, handleScoreUpdate);
+    return () => {
+      channel.unbind(EVENTS.SCORE_UPDATE, handleScoreUpdate);
+      client.unsubscribe(CHANNELS.LIVE_SCORES);
+    };
+  }, [handleScoreUpdate]);
+
+  const merged = useMemo(
+    () => applyPatches(fixtures, patches, removed),
+    [fixtures, patches, removed],
+  );
+  const renderable = merged.filter((f) => isRenderable(f, locale));
 
   // Duration = original copy width / speed (60 px/s).
   // translateX(-50%) scrolls exactly one copy width, then resets seamlessly.
