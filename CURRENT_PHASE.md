@@ -1,1 +1,1 @@
-Phase 8 — Match detail page. Canonical test case: Brazil vs Morocco, 13 June 2026 at MetLife Stadium. Sub-tasks: ScoreHeader (18 statuses), EventTimeline, LineupPitch (formations 4-3-3, 4-4-2, 3-5-2, 5-3-2, 4-2-3-1), StatsBars, PlayerRatingBadge. See docs/atlaskings-v2-rebuild-plan-final.md §J.8.
+Phase 9 — Media admin. YouTube video curation, tagged to competition + fixture/team/player ids. First test entries are WC-related: Morocco highlights, group-stage analysis, post-match interviews. See docs/atlaskings-v2-rebuild-plan-final.md §J.9.
