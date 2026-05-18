@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { Pause, Play } from 'lucide-react';
 import { codeToFlag } from '@/lib/flags';
 import { isLiveStatus } from '@/lib/data/types';
 import type { TickerFixture } from '@/lib/db/queries';
@@ -194,6 +195,8 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
     };
   }, [handleScoreUpdate]);
 
+  const [paused, setPaused] = useState(false);
+
   const merged = useMemo(
     () => applyPatches(fixtures, patches, removed),
     [fixtures, patches, removed],
@@ -219,13 +222,19 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
     );
   }
 
+  const PausePlayIcon = paused ? Play : Pause;
+
   return (
     <div
       role="marquee"
       aria-label={t('tickerLabel')}
       className="ticker relative h-full overflow-hidden"
     >
-      <div ref={trackRef} className="ticker-track flex h-full w-max items-center">
+      <div
+        ref={trackRef}
+        className="ticker-track flex h-full w-max items-center"
+        style={paused ? { animationPlayState: 'paused' } : undefined}
+      >
         {/* Original copy — measured for duration calc */}
         <span ref={copyRef} className="flex shrink-0 items-center">
           <TickerCells fixtures={renderable} locale={locale} />
@@ -235,6 +244,16 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
           <TickerCells fixtures={renderable} locale={locale} />
         </span>
       </div>
+
+      {/* WCAG 2.2.2 — pause/play toggle for auto-scrolling content */}
+      <button
+        type="button"
+        onClick={() => setPaused((p) => !p)}
+        aria-label={paused ? t('playTicker') : t('pauseTicker')}
+        className="absolute end-0 top-0 z-10 flex h-full w-8 items-center justify-center bg-bg-canvas/80 backdrop-blur-sm transition-colors hover:bg-bg-canvas"
+      >
+        <PausePlayIcon className="size-3.5 text-text-secondary" />
+      </button>
     </div>
   );
 }

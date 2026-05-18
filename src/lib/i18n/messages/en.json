@@ -28,7 +28,9 @@
     "emptyState": "Live football scores from Morocco and around the world.",
     "scrollLeft": "Scroll left",
     "scrollRight": "Scroll right",
-    "tickerLabel": "Live match scores ticker"
+    "tickerLabel": "Live match scores ticker",
+    "pauseTicker": "Pause ticker",
+    "playTicker": "Play ticker"
   },
   "megaMenu": {
     "morocco": "Morocco",
