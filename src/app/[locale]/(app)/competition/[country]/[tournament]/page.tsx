@@ -15,7 +15,7 @@ import { StandingsTab } from '@/components/tournament/StandingsTab';
 import { KnockoutTab } from '@/components/tournament/KnockoutTab';
 import { BestThirdTab } from '@/components/tournament/BestThirdTab';
 import { RightRail } from '@/components/tournament/RightRail';
-import { VideosSection } from '@/components/tournament/VideosSection';
+import { CompetitionMediaSection } from '@/components/tournament/CompetitionMediaSection';
 import { AboutCard } from '@/components/tournament/AboutCard';
 import { SportsEventJsonLd } from '@/components/seo/SportsEventJsonLd';
 import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
@@ -419,7 +419,7 @@ export default async function CompetitionPage({ params }: PageProps) {
       belowCenter={
         <>
           <HashScrollHighlight />
-          <VideosSection youtubeIds={metadata.mediaYoutubeIds} />
+          <CompetitionMediaSection competitionId={competitionId} locale={typedLocale} />
           {aboutContent && <AboutCard content={aboutContent} />}
           <SportsEventJsonLd
             metadata={metadata}

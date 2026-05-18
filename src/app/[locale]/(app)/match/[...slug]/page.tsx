@@ -21,7 +21,8 @@ import { StatsBars } from '@/components/match/StatsBars';
 import { PlayerRatingsPanel } from '@/components/match/PlayerRatingBadge';
 import { H2HPanel } from '@/components/match/H2HPanel';
 import { PredictionCard } from '@/components/match/PredictionCard';
-import { MediaCard } from '@/components/match/MediaCard';
+import { MatchMediaSection } from '@/components/match/MatchMediaSection';
+import { getMediaVideos } from '@/lib/db/queries/media';
 import type { Locale } from '@/lib/i18n/config';
 
 interface PageProps {
@@ -71,7 +72,16 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const awayTeamId = match.awayTeam?.id ?? -1;
 
   // Parallel data fetch
-  const [t, coverage, events, lineups, teamStats, playerStats, h2hFixtures] = await Promise.all([
+  const [
+    t,
+    coverage,
+    events,
+    lineups,
+    teamStats,
+    playerStats,
+    h2hFixtures,
+    { videos: matchVideos },
+  ] = await Promise.all([
     getTranslations({ locale, namespace: 'matchDetail' }),
     getMatchCoverage(db, match.competition.id, match.seasonYear),
     getMatchEvents(db, fixtureId),
@@ -81,6 +91,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
     homeTeamId > 0 && awayTeamId > 0
       ? getHeadToHead(db, homeTeamId, awayTeamId, fixtureId)
       : Promise.resolve([]),
+    getMediaVideos(db, { fixtureId, limit: 9 }),
   ]);
 
   const compName = getLocalizedCompetitionName(
@@ -213,10 +224,10 @@ export default async function MatchDetailPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Media placeholder */}
+        {/* Media */}
         <section id="media" className="scroll-mt-16">
           <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('media')}</h3>
-          <MediaCard />
+          <MatchMediaSection videos={matchVideos} />
         </section>
       </div>
     </div>
