@@ -189,9 +189,6 @@ export async function getMatchEvents(
   db: NeonHttpDatabase<typeof schema>,
   fixtureId: number,
 ): Promise<MatchEvent[]> {
-  const playerAlias = schema.players;
-  const assistAlias = schema.players;
-
   // Use raw SQL for the double-join on players (Drizzle doesn't alias well for self-joins)
   const rows = await db.execute(sql`
     SELECT
@@ -282,17 +279,17 @@ export async function getMatchLineups(
     .where(eq(schema.fixtureLineups.fixtureId, fixtureId));
 
   return rows.map((r) => {
-    const rawStarters = r.starters as Array<{ player: LineupPlayer }>;
-    const rawSubs = r.substitutes as Array<{
-      player: { id: number; name: string; number: number; pos: string | null };
-    }>;
+    const rawStarters = r.starters as Array<LineupPlayer | { player: LineupPlayer }>;
+    const rawSubs = r.substitutes as Array<
+      Omit<LineupPlayer, 'grid'> | { player: Omit<LineupPlayer, 'grid'> }
+    >;
 
     return {
       teamId: r.teamId,
       formation: r.formation,
       coach: r.coachId != null && r.coachName != null ? { id: r.coachId, name: r.coachName } : null,
-      starters: rawStarters.map((s) => s.player),
-      substitutes: rawSubs.map((s) => s.player),
+      starters: rawStarters.map((s) => ('player' in s ? s.player : s)),
+      substitutes: rawSubs.map((s) => ('player' in s ? s.player : s)),
     };
   });
 }
