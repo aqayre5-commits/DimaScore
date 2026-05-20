@@ -5,6 +5,7 @@ import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { getMetadataForCompetition, type CupMetadata } from '@/lib/constants/tournament-metadata';
 import { MEGA_MENU_SECTIONS, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
+import { getCupContent, findCupContentBySlug } from '@/lib/constants/cup-content';
 import { TournamentPageHeader } from '@/components/tournament/TournamentPageHeader';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 import { MatchesList } from '@/components/tournament/MatchesList';
@@ -30,6 +31,22 @@ import {
   getStandings,
   getMoroccoTeamId,
 } from '@/lib/db/queries';
+import {
+  getCompetitionById,
+  getLeagueCoverage,
+  getCurrentSeasonYear,
+  getLeagueRounds,
+  getCurrentRound,
+  getLeagueFeaturedMatch,
+  getLeagueFixtures,
+  getTopScorersForLeague,
+  getTopAssistsForLeague,
+} from '@/lib/db/queries/league';
+import { LeaguePageHeader } from '@/components/league/LeaguePageHeader';
+import { LeagueStandingsTab } from '@/components/league/LeagueStandingsTab';
+import { LeagueFixturesCard } from '@/components/league/LeagueFixturesCard';
+import { LeagueRightRail } from '@/components/league/LeagueRightRail';
+import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-content';
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
@@ -37,103 +54,7 @@ interface PageProps {
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
-// ── Per-locale hand-written metadata (competition-cup.md Section 2) ──
-
-const WC_2026_META: Record<Locale, { title: string; description: string }> = {
-  fr: {
-    title: 'Coupe du Monde 2026 — Calendrier, groupes, classement et phase finale | Atlas Kings',
-    description:
-      "Suivez la Coupe du Monde FIFA 2026 en direct : calendrier des 104 matchs, les 12 groupes, classement de chaque groupe, phase à élimination directe. Le Maroc dans le Groupe C avec le Brésil, Haïti et l'Écosse.",
-  },
-  en: {
-    title: 'FIFA World Cup 2026 — Fixtures, groups, standings and knockout | Atlas Kings',
-    description:
-      'Follow the FIFA World Cup 2026 live: 104-match schedule, 12 groups, standings per group, knockout bracket. Morocco in Group C with Brazil, Haiti, and Scotland.',
-  },
-  ar: {
-    title: 'كأس العالم 2026 — الجدول، المجموعات، الترتيب ومرحلة الإقصاء | أطلس كينغز',
-    description:
-      'تابعوا كأس العالم فيفا 2026 مباشرة: جدول 104 مباريات، 12 مجموعة، ترتيب كل مجموعة، الأدوار الإقصائية. المغرب في المجموعة C مع البرازيل وهايتي واسكتلندا.',
-  },
-};
-
-const WC_2026_INTRO: Record<Locale, string> = {
-  fr: 'La Coupe du Monde FIFA 2026 réunit 48 équipes nationales aux États-Unis, au Canada et au Mexique — la première édition à 48 équipes au lieu de 32. Suivez le calendrier complet, les 12 groupes, les classements et la phase à élimination directe en direct.',
-  en: 'The FIFA World Cup 2026 brings 48 national teams to the United States, Canada, and Mexico — the first edition with 48 teams instead of 32. Follow the full schedule, 12 groups, standings, and knockout bracket live.',
-  ar: 'يجمع كأس العالم فيفا 2026 ثمانية وأربعين منتخباً وطنياً في الولايات المتحدة وكندا والمكسيك — أول نسخة بمشاركة 48 منتخباً بدلاً من 32. تابعوا الجدول الكامل، 12 مجموعة، الترتيب ومرحلة الأدوار الإقصائية مباشرة.',
-};
-
-const WC_2026_TITLES: Record<Locale, string> = {
-  fr: 'Coupe du Monde FIFA 2026',
-  en: 'FIFA World Cup 2026',
-  ar: 'كأس العالم فيفا 2026',
-};
-
-const WC_2026_SLUGS = ['coupe-du-monde-2026', 'world-cup-2026', 'كأس-العالم-2026'];
-
-const WC_2026_URLS: Record<Locale, string> = {
-  fr: `${baseUrl}/fr/competition/fifa/coupe-du-monde-2026`,
-  en: `${baseUrl}/en/competition/fifa/world-cup-2026`,
-  ar: `${baseUrl}/ar/competition/فيفا/كأس-العالم-2026`,
-};
-
-// Per-locale hash fragments (competition-cup.md Section 1)
-const TAB_HASHES: Record<
-  Locale,
-  { overview: string; standings: string; bestThird: string; knockout: string }
-> = {
-  fr: {
-    overview: 'vue-densemble',
-    standings: 'classement',
-    bestThird: 'meilleurs-3emes',
-    knockout: 'elimination',
-  },
-  en: { overview: 'overview', standings: 'standings', bestThird: 'best-3rd', knockout: 'knockout' },
-  ar: {
-    overview: 'نظرة-عامة',
-    standings: 'ترتيب',
-    bestThird: 'افضل-الثالثة',
-    knockout: 'إقصائيات',
-  },
-};
-
-// Historical winner team code → locale name (static, small set)
-const HISTORICAL_TEAM_NAMES: Record<Locale, Record<string, string>> = {
-  fr: { AR: 'Argentine', FR: 'France', DE: 'Allemagne', ES: 'Espagne', IT: 'Italie' },
-  en: { AR: 'Argentina', FR: 'France', DE: 'Germany', ES: 'Spain', IT: 'Italy' },
-  ar: { AR: 'الأرجنتين', FR: 'فرنسا', DE: 'ألمانيا', ES: 'إسبانيا', IT: 'إيطاليا' },
-};
-
-// Per-locale facts (competition-cup.md Section 7 Tab 1 Block 5)
-const WC_2026_FACTS: Record<Locale, string[]> = {
-  fr: [
-    '48 équipes nationales',
-    '12 groupes de 4 équipes',
-    '104 matchs au total',
-    '16 villes hôtes',
-    '3 pays organisateurs (USA, Canada, Mexique)',
-    '11 juin → 19 juillet 2026',
-    'Format élargi : 1ère édition à 48 équipes',
-  ],
-  en: [
-    '48 national teams',
-    '12 groups of 4 teams',
-    '104 total matches',
-    '16 host cities',
-    '3 host countries (USA, Canada, Mexico)',
-    '11 June → 19 July 2026',
-    'Expanded format: first 48-team edition',
-  ],
-  ar: [
-    '48 منتخباً وطنياً',
-    '12 مجموعة من 4 فرق',
-    '104 مباريات إجمالاً',
-    '16 مدينة مستضيفة',
-    '3 دول مستضيفة (الولايات المتحدة، كندا، المكسيك)',
-    '11 يونيو → 19 يوليو 2026',
-    'صيغة موسعة: أول نسخة بـ48 منتخباً',
-  ],
-};
+// Cup content is now in src/lib/constants/cup-content.ts, keyed by competitionId.
 
 // ── Helpers ──
 
@@ -144,10 +65,6 @@ function resolveEntry(tournament: string, locale: Locale): MegaMenuEntry | undef
     }
   }
   return undefined;
-}
-
-function isWc2026(tournament: string): boolean {
-  return WC_2026_SLUGS.includes(tournament);
 }
 
 function computeTournamentPhase(metadata: CupMetadata): TournamentPhase {
@@ -184,15 +101,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const tournament = decodeURIComponent(rawTournament);
   const typedLocale = locale as Locale;
 
-  if (isWc2026(tournament)) {
-    const meta = WC_2026_META[typedLocale];
-    const pageUrl = WC_2026_URLS[typedLocale];
-    const ogImage = `${baseUrl}/competitions/wc-2026-trophy.png`;
+  const cupContent = findCupContentBySlug(tournament);
+  if (cupContent) {
+    const meta = cupContent.meta[typedLocale];
+    const pageUrl = cupContent.urls[typedLocale];
     const languages: Record<string, string> = {};
     for (const loc of locales) {
-      languages[loc] = WC_2026_URLS[loc as Locale];
+      languages[loc] = cupContent.urls[loc as Locale];
     }
-    languages['x-default'] = WC_2026_URLS[defaultLocale];
+    languages['x-default'] = cupContent.urls[defaultLocale];
 
     return {
       title: meta.title,
@@ -206,28 +123,50 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         siteName: 'Atlas Kings',
         locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
         type: 'website',
-        images: [{ url: ogImage, alt: WC_2026_TITLES[typedLocale] }],
+        images: [
+          {
+            url: `${baseUrl}/og/${cupContent.titles.en.toLowerCase().replace(/\s+/g, '-')}.png`,
+            alt: cupContent.titles[typedLocale],
+          },
+        ],
       },
       twitter: {
         card: 'summary_large_image' as const,
         title: meta.title,
         description: meta.description,
-        images: [ogImage],
       },
     };
   }
 
-  const displayName = tournament.replace(/-/g, ' ');
+  // Try to resolve a proper name from mega menu + DB
+  const entry = resolveEntry(tournament, typedLocale);
+  let displayName = tournament.replace(/-/g, ' ');
+  let description = `${displayName} — Atlas Kings`;
+
+  if (entry) {
+    const competition = await getCompetitionById(db, entry.competitionId);
+    if (competition) {
+      displayName = competition.name[typedLocale] ?? competition.name['en'] ?? displayName;
+      const seasonYear = await getCurrentSeasonYear(db, competition.id);
+      const season = seasonYear ? `${seasonYear}/${(seasonYear + 1) % 100}` : '';
+      displayName = season ? `${displayName} ${season}` : displayName;
+      description = `${displayName} — standings, matches, and statistics | Atlas Kings`;
+    }
+  }
+
   const languages: Record<string, string> = {};
   for (const loc of locales) {
-    languages[loc] = `${baseUrl}/${loc}/competition/${country}/${tournament}`;
+    const locEntry = resolveEntry(tournament, loc as Locale) ?? entry;
+    const locSlug = locEntry?.slugs[loc as Locale] ?? tournament;
+    languages[loc] = `${baseUrl}/${loc}/competition/${country}/${locSlug}`;
   }
   languages['x-default'] = languages[defaultLocale];
 
   return {
     title: `${displayName} | Atlas Kings`,
-    description: `${displayName} — Atlas Kings`,
+    description,
     alternates: { languages },
+    robots: { index: true, follow: true },
   };
 }
 
@@ -245,7 +184,16 @@ export default async function CompetitionPage({ params }: PageProps) {
   const entry = resolveEntry(tournament, typedLocale);
   const metadata = entry ? getMetadataForCompetition(entry.competitionId) : undefined;
 
+  // League branch: competition exists in DB with type='League'
   if (!metadata || metadata.type !== 'cup') {
+    if (entry) {
+      const competition = await getCompetitionById(db, entry.competitionId);
+      if (competition && competition.type === 'League') {
+        return renderLeaguePage(competition, entry, typedLocale, locale, rawCountry, rawTournament);
+      }
+    }
+
+    // Fallback: coming soon
     const displayName = tournament.replace(/-/g, ' ');
     const breadcrumbs: BreadcrumbSegment[] = [
       { label: t('football'), href: `/${locale}` },
@@ -266,10 +214,11 @@ export default async function CompetitionPage({ params }: PageProps) {
     );
   }
 
-  // ── WC 2026 full render — fetch real data ──
+  // ── Cup full render — fetch real data ──
 
   const competitionId = metadata.competitionId;
   const seasonYear = metadata.editionYear;
+  const cupContent = getCupContent(competitionId);
 
   const [moroccoTeamId, standings, round1Fixtures] = await Promise.all([
     getMoroccoTeamId(db),
@@ -282,8 +231,8 @@ export default async function CompetitionPage({ params }: PageProps) {
     : null;
 
   const tournamentPhase = computeTournamentPhase(metadata);
-  const pageTitle = WC_2026_TITLES[typedLocale];
-  const introText = WC_2026_INTRO[typedLocale];
+  const pageTitle = cupContent?.titles[typedLocale] ?? metadata.competitionId.toString();
+  const introText = cupContent?.intro[typedLocale] ?? '';
 
   // Morocco context: find Morocco's group and rivals
   const moroccoGroup = metadata.groups.find((g) => g.isMoroccoGroup);
@@ -308,7 +257,7 @@ export default async function CompetitionPage({ params }: PageProps) {
   const breadcrumbSegments: BreadcrumbSegment[] = [
     { label: t('football'), href: `/${locale}` },
     { label: t('international') },
-    { label: 'FIFA' },
+    { label: cupContent?.breadcrumbOrg ?? 'FIFA' },
     { label: pageTitle },
   ];
 
@@ -318,9 +267,15 @@ export default async function CompetitionPage({ params }: PageProps) {
   const aboutContent = getAboutContent(competitionId, typedLocale);
 
   // Tab data
-  const hashes = TAB_HASHES[typedLocale];
-  const facts = WC_2026_FACTS[typedLocale];
-  const historicalTeamNames = HISTORICAL_TEAM_NAMES[typedLocale];
+  const defaultHashes = {
+    overview: 'overview',
+    standings: 'standings',
+    bestThird: 'best-3rd',
+    knockout: 'knockout',
+  };
+  const hashes = cupContent?.tabHashes[typedLocale] ?? defaultHashes;
+  const facts = cupContent?.facts[typedLocale] ?? [];
+  const historicalTeamNames = cupContent?.historicalTeamNames[typedLocale] ?? {};
 
   // Best 3rd-placed teams (conditional on tournament format)
   const bestThird = metadata.hasBestThirdPlace ? computeBestThirdPlaced(standings) : null;
@@ -424,12 +379,154 @@ export default async function CompetitionPage({ params }: PageProps) {
           <SportsEventJsonLd
             metadata={metadata}
             tournamentName={pageTitle}
-            alternateNames={Object.values(WC_2026_TITLES).filter((t) => t !== pageTitle)}
-            canonicalUrl={WC_2026_URLS[typedLocale]}
+            alternateNames={
+              cupContent ? Object.values(cupContent.titles).filter((t) => t !== pageTitle) : []
+            }
+            canonicalUrl={cupContent?.urls[typedLocale] ?? ''}
           />
           {aboutContent && <FaqPageJsonLd faqs={aboutContent.faqs} />}
         </>
       }
     />
+  );
+}
+
+// ── League page renderer ──
+
+const LEAGUE_TAB_HASHES: Record<Locale, { standings: string; media: string }> = {
+  fr: { standings: 'classement', media: 'media' },
+  en: { standings: 'standings', media: 'media' },
+  ar: { standings: 'الترتيب', media: 'وسائط' },
+};
+
+async function renderLeaguePage(
+  competition: NonNullable<Awaited<ReturnType<typeof getCompetitionById>>>,
+  entry: MegaMenuEntry,
+  locale: Locale,
+  rawLocale: string,
+  rawCountry: string,
+  rawTournament: string,
+) {
+  const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
+  const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
+
+  const seasonYear = await getCurrentSeasonYear(db, competition.id);
+  if (!seasonYear) {
+    // No season data — show coming soon
+    const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+    return (
+      <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
+        <div className="mt-8 flex flex-col items-center gap-4 text-center">
+          <h1 className="text-xl font-semibold text-text-primary">{name}</h1>
+          <p className="text-sm text-text-tertiary">{tL('comingSoon')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Parallel data fetch
+  const [
+    coverage,
+    standings,
+    rounds,
+    currentRound,
+    featuredMatch,
+    fixtures,
+    topScorers,
+    topAssists,
+  ] = await Promise.all([
+    getLeagueCoverage(db, competition.id, seasonYear),
+    getStandings(db, competition.id, seasonYear),
+    getLeagueRounds(db, competition.id, seasonYear),
+    getCurrentRound(db, competition.id, seasonYear),
+    getLeagueFeaturedMatch(db, competition.id, seasonYear),
+    getLeagueFixtures(db, competition.id, seasonYear),
+    getTopScorersForLeague(db, competition.id, seasonYear),
+    getTopAssistsForLeague(db, competition.id, seasonYear),
+  ]);
+
+  const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+  const countryName = getLeagueCountryName(competition.countryCode, locale);
+  const introText = getLeagueIntro(competition.id, locale);
+
+  // Breadcrumbs
+  const breadcrumbs: BreadcrumbSegment[] = [
+    { label: tBc('football'), href: `/${rawLocale}` },
+    ...(countryName ? [{ label: countryName }] : []),
+    { label: competitionName },
+  ];
+
+  // Center tabs
+  const hashes = LEAGUE_TAB_HASHES[locale];
+  const tabs = [
+    {
+      key: 'standings',
+      hash: hashes.standings,
+      labelKey: 'standings',
+      content:
+        coverage?.standings !== false && standings.length > 0 ? (
+          <LeagueStandingsTab standings={standings} locale={locale} />
+        ) : (
+          <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-8 text-center">
+            <p className="text-sm text-text-tertiary">{tL('comingSoon')}</p>
+          </div>
+        ),
+    },
+    {
+      key: 'media',
+      hash: hashes.media,
+      labelKey: 'media',
+      content: <CompetitionMediaSection competitionId={competition.id} locale={locale} />,
+    },
+  ];
+
+  return (
+    <>
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
+        <SeoBreadcrumb segments={breadcrumbs} />
+      </div>
+
+      <InnerPageShell
+        pageHeader={
+          <LeaguePageHeader
+            competition={competition}
+            seasonYear={seasonYear}
+            locale={locale}
+            countryName={countryName}
+            introText={introText}
+          />
+        }
+        leftRail={
+          <div className="space-y-4">
+            {featuredMatch && (
+              <FeaturedMatchCard
+                fixture={featuredMatch}
+                locale={locale}
+                cardTitle={competitionName}
+              />
+            )}
+            {rounds.length > 0 && currentRound != null && (
+              <LeagueFixturesCard
+                fixtures={fixtures}
+                rounds={rounds}
+                defaultRound={currentRound}
+                locale={locale}
+              />
+            )}
+            <NewsletterCard tournamentName={competitionName} />
+          </div>
+        }
+        center={<CenterTabs tabs={tabs} />}
+        rightRail={
+          <LeagueRightRail
+            competitionName={competitionName}
+            coverage={coverage}
+            topScorers={topScorers}
+            topAssists={topAssists}
+          />
+        }
+        belowCenter={<CompetitionMediaSection competitionId={competition.id} locale={locale} />}
+      />
+    </>
   );
 }

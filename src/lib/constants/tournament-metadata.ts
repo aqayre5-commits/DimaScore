@@ -103,7 +103,48 @@ const WC_2026: CupMetadata = {
   ],
 };
 
-const METADATA_REGISTRY: Map<number, TournamentMetadata> = new Map([[1, WC_2026]]);
+/**
+ * WAFCON 2026 — Women's Africa Cup of Nations.
+ * 12 teams, 3 groups, QF knockout start.
+ * Using 2024 edition data until 2026 season is published by API-Football.
+ */
+const WAFCON_2026: CupMetadata = {
+  competitionId: 922,
+  editionYear: 2024,
+  type: 'cup',
+  format: 'groups_and_knockout',
+  groupsCount: 3,
+  teamsCount: 12,
+  hostCountryCodes: ['MA'],
+  kickoffDate: '2025-07-05',
+  finalDate: '2025-07-26',
+  fifaRankingApplicable: false,
+  homeAwayMeaningful: false,
+  knockoutStartsRound: 'qf',
+  hasThirdPlaceMatch: true,
+  hasBestThirdPlace: false,
+  groups: [
+    { label: 'A', teamCodes: ['MA', 'ZM', 'SN', 'CD'], isMoroccoGroup: true },
+    { label: 'B', teamCodes: ['NG', 'TN', 'DZ', 'BW'], isMoroccoGroup: false },
+    { label: 'C', teamCodes: ['ZA', 'GH', 'ML', 'TZ'], isMoroccoGroup: false },
+  ],
+  historicalWinners: [
+    { year: 2022, teamCode: 'ZA', runnerUpCode: 'MA', hostCountryCodes: ['MA'], titleNumber: 1 },
+    { year: 2018, teamCode: 'ZA', runnerUpCode: 'CM', hostCountryCodes: ['GH'], titleNumber: 2 },
+    { year: 2016, teamCode: 'NG', runnerUpCode: 'CM', hostCountryCodes: ['CM'], titleNumber: 11 },
+    { year: 2014, teamCode: 'NG', runnerUpCode: 'CM', hostCountryCodes: ['NA'], titleNumber: 10 },
+  ],
+  relatedCompetitionIds: [],
+  qualificationZones: [
+    { positions: [1, 2], type: 'qualified', color: 'var(--accent-emerald)' },
+    { positions: [3, 4], type: 'eliminated', color: 'var(--accent-crimson)' },
+  ],
+};
+
+const METADATA_REGISTRY: Map<number, TournamentMetadata> = new Map([
+  [1, WC_2026],
+  [922, WAFCON_2026],
+]);
 
 /** Look up tournament metadata by competition ID. */
 export function getMetadataForCompetition(id: number): TournamentMetadata | undefined {
