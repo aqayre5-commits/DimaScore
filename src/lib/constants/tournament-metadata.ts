@@ -104,11 +104,11 @@ const WC_2026: CupMetadata = {
 };
 
 /**
- * WAFCON 2026 — Women's Africa Cup of Nations.
+ * WAFCON 2024 — Women's Africa Cup of Nations (played July 2025 in Morocco).
+ * API-Football labels this season "2024". All 26 matches completed. Nigeria won.
  * 12 teams, 3 groups, QF knockout start.
- * Using 2024 edition data until 2026 season is published by API-Football.
  */
-const WAFCON_2026: CupMetadata = {
+const WAFCON_2024: CupMetadata = {
   competitionId: 922,
   editionYear: 2024,
   type: 'cup',
@@ -129,10 +129,10 @@ const WAFCON_2026: CupMetadata = {
     { label: 'C', teamCodes: ['ZA', 'GH', 'ML', 'TZ'], isMoroccoGroup: false },
   ],
   historicalWinners: [
+    { year: 2024, teamCode: 'NG', runnerUpCode: 'MA', hostCountryCodes: ['MA'], titleNumber: 12 },
     { year: 2022, teamCode: 'ZA', runnerUpCode: 'MA', hostCountryCodes: ['MA'], titleNumber: 1 },
     { year: 2018, teamCode: 'ZA', runnerUpCode: 'CM', hostCountryCodes: ['GH'], titleNumber: 2 },
     { year: 2016, teamCode: 'NG', runnerUpCode: 'CM', hostCountryCodes: ['CM'], titleNumber: 11 },
-    { year: 2014, teamCode: 'NG', runnerUpCode: 'CM', hostCountryCodes: ['NA'], titleNumber: 10 },
   ],
   relatedCompetitionIds: [],
   qualificationZones: [
@@ -141,12 +141,59 @@ const WAFCON_2026: CupMetadata = {
   ],
 };
 
+/**
+ * WAFCON 2026 — Women's Africa Cup of Nations (upcoming, 25 Jul – 16 Aug 2026).
+ * 16 teams (expanded from 12). Hosted in Morocco. Groups TBD until draw.
+ * No API-Football data yet — pre-tournament placeholder.
+ */
+const WAFCON_2026: CupMetadata = {
+  competitionId: 922,
+  editionYear: 2026,
+  type: 'cup',
+  format: 'groups_and_knockout',
+  groupsCount: 4,
+  teamsCount: 16,
+  hostCountryCodes: ['MA'],
+  kickoffDate: '2026-07-25',
+  finalDate: '2026-08-16',
+  fifaRankingApplicable: false,
+  homeAwayMeaningful: false,
+  knockoutStartsRound: 'qf',
+  hasThirdPlaceMatch: true,
+  hasBestThirdPlace: false,
+  groups: [],
+  historicalWinners: [
+    { year: 2024, teamCode: 'NG', runnerUpCode: 'MA', hostCountryCodes: ['MA'], titleNumber: 12 },
+    { year: 2022, teamCode: 'ZA', runnerUpCode: 'MA', hostCountryCodes: ['MA'], titleNumber: 1 },
+    { year: 2018, teamCode: 'ZA', runnerUpCode: 'CM', hostCountryCodes: ['GH'], titleNumber: 2 },
+    { year: 2016, teamCode: 'NG', runnerUpCode: 'CM', hostCountryCodes: ['CM'], titleNumber: 11 },
+  ],
+  relatedCompetitionIds: [],
+  qualificationZones: [],
+};
+
+/** Default metadata per competition (latest/upcoming edition). */
 const METADATA_REGISTRY: Map<number, TournamentMetadata> = new Map([
   [1, WC_2026],
   [922, WAFCON_2026],
 ]);
 
-/** Look up tournament metadata by competition ID. */
+/** Season-specific metadata: key = "competitionId:editionYear". */
+const METADATA_BY_SEASON: Map<string, TournamentMetadata> = new Map([
+  ['1:2026', WC_2026],
+  ['922:2024', WAFCON_2024],
+  ['922:2026', WAFCON_2026],
+]);
+
+/** Look up tournament metadata by competition ID (returns latest/upcoming edition). */
 export function getMetadataForCompetition(id: number): TournamentMetadata | undefined {
   return METADATA_REGISTRY.get(id);
+}
+
+/** Look up tournament metadata for a specific edition year. */
+export function getMetadataForCompetitionSeason(
+  id: number,
+  editionYear: number,
+): TournamentMetadata | undefined {
+  return METADATA_BY_SEASON.get(`${id}:${editionYear}`);
 }

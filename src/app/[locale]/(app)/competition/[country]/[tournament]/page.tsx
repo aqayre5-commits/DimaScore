@@ -3,9 +3,18 @@ import { getTranslations } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
-import { getMetadataForCompetition, type CupMetadata } from '@/lib/constants/tournament-metadata';
+import {
+  getMetadataForCompetition,
+  getMetadataForCompetitionSeason,
+  type CupMetadata,
+} from '@/lib/constants/tournament-metadata';
 import { MEGA_MENU_SECTIONS, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
-import { getCupContent, findCupContentBySlug } from '@/lib/constants/cup-content';
+import {
+  getCupContent,
+  getCupContentForSeason,
+  findCupContentBySlug,
+  findEditionYearBySlug,
+} from '@/lib/constants/cup-content';
 import { TournamentPageHeader } from '@/components/tournament/TournamentPageHeader';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 import { MatchesList } from '@/components/tournament/MatchesList';
@@ -14,6 +23,9 @@ import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { OverviewTab } from '@/components/tournament/OverviewTab';
 import { StandingsTab } from '@/components/tournament/StandingsTab';
 import { KnockoutTab } from '@/components/tournament/KnockoutTab';
+import { GenericKnockoutList } from '@/components/tournament/GenericKnockoutList';
+import { CupFixturesByRound } from '@/components/tournament/CupFixturesByRound';
+import { CupGroupsSummary } from '@/components/tournament/CupGroupsSummary';
 import { BestThirdTab } from '@/components/tournament/BestThirdTab';
 import { RightRail } from '@/components/tournament/RightRail';
 import { CompetitionMediaSection } from '@/components/tournament/CompetitionMediaSection';
@@ -28,6 +40,7 @@ import { db } from '@/lib/db/client';
 import {
   getFeaturedMatch,
   getFixturesByRound,
+  getKnockoutFixtures,
   getStandings,
   getMoroccoTeamId,
 } from '@/lib/db/queries';
@@ -41,7 +54,13 @@ import {
   getLeagueFixtures,
   getTopScorersForLeague,
   getTopAssistsForLeague,
+  getTopCardsForLeague,
+  getAvailableSeasons,
 } from '@/lib/db/queries/league';
+import { getInjuriesForCompetition } from '@/lib/db/queries/injuries';
+import { InjuriesTab } from '@/components/league/InjuriesTab';
+import { LeagueStatsTab } from '@/components/league/LeagueStatsTab';
+import { LeagueAboutCard } from '@/components/league/LeagueAboutCard';
 import { LeaguePageHeader } from '@/components/league/LeaguePageHeader';
 import { LeagueStandingsTab } from '@/components/league/LeagueStandingsTab';
 import { LeagueFixturesCard } from '@/components/league/LeagueFixturesCard';
@@ -50,6 +69,7 @@ import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-con
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
+  searchParams: Promise<{ season?: string }>;
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -172,24 +192,46 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // ── Page ──
 
-export default async function CompetitionPage({ params }: PageProps) {
+export default async function CompetitionPage({ params, searchParams }: PageProps) {
   const { locale, country: rawCountry, tournament: rawTournament } = await params;
+  const { season: seasonParam } = await searchParams;
   const tournament = decodeURIComponent(rawTournament);
   const typedLocale = locale as Locale;
   const t = await getTranslations({ locale, namespace: 'breadcrumb' });
   const tP = await getTranslations({ locale, namespace: 'placeholder' });
   const tT = await getTranslations({ locale, namespace: 'tournament' });
 
-  // Gate: only render full page for competitions with metadata
+  // Gate: only render full page for competitions with metadata.
+  // Slug-aware: if slug matches a specific edition's cup content, use that edition's metadata.
   const entry = resolveEntry(tournament, typedLocale);
-  const metadata = entry ? getMetadataForCompetition(entry.competitionId) : undefined;
+  const slugCupContent = findCupContentBySlug(tournament);
+  let metadata = entry ? getMetadataForCompetition(entry.competitionId) : undefined;
+  // If the slug resolves to a different edition than the default, override metadata
+  if (slugCupContent && entry && metadata?.type === 'cup') {
+    const editionYear = findEditionYearBySlug(entry.competitionId, tournament);
+    if (editionYear != null && editionYear !== metadata.editionYear) {
+      const seasonMeta = getMetadataForCompetitionSeason(entry.competitionId, editionYear);
+      if (seasonMeta) metadata = seasonMeta;
+    }
+  }
 
-  // League branch: competition exists in DB with type='League'
+  // League or generic cup branch: competition exists in DB but no hardcoded cup metadata
   if (!metadata || metadata.type !== 'cup') {
     if (entry) {
       const competition = await getCompetitionById(db, entry.competitionId);
       if (competition && competition.type === 'League') {
-        return renderLeaguePage(competition, entry, typedLocale, locale, rawCountry, rawTournament);
+        return renderLeaguePage(
+          competition,
+          entry,
+          typedLocale,
+          locale,
+          rawCountry,
+          rawTournament,
+          seasonParam,
+        );
+      }
+      if (competition && competition.type === 'Cup') {
+        return renderGenericCupPage(competition, entry, typedLocale, locale, rawCountry);
       }
     }
 
@@ -218,12 +260,14 @@ export default async function CompetitionPage({ params }: PageProps) {
 
   const competitionId = metadata.competitionId;
   const seasonYear = metadata.editionYear;
-  const cupContent = getCupContent(competitionId);
+  const cupContent =
+    getCupContentForSeason(competitionId, seasonYear) ?? getCupContent(competitionId);
 
-  const [moroccoTeamId, standings, round1Fixtures] = await Promise.all([
+  const [moroccoTeamId, standings, round1Fixtures, knockoutFixtures] = await Promise.all([
     getMoroccoTeamId(db),
     getStandings(db, competitionId, seasonYear),
     getFixturesByRound(db, competitionId, seasonYear, 1),
+    getKnockoutFixtures(db, competitionId, seasonYear),
   ]);
 
   const featuredMatch = moroccoTeamId
@@ -324,12 +368,15 @@ export default async function CompetitionPage({ params }: PageProps) {
       key: 'knockout',
       hash: hashes.knockout,
       labelKey: 'knockout',
-      content: (
-        <KnockoutTab
-          locale={typedLocale}
-          bracketHref={`/${locale}/competition/${rawCountry}/${rawTournament}/bracket`}
-        />
-      ),
+      content:
+        competitionId === 1 ? (
+          <KnockoutTab
+            locale={typedLocale}
+            bracketHref={`/${locale}/competition/${rawCountry}/${rawTournament}/bracket`}
+          />
+        ) : (
+          <GenericKnockoutList fixtures={knockoutFixtures} locale={typedLocale} />
+        ),
     },
   ];
 
@@ -393,10 +440,13 @@ export default async function CompetitionPage({ params }: PageProps) {
 
 // ── League page renderer ──
 
-const LEAGUE_TAB_HASHES: Record<Locale, { standings: string; media: string }> = {
-  fr: { standings: 'classement', media: 'media' },
-  en: { standings: 'standings', media: 'media' },
-  ar: { standings: 'الترتيب', media: 'وسائط' },
+const LEAGUE_TAB_HASHES: Record<
+  Locale,
+  { standings: string; stats: string; details: string; media: string }
+> = {
+  fr: { standings: 'classement', stats: 'stats', details: 'details', media: 'media' },
+  en: { standings: 'standings', stats: 'stats', details: 'details', media: 'media' },
+  ar: { standings: 'الترتيب', stats: 'الإحصائيات', details: 'التفاصيل', media: 'وسائط' },
 };
 
 async function renderLeaguePage(
@@ -406,11 +456,23 @@ async function renderLeaguePage(
   rawLocale: string,
   rawCountry: string,
   rawTournament: string,
+  seasonParam?: string,
 ) {
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
 
-  const seasonYear = await getCurrentSeasonYear(db, competition.id);
+  const [availableSeasons, currentSeasonYear] = await Promise.all([
+    getAvailableSeasons(db, competition.id),
+    getCurrentSeasonYear(db, competition.id),
+  ]);
+
+  // Use season from URL param if valid, otherwise fall back to current
+  const requestedYear = seasonParam ? Number(seasonParam) : null;
+  const seasonYear =
+    requestedYear && availableSeasons.some((s) => s.year === requestedYear)
+      ? requestedYear
+      : currentSeasonYear;
+
   if (!seasonYear) {
     // No season data — show coming soon
     const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
@@ -434,6 +496,8 @@ async function renderLeaguePage(
     fixtures,
     topScorers,
     topAssists,
+    topCards,
+    injuries,
   ] = await Promise.all([
     getLeagueCoverage(db, competition.id, seasonYear),
     getStandings(db, competition.id, seasonYear),
@@ -443,6 +507,8 @@ async function renderLeaguePage(
     getLeagueFixtures(db, competition.id, seasonYear),
     getTopScorersForLeague(db, competition.id, seasonYear),
     getTopAssistsForLeague(db, competition.id, seasonYear),
+    getTopCardsForLeague(db, competition.id, seasonYear),
+    getInjuriesForCompetition(db, competition.id, seasonYear),
   ]);
 
   const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
@@ -473,6 +539,31 @@ async function renderLeaguePage(
         ),
     },
     {
+      key: 'stats',
+      hash: hashes.stats,
+      labelKey: 'stats',
+      content: (
+        <LeagueStatsTab
+          coverage={coverage}
+          topScorers={topScorers}
+          topAssists={topAssists}
+          topCards={topCards}
+          locale={locale}
+        />
+      ),
+    },
+    {
+      key: 'details',
+      hash: hashes.details,
+      labelKey: 'details',
+      content: (
+        <div className="space-y-6">
+          <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
+          {coverage?.injuries && <InjuriesTab injuries={injuries} />}
+        </div>
+      ),
+    },
+    {
       key: 'media',
       hash: hashes.media,
       labelKey: 'media',
@@ -494,6 +585,7 @@ async function renderLeaguePage(
             locale={locale}
             countryName={countryName}
             introText={introText}
+            availableSeasons={availableSeasons}
           />
         }
         leftRail={
@@ -521,9 +613,159 @@ async function renderLeaguePage(
           <LeagueRightRail
             competitionName={competitionName}
             coverage={coverage}
+            standings={standings}
             topScorers={topScorers}
             topAssists={topAssists}
+            topCards={topCards}
+            locale={locale}
           />
+        }
+        belowCenter={<CompetitionMediaSection competitionId={competition.id} locale={locale} />}
+      />
+    </>
+  );
+}
+
+// ── Generic cup page renderer (no hardcoded metadata) ──
+
+async function renderGenericCupPage(
+  competition: NonNullable<Awaited<ReturnType<typeof getCompetitionById>>>,
+  _entry: MegaMenuEntry,
+  locale: Locale,
+  rawLocale: string,
+  _rawCountry: string,
+) {
+  const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
+  const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
+
+  const seasonYear = await getCurrentSeasonYear(db, competition.id);
+  if (!seasonYear) {
+    const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+    return (
+      <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
+        <div className="mt-8 flex flex-col items-center gap-4 text-center">
+          <h1 className="text-xl font-semibold text-text-primary">{name}</h1>
+          <p className="text-sm text-text-tertiary">{tL('comingSoon')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const [standings, knockoutFixtures, allFixtures, coverage, cupInjuries, topScorers] =
+    await Promise.all([
+      getStandings(db, competition.id, seasonYear),
+      getKnockoutFixtures(db, competition.id, seasonYear),
+      getLeagueFixtures(db, competition.id, seasonYear),
+      getLeagueCoverage(db, competition.id, seasonYear),
+      getInjuriesForCompetition(db, competition.id, seasonYear),
+      getTopScorersForLeague(db, competition.id, seasonYear, 5),
+    ]);
+
+  const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+  const countryName = getLeagueCountryName(competition.countryCode, locale);
+
+  const breadcrumbs: BreadcrumbSegment[] = [
+    { label: tBc('football'), href: `/${rawLocale}` },
+    ...(countryName ? [{ label: countryName }] : []),
+    { label: competitionName },
+  ];
+
+  const hasStandings = standings.length > 0;
+  const hasKnockout = knockoutFixtures.length > 0;
+
+  const tabs = [
+    ...(hasStandings
+      ? [
+          {
+            key: 'standings',
+            hash: 'standings',
+            labelKey: 'standings',
+            content: <LeagueStandingsTab standings={standings} locale={locale} />,
+          },
+        ]
+      : []),
+    ...(hasKnockout
+      ? [
+          {
+            key: 'knockout',
+            hash: 'knockout',
+            labelKey: 'knockout',
+            content: <GenericKnockoutList fixtures={knockoutFixtures} locale={locale} />,
+          },
+        ]
+      : []),
+    ...(allFixtures.length > 0
+      ? [
+          {
+            key: 'matches',
+            hash: 'matches',
+            labelKey: 'matches',
+            content: <CupFixturesByRound fixtures={allFixtures} locale={locale} />,
+          },
+        ]
+      : []),
+    ...(coverage?.injuries
+      ? [
+          {
+            key: 'injuries',
+            hash: 'injuries',
+            labelKey: 'injuries',
+            content: <InjuriesTab injuries={cupInjuries} />,
+          },
+        ]
+      : []),
+    {
+      key: 'details',
+      hash: 'details',
+      labelKey: 'details',
+      content: (
+        <div className="space-y-4">
+          <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
+        </div>
+      ),
+    },
+    {
+      key: 'media',
+      hash: 'media',
+      labelKey: 'media',
+      content: <CompetitionMediaSection competitionId={competition.id} locale={locale} />,
+    },
+  ];
+
+  return (
+    <>
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
+        <SeoBreadcrumb segments={breadcrumbs} />
+      </div>
+
+      <InnerPageShell
+        pageHeader={
+          <LeaguePageHeader
+            competition={competition}
+            seasonYear={seasonYear}
+            locale={locale}
+            countryName={countryName}
+            introText={null}
+            availableSeasons={[{ year: seasonYear, isCurrent: true }]}
+          />
+        }
+        leftRail={
+          <div className="space-y-4">
+            <NewsletterCard tournamentName={competitionName} />
+          </div>
+        }
+        center={<CenterTabs tabs={tabs} />}
+        rightRail={
+          <div className="space-y-4">
+            {hasStandings && <CupGroupsSummary standings={standings} locale={locale} />}
+            <LeagueRightRail
+              competitionName={competitionName}
+              coverage={coverage}
+              topScorers={topScorers}
+              topAssists={[]}
+              locale={locale}
+            />
+          </div>
         }
         belowCenter={<CompetitionMediaSection competitionId={competition.id} locale={locale} />}
       />

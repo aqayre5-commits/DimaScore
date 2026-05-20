@@ -73,6 +73,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
 
       {/* Active tab content */}
       <div role="tabpanel" id={`tabpanel-${activeTab?.key}`} className="pt-4">
+        <h2 className="sr-only">{t(activeTab?.labelKey ?? '')}</h2>
         {activeTab?.content}
       </div>
     </div>

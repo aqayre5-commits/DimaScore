@@ -85,7 +85,7 @@ const HOMEPAGE_FR: AboutContent = {
     {
       question: 'Quand commence la WAFCON 2026 au Maroc\u202f?',
       answer:
-        'La Coupe d\u2019Afrique des Nations f\u00e9minine 2026 (WAFCON) se d\u00e9roule au Maroc du 25 juillet au 16 ao\u00fbt 2026. Le Maroc, h\u00f4te, est t\u00eate de s\u00e9rie. Atlas Kings couvrira int\u00e9gralement la comp\u00e9tition avec classements, r\u00e9sultats et profils des joueuses.',
+        'La CAN F\u00e9minine 2026 (WAFCON) se d\u00e9roulera au Maroc du 25 juillet au 16 ao\u00fbt 2026, avec 16 \u00e9quipes (format \u00e9largi). La WAFCON 2024, remport\u00e9e par le Nigeria (3-2 en finale contre le Maroc), est \u00e9galement consultable sur Atlas Kings.',
     },
     {
       question: 'Qui sont les meilleurs buteurs de la Botola Pro\u202f?',
@@ -100,7 +100,7 @@ const HOMEPAGE_FR: AboutContent = {
     {
       question: 'Atlas Kings couvre-t-il le football f\u00e9minin\u202f?',
       answer:
-        'Oui. Atlas Kings couvre l\u2019\u00e9quipe nationale f\u00e9minine du Maroc (Lionnes de l\u2019Atlas), la Botola Pro F\u00e9minine (cr\u00e9\u00e9e en 2017), la WAFCON 2026 (au Maroc), la Coupe du Monde f\u00e9minine, la UEFA Women\u2019s Champions League, et les principales ligues f\u00e9minines europ\u00e9ennes.',
+        'Oui. Atlas Kings couvre l\u2019\u00e9quipe nationale f\u00e9minine du Maroc (Lionnes de l\u2019Atlas), la Botola Pro F\u00e9minine (cr\u00e9\u00e9e en 2017), la WAFCON 2024 (r\u00e9sultats) et la WAFCON 2026 (\u00e0 venir au Maroc), la Coupe du Monde f\u00e9minine, la UEFA Women\u2019s Champions League, et les principales ligues f\u00e9minines europ\u00e9ennes.',
     },
   ],
 };
@@ -184,7 +184,7 @@ const HOMEPAGE_EN: AboutContent = {
     {
       question: 'When does WAFCON 2026 start in Morocco?',
       answer:
-        'The 2026 Women\u2019s Africa Cup of Nations (WAFCON) takes place in Morocco from 25 July to 16 August 2026. Morocco, as hosts, are seeded. Atlas Kings will provide full coverage with standings, results and player profiles.',
+        'WAFCON 2026 takes place in Morocco from 25 July to 16 August 2026, with 16 teams (expanded format). WAFCON 2024, won by Nigeria (3-2 in the final against Morocco), is also available on Atlas Kings.',
     },
     {
       question: 'Who are the top scorers in Botola Pro?',
@@ -199,7 +199,7 @@ const HOMEPAGE_EN: AboutContent = {
     {
       question: 'Does Atlas Kings cover women\u2019s football?',
       answer:
-        'Yes. Atlas Kings covers the Morocco women\u2019s national team (Atlas Lionesses), the Botola Pro F\u00e9minine (founded 2017), WAFCON 2026 (in Morocco), the FIFA Women\u2019s World Cup, the UEFA Women\u2019s Champions League, and top European women\u2019s leagues.',
+        'Yes. Atlas Kings covers the Morocco women\u2019s national team (Atlas Lionesses), the Botola Pro F\u00e9minine (founded 2017), WAFCON 2024 (results) and WAFCON 2026 (upcoming in Morocco), the FIFA Women\u2019s World Cup, the UEFA Women\u2019s Champions League, and top European women\u2019s leagues.',
     },
   ],
 };
@@ -291,7 +291,7 @@ const HOMEPAGE_AR: AboutContent = {
       question:
         '\u0645\u062a\u0649 \u062a\u0628\u062f\u0623 \u0643\u0623\u0633 \u0623\u0645\u0645 \u0625\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a 2026 \u0641\u064a \u0627\u0644\u0645\u063a\u0631\u0628\u061f',
       answer:
-        '\u062a\u0642\u0627\u0645 \u0643\u0623\u0633 \u0623\u0645\u0645 \u0625\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a 2026 (WAFCON) \u0641\u064a \u0627\u0644\u0645\u063a\u0631\u0628 \u0645\u0646 25 \u064a\u0648\u0644\u064a\u0648 \u0625\u0644\u0649 16 \u0623\u063a\u0633\u0637\u0633 2026. \u0627\u0644\u0645\u063a\u0631\u0628\u060c \u0643\u0628\u0644\u062f \u0645\u0636\u064a\u0641\u060c \u0645\u0635\u0646\u0641 \u0623\u0648\u0644\u064b\u0627. \u0633\u062a\u0648\u0641\u0631 \u0623\u0637\u0644\u0633 \u0643\u064a\u0646\u063a\u0632 \u062a\u063a\u0637\u064a\u0629 \u0643\u0627\u0645\u0644\u0629 \u0628\u0627\u0644\u062a\u0631\u062a\u064a\u0628 \u0648\u0627\u0644\u0646\u062a\u0627\u0626\u062c \u0648\u0645\u0644\u0641\u0627\u062a \u0627\u0644\u0644\u0627\u0639\u0628\u0627\u062a.',
+        '\u0633\u062a\u0642\u0627\u0645 \u0643\u0623\u0633 \u0623\u0645\u0645 \u0625\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a 2026 \u0641\u064a \u0627\u0644\u0645\u063a\u0631\u0628 \u0645\u0646 25 \u064a\u0648\u0644\u064a\u0648 \u0625\u0644\u0649 16 \u0623\u063a\u0633\u0637\u0633 2026\u060c \u0628\u0645\u0634\u0627\u0631\u0643\u0629 16 \u0645\u0646\u062a\u062e\u0628\u064b\u0627 (\u0635\u064a\u063a\u0629 \u0645\u0648\u0633\u0639\u0629). \u0646\u0633\u062e\u0629 2024\u060c \u0627\u0644\u062a\u064a \u0641\u0627\u0632\u062a \u0628\u0647\u0627 \u0646\u064a\u062c\u064a\u0631\u064a\u0627 (3-2 \u0636\u062f \u0627\u0644\u0645\u063a\u0631\u0628)\u060c \u0645\u062a\u0627\u062d\u0629 \u0623\u064a\u0636\u064b\u0627 \u0639\u0644\u0649 \u0623\u0637\u0644\u0633 \u0643\u064a\u0646\u063a\u0632.',
     },
     {
       question:
@@ -309,7 +309,7 @@ const HOMEPAGE_AR: AboutContent = {
       question:
         '\u0647\u0644 \u064a\u063a\u0637\u064a \u0623\u0637\u0644\u0633 \u0643\u064a\u0646\u063a\u0632 \u0643\u0631\u0629 \u0627\u0644\u0642\u062f\u0645 \u0627\u0644\u0646\u0633\u0627\u0626\u064a\u0629\u061f',
       answer:
-        '\u0646\u0639\u0645. \u064a\u063a\u0637\u064a \u0623\u0637\u0644\u0633 \u0643\u064a\u0646\u063a\u0632 \u0627\u0644\u0645\u0646\u062a\u062e\u0628 \u0627\u0644\u0645\u063a\u0631\u0628\u064a \u0644\u0644\u0633\u064a\u062f\u0627\u062a (\u0644\u0628\u0624\u0627\u062a \u0627\u0644\u0623\u0637\u0644\u0633)\u060c \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0627\u0644\u0627\u062d\u062a\u0631\u0627\u0641\u064a\u0629 \u0627\u0644\u0646\u0633\u0627\u0626\u064a\u0629 (\u062a\u0623\u0633\u0633\u062a 2017)\u060c \u0643\u0623\u0633 \u0623\u0645\u0645 \u0625\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a 2026 (\u0641\u064a \u0627\u0644\u0645\u063a\u0631\u0628)\u060c \u0643\u0623\u0633 \u0627\u0644\u0639\u0627\u0644\u0645 \u0644\u0644\u0633\u064a\u062f\u0627\u062a\u060c \u062f\u0648\u0631\u064a \u0623\u0628\u0637\u0627\u0644 \u0623\u0648\u0631\u0648\u0628\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a\u060c \u0648\u0627\u0644\u062f\u0648\u0631\u064a\u0627\u062a \u0627\u0644\u0646\u0633\u0627\u0626\u064a\u0629 \u0627\u0644\u0623\u0648\u0631\u0648\u0628\u064a\u0629 \u0627\u0644\u0643\u0628\u0631\u0649.',
+        '\u0646\u0639\u0645. \u064a\u063a\u0637\u064a \u0623\u0637\u0644\u0633 \u0643\u064a\u0646\u063a\u0632 \u0627\u0644\u0645\u0646\u062a\u062e\u0628 \u0627\u0644\u0645\u063a\u0631\u0628\u064a \u0644\u0644\u0633\u064a\u062f\u0627\u062a (\u0644\u0628\u0624\u0627\u062a \u0627\u0644\u0623\u0637\u0644\u0633)\u060c \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0627\u0644\u0627\u062d\u062a\u0631\u0627\u0641\u064a\u0629 \u0627\u0644\u0646\u0633\u0627\u0626\u064a\u0629 (\u062a\u0623\u0633\u0633\u062a 2017)\u060c \u0643\u0623\u0633 \u0623\u0645\u0645 \u0625\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a 2024 (\u0627\u0644\u0646\u062a\u0627\u0626\u062c) \u0648\u0646\u0633\u062e\u0629 2026 (\u0642\u0627\u062f\u0645\u0629 \u0641\u064a \u0627\u0644\u0645\u063a\u0631\u0628)\u060c \u0643\u0623\u0633 \u0627\u0644\u0639\u0627\u0644\u0645 \u0644\u0644\u0633\u064a\u062f\u0627\u062a\u060c \u062f\u0648\u0631\u064a \u0623\u0628\u0637\u0627\u0644 \u0623\u0648\u0631\u0648\u0628\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a\u060c \u0648\u0627\u0644\u062f\u0648\u0631\u064a\u0627\u062a \u0627\u0644\u0646\u0633\u0627\u0626\u064a\u0629 \u0627\u0644\u0623\u0648\u0631\u0648\u0628\u064a\u0629 \u0627\u0644\u0643\u0628\u0631\u0649.',
     },
   ],
 };

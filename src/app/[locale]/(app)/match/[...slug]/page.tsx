@@ -12,8 +12,14 @@ import {
   getHeadToHead,
 } from '@/lib/db/queries/match-detail';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
+import {
+  findEntryByCompetitionId,
+  buildCompetitionHref,
+} from '@/lib/constants/competitions-mega-menu';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import { InnerPageShell } from '@/components/layout/InnerPageShell';
+import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
 import { EventTimeline } from '@/components/match/EventTimeline';
 import { LineupPitch } from '@/components/match/LineupPitch';
@@ -22,6 +28,7 @@ import { PlayerRatingsPanel } from '@/components/match/PlayerRatingBadge';
 import { H2HPanel } from '@/components/match/H2HPanel';
 import { PredictionCard } from '@/components/match/PredictionCard';
 import { MatchMediaSection } from '@/components/match/MatchMediaSection';
+import { NewsletterCard } from '@/components/tournament/NewsletterCard';
 import { getMediaVideos } from '@/lib/db/queries/media';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -57,6 +64,40 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `${home} vs ${away} — ${compName}${match.round ? `, ${match.round}` : ''}`,
   };
 }
+
+// Tab hash fragments per locale
+const MATCH_TAB_HASHES: Record<string, Record<string, string>> = {
+  fr: {
+    summary: 'resume',
+    events: 'evenements',
+    lineups: 'compositions',
+    stats: 'stats',
+    playerRatings: 'notes',
+    h2h: 'h2h',
+    prediction: 'pronostic',
+    media: 'media',
+  },
+  en: {
+    summary: 'summary',
+    events: 'events',
+    lineups: 'lineups',
+    stats: 'stats',
+    playerRatings: 'ratings',
+    h2h: 'h2h',
+    prediction: 'prediction',
+    media: 'media',
+  },
+  ar: {
+    summary: 'ملخص',
+    events: 'أحداث',
+    lineups: 'التشكيلات',
+    stats: 'الإحصائيات',
+    playerRatings: 'التقييمات',
+    h2h: 'مواجهات',
+    prediction: 'التوقعات',
+    media: 'وسائط',
+  },
+};
 
 export default async function MatchDetailPage({ params }: PageProps) {
   const { locale, slug: rawSlug } = await params;
@@ -116,120 +157,143 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const homeStats = teamStats.find((s) => s.teamId === homeTeamId);
   const awayStats = teamStats.find((s) => s.teamId === awayTeamId);
 
-  // Tab definitions — gated by coverage
-  const tabs = [
-    { key: 'summary', label: t('summary'), always: true },
-    { key: 'events', label: t('events'), always: false, visible: hasEvents },
-    { key: 'lineups', label: t('lineups'), always: false, visible: hasLineups },
-    { key: 'stats', label: t('stats'), always: false, visible: hasStats },
-    { key: 'playerRatings', label: t('playerRatings'), always: false, visible: hasRatings },
-    { key: 'h2h', label: t('h2h'), always: true },
-    { key: 'prediction', label: t('prediction'), always: false, visible: coverage?.predictions },
-    { key: 'media', label: t('media'), always: true },
-  ].filter((tab) => tab.always || tab.visible);
+  const hashes = MATCH_TAB_HASHES[locale] ?? MATCH_TAB_HASHES.en;
+
+  // Build center tabs — coverage-gated
+  const centerTabs = [
+    // Summary: events timeline (if available) as the main summary view
+    {
+      key: 'summary',
+      hash: hashes.summary,
+      labelKey: 'summary',
+      content: hasEvents ? (
+        <EventTimeline events={events} homeTeamId={homeTeamId} locale={typedLocale} />
+      ) : (
+        <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-8 text-center">
+          <p className="text-sm text-text-tertiary">
+            {t('venue')}: {[match.venue?.name, match.venue?.city].filter(Boolean).join(', ') || '—'}
+          </p>
+        </div>
+      ),
+    },
+    // Lineups
+    ...(hasLineups && homeLineup && awayLineup
+      ? [
+          {
+            key: 'lineups',
+            hash: hashes.lineups,
+            labelKey: 'lineups',
+            content: (
+              <LineupPitch
+                homeLineup={homeLineup}
+                awayLineup={awayLineup}
+                homeTeamName={home}
+                awayTeamName={away}
+                locale={typedLocale}
+              />
+            ),
+          },
+        ]
+      : []),
+    // Statistics
+    ...(hasStats && homeStats && awayStats
+      ? [
+          {
+            key: 'stats',
+            hash: hashes.stats,
+            labelKey: 'stats',
+            content: (
+              <StatsBars
+                homeStats={homeStats}
+                awayStats={awayStats}
+                homeTeamName={home}
+                awayTeamName={away}
+              />
+            ),
+          },
+        ]
+      : []),
+    // Player Ratings
+    ...(hasRatings
+      ? [
+          {
+            key: 'playerRatings',
+            hash: hashes.playerRatings,
+            labelKey: 'playerRatings',
+            content: (
+              <PlayerRatingsPanel
+                playerStats={playerStats}
+                homeTeamId={homeTeamId}
+                awayTeamId={awayTeamId}
+                homeTeamName={home}
+                awayTeamName={away}
+                locale={typedLocale}
+              />
+            ),
+          },
+        ]
+      : []),
+    // H2H
+    {
+      key: 'h2h',
+      hash: hashes.h2h,
+      labelKey: 'h2h',
+      content: (
+        <H2HPanel
+          fixtures={h2hFixtures}
+          homeTeamId={homeTeamId}
+          homeTeamName={home}
+          awayTeamName={away}
+          locale={typedLocale}
+        />
+      ),
+    },
+    // Media
+    {
+      key: 'media',
+      hash: hashes.media,
+      labelKey: 'media',
+      content: <MatchMediaSection videos={matchVideos} />,
+    },
+  ];
 
   return (
-    <div className="mx-auto w-full max-w-[1280px] px-4 py-4">
-      <SeoBreadcrumb segments={breadcrumbs} />
-
-      <section id="summary" className="mt-4 scroll-mt-16">
-        <ScoreHeader match={match} locale={typedLocale} />
-      </section>
-
-      {/* Tab bar — anchor links scroll to matching section ids */}
-      <nav
-        className="sticky top-0 z-10 mt-4 flex gap-1 overflow-x-auto border-b border-border-subtle bg-bg-base"
-        aria-label="Match tabs"
-      >
-        {tabs.map((tab) => (
-          <a
-            key={tab.key}
-            href={`#${tab.key}`}
-            className="shrink-0 border-b-2 border-transparent px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-accent-green hover:text-text-primary"
-          >
-            {tab.label}
-          </a>
-        ))}
-      </nav>
-
-      {/* Sections */}
-      <div className="mt-4 space-y-6">
-        {/* Events */}
-        {hasEvents && (
-          <section id="events" className="scroll-mt-16">
-            <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('events')}</h3>
-            <EventTimeline events={events} homeTeamId={homeTeamId} locale={typedLocale} />
-          </section>
-        )}
-
-        {/* Lineups */}
-        {hasLineups && homeLineup && awayLineup && (
-          <section id="lineups" className="scroll-mt-16">
-            <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('lineups')}</h3>
-            <LineupPitch
-              homeLineup={homeLineup}
-              awayLineup={awayLineup}
-              homeTeamName={home}
-              awayTeamName={away}
-              locale={typedLocale}
-            />
-          </section>
-        )}
-
-        {/* Statistics */}
-        {hasStats && homeStats && awayStats && (
-          <section id="stats" className="scroll-mt-16">
-            <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('stats')}</h3>
-            <StatsBars
-              homeStats={homeStats}
-              awayStats={awayStats}
-              homeTeamName={home}
-              awayTeamName={away}
-            />
-          </section>
-        )}
-
-        {/* Player Ratings */}
-        {hasRatings && (
-          <section id="playerRatings" className="scroll-mt-16">
-            <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('playerRatings')}</h3>
-            <PlayerRatingsPanel
-              playerStats={playerStats}
-              homeTeamId={homeTeamId}
-              awayTeamId={awayTeamId}
-              homeTeamName={home}
-              awayTeamName={away}
-              locale={typedLocale}
-            />
-          </section>
-        )}
-
-        {/* H2H */}
-        <section id="h2h" className="scroll-mt-16">
-          <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('h2h')}</h3>
-          <H2HPanel
-            fixtures={h2hFixtures}
-            homeTeamId={homeTeamId}
-            homeTeamName={home}
-            awayTeamName={away}
-            locale={typedLocale}
-          />
-        </section>
-
-        {/* Prediction placeholder */}
-        {coverage?.predictions && (
-          <section id="prediction" className="scroll-mt-16">
-            <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('prediction')}</h3>
-            <PredictionCard />
-          </section>
-        )}
-
-        {/* Media */}
-        <section id="media" className="scroll-mt-16">
-          <h3 className="mb-2 text-sm font-medium text-text-secondary">{t('media')}</h3>
-          <MatchMediaSection videos={matchVideos} />
-        </section>
+    <>
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
+        <SeoBreadcrumb segments={breadcrumbs} />
       </div>
-    </div>
+
+      <InnerPageShell
+        pageHeader={
+          <ScoreHeader
+            match={match}
+            locale={typedLocale}
+            competitionHref={(() => {
+              const entry = findEntryByCompetitionId(match.competition.id);
+              return entry ? buildCompetitionHref(entry, typedLocale) : null;
+            })()}
+          />
+        }
+        leftRail={
+          <div className="space-y-4">
+            {/* Prediction */}
+            {coverage?.predictions && <PredictionCard />}
+            <NewsletterCard tournamentName={compName} />
+          </div>
+        }
+        center={<CenterTabs tabs={centerTabs} />}
+        rightRail={
+          <div className="space-y-4">
+            <H2HPanel
+              fixtures={h2hFixtures}
+              homeTeamId={homeTeamId}
+              homeTeamName={home}
+              awayTeamName={away}
+              locale={typedLocale}
+            />
+          </div>
+        }
+      />
+    </>
   );
 }

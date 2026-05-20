@@ -7,6 +7,7 @@ import * as schema from './schema';
 
 type TeamSnapshot = {
   id: number;
+  slug: string;
   name: Record<string, string>;
   shortName: Record<string, string>;
   code: string | null;
@@ -137,6 +138,46 @@ export async function getFixturesByRound(
   return hydrateFixtures(db, rows);
 }
 
+// ── Q2b: Knockout fixtures (whitelisted rounds only) ──
+
+const KNOCKOUT_ROUNDS = [
+  'Round of 128',
+  'Round of 64',
+  'Round of 32',
+  'Round of 16',
+  'Quarter-finals',
+  'Semi-finals',
+  'Semi-Finals',
+  '3rd Place Final',
+  '3rd place',
+  'Final',
+];
+
+/**
+ * Get all knockout-stage fixtures for a competition season.
+ * Uses a whitelist of known knockout round names to exclude qualifying,
+ * preliminary, regular season, and group-stage rounds.
+ */
+export async function getKnockoutFixtures(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+): Promise<FixtureWithTeams[]> {
+  const rows = await db
+    .select()
+    .from(schema.fixtures)
+    .where(
+      and(
+        eq(schema.fixtures.competitionId, competitionId),
+        eq(schema.fixtures.seasonYear, seasonYear),
+        inArray(schema.fixtures.round, KNOCKOUT_ROUNDS),
+      ),
+    )
+    .orderBy(asc(schema.fixtures.kickoffAt));
+
+  return hydrateFixtures(db, rows);
+}
+
 // ── Q3: Standings by competition ──
 
 /**
@@ -253,6 +294,7 @@ async function getTeamsMap(
   const teams = await db
     .select({
       id: schema.teams.id,
+      slug: schema.teams.slug,
       name: schema.teams.name,
       shortName: schema.teams.shortName,
       code: schema.teams.code,

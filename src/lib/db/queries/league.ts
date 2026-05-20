@@ -19,6 +19,7 @@ export interface LeagueCoverageRecord {
   standings: boolean | null;
   topScorers: boolean | null;
   topAssists: boolean | null;
+  topCards: boolean | null;
   events: boolean | null;
   lineups: boolean | null;
   statisticsFixtures: boolean | null;
@@ -64,6 +65,7 @@ export async function getLeagueCoverage(
       standings: schema.leagueCoverage.standings,
       topScorers: schema.leagueCoverage.topScorers,
       topAssists: schema.leagueCoverage.topAssists,
+      topCards: schema.leagueCoverage.topCards,
       events: schema.leagueCoverage.events,
       lineups: schema.leagueCoverage.lineups,
       statisticsFixtures: schema.leagueCoverage.statisticsFixtures,
@@ -94,6 +96,25 @@ export async function getCurrentSeasonYear(
     .limit(1);
 
   return rows[0]?.year ?? null;
+}
+
+export async function getAvailableSeasons(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+): Promise<{ year: number; isCurrent: boolean }[]> {
+  const rows = await db
+    .select({
+      year: schema.seasons.year,
+      isCurrent: schema.seasons.isCurrent,
+    })
+    .from(schema.seasons)
+    .where(eq(schema.seasons.competitionId, competitionId))
+    .orderBy(desc(schema.seasons.year));
+
+  return rows.map((r) => ({
+    year: r.year,
+    isCurrent: r.isCurrent ?? false,
+  }));
 }
 
 export async function getLeagueRounds(
@@ -247,6 +268,7 @@ export async function getLeagueFixtures(
 
 export interface TopPlayerRow {
   playerId: number;
+  playerSlug: string;
   playerName: string;
   playerPhoto: string | null;
   teamName: string;
@@ -264,9 +286,11 @@ export async function getTopScorersForLeague(
   const rows = await db
     .select({
       playerId: schema.playerSeasonStats.playerId,
+      playerSlug: schema.players.slug,
       stats: schema.playerSeasonStats.stats,
     })
     .from(schema.playerSeasonStats)
+    .innerJoin(schema.players, eq(schema.playerSeasonStats.playerId, schema.players.id))
     .where(
       and(
         eq(schema.playerSeasonStats.competitionId, competitionId),
@@ -280,6 +304,7 @@ export async function getTopScorersForLeague(
     const s = r.stats as Record<string, unknown>;
     return {
       playerId: r.playerId,
+      playerSlug: r.playerSlug,
       playerName: (s.playerName as string) ?? '',
       playerPhoto: (s.playerPhoto as string) ?? null,
       teamName: (s.teamName as string) ?? '',
@@ -299,9 +324,11 @@ export async function getTopAssistsForLeague(
   const rows = await db
     .select({
       playerId: schema.playerSeasonStats.playerId,
+      playerSlug: schema.players.slug,
       stats: schema.playerSeasonStats.stats,
     })
     .from(schema.playerSeasonStats)
+    .innerJoin(schema.players, eq(schema.playerSeasonStats.playerId, schema.players.id))
     .where(
       and(
         eq(schema.playerSeasonStats.competitionId, competitionId),
@@ -315,12 +342,64 @@ export async function getTopAssistsForLeague(
     const s = r.stats as Record<string, unknown>;
     return {
       playerId: r.playerId,
+      playerSlug: r.playerSlug,
       playerName: (s.playerName as string) ?? '',
       playerPhoto: (s.playerPhoto as string) ?? null,
       teamName: (s.teamName as string) ?? '',
       teamLogo: (s.teamLogo as string) ?? null,
       goals: Number(s.goals) || 0,
       assists: Number(s.assists) || 0,
+    };
+  });
+}
+
+// ── Top cards ──
+
+export interface TopCardRow {
+  playerId: number;
+  playerSlug: string;
+  playerName: string;
+  playerPhoto: string | null;
+  teamName: string;
+  teamLogo: string | null;
+  yellowCards: number;
+  redCards: number;
+}
+
+export async function getTopCardsForLeague(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+  limit = 10,
+): Promise<TopCardRow[]> {
+  const rows = await db
+    .select({
+      playerId: schema.playerSeasonStats.playerId,
+      playerSlug: schema.players.slug,
+      stats: schema.playerSeasonStats.stats,
+    })
+    .from(schema.playerSeasonStats)
+    .innerJoin(schema.players, eq(schema.playerSeasonStats.playerId, schema.players.id))
+    .where(
+      and(
+        eq(schema.playerSeasonStats.competitionId, competitionId),
+        eq(schema.playerSeasonStats.seasonYear, seasonYear),
+      ),
+    )
+    .orderBy(sql`(${schema.playerSeasonStats.stats}->>'yellowCards')::int DESC NULLS LAST`)
+    .limit(limit);
+
+  return rows.map((r) => {
+    const s = r.stats as Record<string, unknown>;
+    return {
+      playerId: r.playerId,
+      playerSlug: r.playerSlug,
+      playerName: (s.playerName as string) ?? '',
+      playerPhoto: (s.playerPhoto as string) ?? null,
+      teamName: (s.teamName as string) ?? '',
+      teamLogo: (s.teamLogo as string) ?? null,
+      yellowCards: Number(s.yellowCards) || 0,
+      redCards: Number(s.redCards) || 0,
     };
   });
 }

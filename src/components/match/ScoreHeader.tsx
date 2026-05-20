@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
@@ -9,6 +10,7 @@ import type { Locale } from '@/lib/i18n/config';
 interface ScoreHeaderProps {
   match: MatchDetail;
   locale: Locale;
+  competitionHref?: string | null;
 }
 
 type RenderState = 'upcoming' | 'live' | 'finished' | 'interrupted';
@@ -34,7 +36,7 @@ const INTERRUPTED_LABEL_KEY: Record<string, string> = {
   WO: 'walkover',
 };
 
-export function ScoreHeader({ match, locale }: ScoreHeaderProps) {
+export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps) {
   const t = useTranslations('matchDetail');
 
   const state = getRenderState(match.statusCode);
@@ -59,7 +61,13 @@ export function ScoreHeader({ match, locale }: ScoreHeaderProps) {
       {/* Competition + round */}
       <div className="border-b border-border-subtle px-4 py-2.5 text-center">
         <p className="text-xs font-medium text-text-secondary">
-          {compName}
+          {competitionHref ? (
+            <Link href={competitionHref} className="hover:text-accent hover:underline">
+              {compName}
+            </Link>
+          ) : (
+            compName
+          )}
           {match.round && <span className="text-text-tertiary"> &middot; {match.round}</span>}
         </p>
       </div>
@@ -70,16 +78,38 @@ export function ScoreHeader({ match, locale }: ScoreHeaderProps) {
         <div className="flex w-full items-center justify-center gap-4">
           {/* Home team */}
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
-            {homeFlag && <span className="text-4xl leading-none">{homeFlag}</span>}
-            {!homeFlag && match.homeTeam?.logoUrl && (
-              <img
-                src={match.homeTeam.logoUrl}
-                alt=""
-                className="size-10 object-contain"
-                loading="lazy"
-              />
+            {match.homeTeam?.slug ? (
+              <Link
+                href={`/${locale}/equipe/${match.homeTeam.slug}`}
+                className="flex flex-col items-center gap-2 hover:opacity-80"
+              >
+                {homeFlag && <span className="text-4xl leading-none">{homeFlag}</span>}
+                {!homeFlag && match.homeTeam?.logoUrl && (
+                  <img
+                    src={match.homeTeam.logoUrl}
+                    alt=""
+                    className="size-10 object-contain"
+                    loading="lazy"
+                  />
+                )}
+                <span className="text-base font-semibold text-text-primary hover:text-accent hover:underline">
+                  {homeName}
+                </span>
+              </Link>
+            ) : (
+              <>
+                {homeFlag && <span className="text-4xl leading-none">{homeFlag}</span>}
+                {!homeFlag && match.homeTeam?.logoUrl && (
+                  <img
+                    src={match.homeTeam.logoUrl}
+                    alt=""
+                    className="size-10 object-contain"
+                    loading="lazy"
+                  />
+                )}
+                <span className="text-base font-semibold text-text-primary">{homeName}</span>
+              </>
             )}
-            <span className="text-base font-semibold text-text-primary">{homeName}</span>
           </div>
 
           {/* Score / status center */}
@@ -151,16 +181,38 @@ export function ScoreHeader({ match, locale }: ScoreHeaderProps) {
 
           {/* Away team */}
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
-            {awayFlag && <span className="text-4xl leading-none">{awayFlag}</span>}
-            {!awayFlag && match.awayTeam?.logoUrl && (
-              <img
-                src={match.awayTeam.logoUrl}
-                alt=""
-                className="size-10 object-contain"
-                loading="lazy"
-              />
+            {match.awayTeam?.slug ? (
+              <Link
+                href={`/${locale}/equipe/${match.awayTeam.slug}`}
+                className="flex flex-col items-center gap-2 hover:opacity-80"
+              >
+                {awayFlag && <span className="text-4xl leading-none">{awayFlag}</span>}
+                {!awayFlag && match.awayTeam?.logoUrl && (
+                  <img
+                    src={match.awayTeam.logoUrl}
+                    alt=""
+                    className="size-10 object-contain"
+                    loading="lazy"
+                  />
+                )}
+                <span className="text-base font-semibold text-text-primary hover:text-accent hover:underline">
+                  {awayName}
+                </span>
+              </Link>
+            ) : (
+              <>
+                {awayFlag && <span className="text-4xl leading-none">{awayFlag}</span>}
+                {!awayFlag && match.awayTeam?.logoUrl && (
+                  <img
+                    src={match.awayTeam.logoUrl}
+                    alt=""
+                    className="size-10 object-contain"
+                    loading="lazy"
+                  />
+                )}
+                <span className="text-base font-semibold text-text-primary">{awayName}</span>
+              </>
             )}
-            <span className="text-base font-semibold text-text-primary">{awayName}</span>
           </div>
         </div>
 

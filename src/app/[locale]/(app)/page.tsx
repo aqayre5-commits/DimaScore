@@ -5,6 +5,7 @@ import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { FixtureList } from '@/components/homepage/FixtureList';
 import { EditorialCards } from '@/components/homepage/EditorialCards';
+import { MatchesThisWeek } from '@/components/homepage/cards/MatchesThisWeek';
 import { RightRail } from '@/components/homepage/RightRail';
 import { AboutCard } from '@/components/tournament/AboutCard';
 import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
@@ -97,8 +98,11 @@ export default async function HomePage({ params }: PageProps) {
           {/* Left column — fixture list (homepage.md §6) */}
           <FixtureList locale={typedLocale} />
 
-          {/* Center column — editorial cards (homepage.md §7) */}
-          <EditorialCards locale={typedLocale} />
+          {/* Center column — editorial cards + matches this week (homepage.md §7) */}
+          <div className="space-y-6 self-start">
+            <EditorialCards locale={typedLocale} />
+            <MatchesThisWeek locale={typedLocale} />
+          </div>
 
           {/* Right rail — standings widgets (homepage.md §8, >=1280px only) */}
           <RightRail locale={typedLocale} />

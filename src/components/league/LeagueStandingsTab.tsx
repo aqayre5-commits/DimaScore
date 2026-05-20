@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
@@ -73,6 +74,27 @@ export function LeagueStandingsTab({ standings, locale }: LeagueStandingsTabProp
 
   return (
     <div className="space-y-3">
+      {/* All / Home / Away toggle */}
+      <div className="flex gap-1 rounded-lg bg-bg-surface-2 p-1">
+        <button className="flex-1 rounded-md bg-bg-surface px-3 py-1.5 text-xs font-semibold text-text-primary shadow-sm">
+          {t('all')}
+        </button>
+        <button
+          className="flex-1 rounded-md px-3 py-1.5 text-xs font-medium text-text-tertiary"
+          disabled
+          title={t('comingSoon')}
+        >
+          {t('home')}
+        </button>
+        <button
+          className="flex-1 rounded-md px-3 py-1.5 text-xs font-medium text-text-tertiary"
+          disabled
+          title={t('comingSoon')}
+        >
+          {t('away')}
+        </button>
+      </div>
+
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-border-subtle bg-bg-surface">
         <table className="w-full text-sm">
@@ -126,9 +148,18 @@ export function LeagueStandingsTab({ standings, locale }: LeagueStandingsTabProp
                       ) : (
                         <div className="size-5 rounded bg-bg-surface-2" />
                       )}
-                      <span className="truncate text-sm font-medium text-text-primary">
-                        {teamName}
-                      </span>
+                      {row.team?.slug ? (
+                        <Link
+                          href={`/${locale}/equipe/${row.team.slug}`}
+                          className="truncate text-sm font-medium text-text-primary hover:text-accent hover:underline"
+                        >
+                          {teamName}
+                        </Link>
+                      ) : (
+                        <span className="truncate text-sm font-medium text-text-primary">
+                          {teamName}
+                        </span>
+                      )}
                     </div>
                   </td>
 

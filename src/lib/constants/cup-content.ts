@@ -115,41 +115,41 @@ const WC_2026: CupContent = {
   breadcrumbOrg: 'FIFA',
 };
 
-// ── WAFCON 2026 (competitionId: 922) ──
+// ── WAFCON 2024 (competitionId: 922, season 2024 — played July 2025, completed) ──
 
-const WAFCON_2026: CupContent = {
+const WAFCON_2024: CupContent = {
   meta: {
     fr: {
-      title: 'CAN Féminine 2026 — Calendrier, groupes, classement et résultats | Atlas Kings',
+      title: 'CAN Féminine 2024 — Résultats, groupes et classement | Atlas Kings',
       description:
-        'Suivez la CAN Féminine 2026 au Maroc : calendrier, 3 groupes, classement, phase à élimination directe. Le Maroc pays hôte.',
+        'Résultats de la CAN Féminine 2024 au Maroc : 3 groupes, classement, phase à élimination directe. Nigeria vainqueur, Maroc finaliste.',
     },
     en: {
-      title: 'WAFCON 2026 — Fixtures, groups, standings and results | Atlas Kings',
+      title: 'WAFCON 2024 — Results, groups, standings and knockout | Atlas Kings',
       description:
-        'Follow WAFCON 2026 in Morocco: schedule, 3 groups, standings, knockout bracket. Morocco as host nation.',
+        'WAFCON 2024 results from Morocco: 3 groups, standings, knockout bracket. Nigeria winners, Morocco runners-up.',
     },
     ar: {
-      title: 'كأس أمم إفريقيا للسيدات 2026 — الجدول، المجموعات، الترتيب والنتائج | أطلس كينغز',
+      title: 'كأس أمم إفريقيا للسيدات 2024 — النتائج، المجموعات، الترتيب | أطلس كينغز',
       description:
-        'تابعوا كأس أمم إفريقيا للسيدات 2026 في المغرب: الجدول، 3 مجموعات، الترتيب، الأدوار الإقصائية. المغرب بلد مستضيف.',
+        'نتائج كأس أمم إفريقيا للسيدات 2024 في المغرب: 3 مجموعات، الترتيب، الأدوار الإقصائية. نيجيريا البطلة، المغرب الوصيف.',
     },
   },
   intro: {
-    fr: "La Coupe d'Afrique des Nations Féminine 2026 (WAFCON) se déroule au Maroc. 12 équipes nationales s'affrontent dans 3 groupes de 4, suivis d'une phase à élimination directe. Suivez le calendrier complet, les classements et les résultats en direct.",
-    en: "The Women's Africa Cup of Nations 2026 (WAFCON) takes place in Morocco. 12 national teams compete in 3 groups of 4, followed by a knockout phase. Follow the full schedule, standings, and live results.",
-    ar: 'تقام بطولة كأس أمم إفريقيا للسيدات 2026 في المغرب. تتنافس 12 منتخباً وطنياً في 3 مجموعات من 4 فرق، تليها مرحلة إقصائية. تابعوا الجدول الكامل، الترتيب والنتائج مباشرة.',
+    fr: "La CAN Féminine 2024 s'est déroulée au Maroc du 5 au 26 juillet 2025. 12 équipes nationales se sont affrontées dans 3 groupes de 4, suivis d'une phase à élimination directe. Le Nigeria a remporté le titre en battant le Maroc 3-2 en finale.",
+    en: 'WAFCON 2024 took place in Morocco from 5 to 26 July 2025. 12 national teams competed in 3 groups of 4, followed by a knockout phase. Nigeria won the title, beating Morocco 3-2 in the final.',
+    ar: 'أقيمت بطولة كأس أمم إفريقيا للسيدات 2024 في المغرب من 5 إلى 26 يوليو 2025. تنافست 12 منتخباً وطنياً في 3 مجموعات من 4 فرق، تليها مرحلة إقصائية. فازت نيجيريا باللقب بفوزها على المغرب 3-2 في النهائي.',
   },
   titles: {
-    fr: 'CAN Féminine 2026',
-    en: 'WAFCON 2026',
-    ar: 'كأس أمم إفريقيا للسيدات 2026',
+    fr: 'CAN Féminine 2024',
+    en: 'WAFCON 2024',
+    ar: 'كأس أمم إفريقيا للسيدات 2024',
   },
-  slugs: ['can-feminine-2026', 'wafcon-2026', 'كأس-أمم-إفريقيا-للسيدات-2026'],
+  slugs: ['can-feminine-2024', 'wafcon-2024', 'كأس-أمم-إفريقيا-للسيدات-2024'],
   urls: {
-    fr: `${baseUrl}/fr/competition/caf/can-feminine-2026`,
-    en: `${baseUrl}/en/competition/caf/wafcon-2026`,
-    ar: `${baseUrl}/ar/competition/كاف/كأس-أمم-إفريقيا-للسيدات-2026`,
+    fr: `${baseUrl}/fr/competition/caf/can-feminine-2024`,
+    en: `${baseUrl}/en/competition/caf/wafcon-2024`,
+    ar: `${baseUrl}/ar/competition/كاف/كأس-أمم-إفريقيا-للسيدات-2024`,
   },
   tabHashes: {
     fr: {
@@ -201,29 +201,184 @@ const WAFCON_2026: CupContent = {
     ],
   },
   historicalTeamNames: {
-    fr: { ZA: 'Afrique du Sud', NG: 'Nigeria', GQ: 'Guinée équatoriale', CM: 'Cameroun' },
-    en: { ZA: 'South Africa', NG: 'Nigeria', GQ: 'Equatorial Guinea', CM: 'Cameroon' },
-    ar: { ZA: 'جنوب إفريقيا', NG: 'نيجيريا', GQ: 'غينيا الاستوائية', CM: 'الكاميرون' },
+    fr: {
+      ZA: 'Afrique du Sud',
+      NG: 'Nigeria',
+      GQ: 'Guinée équatoriale',
+      CM: 'Cameroun',
+      MA: 'Maroc',
+    },
+    en: {
+      ZA: 'South Africa',
+      NG: 'Nigeria',
+      GQ: 'Equatorial Guinea',
+      CM: 'Cameroon',
+      MA: 'Morocco',
+    },
+    ar: {
+      ZA: 'جنوب إفريقيا',
+      NG: 'نيجيريا',
+      GQ: 'غينيا الاستوائية',
+      CM: 'الكاميرون',
+      MA: 'المغرب',
+    },
+  },
+  breadcrumbOrg: 'CAF',
+};
+
+// ── WAFCON 2026 (competitionId: 922 — upcoming, 25 Jul – 16 Aug 2026) ──
+
+const WAFCON_2026: CupContent = {
+  meta: {
+    fr: {
+      title: 'CAN Féminine 2026 — Calendrier, groupes et classement | Atlas Kings',
+      description:
+        'Suivez la CAN Féminine 2026 au Maroc : calendrier, 4 groupes, classement, phase à élimination directe. 16 équipes, format élargi.',
+    },
+    en: {
+      title: 'WAFCON 2026 — Fixtures, groups, standings and results | Atlas Kings',
+      description:
+        'Follow WAFCON 2026 in Morocco: schedule, 4 groups, standings, knockout bracket. 16 teams, expanded format.',
+    },
+    ar: {
+      title: 'كأس أمم إفريقيا للسيدات 2026 — الجدول، المجموعات، الترتيب والنتائج | أطلس كينغز',
+      description:
+        'تابعوا كأس أمم إفريقيا للسيدات 2026 في المغرب: الجدول، 4 مجموعات، الترتيب، الأدوار الإقصائية. 16 منتخباً، صيغة موسعة.',
+    },
+  },
+  intro: {
+    fr: 'La CAN Féminine 2026 (WAFCON) se déroulera au Maroc du 25 juillet au 16 août 2026. Première édition à 16 équipes (élargie de 12). Le Maroc, pays hôte, défendra ses couleurs après une finale perdue en 2024.',
+    en: 'WAFCON 2026 takes place in Morocco from 25 July to 16 August 2026. The first edition with 16 teams (expanded from 12). Morocco, as hosts, will compete after reaching the 2024 final.',
+    ar: 'تقام بطولة كأس أمم إفريقيا للسيدات 2026 في المغرب من 25 يوليو إلى 16 أغسطس 2026. أول نسخة بمشاركة 16 منتخباً (بدلاً من 12). المغرب، البلد المستضيف، سيشارك بعد وصوله لنهائي 2024.',
+  },
+  titles: {
+    fr: 'CAN Féminine 2026',
+    en: 'WAFCON 2026',
+    ar: 'كأس أمم إفريقيا للسيدات 2026',
+  },
+  slugs: ['can-feminine-2026', 'wafcon-2026', 'كأس-أمم-إفريقيا-للسيدات-2026'],
+  urls: {
+    fr: `${baseUrl}/fr/competition/caf/can-feminine-2026`,
+    en: `${baseUrl}/en/competition/caf/wafcon-2026`,
+    ar: `${baseUrl}/ar/competition/كاف/كأس-أمم-إفريقيا-للسيدات-2026`,
+  },
+  tabHashes: {
+    fr: {
+      overview: 'vue-densemble',
+      standings: 'classement',
+      bestThird: 'meilleurs-3emes',
+      knockout: 'elimination',
+    },
+    en: {
+      overview: 'overview',
+      standings: 'standings',
+      bestThird: 'best-3rd',
+      knockout: 'knockout',
+    },
+    ar: {
+      overview: 'نظرة-عامة',
+      standings: 'ترتيب',
+      bestThird: 'افضل-الثالثة',
+      knockout: 'إقصائيات',
+    },
+  },
+  facts: {
+    fr: [
+      '16 équipes nationales',
+      '4 groupes de 4 équipes',
+      'Pays hôte : Maroc',
+      '25 juillet → 16 août 2026',
+      'Format élargi : 1ère édition à 16 équipes',
+      'Qualificatif pour la Coupe du Monde féminine 2027',
+    ],
+    en: [
+      '16 national teams',
+      '4 groups of 4 teams',
+      'Host country: Morocco',
+      '25 July → 16 August 2026',
+      'Expanded format: first 16-team edition',
+      "Qualifies for 2027 Women's World Cup",
+    ],
+    ar: [
+      '16 منتخباً وطنياً',
+      '4 مجموعات من 4 فرق',
+      'البلد المستضيف: المغرب',
+      '25 يوليو → 16 أغسطس 2026',
+      'صيغة موسعة: أول نسخة بـ16 منتخباً',
+      'مؤهلة لكأس العالم للسيدات 2027',
+    ],
+  },
+  historicalTeamNames: {
+    fr: {
+      ZA: 'Afrique du Sud',
+      NG: 'Nigeria',
+      GQ: 'Guinée équatoriale',
+      CM: 'Cameroun',
+      MA: 'Maroc',
+    },
+    en: {
+      ZA: 'South Africa',
+      NG: 'Nigeria',
+      GQ: 'Equatorial Guinea',
+      CM: 'Cameroon',
+      MA: 'Morocco',
+    },
+    ar: {
+      ZA: 'جنوب إفريقيا',
+      NG: 'نيجيريا',
+      GQ: 'غينيا الاستوائية',
+      CM: 'الكاميرون',
+      MA: 'المغرب',
+    },
   },
   breadcrumbOrg: 'CAF',
 };
 
 // ── Registry ──
 
+/** Default (latest/upcoming) cup content per competition. */
 const CUP_CONTENT_REGISTRY: Record<number, CupContent> = {
   1: WC_2026,
   922: WAFCON_2026,
 };
 
-/** Look up cup content by competitionId. */
+/** Season-specific cup content: key = "competitionId:editionYear". */
+const CUP_CONTENT_BY_SEASON: Record<string, CupContent> = {
+  '1:2026': WC_2026,
+  '922:2024': WAFCON_2024,
+  '922:2026': WAFCON_2026,
+};
+
+/** All cup content entries (for slug lookups across all editions). */
+const ALL_CUP_CONTENT: CupContent[] = [WC_2026, WAFCON_2024, WAFCON_2026];
+
+/** Look up cup content by competitionId (returns latest/upcoming edition). */
 export function getCupContent(competitionId: number): CupContent | undefined {
   return CUP_CONTENT_REGISTRY[competitionId];
 }
 
+/** Look up cup content for a specific edition year. */
+export function getCupContentForSeason(
+  competitionId: number,
+  editionYear: number,
+): CupContent | undefined {
+  return CUP_CONTENT_BY_SEASON[`${competitionId}:${editionYear}`];
+}
+
 /** Find cup content by matching any of its locale slugs. */
 export function findCupContentBySlug(slug: string): CupContent | undefined {
-  for (const content of Object.values(CUP_CONTENT_REGISTRY)) {
+  for (const content of ALL_CUP_CONTENT) {
     if (content.slugs.includes(slug)) return content;
+  }
+  return undefined;
+}
+
+/** Find the edition year for a slug within a specific competition. */
+export function findEditionYearBySlug(competitionId: number, slug: string): number | undefined {
+  for (const [key, content] of Object.entries(CUP_CONTENT_BY_SEASON)) {
+    if (key.startsWith(`${competitionId}:`) && content.slugs.includes(slug)) {
+      return Number(key.split(':')[1]);
+    }
   }
   return undefined;
 }

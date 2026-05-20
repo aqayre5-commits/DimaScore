@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { ShareButton } from '@/components/shared/ShareButton';
@@ -142,14 +143,28 @@ export function GroupTable({
                   <td className="py-2">
                     <span className="flex items-center gap-1.5">
                       {flag && <span className="shrink-0 text-sm leading-none">{flag}</span>}
-                      <span
-                        className={cn(
-                          'overflow-hidden text-ellipsis whitespace-nowrap',
-                          isMorocco ? 'text-accent-green' : 'text-text-secondary',
-                        )}
-                      >
-                        {teamName}
-                      </span>
+                      {row.team?.slug ? (
+                        <Link
+                          href={`/${locale}/equipe/${row.team.slug}`}
+                          className={cn(
+                            'overflow-hidden text-ellipsis whitespace-nowrap hover:underline',
+                            isMorocco
+                              ? 'text-accent-green'
+                              : 'text-text-secondary hover:text-accent',
+                          )}
+                        >
+                          {teamName}
+                        </Link>
+                      ) : (
+                        <span
+                          className={cn(
+                            'overflow-hidden text-ellipsis whitespace-nowrap',
+                            isMorocco ? 'text-accent-green' : 'text-text-secondary',
+                          )}
+                        >
+                          {teamName}
+                        </span>
+                      )}
                     </span>
                   </td>
                   <td className="py-2 text-center tabular-nums text-text-secondary">

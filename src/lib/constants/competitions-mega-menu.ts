@@ -172,6 +172,50 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
         },
         isCurrentlyVisible: true,
       },
+      {
+        competitionId: 186,
+        labelKey: 'algeriaLigue1',
+        countryKey: 'algerie',
+        slugs: {
+          fr: 'ligue-1-algerie',
+          en: 'algeria-ligue-1',
+          ar: 'الدوري-الجزائري',
+        },
+        isCurrentlyVisible: true,
+      },
+      {
+        competitionId: 202,
+        labelKey: 'tunisiaLigue1',
+        countryKey: 'tunisie',
+        slugs: {
+          fr: 'ligue-1-tunisie',
+          en: 'tunisia-ligue-1',
+          ar: 'الدوري-التونسي',
+        },
+        isCurrentlyVisible: true,
+      },
+      {
+        competitionId: 301,
+        labelKey: 'uaeProLeague',
+        countryKey: 'emirats',
+        slugs: {
+          fr: 'uae-pro-league',
+          en: 'uae-pro-league',
+          ar: 'دوري-المحترفين-الإماراتي',
+        },
+        isCurrentlyVisible: true,
+      },
+      {
+        competitionId: 203,
+        labelKey: 'superLig',
+        countryKey: 'turquie',
+        slugs: {
+          fr: 'super-lig',
+          en: 'super-lig',
+          ar: 'الدوري-التركي',
+        },
+        isCurrentlyVisible: true,
+      },
     ],
   },
   {
@@ -196,6 +240,17 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
           fr: 'qualifications-can',
           en: 'afcon-qualifiers',
           ar: 'تصفيات-كأس-أمم-إفريقيا',
+        },
+        isCurrentlyVisible: true,
+      },
+      {
+        competitionId: 922,
+        labelKey: 'wafcon2024',
+        countryKey: 'caf',
+        slugs: {
+          fr: 'can-feminine-2024',
+          en: 'wafcon-2024',
+          ar: 'كأس-أمم-إفريقيا-للسيدات-2024',
         },
         isCurrentlyVisible: true,
       },
@@ -313,9 +368,87 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
         },
         isCurrentlyVisible: true,
       },
+      {
+        competitionId: 525,
+        labelKey: 'uwcl',
+        countryKey: 'uefa',
+        slugs: {
+          fr: 'ligue-des-champions-feminine',
+          en: 'uwcl',
+          ar: 'دوري-أبطال-أوروبا-للسيدات',
+        },
+        isCurrentlyVisible: true,
+      },
+      {
+        competitionId: 1191,
+        labelKey: 'uefaEuropaCupWomen',
+        countryKey: 'uefa',
+        slugs: {
+          fr: 'coupe-europa-feminine',
+          en: 'uefa-europa-cup-women',
+          ar: 'كأس-أوروبا-للسيدات',
+        },
+        isCurrentlyVisible: true,
+      },
+      {
+        competitionId: 44,
+        labelKey: 'faWsl',
+        countryKey: 'angleterre',
+        slugs: {
+          fr: 'fa-wsl',
+          en: 'fa-wsl',
+          ar: 'الدوري-الإنجليزي-للسيدات',
+        },
+        isCurrentlyVisible: true,
+      },
+      {
+        competitionId: 82,
+        labelKey: 'frauenBundesliga',
+        countryKey: 'allemagne',
+        slugs: {
+          fr: 'frauen-bundesliga',
+          en: 'frauen-bundesliga',
+          ar: 'الدوري-الألماني-للسيدات',
+        },
+        isCurrentlyVisible: true,
+      },
+      {
+        competitionId: 142,
+        labelKey: 'ligaF',
+        countryKey: 'espagne',
+        slugs: {
+          fr: 'liga-f',
+          en: 'liga-f',
+          ar: 'الدوري-الإسباني-للسيدات',
+        },
+        isCurrentlyVisible: true,
+      },
+      {
+        competitionId: 139,
+        labelKey: 'serieAWomen',
+        countryKey: 'italie',
+        slugs: {
+          fr: 'serie-a-femminile',
+          en: 'serie-a-women',
+          ar: 'الدوري-الإيطالي-للسيدات',
+        },
+        isCurrentlyVisible: true,
+      },
     ],
   },
 ];
+
+/**
+ * Look up a mega menu entry by competition ID. Returns null if not found.
+ */
+export function findEntryByCompetitionId(competitionId: number): MegaMenuEntry | null {
+  for (const section of MEGA_MENU_SECTIONS) {
+    for (const entry of section.entries) {
+      if (entry.competitionId === competitionId) return entry;
+    }
+  }
+  return null;
+}
 
 /**
  * Build a full competition URL for a given locale.
@@ -337,12 +470,12 @@ export function buildCompetitionHref(entry: MegaMenuEntry, locale: Locale): stri
  * Morocco-relevance priority that are currently visible.
  *
  * Hardcoded ranking for now (matches homepage.md Section 2 priority table).
- * Today (2026-05-14): WC 2026 (28 days to kickoff) + WAFCON 2026 (73 days).
+ * Today (2026-05-20): WC 2026 (22 days to kickoff) + WAFCON 2026 (66 days).
  */
 export function getFeaturedSlots(): MegaMenuEntry[] {
   const wc2026 = MEGA_MENU_SECTIONS.flatMap((s) => s.entries).find((e) => e.competitionId === 1);
   const wafcon2026 = MEGA_MENU_SECTIONS.flatMap((s) => s.entries).find(
-    (e) => e.competitionId === 922,
+    (e) => e.competitionId === 922 && e.labelKey === 'wafcon2026',
   );
   return [wc2026, wafcon2026].filter((e): e is MegaMenuEntry => e != null && e.isCurrentlyVisible);
 }

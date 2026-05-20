@@ -9,6 +9,7 @@ import { getMetadataForCompetition } from '@/lib/constants/tournament-metadata';
 
 type TeamSnapshot = {
   id: number;
+  slug: string;
   name: Record<string, string>;
   shortName: Record<string, string>;
   code: string | null;
@@ -199,6 +200,7 @@ async function hydrateHeroRow(
     const teams = await db
       .select({
         id: schema.teams.id,
+        slug: schema.teams.slug,
         name: schema.teams.name,
         shortName: schema.teams.shortName,
         code: schema.teams.code,

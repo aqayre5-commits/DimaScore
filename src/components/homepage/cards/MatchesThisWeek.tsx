@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { db } from '@/lib/db/client';
 import { asc, and, eq, gte, lt } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
@@ -13,6 +14,7 @@ interface MatchesThisWeekProps {
 }
 
 export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
+  const t = await getTranslations({ locale, namespace: 'homepage' });
   const now = new Date();
   const weekOut = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
@@ -77,33 +79,36 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
   }
 
   return (
-    <ul className="space-y-3">
-      {rows.map((row) => {
-        const home = teamsMap.get(row.homeTeamId ?? -1) ?? null;
-        const away = teamsMap.get(row.awayTeamId ?? -1) ?? null;
-        const compName = getLocalizedCompetitionName(
-          { id: row.compId, name: row.compName, slug: row.compSlug },
-          locale,
-        );
-        const dayLabel = row.kickoffAt.toLocaleDateString(locale, { weekday: 'short' });
-        const timeLabel = formatMatchTime(row.kickoffAt, locale);
+    <div>
+      <h2 className="mb-3 text-sm font-semibold text-text-primary">{t('matchesThisWeek')}</h2>
+      <ul className="space-y-1 rounded-lg border border-border-subtle bg-bg-surface">
+        {rows.map((row) => {
+          const home = teamsMap.get(row.homeTeamId ?? -1) ?? null;
+          const away = teamsMap.get(row.awayTeamId ?? -1) ?? null;
+          const compName = getLocalizedCompetitionName(
+            { id: row.compId, name: row.compName, slug: row.compSlug },
+            locale,
+          );
+          const dayLabel = row.kickoffAt.toLocaleDateString(locale, { weekday: 'short' });
+          const timeLabel = formatMatchTime(row.kickoffAt, locale);
 
-        return (
-          <li key={row.id}>
-            <Link
-              href={`/${locale}/match/${row.id}`}
-              className="block rounded-lg px-3 py-2 transition-colors hover:bg-bg-surface-2"
-            >
-              <p className="text-sm font-medium text-text-primary">
-                {getTeamDisplayName(home, locale)} vs {getTeamDisplayName(away, locale)}
-              </p>
-              <p className="mt-0.5 text-xs text-text-tertiary">
-                {compName} · {dayLabel} {timeLabel}
-              </p>
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+          return (
+            <li key={row.id}>
+              <Link
+                href={`/${locale}/match/${row.id}`}
+                className="block rounded-lg px-3 py-2 transition-colors hover:bg-bg-surface-2"
+              >
+                <p className="text-sm font-medium text-text-primary">
+                  {getTeamDisplayName(home, locale)} vs {getTeamDisplayName(away, locale)}
+                </p>
+                <p className="mt-0.5 text-xs text-text-tertiary">
+                  {compName} · {dayLabel} {timeLabel}
+                </p>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import * as schema from '../schema';
 
 type TeamSnapshot = {
   id: number;
+  slug: string;
   name: Record<string, string>;
   shortName: Record<string, string>;
   code: string | null;
@@ -117,6 +118,7 @@ export async function getTopMatches(
     const teams = await db
       .select({
         id: schema.teams.id,
+        slug: schema.teams.slug,
         name: schema.teams.name,
         shortName: schema.teams.shortName,
         code: schema.teams.code,
