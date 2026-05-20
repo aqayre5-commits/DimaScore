@@ -52,6 +52,7 @@ export interface StandingRow {
   goalsAgainst: number | null;
   goalDiff: number | null;
   form: string | null;
+  description: string | null;
   team: TeamSnapshot | null;
 }
 
@@ -173,6 +174,7 @@ export async function getStandings(
     goalsAgainst: r.goalsAgainst,
     goalDiff: r.goalDiff,
     form: r.form,
+    description: r.description,
     team: r.teamId ? (teamsMap.get(r.teamId) ?? null) : null,
   }));
 }
