@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { codeToFlag } from '@/lib/flags';
 import { formatMatchTime } from '@/lib/utils/date';
 import type { Locale } from '@/lib/i18n/config';
@@ -11,6 +12,7 @@ interface FixtureTeam {
 }
 
 interface FixtureRowProps {
+  fixtureId: number;
   kickoffAt: Date;
   statusCode: string;
   homeTeam: FixtureTeam | null;
@@ -27,6 +29,7 @@ interface FixtureRowProps {
  * Layout: HOME [flag] [full name] ... score ... [full name] [flag] AWAY
  */
 export function FixtureRow({
+  fixtureId,
   kickoffAt,
   statusCode,
   homeTeam,
@@ -52,7 +55,10 @@ export function FixtureRow({
   const awayWon = isFinished && awayScore != null && homeScore != null && awayScore > homeScore;
 
   return (
-    <div className="flex items-center gap-2 py-2 text-base">
+    <Link
+      href={`/${locale}/match/${fixtureId}`}
+      className="flex items-center gap-2 py-2 text-base transition-colors hover:bg-bg-surface-2"
+    >
       {/* Time / status column */}
       <div className="w-12 shrink-0 text-center">
         {isLive ? (
@@ -99,7 +105,7 @@ export function FixtureRow({
         </span>
         {awayFlag && <span className="shrink-0 text-sm leading-none">{awayFlag}</span>}
       </div>
-    </div>
+    </Link>
   );
 }
 

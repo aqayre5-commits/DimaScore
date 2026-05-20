@@ -30,6 +30,7 @@ export function MatchesList({ fixtures, locale }: MatchesListProps) {
             {dayFixtures.map((f) => (
               <FixtureRow
                 key={f.id}
+                fixtureId={f.id}
                 kickoffAt={f.kickoffAt}
                 statusCode={f.statusCode}
                 homeTeam={f.homeTeam}
