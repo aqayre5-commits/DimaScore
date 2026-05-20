@@ -211,6 +211,7 @@ export const fixtures = pgTable(
     awayScorePen: integer('away_score_pen'),
     venueId: bigint('venue_id', { mode: 'number' }).references(() => venues.id),
     referee: text('referee'),
+    detailsSyncedAt: timestamp('details_synced_at', { withTimezone: true }).default(sql`NULL`),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   },
   (t) => [
@@ -234,7 +235,7 @@ export const fixtureEvents = pgTable(
     teamId: bigint('team_id', { mode: 'number' }).references(() => teams.id),
     playerId: bigint('player_id', { mode: 'number' }).references(() => players.id),
     assistPlayerId: bigint('assist_player_id', { mode: 'number' }).references(() => players.id),
-    minute: integer('minute').notNull(),
+    minute: integer('minute'),
     extraMinute: integer('extra_minute'),
     type: text('type').notNull(),
     detail: text('detail'),
