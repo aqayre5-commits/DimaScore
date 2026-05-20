@@ -1,0 +1,300 @@
+import { eq, and, or, asc, desc, inArray } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
+import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
+import * as schema from '../schema';
+import type { FixtureWithTeams, StandingRow } from '../queries';
+
+// ── Types ──
+
+export interface TeamDetail {
+  id: number;
+  slug: string;
+  name: Record<string, string>;
+  shortName: Record<string, string>;
+  code: string | null;
+  countryCode: string | null;
+  founded: number | null;
+  logoUrl: string | null;
+  isNational: boolean | null;
+  isWomen: boolean | null;
+  venue: { id: number; name: string | null; city: string | null } | null;
+  coach: { id: number; name: string; photoUrl: string | null } | null;
+}
+
+export interface SquadPlayer {
+  id: number;
+  slug: string;
+  name: Record<string, string>;
+  firstname: string | null;
+  lastname: string | null;
+  position: string | null;
+  shirtNumber: number | null;
+  photoUrl: string | null;
+  birthDate: string | null;
+  nationalityCode: string | null;
+  injured: boolean | null;
+}
+
+// ── Q1: Team by slug ──
+
+export async function getTeamBySlug(
+  db: NeonHttpDatabase<typeof schema>,
+  slug: string,
+): Promise<TeamDetail | null> {
+  const rows = await db
+    .select({
+      id: schema.teams.id,
+      slug: schema.teams.slug,
+      name: schema.teams.name,
+      shortName: schema.teams.shortName,
+      code: schema.teams.code,
+      countryCode: schema.teams.countryCode,
+      founded: schema.teams.founded,
+      logoUrl: schema.teams.logoUrl,
+      isNational: schema.teams.isNational,
+      isWomen: schema.teams.isWomen,
+      venueId: schema.teams.venueId,
+    })
+    .from(schema.teams)
+    .where(eq(schema.teams.slug, slug))
+    .limit(1);
+
+  if (rows.length === 0) return null;
+  const team = rows[0];
+
+  // Batch: fetch venue + coach in parallel
+  const [venue, coach] = await Promise.all([
+    team.venueId
+      ? db
+          .select({ id: schema.venues.id, name: schema.venues.name, city: schema.venues.city })
+          .from(schema.venues)
+          .where(eq(schema.venues.id, team.venueId))
+          .limit(1)
+          .then((r) => r[0] ?? null)
+      : null,
+    db
+      .select({
+        id: schema.coaches.id,
+        name: schema.coaches.name,
+        photoUrl: schema.coaches.photoUrl,
+      })
+      .from(schema.coaches)
+      .where(eq(schema.coaches.currentTeamId, team.id))
+      .limit(1)
+      .then((r) => r[0] ?? null),
+  ]);
+
+  return {
+    id: team.id,
+    slug: team.slug,
+    name: team.name,
+    shortName: team.shortName,
+    code: team.code,
+    countryCode: team.countryCode,
+    founded: team.founded,
+    logoUrl: team.logoUrl,
+    isNational: team.isNational,
+    isWomen: team.isWomen,
+    venue,
+    coach,
+  };
+}
+
+// ── Q2: Team fixtures (upcoming + recent) ──
+
+export async function getTeamFixtures(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+  limit = 10,
+): Promise<FixtureWithTeams[]> {
+  const rows = await db
+    .select()
+    .from(schema.fixtures)
+    .where(or(eq(schema.fixtures.homeTeamId, teamId), eq(schema.fixtures.awayTeamId, teamId)))
+    .orderBy(asc(schema.fixtures.kickoffAt))
+    .limit(limit);
+
+  return hydrateFixtures(db, rows);
+}
+
+// ── Q3: Team squad ──
+
+export async function getTeamSquad(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+): Promise<SquadPlayer[]> {
+  const rows = await db
+    .select({
+      id: schema.players.id,
+      slug: schema.players.slug,
+      name: schema.players.name,
+      firstname: schema.players.firstname,
+      lastname: schema.players.lastname,
+      position: schema.players.position,
+      shirtNumber: schema.players.shirtNumber,
+      photoUrl: schema.players.photoUrl,
+      birthDate: schema.players.birthDate,
+      nationalityCode: schema.players.nationalityCode,
+      injured: schema.players.injured,
+    })
+    .from(schema.players)
+    .where(eq(schema.players.currentTeamId, teamId))
+    .orderBy(
+      sql`CASE position
+        WHEN 'Goalkeeper' THEN 1
+        WHEN 'Defender' THEN 2
+        WHEN 'Midfielder' THEN 3
+        WHEN 'Attacker' THEN 4
+        ELSE 5
+      END`,
+      asc(schema.players.shirtNumber),
+    );
+
+  return rows;
+}
+
+// ── Q4: Team standings (find team's primary competition, fetch standings) ──
+
+export async function getTeamStandings(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+): Promise<{ competitionId: number; seasonYear: number; standings: StandingRow[] } | null> {
+  // Find the team's most recent standings entry
+  const standingRow = await db
+    .select({
+      competitionId: schema.standings.competitionId,
+      seasonYear: schema.standings.seasonYear,
+    })
+    .from(schema.standings)
+    .where(eq(schema.standings.teamId, teamId))
+    .orderBy(desc(schema.standings.seasonYear))
+    .limit(1);
+
+  if (standingRow.length === 0) return null;
+
+  const { competitionId, seasonYear } = standingRow[0];
+  if (competitionId == null) return null;
+
+  // Fetch full standings for that competition/season
+  const rows = await db
+    .select()
+    .from(schema.standings)
+    .where(
+      and(
+        eq(schema.standings.competitionId, competitionId),
+        eq(schema.standings.seasonYear, seasonYear),
+      ),
+    )
+    .orderBy(asc(schema.standings.groupLabel), asc(schema.standings.rank));
+
+  // Hydrate team snapshots
+  const teamIds = [...new Set(rows.map((r) => r.teamId).filter((id): id is number => id != null))];
+  const teamsMap = await getTeamsMap(db, teamIds);
+
+  const standings: StandingRow[] = rows.map((r) => ({
+    groupLabel: r.groupLabel.replace(/^Group\s+/i, ''),
+    teamId: r.teamId,
+    rank: r.rank,
+    points: r.points,
+    played: r.played,
+    won: r.won,
+    drawn: r.drawn,
+    lost: r.lost,
+    goalsFor: r.goalsFor,
+    goalsAgainst: r.goalsAgainst,
+    goalDiff: r.goalDiff,
+    form: r.form,
+    description: r.description,
+    team: r.teamId ? (teamsMap.get(r.teamId) ?? null) : null,
+  }));
+
+  return { competitionId, seasonYear, standings };
+}
+
+// ── Hydration helpers (duplicated from queries.ts to keep this module self-contained) ──
+
+type TeamSnapshot = {
+  id: number;
+  name: Record<string, string>;
+  shortName: Record<string, string>;
+  code: string | null;
+  countryCode: string | null;
+  logoUrl: string | null;
+  isNational: boolean | null;
+};
+
+async function getTeamsMap(
+  db: NeonHttpDatabase<typeof schema>,
+  teamIds: number[],
+): Promise<Map<number, TeamSnapshot>> {
+  if (teamIds.length === 0) return new Map();
+  const teams = await db
+    .select({
+      id: schema.teams.id,
+      name: schema.teams.name,
+      shortName: schema.teams.shortName,
+      code: schema.teams.code,
+      countryCode: schema.teams.countryCode,
+      logoUrl: schema.teams.logoUrl,
+      isNational: schema.teams.isNational,
+    })
+    .from(schema.teams)
+    .where(inArray(schema.teams.id, teamIds));
+
+  const map = new Map<number, TeamSnapshot>();
+  for (const t of teams) map.set(t.id, t);
+  return map;
+}
+
+async function hydrateFixtures(
+  db: NeonHttpDatabase<typeof schema>,
+  fixtures: (typeof schema.fixtures.$inferSelect)[],
+): Promise<FixtureWithTeams[]> {
+  if (fixtures.length === 0) return [];
+
+  const teamIdSet = new Set<number>();
+  const venueIdSet = new Set<number>();
+  for (const f of fixtures) {
+    if (f.homeTeamId != null) teamIdSet.add(f.homeTeamId);
+    if (f.awayTeamId != null) teamIdSet.add(f.awayTeamId);
+    if (f.venueId != null) venueIdSet.add(f.venueId);
+  }
+
+  const [teamsMap, venuesMap] = await Promise.all([
+    getTeamsMap(db, [...teamIdSet]),
+    getVenuesMap(db, [...venueIdSet]),
+  ]);
+
+  return fixtures.map((f) => ({
+    id: f.id,
+    round: f.round,
+    roundNumber: f.roundNumber,
+    kickoffAt: f.kickoffAt,
+    statusCode: f.statusCode,
+    homeTeamId: f.homeTeamId,
+    awayTeamId: f.awayTeamId,
+    homeScore: f.homeScore,
+    awayScore: f.awayScore,
+    homeScoreHt: f.homeScoreHt,
+    awayScoreHt: f.awayScoreHt,
+    venueId: f.venueId,
+    homeTeam: f.homeTeamId ? (teamsMap.get(f.homeTeamId) ?? null) : null,
+    awayTeam: f.awayTeamId ? (teamsMap.get(f.awayTeamId) ?? null) : null,
+    venue: f.venueId ? (venuesMap.get(f.venueId) ?? null) : null,
+  }));
+}
+
+async function getVenuesMap(
+  db: NeonHttpDatabase<typeof schema>,
+  venueIds: number[],
+): Promise<Map<number, { id: number; name: string | null; city: string | null }>> {
+  if (venueIds.length === 0) return new Map();
+  const venues = await db
+    .select({ id: schema.venues.id, name: schema.venues.name, city: schema.venues.city })
+    .from(schema.venues)
+    .where(inArray(schema.venues.id, venueIds));
+
+  const map = new Map<number, { id: number; name: string | null; city: string | null }>();
+  for (const v of venues) map.set(v.id, v);
+  return map;
+}
