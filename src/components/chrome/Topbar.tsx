@@ -8,16 +8,15 @@ import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
 import {
   MEGA_MENU_SECTIONS,
-  getFeaturedSlots,
+  getTopNavEntries,
   buildCompetitionHref,
-  type MegaMenuEntry,
 } from '@/lib/constants/competitions-mega-menu';
 import { SearchTrigger } from './SearchTrigger';
 import { LangSwitcher } from './LangSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { MobileDrawer } from './MobileDrawer';
 
-function MegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void }) {
+function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void }) {
   const t = useTranslations('megaMenu');
   const ref = useRef<HTMLDivElement>(null);
 
@@ -36,119 +35,77 @@ function MegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void }) 
       ref={ref}
       className="absolute start-0 end-0 top-full z-50 border-b border-border-subtle bg-bg-surface shadow-lg"
     >
-      <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-6 px-6 py-5 md:grid-cols-4">
-        {MEGA_MENU_SECTIONS.map((section) => (
-          <div key={section.titleKey}>
-            <h3 className="label-caps mb-2">{t(section.titleKey)}</h3>
-            <ul className="flex flex-col gap-0.5">
-              {section.entries
-                .filter((e) => e.isCurrentlyVisible)
-                .map((entry) => (
-                  <li key={entry.competitionId}>
+      <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-6 px-6 py-5 md:grid-cols-3">
+        {MEGA_MENU_SECTIONS.map((section) => {
+          const visibleEntries = section.entries.filter((e) => e.isCurrentlyVisible);
+          if (visibleEntries.length === 0) return null;
+          return (
+            <div key={section.titleKey}>
+              <h3 className="label-caps mb-2">{t(section.titleKey)}</h3>
+              <ul className="flex flex-col gap-0.5">
+                {visibleEntries.map((entry) => (
+                  <li key={`${entry.competitionId}-${entry.labelKey}`}>
                     <Link
                       href={buildCompetitionHref(entry, locale)}
                       onClick={onClose}
-                      className="block rounded px-2 py-1.5 text-base text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+                      className="block rounded px-2 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
                     >
                       {t(entry.labelKey)}
                     </Link>
                   </li>
                 ))}
-            </ul>
-          </div>
-        ))}
+              </ul>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function FeaturedSlot({
-  entry,
-  locale,
-  isMostImminent,
-}: {
-  entry: MegaMenuEntry;
-  locale: Locale;
-  isMostImminent: boolean;
-}) {
-  const t = useTranslations('megaMenu');
-
-  return (
-    <Link
-      href={buildCompetitionHref(entry, locale)}
-      className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
-    >
-      {t(entry.labelKey)}
-      {isMostImminent && (
-        <span className="text-xs" aria-hidden="true">
-          🔥
-        </span>
-      )}
-    </Link>
-  );
-}
-
 export function Topbar() {
   const t = useTranslations('topbar');
+  const tMega = useTranslations('megaMenu');
   const locale = useLocale() as Locale;
-  const [megaOpen, setMegaOpen] = useState(false);
-  const featuredSlots = getFeaturedSlots();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const topNavEntries = getTopNavEntries();
 
   return (
     <nav className="sticky top-10 z-40 border-b border-border-subtle bg-bg-surface">
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-1 px-4">
+      <div className="mx-auto flex h-12 max-w-[1280px] items-center gap-0.5 px-4">
         {/* Mobile hamburger */}
         <div className="md:hidden">
           <MobileDrawer />
         </div>
 
         {/* Logo */}
-        <Link href={`/${locale}`} className="text-xl font-bold text-text-primary">
+        <Link href={`/${locale}`} className="me-3 text-lg font-bold text-text-primary">
           Atlas Kings
         </Link>
 
-        {/* Desktop nav items */}
-        <div className="hidden items-center gap-0.5 md:flex ms-4">
-          <Link
-            href={`/${locale}`}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
-          >
-            {t('home')}
-          </Link>
-
-          {/* Botola Pro — permanent anchor */}
-          <Link
-            href={buildCompetitionHref(MEGA_MENU_SECTIONS[0].entries[0], locale)}
-            className="rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
-          >
-            {t('botolaProShort')}
-          </Link>
-
-          {/* Featured slots */}
-          {featuredSlots.map((entry, i) => (
-            <FeaturedSlot
-              key={entry.competitionId}
-              entry={entry}
-              locale={locale}
-              isMostImminent={i === 0}
-            />
+        {/* Desktop nav — 8 direct competition links + More */}
+        <div className="hidden items-center gap-0 lg:flex">
+          {topNavEntries.map((entry) => (
+            <Link
+              key={`${entry.competitionId}-${entry.labelKey}`}
+              href={buildCompetitionHref(entry, locale)}
+              className="rounded-md px-2 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-text-primary"
+            >
+              {tMega(entry.labelKey)}
+            </Link>
           ))}
 
-          {/* Mega-menu trigger */}
-          <div className="relative">
-            <button
-              onClick={() => setMegaOpen((v) => !v)}
-              className={cn(
-                'flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                megaOpen ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary',
-              )}
-            >
-              {t('competitions')}
-              <ChevronDown
-                className={cn('size-3.5 transition-transform', megaOpen && 'rotate-180')}
-              />
-            </button>
-          </div>
+          {/* More trigger */}
+          <button
+            onClick={() => setMoreOpen((v) => !v)}
+            className={cn(
+              'flex items-center gap-0.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
+              moreOpen ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary',
+            )}
+          >
+            {t('more')}
+            <ChevronDown className={cn('size-3 transition-transform', moreOpen && 'rotate-180')} />
+          </button>
         </div>
 
         {/* Spacer */}
@@ -164,8 +121,8 @@ export function Topbar() {
         </div>
       </div>
 
-      {/* Mega-menu panel */}
-      {megaOpen && <MegaMenu locale={locale} onClose={() => setMegaOpen(false)} />}
+      {/* More mega-menu panel */}
+      {moreOpen && <MoreMegaMenu locale={locale} onClose={() => setMoreOpen(false)} />}
     </nav>
   );
 }

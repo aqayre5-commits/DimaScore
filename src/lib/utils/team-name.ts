@@ -7,20 +7,20 @@ type TeamLike = {
 /**
  * Shared team display-name resolver.
  *
- * Fallback chain: name[locale] → name.en → shortName[locale] → shortName.en → code → '???'
+ * Fallback chain: name[locale] → name.en → shortName[locale] → shortName.en → code → 'TBD'
  *
  * This matches the pattern already used by tournament components (GroupTable,
  * FeaturedMatchCard, etc.) and prefers full names over short codes.
  */
 export function getTeamDisplayName(team: TeamLike | null, locale: string): string {
-  if (!team) return '???';
+  if (!team) return 'TBD';
   return (
     team.name[locale] ??
     team.name['en'] ??
     team.shortName[locale] ??
     team.shortName['en'] ??
     team.code ??
-    '???'
+    'TBD'
   );
 }
 
@@ -46,7 +46,7 @@ export function getCompactTeamLabel(team: TeamLike | null, locale: string, maxLe
       team.code ??
       team.shortName['en'] ??
       truncate(team.name['en'], maxLen) ??
-      '???'
+      'TBD'
     );
   }
 
@@ -56,7 +56,7 @@ export function getCompactTeamLabel(team: TeamLike | null, locale: string, maxLe
     team.shortName['en'] ??
     truncate(team.name[locale], maxLen) ??
     truncate(team.name['en'], maxLen) ??
-    '???'
+    'TBD'
   );
 }
 

@@ -23,7 +23,7 @@ export default async function AppLayout({
       >
         Skip to content
       </a>
-      <Suspense fallback={<div className="sticky top-0 z-50 h-10 bg-bg-canvas" />}>
+      <Suspense fallback={<div className="sticky top-0 z-50 h-10 bg-bg-surface-3" />}>
         <AdaptiveTopStrip locale={locale} />
       </Suspense>
       <Topbar />

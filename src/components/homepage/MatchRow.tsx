@@ -75,7 +75,7 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
           />
         ) : (
           <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-            {fixture.homeTeam?.code?.slice(0, 2) ?? '??'}
+            {fixture.homeTeam?.code?.slice(0, 2) ?? '—'}
           </span>
         )}
       </div>
@@ -104,7 +104,7 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
           />
         ) : (
           <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-            {fixture.awayTeam?.code?.slice(0, 2) ?? '??'}
+            {fixture.awayTeam?.code?.slice(0, 2) ?? '—'}
           </span>
         )}
         <span

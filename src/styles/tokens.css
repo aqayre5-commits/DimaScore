@@ -34,7 +34,7 @@
 /* ─── Light mode (Media tab, About pages) ─── */
 
 [data-theme='light'] {
-  --bg-canvas: #FFFFFF;
+  --bg-canvas: #F7F8FA;
   --bg-surface: #FFFFFF;
   --bg-surface-2: #F5F7F6;
   --bg-surface-3: #EEF2EF;

@@ -95,7 +95,7 @@ export default async function LocaleLayout({
       dir={dir}
       className={`${ibmPlexSans.variable} ${ibmPlexSansArabic.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <body className={`${fontClass} min-h-full flex flex-col`}>
+      <body className={`${fontClass} min-h-full flex flex-col bg-bg-canvas text-text-primary`}>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}

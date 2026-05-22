@@ -21,7 +21,8 @@
     "home": "الرئيسية",
     "botolaProShort": "البطولة الاحترافية",
     "competitions": "المسابقات",
-    "allCompetitions": "جميع المسابقات"
+    "allCompetitions": "جميع المسابقات",
+    "more": "المزيد"
   },
   "topStrip": {
     "live": "مباشر",
@@ -37,6 +38,9 @@
     "international": "دولي",
     "africa": "أفريقيا",
     "europe": "أوروبا",
+    "wcQualifiers": "تصفيات كأس العالم",
+    "arabTurkish": "العربي والتركي",
+    "womens": "كرة القدم النسائية",
     "botolaPro": "البطولة الاحترافية",
     "botola2": "القسم الثاني",
     "coupeDuTrone": "كأس العرش",
@@ -201,6 +205,7 @@
     "knockout": "الإقصائيات",
     "stats": "الإحصائيات",
     "details": "التفاصيل",
+    "injuries": "الإصابات",
     "summary": "ملخص",
     "events": "أحداث",
     "lineups": "التشكيلات",

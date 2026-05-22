@@ -179,9 +179,9 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="text-text-tertiary transition-colors hover:text-text-secondary"
+                  className="text-text-tertiary transition-colors hover:text-accent-green"
                 >
-                  <Icon className="size-4" />
+                  <Icon className="size-5" />
                 </a>
               ))}
             </div>
@@ -246,12 +246,14 @@ export function Footer() {
               </ul>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Zone 3 — Loi 09-08 + copyright */}
-          <div className="flex flex-col gap-2">
-            <p className="text-xs leading-relaxed text-text-tertiary">{t('loi0908')}</p>
-            <p className="text-xs text-text-tertiary">{t('copyright', { year })}</p>
-          </div>
+      {/* Sub-footer — Loi 09-08 + copyright */}
+      <div className="border-t border-border-subtle">
+        <div className="mx-auto flex max-w-[1280px] flex-col items-center gap-1 px-4 py-3 text-center sm:flex-row sm:justify-between sm:text-start">
+          <p className="text-xs text-text-tertiary">{t('loi0908')}</p>
+          <p className="text-xs text-text-tertiary">{t('copyright', { year })}</p>
         </div>
       </div>
     </footer>

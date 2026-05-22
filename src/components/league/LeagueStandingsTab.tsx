@@ -55,9 +55,9 @@ function FormPills({ form }: { form: string | null }) {
         <span
           key={i}
           className={cn(
-            'inline-block size-2.5 rounded-sm',
+            'inline-block size-3 rounded-sm',
             c === 'W' && 'bg-emerald-500',
-            c === 'D' && 'bg-zinc-400',
+            c === 'D' && 'bg-zinc-500',
             c === 'L' && 'bg-red-500',
           )}
           title={c === 'W' ? 'Win' : c === 'D' ? 'Draw' : 'Loss'}

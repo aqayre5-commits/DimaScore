@@ -19,17 +19,7 @@ export async function CompetitionMediaSection({
     getTranslations({ locale, namespace: 'tournament' }),
   ]);
 
-  if (videos.length === 0) {
-    return (
-      <section
-        id="videos"
-        className="mt-6 rounded-lg border border-border-subtle bg-bg-surface p-4"
-      >
-        <h2 className="text-sm font-semibold text-text-primary">{t('videos')}</h2>
-        <p className="mt-1 text-xs text-text-tertiary">{t('videosComingSoon')}</p>
-      </section>
-    );
-  }
+  if (videos.length === 0) return null;
 
   return (
     <section id="videos" className="mt-6">

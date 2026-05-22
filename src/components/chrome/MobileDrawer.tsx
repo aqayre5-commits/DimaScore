@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { Menu, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { isRtl, type Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,12 @@ import {
 } from '@/components/ui/sheet';
 import {
   MEGA_MENU_SECTIONS,
-  getFeaturedSlots,
+  getTopNavEntries,
   buildCompetitionHref,
 } from '@/lib/constants/competitions-mega-menu';
 import { LangSwitcher } from './LangSwitcher';
 import { ThemeToggle } from './ThemeToggle';
+import { Menu } from 'lucide-react';
 
 export function MobileDrawer() {
   const t = useTranslations('topbar');
@@ -33,9 +34,9 @@ export function MobileDrawer() {
   const pathname = usePathname();
   const side = isRtl(locale) ? 'right' : 'left';
   const [open, setOpen] = useState(false);
-  const [competitionsOpen, setCompetitionsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
-  const featuredSlots = getFeaturedSlots();
+  const topNavEntries = getTopNavEntries();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -66,19 +67,10 @@ export function MobileDrawer() {
             {t('home')}
           </Link>
 
-          {/* Botola Pro — permanent anchor */}
-          <Link
-            href={buildCompetitionHref(MEGA_MENU_SECTIONS[0].entries[0], locale)}
-            onClick={() => setOpen(false)}
-            className="block rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-          >
-            {t('botolaProShort')}
-          </Link>
-
-          {/* Featured slots */}
-          {featuredSlots.map((entry) => (
+          {/* 8 direct competition links */}
+          {topNavEntries.map((entry) => (
             <Link
-              key={entry.competitionId}
+              key={`${entry.competitionId}-${entry.labelKey}`}
               href={buildCompetitionHref(entry, locale)}
               onClick={() => setOpen(false)}
               className="block rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
@@ -87,24 +79,22 @@ export function MobileDrawer() {
             </Link>
           ))}
 
-          {/* Competitions expandable */}
+          {/* More expandable — remaining competitions */}
           <button
-            onClick={() => setCompetitionsOpen((v) => !v)}
+            onClick={() => setMoreOpen((v) => !v)}
             className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
           >
-            {t('competitions')}
-            <ChevronDown
-              className={cn('size-4 transition-transform', competitionsOpen && 'rotate-180')}
-            />
+            {t('more')}
+            <ChevronDown className={cn('size-4 transition-transform', moreOpen && 'rotate-180')} />
           </button>
-          {competitionsOpen && (
+          {moreOpen && (
             <div className="flex flex-col gap-0.5 ps-4">
               {MEGA_MENU_SECTIONS.flatMap((section) =>
                 section.entries
                   .filter((e) => e.isCurrentlyVisible)
                   .map((entry) => (
                     <Link
-                      key={entry.competitionId}
+                      key={`${entry.competitionId}-${entry.labelKey}`}
                       href={buildCompetitionHref(entry, locale)}
                       onClick={() => setOpen(false)}
                       className="block rounded-lg px-3 py-2 text-sm text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"

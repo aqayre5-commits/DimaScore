@@ -8,7 +8,12 @@ import {
   getMetadataForCompetitionSeason,
   type CupMetadata,
 } from '@/lib/constants/tournament-metadata';
-import { MEGA_MENU_SECTIONS, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
+import {
+  ALL_ENTRIES,
+  getRelatedCompetitionIds,
+  type MegaMenuEntry,
+} from '@/lib/constants/competitions-mega-menu';
+import { RelatedCompetitions } from '@/components/tournament/RelatedCompetitions';
 import {
   getCupContent,
   getCupContentForSeason,
@@ -79,12 +84,7 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 // ── Helpers ──
 
 function resolveEntry(tournament: string, locale: Locale): MegaMenuEntry | undefined {
-  for (const section of MEGA_MENU_SECTIONS) {
-    for (const entry of section.entries) {
-      if (entry.slugs[locale] === tournament) return entry;
-    }
-  }
-  return undefined;
+  return ALL_ENTRIES.find((entry) => entry.slugs[locale] === tournament);
 }
 
 function computeTournamentPhase(metadata: CupMetadata): TournamentPhase {
@@ -421,6 +421,10 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
       belowCenter={
         <>
           <HashScrollHighlight />
+          <RelatedCompetitions
+            competitionIds={getRelatedCompetitionIds(competitionId)}
+            locale={typedLocale}
+          />
           <CompetitionMediaSection competitionId={competitionId} locale={typedLocale} />
           {aboutContent && <AboutCard content={aboutContent} />}
           <SportsEventJsonLd
@@ -620,7 +624,15 @@ async function renderLeaguePage(
             locale={locale}
           />
         }
-        belowCenter={<CompetitionMediaSection competitionId={competition.id} locale={locale} />}
+        belowCenter={
+          <>
+            <RelatedCompetitions
+              competitionIds={getRelatedCompetitionIds(competition.id)}
+              locale={locale}
+            />
+            <CompetitionMediaSection competitionId={competition.id} locale={locale} />
+          </>
+        }
       />
     </>
   );
@@ -767,7 +779,15 @@ async function renderGenericCupPage(
             />
           </div>
         }
-        belowCenter={<CompetitionMediaSection competitionId={competition.id} locale={locale} />}
+        belowCenter={
+          <>
+            <RelatedCompetitions
+              competitionIds={getRelatedCompetitionIds(competition.id)}
+              locale={locale}
+            />
+            <CompetitionMediaSection competitionId={competition.id} locale={locale} />
+          </>
+        }
       />
     </>
   );

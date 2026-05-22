@@ -85,7 +85,7 @@ export default async function HomePage({ params }: PageProps) {
   return (
     <>
       {/* H1 + intro block (homepage.md §4) */}
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-6 pb-4">
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-8 pb-4">
         <div className="max-w-[720px]">
           <h1 className="text-2xl font-semibold leading-tight text-text-primary">{t('h1')}</h1>
           <p className="mt-2 text-base leading-relaxed text-text-secondary">{t('intro')}</p>

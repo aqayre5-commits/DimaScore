@@ -57,7 +57,7 @@ export function FixtureRow({
   return (
     <Link
       href={`/${locale}/match/${fixtureId}`}
-      className="flex items-center gap-2 py-2 text-base transition-colors hover:bg-bg-surface-2"
+      className="flex items-center gap-2 rounded-md py-2 text-base transition-colors hover:bg-bg-surface-2"
     >
       {/* Time / status column */}
       <div className="w-12 shrink-0 text-center">

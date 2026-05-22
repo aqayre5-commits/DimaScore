@@ -38,7 +38,7 @@ export function InnerPageShell({
         <aside className="order-3 hidden xl:block">{rightRail}</aside>
       </div>
 
-      {belowCenter}
+      {belowCenter && <div className="mt-6 space-y-6">{belowCenter}</div>}
     </div>
   );
 }

@@ -41,7 +41,7 @@ export function NewsletterCard({ tournamentName }: NewsletterCardProps) {
         />
         <button
           type="submit"
-          className="shrink-0 rounded-md bg-accent-azure px-3 py-1.5 text-sm font-medium text-bg-canvas transition-colors hover:bg-accent-azure/90"
+          className="shrink-0 rounded-md bg-accent-green px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-green/90"
         >
           {t('subscribe')}
         </button>

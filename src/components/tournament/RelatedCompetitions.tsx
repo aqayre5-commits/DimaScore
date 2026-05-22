@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 import type { Locale } from '@/lib/i18n/config';
 import {
-  MEGA_MENU_SECTIONS,
+  ALL_ENTRIES,
   buildCompetitionHref,
   type MegaMenuEntry,
 } from '@/lib/constants/competitions-mega-menu';
@@ -20,10 +20,9 @@ export function RelatedCompetitions({ competitionIds, locale }: RelatedCompetiti
   const tTournament = useTranslations('tournament');
   const tMenu = useTranslations('megaMenu');
 
-  // Resolve competition IDs to mega-menu entries
-  const allEntries = MEGA_MENU_SECTIONS.flatMap((s) => s.entries);
+  // Resolve competition IDs to entries from the full registry
   const related = competitionIds
-    .map((id) => allEntries.find((e) => e.competitionId === id))
+    .map((id) => ALL_ENTRIES.find((e) => e.competitionId === id))
     .filter((e): e is MegaMenuEntry => e != null);
 
   if (related.length === 0) return null;

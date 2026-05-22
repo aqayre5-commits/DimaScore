@@ -143,7 +143,15 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const home = getTeamDisplayName(match.homeTeam, typedLocale);
   const away = getTeamDisplayName(match.awayTeam, typedLocale);
 
-  const breadcrumbs: BreadcrumbSegment[] = [{ label: compName }, { label: `${home} vs ${away}` }];
+  const competitionEntry = findEntryByCompetitionId(match.competition.id);
+  const competitionHref = competitionEntry
+    ? buildCompetitionHref(competitionEntry, typedLocale)
+    : null;
+
+  const breadcrumbs: BreadcrumbSegment[] = [
+    { label: compName, href: competitionHref ?? undefined },
+    { label: `${home} vs ${away}` },
+  ];
 
   // Resolve which sections have data
   const hasEvents = (coverage?.events ?? false) && events.length > 0;
@@ -170,9 +178,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
         <EventTimeline events={events} homeTeamId={homeTeamId} locale={typedLocale} />
       ) : (
         <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-8 text-center">
-          <p className="text-sm text-text-tertiary">
-            {t('venue')}: {[match.venue?.name, match.venue?.city].filter(Boolean).join(', ') || '—'}
-          </p>
+          <p className="text-sm text-text-tertiary">{t('predictionComingSoon')}</p>
         </div>
       ),
     },
@@ -265,14 +271,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
       <InnerPageShell
         pageHeader={
-          <ScoreHeader
-            match={match}
-            locale={typedLocale}
-            competitionHref={(() => {
-              const entry = findEntryByCompetitionId(match.competition.id);
-              return entry ? buildCompetitionHref(entry, typedLocale) : null;
-            })()}
-          />
+          <ScoreHeader match={match} locale={typedLocale} competitionHref={competitionHref} />
         }
         leftRail={
           <div className="space-y-4">

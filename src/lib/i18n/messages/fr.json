@@ -21,7 +21,8 @@
     "home": "Accueil",
     "botolaProShort": "Botola Pro",
     "competitions": "Compétitions",
-    "allCompetitions": "Toutes les compétitions"
+    "allCompetitions": "Toutes les compétitions",
+    "more": "Plus"
   },
   "topStrip": {
     "live": "EN DIRECT",
@@ -37,6 +38,9 @@
     "international": "International",
     "africa": "Afrique",
     "europe": "Europe",
+    "wcQualifiers": "Qualifications Coupe du Monde",
+    "arabTurkish": "Arabe & Turc",
+    "womens": "Football Féminin",
     "botolaPro": "Botola Pro",
     "botola2": "Botola Pro 2",
     "coupeDuTrone": "Coupe du Trône",
@@ -201,6 +205,7 @@
     "knockout": "Élimination",
     "stats": "Stats",
     "details": "Détails",
+    "injuries": "Blessures",
     "summary": "Résumé",
     "events": "Événements",
     "lineups": "Compositions",

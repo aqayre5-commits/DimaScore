@@ -14,7 +14,7 @@ interface MatchesThisWeekProps {
 }
 
 export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
-  const t = await getTranslations({ locale, namespace: 'homepage' });
+  const t = await getTranslations({ locale, namespace: 'editorialCards' });
   const now = new Date();
   const weekOut = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 

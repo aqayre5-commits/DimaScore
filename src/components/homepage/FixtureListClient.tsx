@@ -60,7 +60,7 @@ export function FixtureListClient({ sections, locale, todayStr, labels }: Fixtur
               type="button"
               onClick={() => setSelectedDate(dateStr)}
               className={cn(
-                'flex w-[calc(100%/7)] shrink-0 flex-col items-center rounded-lg py-1.5 text-xs transition-colors',
+                'flex w-[calc(100%/7)] shrink-0 flex-col items-center justify-center rounded-lg min-h-[56px] py-1.5 text-xs transition-colors',
                 isSelected
                   ? 'bg-accent-green text-bg-canvas font-semibold'
                   : hasMatches

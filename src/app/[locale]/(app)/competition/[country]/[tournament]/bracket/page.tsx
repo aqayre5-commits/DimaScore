@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { defaultLocale, type Locale } from '@/lib/i18n/config';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { getMetadataForCompetition } from '@/lib/constants/tournament-metadata';
-import { MEGA_MENU_SECTIONS, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
+import { ALL_ENTRIES, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
 import { BracketPageClient } from '@/components/tournament/BracketPageClient';
 
 interface PageProps {
@@ -15,12 +15,7 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 const WC_2026_SLUGS = ['coupe-du-monde-2026', 'world-cup-2026', 'كأس-العالم-2026'];
 
 function resolveEntry(tournament: string, locale: Locale): MegaMenuEntry | undefined {
-  for (const section of MEGA_MENU_SECTIONS) {
-    for (const entry of section.entries) {
-      if (entry.slugs[locale] === tournament) return entry;
-    }
-  }
-  return undefined;
+  return ALL_ENTRIES.find((entry) => entry.slugs[locale] === tournament);
 }
 
 function isWc2026(tournament: string): boolean {
