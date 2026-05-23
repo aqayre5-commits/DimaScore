@@ -74,7 +74,7 @@ This repo uses pnpm. Never run `npm` or `yarn` commands. Use pnpm equivalents. B
 
 ### Rule 9 — Conventional commits, one commit per task, never push
 
-When a task completes, propose a single commit message in conventional-commit format (`feat(scope): …`, `fix(scope): …`, `chore(scope): …`, `docs(scope): …`). Do NOT run `git commit` yourself unless the user explicitly says "commit it." Do NOT run `git push` ever. Both are blocked at the hooks layer.
+When a task completes, propose a single commit message in conventional-commit format (`feat(scope): …`, `fix(scope): …`, `chore(scope): …`, `docs(scope): …`). You are allow to run `git commit` yourself unless the user explicitly says "dont S§commit it." Do NOT run `git push` ever. Both are blocked at the hooks layer.
 
 ### Rule 10 — No model deviation from the locked stack
 

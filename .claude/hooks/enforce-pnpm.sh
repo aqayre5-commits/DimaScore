@@ -35,10 +35,6 @@ if echo "$CMD" | grep -Eq 'git[[:space:]]+reset[[:space:]]+--hard'; then
   block "Per CLAUDE.md Rule 9, 'git reset --hard' is dangerous and not permitted. Propose the change you want and let the user handle it."
 fi
 
-if echo "$CMD" | grep -Eq '^[[:space:]]*git[[:space:]]+commit'; then
-  block "Per CLAUDE.md Rule 9, do not run 'git commit' yourself. Propose a conventional-commit message and let the user run it."
-fi
-
 if echo "$CMD" | grep -Eq '^[[:space:]]*git[[:space:]]+(rebase|merge)'; then
   block "Per CLAUDE.md Rule 9, do not run 'git rebase' or 'git merge'. Surface the intent and let the user decide."
 fi
