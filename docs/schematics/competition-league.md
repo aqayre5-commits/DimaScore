@@ -15,7 +15,7 @@ Locked schematic for `/[locale]/competition/[country]/[league-slug]` (league com
 
 This is the canonical Atlas Kings competition page for **league** competitions. Distinct from Page 3 (Competition Cup/Tournament) which has knockout stages, edition history, and TournamentProgressBar. Leagues are round-robin season competitions with no knockout structure.
 
-The page uses the **inner-page 3-column shell** (~360-380 left + ~500-520 center + ~280-300 right at 1280px) defined in BACKLOG Phase 6+ entries. This is distinct from the homepage layout, which is single-column.
+The page uses the **inner-page 3-column shell** (256px left rail + 1fr center + 320px right rail, max-width 1440px, 32px container padding, 24px column gap) adapted from the matchwire reference prototype. Left rail is sticky below the header stack. This is distinct from the homepage layout, which is single-column.
 
 **Single URL per league per locale.** Tabs (Standings / Stats / Details / Media) are in-page state with hash fragments (`#classement`, `#stats`, `#details`, `#media`) for shareability. No tab-as-path-segment routes. This keeps the build simple while enriching the single URL with SEO content (see Section 2 — SEO and Indexability).
 
@@ -273,42 +273,92 @@ Doesn't create indexable URLs but reinforces semantic structure for Google's con
 
 ---
 
-## Section 3 — Layout at desktop ≥1280px
+## Section 3 — Layout at desktop (max-width 1440px)
+
+Adapted from matchwire reference prototype (`docs/schematics/reference-matchwire-epl.md`).
+
+### Dimensions
+
+| Property | Value |
+|---|---|
+| Container max-width | 1440px |
+| Container padding | 32px each side |
+| Column grid | `256px / 1fr / 320px` |
+| Column gap | 24px |
+| Effective content width | 1440 − 64 = 1376px |
+| Center col width | 1376 − 256 − 320 − 48 = ~752px |
+| Breakpoint ≤1280px | Left rail → 224px, right rail → 300px |
+| Breakpoint ≤1180px | Right rail hidden entirely (2-col layout) |
+| Below 768px | Single column mobile (Section 12) |
+
+### Sticky stack
+
+| Layer | Position | Height | Z-index |
+|---|---|---|---|
+| Adaptive top strip | sticky, top: 0 | ~40px | 51 |
+| Topbar | sticky, top: 40px | ~64px | 50 |
+| Tab strip | sticky, top: 104px | 48px | 49 |
+| Left rail | sticky, top: 156px | max-height: calc(100vh - 172px) | — |
+
+Total sticky header stack: **152px** (40 + 64 + 48).
+
+### Card system (from matchwire)
+
+All content blocks (left rail cards, center column panels, right rail widgets) use a unified card style:
+
+| Property | Value |
+|---|---|
+| Border-radius | 12px |
+| Padding | 16px (or `no-pad` variant for flush tables/lists) |
+| Background | `--c-surface-1` |
+| Border | 1px solid `--c-border` |
+| Hover (interactive cards) | bg → `--c-surface-2` |
+
+### Full-page wireframe
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ ADAPTIVE TOP STRIP (~40px, sticky top:0)                                     │
+│ ADAPTIVE TOP STRIP (sticky, top:0, h:~40, z:51)                            │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ TOPBAR (~64px, sticky top:40px)                                              │
+│ TOPBAR (sticky, top:40, h:~64, z:50)                                       │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ SEO breadcrumb (~22px, scrolls away)                                         │
+│ SEO breadcrumb (~22px, scrolls away)                                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ PAGE HEADER (~210-240px, not sticky)                                         │
-│  Crest · H1 + season · Country flag · Season selector · Progress bar         │
-│  Matchday-and-leader strip                                                   │
-│  Intro paragraph (keyword-loaded, 25-40 words)                               │
-├──────────────────────┬───────────────────────────┬──────────────────────────┤
-│ LEFT RAIL ~360-380px │ CENTER ~500-520px         │ RIGHT RAIL ~280-300px    │
-│                      │                           │ (≥1280px)                │
-│ 1. Featured match    │ Tabs row (not sticky):    │ 1. Top scorers           │
-│ 2. Matches list      │ Standings · Stats ·       │ 2. Top assists           │
-│    (round selector)  │ Details · Media           │ 3. MoroccoEditorialPicks │
-│ 3. POTS race         │                           │ 4. MoreMatchesToday      │
-│ 4. Team of the Week  │ H2 inside active tab      │ 5. Newsletter            │
-│                      │                           │                          │
-│                      │ Standings tab:            │                          │
-│                      │  • All/Home/Away sub-tabs │                          │
-│                      │  • 10-col table           │                          │
-│                      │    (sticky header)        │                          │
-│                      │  • Qualification legend   │                          │
-│                      │  • Tiebreaker panel       │                          │
-│                      │  • Standings Tracker chart│                          │
-│                      │                           │                          │
-├──────────────────────┴───────────────────────────┴──────────────────────────┤
-│ ABOUT CARD (full width or center-column width, ~800-1000px tall)             │
-│  H2 sections + 6-8 FAQ entries + Atlas Kings editorial slot                  │
+│ LEAGUE HERO (not sticky, scrolls away)                                      │
+│  ┌──────┐                                                                   │
+│  │ 96px │  Eyebrow: flag + country + tier + season/MW                       │
+│  │CREST │  H1: Botola Pro 2025/26                                           │
+│  └──────┘  Meta: season selector + live chip                                │
+│            Season progress bar + matchday/leader strip                       │
+│  ═══════════════════════ accent gradient stripe ═════════════════            │
+│  Intro paragraph (keyword-loaded, 25-40 words)                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ FOOTER (dark)                                                                │
+│ TAB STRIP (sticky, top:104, h:48, z:49)                                     │
+│   Classement    Stats    Détails    Média                                    │
+│   ══════════                                  (accent underline, animated)   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌──────────┐  ┌──────────────────────────────────┐  ┌───────────────┐     │
+│  │ LEFT     │  │ CENTER COLUMN (1fr, ~752px)       │  │ RIGHT RAIL    │     │
+│  │ RAIL     │  │                                    │  │ (320px)       │     │
+│  │ (256px)  │  │  H2 inside active tab              │  │               │     │
+│  │ sticky   │  │                                    │  │ 1. Top        │     │
+│  │ top:156  │  │  Standings tab:                    │  │    scorers    │     │
+│  │          │  │   • All/Home/Away sub-tabs         │  │ 2. Top        │     │
+│  │ 1. Feat. │  │   • 10-col table (sticky header)  │  │    assists    │     │
+│  │    match │  │   • Qualification legend           │  │ 3. Editorial  │     │
+│  │ 2. Match │  │   • Tiebreaker panel               │  │    Picks      │     │
+│  │    list  │  │   • Standings Tracker chart        │  │ 4. More       │     │
+│  │ 3. POTS  │  │                                    │  │    Matches    │     │
+│  │ 4. TOTW  │  │  [other tabs render here]          │  │ 5. Newsletter │     │
+│  │          │  │                                    │  │               │     │
+│  └──────────┘  └──────────────────────────────────┘  └───────────────┘     │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ ABOUT CARD (full width, ~800-1000px tall)                                   │
+│  H2 sections + 6-8 FAQ entries + Atlas Kings editorial slot                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ FOOTER (dark)                                                               │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -330,61 +380,92 @@ These sections carry over verbatim from `docs/schematics/homepage.md`. No re-spe
 
 ---
 
-## Section 5 — Page header (~210-240px)
+## Section 5 — League Hero (matchwire-derived)
 
-Single horizontal row strip below the breadcrumb. Not sticky. Lighter background than chrome (~`#f8f8f9` light theme / `#1a1a1c` dark theme) to differentiate from chrome above and content below.
+Full-width hero section below the breadcrumb, above the tab strip. Not sticky — scrolls away. Visual structure adapted from matchwire reference (`docs/schematics/reference-matchwire-epl.md`); content is Atlas Kings.
 
-### Composition (left to right, top row)
+### Wireframe
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ [Crest 64×64]  Botola Pro 2025/26               [Season: 25/26 ▾]        │
-│ ────────────   🇲🇦 Maroc · Tier 2                                          │
 │                                                                          │
-│                ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━              │
-│                15 août 2025  ●━━━━━━━━━━━━━━━━━━━○      25 mai 2026     │
-│                              J20/30  ·  Leader: Maghreb Fès              │
+│  ┌──────────┐                                                            │
+│  │  96×96   │  🇲🇦 Maroc · Tier 2 · Saison 2025/26 · J20        eyebrow │
+│  │  CREST   │  Botola Pro 2025/26                                   H1  │
+│  │  accent- │  [Saison 2025/26 ▾]   ● 2 en direct                 meta │
+│  │  tinted  │                                                           │
+│  │  bg      │  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━          │
+│  └──────────┘  15 août 2025  ●━━━━━━━━━━━━━━━━━━━○  25 mai 2026        │
+│                              J20/30  ·  Leader: Maghreb Fès             │
+│                                                                          │
+│  ═══════════════════════ accent gradient stripe (3px) ═══════════════    │
+│                                                                          │
+│  La Botola Pro est le championnat de football professionnel du Maroc,   │
+│  réunissant 16 clubs dont Wydad AC, Raja CA et AS FAR. Suivez en        │
+│  direct le classement, les matchs et les statistiques de la saison.     │
+│                                                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-Three sub-zones inside the header strip:
+### Crest wrap (from matchwire)
 
-**Sub-zone A — Identity (left, ~60% width)**:
-- Crest 64×64 (square, rounded 8px corners, light shadow)
-- H1: competition name + season, Fraunces display face, ~32px
-- Country flag emoji + country name + tier descriptor, IBM Plex Sans, ~14px muted
+- 96×96px container, 16px border-radius
+- Background: accent color at 12% opacity (`--c-accent-soft`)
+- Crest image centered inside (64×64 actual crest, padded)
+- Subtle gradient overlay for depth
 
-**Sub-zone B — Season selector (right of identity, ~20% width)**:
-- Dropdown chip: `[25/26 ▾]`. Opens a list of available seasons (2025/26 active, 2024/25, 2023/24, ... back to whatever data we have).
-- Selecting a season routes to `/fr/competition/maroc/botola-pro?season=2024-25` (query param, not path — keeps canonical URL stable).
-- Default (no query param) = current season.
+### Eyebrow row
 
-**Sub-zone C — Season progress + matchday strip (full width, below identity row)**:
-- Horizontal progress bar: start date → end date, fill bar showing season progress (0% on opening day, 100% on closing day).
-- Below bar: `J20/30 · Leader: Maghreb Fès` (or "Co-leaders: X & Y" if tied on points).
-- Refreshes at round-end only (per Q13 locked decision).
+- Country flag emoji + country name + `·` + tier descriptor + `·` + season/matchweek
+- Inter 500, 12px, uppercase, letter-spacing 0.5px, `--c-text-muted`
 
-### Intro paragraph (~50px tall)
+### H1
 
-Below the header strip, above the 3-column zone, full-width:
+- Competition name + season: `Botola Pro 2025/26`
+- Inter 800, 38px, line-height 1.15
+- Single H1 per page (SEO)
+
+### Meta row
+
+- Season selector dropdown: `[Saison 2025/26 ▾]` — opens list of available seasons
+  - Selecting routes to `?season=2024-25` (query param, keeps canonical URL stable)
+  - Default (no query param) = current season
+- Live chip: red LiveDot + "2 en direct" (count of live matches in this competition)
+  - Hidden when no live matches
+
+### Season progress bar + matchday strip
+
+- Below meta row, full width within hero
+- Horizontal progress bar: start date → end date, accent-colored fill showing season progress
+- Below bar: `J20/30 · Leader: Maghreb Fès` (or "Co-leaders: X & Y" if tied)
+- Refreshes at round-end only (per Q13 locked decision)
+
+### Accent gradient stripe
+
+- 3px horizontal gradient at bottom edge: `--c-accent → transparent`
+- Visual separator between hero and tab strip below
+
+### Intro paragraph
+
+Below the stripe, still inside hero container:
 
 ```
-La Botola Pro est le championnat de football professionnel du Maroc, 
-réunissant 16 clubs dont Wydad AC, Raja CA et AS FAR. Suivez en direct le 
+La Botola Pro est le championnat de football professionnel du Maroc,
+réunissant 16 clubs dont Wydad AC, Raja CA et AS FAR. Suivez en direct le
 classement, les matchs et les statistiques de la saison 2025-26.
 ```
 
-Rendered as a single `<p>` element, IBM Plex Sans, ~15px, line-height 1.5, max-width ~720px (constrained for readability), centered or left-aligned per locale (RTL flip for Arabic).
+Inter 400, 14px, line-height 1.5, max-width ~720px (constrained for readability), left-aligned (RTL flip for Arabic). Keyword-loaded 25-40 words. Hand-written for 8 priority leagues; templated for rest.
 
-### No FAVOURITE star
+### No Follow/Share, no FAVOURITE star
 
-Sofascore has a star button at this position. We don't — favourites are a Phase 10 feature (requires auth). Slot stays empty; design accommodates adding it later without disrupting layout.
+Matchwire has Follow + Share buttons. Atlas Kings omits these — favourites are Phase 10 (requires auth), share is Phase 6+. Design accommodates adding them later in the meta row without disrupting layout.
 
 ---
 
-## Section 6 — Left rail (~360-380px)
+## Section 6 — Left rail (256px, sticky)
 
-Fixed 4-card stack, ~16px vertical gap between cards. Total rail height ~1600px depending on card content. Scrolls with page (no sticky behaviour on cards).
+256px wide (224px at ≤1280px). Sticky at `top: 156px` (below the full header stack), `max-height: calc(100vh - 172px)`, `overflow-y: auto` with thin scrollbar. Contains a 4-card stack with 16px vertical gap between cards. All cards use the matchwire card system (12px radius, 16px padding, surface-1 bg, 1px border).
 
 ### Card 1 — Featured match (~180px)
 
@@ -545,20 +626,26 @@ Algorithm spec deferred to Phase 5; schematic locks the visual treatment only.
 
 ---
 
-## Section 7 — Center column (~500-520px)
+## Section 7 — Center column (1fr, ~752px)
 
-Single large tabbed card containing the standings table, stats panel, details, and media. Tabs row at top.
+Center column fills remaining space between the two rails. Tab content renders inside matchwire-style cards (12px radius, surface-1 bg, 1px border). Tabs row is part of the sticky header stack (see Section 3).
 
-### Tabs row (~48px, not sticky)
+### Tabs row (sticky, from matchwire)
+
+The tab strip is **sticky at top: 104px** (below adaptive strip + topbar), 48px height, z-index 49. This differs from the original schematic where tabs were not sticky — matchwire's sticky tab strip provides better UX for long content.
 
 ```
 ┌──────────────────────────────────────────────────┐
-│ Classement ●  Stats   Détails   Média            │
-│ ━━━━━━━━━━                                       │
+│ Classement    Stats    Détails    Média           │
+│ ══════════                                        │
 └──────────────────────────────────────────────────┘
 ```
 
-Active tab: gold underline, semibold weight. Inactive: gray text, regular weight. ~16px text. Hash fragment updates on tab change (`#classement` → `#stats` etc).
+- Active tab: accent-colored text + accent underline (2px, animated via offsetLeft/offsetWidth transition)
+- Inactive: `--c-text-muted`, regular weight
+- Inter 600, 13px, uppercase, letter-spacing 0.3px
+- Background: `--c-surface-0`, border-bottom
+- Hash fragment updates on tab change (`#classement` → `#stats` etc)
 
 Per Q2 locked: **Primary tabs not sticky. Secondary column headers inside Standings table ARE sticky.**
 
@@ -762,9 +849,9 @@ Tab is present in the row but its content is the empty state. Keeps the tab grid
 
 ---
 
-## Section 8 — Right rail (~280-300px)
+## Section 8 — Right rail (320px)
 
-Fixed 5-widget stack. Same structure on every league page. Total rail height ~1500-1700px depending on widget content. Scrolls with page.
+320px wide (300px at ≤1280px, hidden entirely at ≤1180px). Scrolls with page (not sticky). Contains a 5-widget stack with 16px vertical gap. All widgets use the matchwire card system (12px radius, 16px padding, surface-1 bg, 1px border).
 
 ### Widget 1 — Top scorers (~240px)
 
@@ -886,20 +973,21 @@ Mirrors homepage Card 8. Implementation deferred to Phase 5+ (newsletter infrast
 
 ---
 
-## Section 9 — Right rail behaviour
+## Section 9 — Right rail behaviour (matchwire breakpoints)
 
-- Visible at ≥1280px viewport (Atlas Kings floor; diverges from Sofascore's 1344px)
-- 1280-1343px: rail rendered at ~280px width (slightly tighter than ≥1344px which gives ~300px)
-- Below 1280px: rail hidden, 2-column layout (left + center)
+- ≥1440px: rail at full 320px width
+- 1281-1439px: rail at 300px width, left rail at 224px
+- ≤1280px: right rail hidden entirely — 2-column layout (left rail 224px + center)
+- ≤1180px: right rail hidden, left rail at 224px
 - Below 768px: single column mobile (see Section 12)
-- Scrolls with page (no sticky behaviour)
+- Scrolls with page (not sticky — only the left rail is sticky)
 - Replaces Sofascore's ad slot — Atlas Kings uses for editorial/data widgets per Loi 09-08 (no betting/ads)
 
 ---
 
 ## Section 10 — About card
 
-Long-form keyword-bearing card at page bottom, before the footer. Renders at center-column width (~500-520px) for readability, or spans the full content width — design choice flagged in Section 14 Open Questions.
+Long-form keyword-bearing card at page bottom, before the footer. Full container width, matchwire card system (12px radius, 16px padding, surface-1 bg, 1px border). Max prose width ~720px inside the card for readability.
 
 ### Structure
 
@@ -1127,26 +1215,27 @@ Pitch graphic stays visible above the list for visual continuity, but the list i
 | URL — `/competition/` segment | Not translated; same across all locales (Next.js routing simplicity) |
 | Tab state | Hash fragments (`#classement`, `#stats`, `#details`, `#media`); not separately indexable |
 | hreflang | All three locale variants reference each other; `x-default` → FR |
-| Page header | Single horizontal strip, not sticky, ~210-240px. Crest + H1 (Fraunces) + season selector + season progress bar + matchday/leader strip + intro paragraph |
-| Page H1 | Competition name + season, Fraunces display |
+| League Hero | Matchwire-derived. 96px accent-tinted crest wrap, eyebrow (flag+country+tier+season), H1 Inter 800 38px, meta row (season selector + live chip), progress bar + matchday/leader, accent gradient stripe (3px), intro paragraph. Not sticky. |
+| Page H1 | Competition name + season, Inter 800 38px |
 | Intro paragraph | Keyword-loaded 25-40 words, per-locale. Hand-written for 8 priority leagues; templated for rest |
 | Title + meta | Keyword-loaded with three highest-volume modifiers per locale |
 | Structured data | JSON-LD: SportsOrganization + per-fixture SportsEvent |
-| About card location | Page bottom, before footer. Long-form H2/H3 + 6-8 FAQ. Hand-written for priority leagues |
+| About card location | Page bottom, before footer, full container width. Long-form H2/H3 + 6-8 FAQ. Hand-written for priority leagues. Matchwire card system. |
 | Image alt text | Locale-specific. Crests, player photos, stadium photos |
-| Inner-page shell | 3-column at ≥1280px: ~360-380 left + ~500-520 center + ~280-300 right |
-| Center column tabs | Standings / Stats / Details / Media. Primary tabs NOT sticky. Standings table column headers ARE sticky |
+| Inner-page shell | 3-column: 256px left (sticky) + 1fr center (~752px) + 320px right. Max-width 1440px, 32px container padding, 24px gap. Matchwire-derived. |
+| Card system | Matchwire: 12px radius, 16px padding (or no-pad), surface-1 bg, 1px border. Applied to all content blocks. |
+| Center column tabs | Standings / Stats / Details / Media. Tab strip sticky at top:104px, z:49, accent underline animated. Standings table column headers also sticky. |
 | Standings table columns | 10 cols at ≥1280px: # / Team / P / W / D / L / DIFF / GLS / Form / Pts |
 | Standings sub-tabs | All / Home / Away |
 | Zone markers | Per-league configurable colored bars on row left edge. Botola: top 2 green (CAF CL), 3-4 yellow (CAF Confed), 15-16 red (relegation) |
 | Tiebreaker rules | Per-league grey panel below legend, locale-translated |
 | Standings Tracker chart | Below table. Phase 5+ data dependency. Empty state when no historical data |
-| Left rail | 4 cards: Featured match → Matches with round selector → POTS race → Team of the Week |
+| Left rail | 256px, sticky top:156px, max-height calc(100vh-172px), overflow-y auto. 4 cards: Featured match → Matches with round selector → POTS race → Team of the Week |
 | Round selector | Chevron + dropdown hybrid (`‹ Journée 20 ›`, label opens grid) |
 | Featured match algorithm | Live → highest-Morocco-signal team's next → stakes-based → kickoff proximity. No odds; replaced with "Forme récente" |
 | POTS + TOTW gating | Empty state ("Données indisponibles") for leagues without statistics_fixtures coverage (Algeria, Tunisia) |
 | Right rail | 5 widgets: Top scorers → Top assists → MoroccoEditorialPicks → MoreMatchesToday → Newsletter |
-| Right rail breakpoint | Visible at ≥1280px (Atlas Kings floor; diverges from Sofascore's 1344px) |
+| Right rail breakpoint | 320px at ≥1440px, 300px at 1281-1439px, hidden at ≤1280px (matchwire breakpoints) |
 | MoroccoEditorialPicks | Hand-written copy per league in CALENDAR.md. H3 + 200-400 char paragraph |
 | Live data | Pusher per-fixture for featured + matches list rows; round-end refresh for standings + header strip |
 | Caching | 60s standings non-live / 0s live / 5min stats / 1h details / 24h about |
@@ -1163,8 +1252,8 @@ Pitch graphic stays visible above the list for visual continuity, but the list i
 
 | Component | Location | Reuse on other pages |
 |---|---|---|
-| InnerPageShell | src/components/layout/InnerPageShell.tsx | Pages 2-7 |
-| CompetitionPageHeader | src/components/competition/CompetitionPageHeader.tsx | Pages 2, 3 |
+| InnerPageShell | src/components/layout/InnerPageShell.tsx | Pages 2-7. Matchwire 3-col grid: 256px/1fr/320px, 1440px max, 32px pad, 24px gap. Left rail sticky. |
+| LeagueHero | src/components/competition/LeagueHero.tsx | Pages 2, 3. Matchwire-derived: 96px crest wrap, eyebrow, H1, meta, stripe. |
 | SeasonSelector | src/components/competition/SeasonSelector.tsx | Pages 2, 3 |
 | SeasonProgressBar | src/components/competition/SeasonProgressBar.tsx | Pages 2, 3 |
 | MatchdayLeaderStrip | src/components/competition/MatchdayLeaderStrip.tsx | Page 2 |
@@ -1238,7 +1327,7 @@ about_ar: { ... }
 | Mobile table responsive breakpoints — exact column drop ordering and minimum viable column set | UX | 4.5a implementation |
 | Season selector — past seasons available via query param OR generated as separate routes for SEO? | Engineering | 4.5b implementation |
 | TOTW algorithm — confirm position selection rules (4-3-3 default; adapt to formation in round?) | Product | Phase 5 |
-| About card width — center-column constrained OR full content width spanning all three columns? | UX | 4.5a implementation |
+| ~~About card width~~ | ~~Resolved~~ | Full container width with 720px max prose width inside (matchwire update 2026-05-23) |
 | FAQ count per league — 6 minimum, 8 maximum, or league-dependent? | Editorial | 4.5b |
 | Editorial picks rotation cadence — manual updates or scheduled per matchday? | Product | Phase 5 |
 | Standings Tracker — alternative visualization (heatmap, slopegraph) considered? | UX | 4.5b |
@@ -1253,12 +1342,14 @@ about_ar: { ... }
 | URL structure | `/football/tournament/england/premier-league/17` (trailing ID) | `/[locale]/competition/[country]/[league-slug]` (no ID) |
 | Tab state | URL with `#id:76986` fragment | Hash fragments per tab (`#classement`) |
 | Locale handling | One URL per language (English-dominant) | Locale-translated slugs with hreflang bridges |
-| Page header | 185px non-sticky | 210-240px with intro paragraph below |
+| League Hero | 185px non-sticky | Matchwire-derived: 96px accent-tinted crest, eyebrow, Inter 800 38px H1, meta row, progress bar, accent stripe, intro paragraph. Not sticky. |
 | Featured match card | Includes bet365 odds row | Replaces with "Forme récente" WWLDW (Loi 09-08) |
-| Left rail | 366px, includes Fantasy promo + gambling disclaimer + ad unit | 360-380px, no fantasy/gambling/ads — POTS + TOTW + Matches + Featured |
-| Center column | 731px | 500-520px (responsive collapse on standings table) |
-| Right rail | Ad slot, requires ≥1344px | Editorial widget stack at ≥1280px |
+| Left rail | 366px, includes Fantasy promo + gambling disclaimer + ad unit | 256px, sticky top:156px, no fantasy/gambling/ads — Featured + Matches + POTS + TOTW. Matchwire card system. |
+| Center column | 731px | 1fr (~752px at 1440px). Matchwire card system. |
+| Right rail | Ad slot, requires ≥1344px | 320px editorial widget stack, hidden at ≤1280px (matchwire breakpoints) |
 | Right rail content | Vertical ad | Top scorers + Top assists + MoroccoEditorialPicks + MoreMatchesToday + Newsletter |
+| Card system | Standard Sofascore cards | Matchwire: 12px radius, 16px padding, surface-1 bg, 1px border, no-pad variant |
+| Tab strip | Inline in center column, not sticky | Sticky at top:104px, z:49, accent underline animated (matchwire pattern) |
 | About card | Bottom, ~978px, format/scorers/stadiums + FAQ | Bottom, same structure + Atlas Kings editorial section + 6-8 FAQs (more) |
 | Intro paragraph | None | 25-40 word keyword-loaded paragraph below page header |
 | Zone markers in table | Generic CL/EL/ECL/relegation colors | Per-league configurable (CAF CL/CAF Confed/relegation for Botola) |
@@ -1434,4 +1525,5 @@ The earlier patch's Section 16 for homepage.md — still on hold, pending fresh 
 
 - 2026-05-13 — Initial schematic locked after Phase 4.5+ design session. Inherits chrome from `docs/schematics/homepage.md`. Sofascore Premier League reference used (`docs/research/sofascore-analysis-page2-premier-league.md`). Ahrefs Morocco keyword analysis + Arabic parallel analysis informed URL structure and SEO enrichment decisions.
 - 2026-05-13 — Section 7 click specs added (form pill→match detail; Stats tab player/team rows linked; Details tab entity names linked; Standings Tracker data-point click explicitly deferred to Phase 5+). Section 5 page header country segment + Section 4 breadcrumb segments now spec routing behaviour with Phase 6+ deferred-affordance rule. Section 17 (Outbound link targets) added with exhaustive routing matrix.
+- 2026-05-23 — Matchwire EPL prototype integration: (a) Section 3 layout updated to matchwire 3-column grid (256px/1fr/320px at 1440px max-width, 32px padding, 24px gap), left rail now sticky; (b) Section 5 page header replaced with matchwire-derived League Hero (96px accent-tinted crest wrap, eyebrow, Inter 800 38px H1, meta row with live chip, accent gradient stripe) keeping Atlas Kings content (season selector, progress bar, matchday/leader strip, intro paragraph); (c) Matchwire card system adopted across all content blocks (12px radius, 16px padding, surface-1 bg, 1px border); (d) Tab strip made sticky at top:104px with accent underline animation; (e) Right rail breakpoints updated to matchwire pattern (hidden at ≤1280px instead of ≤1180px). Reference: `docs/schematics/reference-matchwire-epl.md`.
 - (Append future updates here with date and change description)
