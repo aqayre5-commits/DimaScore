@@ -8,9 +8,42 @@ interface CupFixturesByRoundProps {
   locale: Locale;
 }
 
+const DATE_LOCALE_MAP: Record<string, string> = {
+  fr: 'fr-FR',
+  en: 'en-GB',
+  ar: 'ar-MA',
+};
+
+function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
+  const dateLocale = DATE_LOCALE_MAP[locale] ?? 'en-GB';
+  const groups: { key: string; label: string; fixtures: FixtureWithTeams[] }[] = [];
+  const seen = new Map<string, number>();
+
+  // Sort all fixtures chronologically first
+  const sorted = [...fixtures].sort((a, b) => a.kickoffAt.getTime() - b.kickoffAt.getTime());
+
+  for (const f of sorted) {
+    const dateKey = f.kickoffAt.toISOString().slice(0, 10);
+    const idx = seen.get(dateKey);
+    if (idx != null) {
+      groups[idx].fixtures.push(f);
+    } else {
+      const label = new Intl.DateTimeFormat(dateLocale, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'long',
+      }).format(f.kickoffAt);
+      seen.set(dateKey, groups.length);
+      groups.push({ key: dateKey, label, fixtures: [f] });
+    }
+  }
+
+  return groups;
+}
+
 /**
- * All cup fixtures grouped by round name, sorted chronologically
- * (earliest round first). Works for group stage + knockout.
+ * All cup fixtures grouped by date, sorted chronologically.
+ * Works for group stage + knockout.
  */
 export function CupFixturesByRound({ fixtures, locale }: CupFixturesByRoundProps) {
   const t = useTranslations('tournament');
@@ -19,42 +52,34 @@ export function CupFixturesByRound({ fixtures, locale }: CupFixturesByRoundProps
     return <p className="py-8 text-center text-sm text-text-tertiary">{t('noMatches')}</p>;
   }
 
-  // Group by round name
-  const byRound = new Map<string, FixtureWithTeams[]>();
-  for (const f of fixtures) {
-    const round = f.round ?? 'Unknown';
-    if (!byRound.has(round)) byRound.set(round, []);
-    byRound.get(round)!.push(f);
-  }
-
-  // Sort rounds by earliest kickoff in each group
-  const sortedRounds = [...byRound.entries()].sort(([, a], [, b]) => {
-    const aMin = Math.min(...a.map((f) => f.kickoffAt.getTime()));
-    const bMin = Math.min(...b.map((f) => f.kickoffAt.getTime()));
-    return aMin - bMin;
-  });
+  const dateGroups = groupByDate(fixtures, locale);
 
   return (
-    <div className="space-y-6">
-      {sortedRounds.map(([round, roundFixtures]) => (
-        <div key={round}>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-            {round}
-          </h3>
-          <div className="divide-y divide-border-default rounded-lg border border-border-default bg-bg-surface-1">
-            {roundFixtures.map((f) => (
-              <div key={f.id} className="px-3">
-                <FixtureRow
-                  fixtureId={f.id}
-                  kickoffAt={f.kickoffAt}
-                  statusCode={f.statusCode}
-                  homeTeam={f.homeTeam}
-                  awayTeam={f.awayTeam}
-                  homeScore={f.homeScore}
-                  awayScore={f.awayScore}
-                  locale={locale}
-                />
-              </div>
+    <div className="overflow-hidden rounded-lg border border-border-subtle bg-bg-surface">
+      {/* Header */}
+      <div className="border-b border-border-subtle px-4 py-2.5">
+        <h3 className="label-caps">{t('fixtures')}</h3>
+      </div>
+
+      {/* Date groups with internal separators */}
+      {dateGroups.map((group) => (
+        <div key={group.key}>
+          <div className="border-b border-border-subtle bg-bg-surface-3 px-4 py-1.5">
+            <span className="text-xs font-medium uppercase text-text-tertiary">{group.label}</span>
+          </div>
+          <div className="divide-y divide-border-subtle px-4">
+            {group.fixtures.map((f) => (
+              <FixtureRow
+                key={f.id}
+                fixtureId={f.id}
+                kickoffAt={f.kickoffAt}
+                statusCode={f.statusCode}
+                homeTeam={f.homeTeam}
+                awayTeam={f.awayTeam}
+                homeScore={f.homeScore}
+                awayScore={f.awayScore}
+                locale={locale}
+              />
             ))}
           </div>
         </div>

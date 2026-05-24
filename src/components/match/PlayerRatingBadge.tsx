@@ -80,9 +80,9 @@ export function PlayerRatingsPanel({
   const awayPlayers = playerStats.filter((p) => p.teamId === awayTeamId);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid md:grid-cols-2">
       <TeamRatings teamName={homeTeamName} players={homePlayers} locale={locale} t={t} />
-      <TeamRatings teamName={awayTeamName} players={awayPlayers} locale={locale} t={t} />
+      <TeamRatings teamName={awayTeamName} players={awayPlayers} locale={locale} t={t} isRight />
     </div>
   );
 }
@@ -92,21 +92,27 @@ function TeamRatings({
   players,
   locale,
   t,
+  isRight,
 }: {
   teamName: string;
   players: MatchPlayerStat[];
   locale: string;
   t: ReturnType<typeof useTranslations>;
+  isRight?: boolean;
 }) {
-  if (players.length === 0) return null;
+  // Only show players who have a rating, sorted highest first
+  const rated = players
+    .filter((p) => p.rating != null)
+    .sort((a, b) => parseFloat(b.rating!) - parseFloat(a.rating!));
+  if (rated.length === 0) return null;
 
-  const starters = players.filter((p) => !p.substitute);
-  const subs = players.filter((p) => p.substitute);
+  const starters = rated.filter((p) => !p.substitute);
+  const subs = rated.filter((p) => p.substitute);
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-surface">
-      <div className="border-b border-border-subtle px-4 py-2.5">
-        <h4 className="text-xs font-medium text-text-primary">{teamName}</h4>
+    <div className={isRight ? 'border-t border-border-subtle md:border-s md:border-t-0' : ''}>
+      <div className="border-b border-border-subtle bg-bg-surface-2 px-4 py-2">
+        <h4 className="text-xs font-semibold text-text-secondary">{teamName}</h4>
       </div>
 
       <div className="divide-y divide-border-subtle">
@@ -114,7 +120,7 @@ function TeamRatings({
           <PlayerRow key={p.playerId} player={p} locale={locale} t={t} />
         ))}
         {subs.length > 0 && (
-          <div className="px-4 py-1.5">
+          <div className="bg-bg-surface-2 px-4 py-1.5">
             <span className="text-xs font-medium text-text-tertiary">{t('substitutes')}</span>
           </div>
         )}

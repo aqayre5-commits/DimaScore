@@ -8,14 +8,17 @@ interface LineupPitchProps {
   homeTeamName: string;
   awayTeamName: string;
   locale: Locale;
+  pitchOnly?: boolean;
 }
 
-// SVG dimensions
-const W = 360;
-const H = 520;
-const HALF_H = H / 2;
-const PADDING_X = 30;
-const PADDING_Y = 30;
+// SVG viewBox matches rendered width (~624px) so 1 SVG unit ≈ 1 screen pixel
+const W = 624;
+const H = 405;
+const HALF_W = W / 2;
+const PADDING_X = 40;
+const PADDING_Y = 0;
+// Gap from the center line so attackers from both teams don't overlap
+const CENTER_GAP = 28;
 
 const POS_LABEL_KEY: Record<string, string> = {
   G: 'goalkeeper',
@@ -50,12 +53,13 @@ function parseFormation(formation: string | null): number[] {
 }
 
 /**
- * Compute (x, y) within a team's half of the pitch.
- * Returns coordinates in SVG space where (0,0) is top-left of that half.
- * halfHeight is the available vertical space for the half.
+ * Compute (x, y) within a team's half of the pitch (horizontal layout).
  *
- * For home team (top half): GK at top, attackers at middle.
- * For away team (bottom half): positions are mirrored.
+ * Home team (left half): GK at left edge, attackers toward center.
+ * Away team (right half): GK at right edge, attackers toward center.
+ *
+ * "line" maps to horizontal position (x-axis).
+ * "col" maps to vertical position (y-axis).
  */
 function gridToPosition(
   grid: { line: number; col: number },
@@ -63,19 +67,23 @@ function gridToPosition(
   colsInLine: number,
   isAway: boolean,
 ): { x: number; y: number } {
-  const usableW = W - 2 * PADDING_X;
-  const usableH = HALF_H - 2 * PADDING_Y;
+  // Usable width per half: from edge padding to center gap
+  const usableW = HALF_W - PADDING_X - CENTER_GAP;
+  const usableH = H - 2 * PADDING_Y;
 
-  // X: spread columns evenly across width
-  const x = PADDING_X + (usableW / (colsInLine + 1)) * grid.col;
+  // Y: spread columns evenly across height
+  const y = PADDING_Y + (usableH / (colsInLine + 1)) * grid.col;
 
-  // Y: spread lines across half height (line 1 = near own goal)
-  const yRatio = (grid.line - 1) / Math.max(totalLines - 1, 1);
-  let y = PADDING_Y + yRatio * usableH;
+  // X: spread lines across half width (line 1 = near own goal)
+  const xRatio = (grid.line - 1) / Math.max(totalLines - 1, 1);
+  let x: number;
 
   if (isAway) {
-    // Mirror: line 1 (GK) at bottom, attackers at middle
-    y = HALF_H - y;
+    // Away: GK at right edge, attackers toward center (stop at CENTER_GAP from midline)
+    x = HALF_W - PADDING_X - xRatio * usableW;
+  } else {
+    // Home: GK at left edge, attackers toward center (stop at CENTER_GAP from midline)
+    x = PADDING_X + xRatio * usableW;
   }
 
   return { x, y };
@@ -91,21 +99,17 @@ function computePositions(
   isAway: boolean,
 ): Array<{ player: LineupPlayer; x: number; y: number }> {
   const formationRows = parseFormation(formation);
-  // Total lines = GK row + formation rows
   const totalLines = 1 + formationRows.length;
 
-  // Build a map of how many columns per line (for grid-based positioning)
   const colsPerLine = new Map<number, number>();
   colsPerLine.set(1, 1); // GK
   formationRows.forEach((count, i) => {
     colsPerLine.set(i + 2, count);
   });
 
-  // Try grid-based first
   const withGrid = starters.filter((p) => parseGrid(p.grid) != null);
 
   if (withGrid.length === starters.length) {
-    // All have grid coordinates
     return starters.map((p) => {
       const g = parseGrid(p.grid)!;
       const cols = colsPerLine.get(g.line) ?? g.col;
@@ -118,14 +122,12 @@ function computePositions(
   const positions: Array<{ player: LineupPlayer; x: number; y: number }> = [];
   let playerIdx = 0;
 
-  // GK (line 1)
   if (playerIdx < starters.length) {
     const pos = gridToPosition({ line: 1, col: 1 }, totalLines, 1, isAway);
     positions.push({ player: starters[playerIdx], ...pos });
     playerIdx++;
   }
 
-  // Outfield rows
   for (let rowIdx = 0; rowIdx < formationRows.length; rowIdx++) {
     const count = formationRows[rowIdx];
     for (let c = 1; c <= count && playerIdx < starters.length; c++) {
@@ -151,6 +153,7 @@ export function LineupPitch({
   homeTeamName,
   awayTeamName,
   locale,
+  pitchOnly = false,
 }: LineupPitchProps) {
   const t = useTranslations('matchDetail');
 
@@ -160,73 +163,67 @@ export function LineupPitch({
   const awayPositions = computePositions(awayLineup.starters, awayLineup.formation, true);
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-surface">
-      {/* Formation labels */}
-      <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2.5">
-        <div className="text-xs text-text-secondary">
-          <span className="font-medium text-text-primary">{homeTeamName}</span>
-          {homeLineup.formation && (
-            <span className="ms-2 text-text-tertiary">{homeLineup.formation}</span>
-          )}
-        </div>
-        <div className="text-xs text-text-secondary">
-          {awayLineup.formation && (
-            <span className="me-2 text-text-tertiary">{awayLineup.formation}</span>
-          )}
-          <span className="font-medium text-text-primary">{awayTeamName}</span>
-        </div>
-      </div>
-
-      {/* SVG Pitch */}
-      <div className="overflow-hidden px-2 py-3">
+    <div>
+      {/* SVG Pitch — horizontal/landscape, full width */}
+      <div className="overflow-hidden">
         <svg
           viewBox={`0 0 ${W} ${H}`}
-          className="mx-auto w-full max-w-[400px]"
+          className="w-full"
           role="img"
           aria-label={`${homeTeamName} vs ${awayTeamName} ${t('lineups').toLowerCase()}`}
         >
           {/* Pitch background */}
-          <rect x="0" y="0" width={W} height={H} rx="8" className="fill-[#1a8a3e]" />
+          <rect x="0" y="0" width={W} height={H} className="fill-[#1a8a3e]" />
 
           {/* Pitch markings */}
           <PitchMarkings />
 
-          {/* Home team (top half) */}
+          {/* Home team (left half) */}
           {homePositions.map(({ player, x, y }) => (
             <PlayerDot key={player.id} x={x} y={y} player={player} variant="home" />
           ))}
 
-          {/* Away team (bottom half, offset by HALF_H) */}
+          {/* Away team (right half, offset by HALF_W) */}
           {awayPositions.map(({ player, x, y }) => (
-            <PlayerDot key={player.id} x={x} y={y + HALF_H} player={player} variant="away" />
+            <PlayerDot key={player.id} x={x + HALF_W} y={y} player={player} variant="away" />
           ))}
         </svg>
       </div>
 
-      {/* Coaches */}
-      {(homeLineup.coach || awayLineup.coach) && (
+      {/* Coaches + formation */}
+      {(homeLineup.coach || awayLineup.coach || homeLineup.formation || awayLineup.formation) && (
         <div className="flex items-center justify-between border-t border-border-subtle px-4 py-2">
-          <div className="text-xs text-text-tertiary">
+          <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
+            {homeLineup.formation && (
+              <span className="font-semibold tabular-nums text-text-secondary">
+                {homeLineup.formation}
+              </span>
+            )}
             {homeLineup.coach && (
               <>
-                <span className="font-medium text-text-secondary">{t('coach')}:</span>{' '}
-                {homeLineup.coach.name}
+                <span>&middot;</span>
+                <span>{homeLineup.coach.name}</span>
               </>
             )}
           </div>
-          <div className="text-xs text-text-tertiary">
+          <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
             {awayLineup.coach && (
               <>
-                <span className="font-medium text-text-secondary">{t('coach')}:</span>{' '}
-                {awayLineup.coach.name}
+                <span>{awayLineup.coach.name}</span>
+                <span>&middot;</span>
               </>
+            )}
+            {awayLineup.formation && (
+              <span className="font-semibold tabular-nums text-text-secondary">
+                {awayLineup.formation}
+              </span>
             )}
           </div>
         </div>
       )}
 
-      {/* Substitutes */}
-      {(homeLineup.substitutes.length > 0 || awayLineup.substitutes.length > 0) && (
+      {/* Substitutes — hidden in pitchOnly mode */}
+      {!pitchOnly && (homeLineup.substitutes.length > 0 || awayLineup.substitutes.length > 0) && (
         <div className="border-t border-border-subtle px-4 py-3">
           <h4 className="mb-2 text-xs font-medium text-text-secondary">{t('substitutes')}</h4>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -247,20 +244,22 @@ function PitchMarkings() {
     <g stroke="white" strokeOpacity="0.3" strokeWidth="1.5" fill="none">
       {/* Outline */}
       <rect x="10" y="10" width={W - 20} height={H - 20} rx="2" />
-      {/* Halfway line */}
-      <line x1="10" y1={cy} x2={W - 10} y2={cy} />
+      {/* Halfway line (vertical) */}
+      <line x1={cx} y1="10" x2={cx} y2={H - 10} />
       {/* Center circle */}
-      <circle cx={cx} cy={cy} r="40" />
+      <circle cx={cx} cy={cy} r="45" />
       <circle cx={cx} cy={cy} r="2" fill="white" fillOpacity="0.3" />
-      {/* Top penalty area */}
-      <rect x={cx - 65} y="10" width="130" height="55" />
-      <rect x={cx - 30} y="10" width="60" height="20" />
-      {/* Bottom penalty area */}
-      <rect x={cx - 65} y={H - 65} width="130" height="55" />
-      <rect x={cx - 30} y={H - 30} width="60" height="20" />
+      {/* Left penalty area (home goal) */}
+      <rect x="10" y={cy - 70} width="58" height="140" />
+      <rect x="10" y={cy - 28} width="20" height="56" />
+      {/* Right penalty area (away goal) */}
+      <rect x={W - 68} y={cy - 70} width="58" height="140" />
+      <rect x={W - 30} y={cy - 28} width="20" height="56" />
     </g>
   );
 }
+
+const PLAYER_R = 22;
 
 function PlayerDot({
   x,
@@ -274,33 +273,71 @@ function PlayerDot({
   variant: 'home' | 'away';
 }) {
   const isHome = variant === 'home';
+  const clipId = `clip-${player.id}`;
 
   return (
     <g>
-      <circle
-        cx={x}
-        cy={y}
-        r="14"
-        className={isHome ? 'fill-white' : 'fill-[#1e293b]'}
-        stroke={isHome ? '#1e293b' : 'white'}
-        strokeWidth="1.5"
-      />
+      {player.photoUrl ? (
+        <>
+          <defs>
+            <clipPath id={clipId}>
+              <circle cx={x} cy={y} r={PLAYER_R} />
+            </clipPath>
+          </defs>
+          <circle
+            cx={x}
+            cy={y}
+            r={PLAYER_R}
+            fill={isHome ? 'white' : '#1e293b'}
+            stroke={isHome ? 'white' : 'rgba(255,255,255,0.6)'}
+            strokeWidth="2"
+          />
+          <image
+            href={player.photoUrl}
+            x={x - PLAYER_R}
+            y={y - PLAYER_R}
+            width={PLAYER_R * 2}
+            height={PLAYER_R * 2}
+            clipPath={`url(#${clipId})`}
+            preserveAspectRatio="xMidYMid slice"
+          />
+          <circle
+            cx={x}
+            cy={y}
+            r={PLAYER_R}
+            fill="none"
+            stroke={isHome ? 'white' : 'rgba(255,255,255,0.6)'}
+            strokeWidth="2"
+          />
+        </>
+      ) : (
+        <>
+          <circle
+            cx={x}
+            cy={y}
+            r={PLAYER_R}
+            className={isHome ? 'fill-white' : 'fill-[#1e293b]'}
+            stroke={isHome ? '#1e293b' : 'white'}
+            strokeWidth="1.5"
+          />
+          <text
+            x={x}
+            y={y}
+            textAnchor="middle"
+            dominantBaseline="central"
+            className={`text-[12px] font-bold ${isHome ? 'fill-[#1e293b]' : 'fill-white'}`}
+          >
+            {player.number}
+          </text>
+        </>
+      )}
       <text
         x={x}
-        y={y}
+        y={y + PLAYER_R + 13}
         textAnchor="middle"
         dominantBaseline="central"
-        className={`text-[10px] font-bold ${isHome ? 'fill-[#1e293b]' : 'fill-white'}`}
-      >
-        {player.number}
-      </text>
-      <text
-        x={x}
-        y={y + 22}
-        textAnchor="middle"
-        dominantBaseline="central"
-        className="fill-white text-[8px]"
-        fillOpacity="0.9"
+        className="fill-white text-[9px] font-medium"
+        fillOpacity="0.95"
       >
         {shortName(player.name)}
       </text>

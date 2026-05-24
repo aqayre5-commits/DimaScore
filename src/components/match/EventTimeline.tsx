@@ -28,20 +28,18 @@ export function EventTimeline({ events, homeTeamId, locale }: EventTimelineProps
   );
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-surface">
-      <div className="divide-y divide-border-subtle">
-        {events.map((event, i) => {
-          const isHome = event.teamId === homeTeamId;
-          const showHtBefore = htIndex === i && htIndex > 0;
+    <div className="divide-y divide-border-subtle">
+      {events.map((event, i) => {
+        const isHome = event.teamId === homeTeamId;
+        const showHtBefore = htIndex === i && htIndex > 0;
 
-          return (
-            <div key={event.id}>
-              {showHtBefore && <HalfTimeSeparator label={t('halfTime')} />}
-              <EventRow event={event} isHome={isHome} locale={locale} t={t} />
-            </div>
-          );
-        })}
-      </div>
+        return (
+          <div key={event.id}>
+            {showHtBefore && <HalfTimeSeparator label={t('halfTime')} />}
+            <EventRow event={event} isHome={isHome} locale={locale} t={t} />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -113,7 +111,7 @@ function resolveEventDisplay(
       return {
         icon: <Circle className="size-4 text-score-loss" />,
         content: (
-          <p className="text-base text-text-secondary">
+          <p className="text-sm text-text-secondary">
             <span className="font-medium text-text-primary">{name}</span>{' '}
             <span className="text-xs text-score-loss">({t('penaltyMissed')})</span>
           </p>
@@ -125,7 +123,7 @@ function resolveEventDisplay(
       return {
         icon: <Circle className="size-4 fill-score-loss text-score-loss" />,
         content: (
-          <p className="text-base text-text-secondary">
+          <p className="text-sm text-text-secondary">
             <span className="font-medium text-text-primary">{name}</span>{' '}
             <span className="text-xs text-score-loss">({t('ownGoal')})</span>
           </p>
@@ -137,7 +135,7 @@ function resolveEventDisplay(
     return {
       icon: <Circle className="size-4 fill-accent-emerald text-accent-emerald" />,
       content: (
-        <p className="text-base">
+        <p className="text-sm">
           <span className="font-semibold text-text-primary">{name}</span>
           {isPen && <span className="text-xs text-text-tertiary"> ({t('penaltyGoal')})</span>}
           {assistName && <span className="text-xs text-text-tertiary"> ({assistName})</span>}
@@ -167,7 +165,7 @@ function resolveEventDisplay(
           </span>
         ),
         content: (
-          <p className="text-base">
+          <p className="text-sm">
             <span className="font-medium text-text-primary">{name}</span>
           </p>
         ),
@@ -178,7 +176,7 @@ function resolveEventDisplay(
       return {
         icon: <Square className="size-4 fill-red-500 text-red-500" />,
         content: (
-          <p className="text-base">
+          <p className="text-sm">
             <span className="font-medium text-text-primary">{name}</span>
           </p>
         ),
@@ -189,7 +187,7 @@ function resolveEventDisplay(
     return {
       icon: <Square className="size-4 fill-yellow-400 text-yellow-400" />,
       content: (
-        <p className="text-base">
+        <p className="text-sm">
           <span className="font-medium text-text-primary">{name}</span>
         </p>
       ),
@@ -204,7 +202,7 @@ function resolveEventDisplay(
     return {
       icon: <ArrowRightLeft className="size-4 text-accent-emerald" />,
       content: (
-        <p className="text-base">
+        <p className="text-sm">
           <span className="font-medium text-accent-emerald">{playerIn}</span>
           {playerOut && (
             <>
@@ -224,7 +222,7 @@ function resolveEventDisplay(
     return {
       icon: <Monitor className="size-4 text-text-secondary" />,
       content: (
-        <p className="text-base">
+        <p className="text-sm">
           <span className="font-medium text-text-primary">{t('varDecision')}</span>
           {detail && <span className="text-xs text-text-tertiary"> — {detail}</span>}
         </p>
@@ -236,7 +234,7 @@ function resolveEventDisplay(
   return {
     icon: <Circle className="size-4 text-text-tertiary" />,
     content: (
-      <p className="text-base text-text-secondary">
+      <p className="text-sm text-text-secondary">
         {playerName(event.player, locale)}
         {detail && <span className="text-xs text-text-tertiary"> — {detail}</span>}
       </p>

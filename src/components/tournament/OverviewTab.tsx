@@ -1,14 +1,14 @@
-import { OverviewFeaturedPair } from './OverviewFeaturedPair';
 import { MiniStandingsPreview } from './MiniStandingsPreview';
 import { HistoricalWinners } from './HistoricalWinners';
 import { RelatedCompetitions } from './RelatedCompetitions';
 import { FactsPanel } from './FactsPanel';
+import { CupFixturesByRound } from './CupFixturesByRound';
 import type { FixtureWithTeams, StandingRow } from '@/lib/db/queries';
 import type { CupMetadata } from '@/lib/constants/tournament-metadata';
 import type { Locale } from '@/lib/i18n/config';
 
 interface OverviewTabProps {
-  featuredFixtures: FixtureWithTeams[];
+  fixtures: FixtureWithTeams[];
   standings: StandingRow[];
   metadata: CupMetadata;
   locale: Locale;
@@ -22,7 +22,7 @@ interface OverviewTabProps {
  * Per competition-cup.md Section 7 Tab 1.
  */
 export function OverviewTab({
-  featuredFixtures,
+  fixtures,
   standings,
   metadata,
   locale,
@@ -36,7 +36,7 @@ export function OverviewTab({
 
   return (
     <div className="space-y-4">
-      <OverviewFeaturedPair fixtures={featuredFixtures} locale={locale} />
+      {fixtures.length > 0 && <CupFixturesByRound fixtures={fixtures} locale={locale} />}
 
       {standings.length > 0 && (
         <MiniStandingsPreview

@@ -9,6 +9,7 @@ import type { Locale } from '@/lib/i18n/config';
 interface LeagueStandingsTabProps {
   standings: StandingRow[];
   locale: Locale;
+  compact?: boolean;
 }
 
 // Zone color from API-Football description field
@@ -67,39 +68,18 @@ function FormPills({ form }: { form: string | null }) {
   );
 }
 
-export function LeagueStandingsTab({ standings, locale }: LeagueStandingsTabProps) {
+export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandingsTabProps) {
   const t = useTranslations('leaguePage');
 
   const legend = buildLegend(standings);
 
   return (
     <div className="space-y-3">
-      {/* All / Home / Away toggle */}
-      <div className="flex gap-1 rounded-lg bg-bg-surface-2 p-1">
-        <button className="flex-1 rounded-md bg-bg-surface px-3 py-1.5 text-xs font-semibold text-text-primary shadow-sm">
-          {t('all')}
-        </button>
-        <button
-          className="flex-1 rounded-md px-3 py-1.5 text-xs font-medium text-text-tertiary"
-          disabled
-          title={t('comingSoon')}
-        >
-          {t('home')}
-        </button>
-        <button
-          className="flex-1 rounded-md px-3 py-1.5 text-xs font-medium text-text-tertiary"
-          disabled
-          title={t('comingSoon')}
-        >
-          {t('away')}
-        </button>
-      </div>
-
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-border-subtle bg-bg-surface">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border-subtle bg-bg-surface-2 text-xs font-medium uppercase text-text-tertiary">
+            <tr className="border-b border-border-subtle bg-bg-surface-3 text-xs font-medium uppercase text-text-tertiary">
               <th className="w-8 px-1 py-2 text-center">#</th>
               <th className="px-2 py-2 text-start">{t('team')}</th>
               <th className="w-8 px-1 py-2 text-center tabular-nums">{t('colPlayed')}</th>

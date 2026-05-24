@@ -105,6 +105,15 @@
   }
 }
 
+/* Competition logos with dark artwork: invert to white by default (dark theme),
+   revert to original colors when light theme is active. */
+.logo-invert {
+  filter: brightness(0) invert(1);
+}
+[data-theme="light"] .logo-invert {
+  filter: none;
+}
+
 /* Label-caps: visual treatment for section labels (h3 in card headers). */
 @layer components {
   .label-caps {

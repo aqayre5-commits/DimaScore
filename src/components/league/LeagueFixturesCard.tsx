@@ -21,6 +21,36 @@ function formatRoundLabel(round: string): string {
   return match ? match[1] : round;
 }
 
+const DATE_LOCALE_MAP: Record<string, string> = {
+  fr: 'fr-FR',
+  en: 'en-GB',
+  ar: 'ar-MA',
+};
+
+function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
+  const dateLocale = DATE_LOCALE_MAP[locale] ?? 'en-GB';
+  const groups: { label: string; fixtures: FixtureWithTeams[] }[] = [];
+  const seen = new Map<string, number>();
+
+  for (const f of fixtures) {
+    const dateKey = f.kickoffAt.toISOString().slice(0, 10);
+    const idx = seen.get(dateKey);
+    if (idx != null) {
+      groups[idx].fixtures.push(f);
+    } else {
+      const label = new Intl.DateTimeFormat(dateLocale, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+      }).format(f.kickoffAt);
+      seen.set(dateKey, groups.length);
+      groups.push({ label, fixtures: [f] });
+    }
+  }
+
+  return groups;
+}
+
 export function LeagueFixturesCard({
   fixtures,
   rounds,
@@ -40,6 +70,8 @@ export function LeagueFixturesCard({
     () => fixtures.filter((f) => f.roundNumber === selectedRound),
     [fixtures, selectedRound],
   );
+
+  const dateGroups = useMemo(() => groupByDate(roundFixtures, locale), [roundFixtures, locale]);
 
   const roundLabel = rounds.find((r) => r.roundNumber === selectedRound)?.round ?? '';
 
@@ -84,22 +116,29 @@ export function LeagueFixturesCard({
         </button>
       </div>
 
-      {/* Fixtures */}
-      <div className="divide-y divide-border-subtle px-4">
-        {roundFixtures.map((f) => (
-          <FixtureRow
-            key={f.id}
-            fixtureId={f.id}
-            kickoffAt={f.kickoffAt}
-            statusCode={f.statusCode}
-            homeTeam={f.homeTeam}
-            awayTeam={f.awayTeam}
-            homeScore={f.homeScore}
-            awayScore={f.awayScore}
-            locale={locale}
-          />
-        ))}
-      </div>
+      {/* Fixtures grouped by date */}
+      {dateGroups.map((group) => (
+        <div key={group.label}>
+          <div className="border-b border-border-subtle bg-bg-surface-3 px-4 py-1.5">
+            <span className="text-xs font-medium uppercase text-text-tertiary">{group.label}</span>
+          </div>
+          <div className="divide-y divide-border-subtle px-4">
+            {group.fixtures.map((f) => (
+              <FixtureRow
+                key={f.id}
+                fixtureId={f.id}
+                kickoffAt={f.kickoffAt}
+                statusCode={f.statusCode}
+                homeTeam={f.homeTeam}
+                awayTeam={f.awayTeam}
+                homeScore={f.homeScore}
+                awayScore={f.awayScore}
+                locale={locale}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
 
       {roundFixtures.length === 0 && (
         <div className="px-4 py-6 text-center text-xs text-text-tertiary">{t('noFixtures')}</div>

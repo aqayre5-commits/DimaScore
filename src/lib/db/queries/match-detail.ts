@@ -253,6 +253,7 @@ export interface LineupPlayer {
   number: number;
   pos: string | null;
   grid: string | null;
+  photoUrl: string | null;
 }
 
 export interface MatchLineup {
@@ -280,20 +281,63 @@ export async function getMatchLineups(
     .leftJoin(schema.coaches, eq(schema.fixtureLineups.coachId, schema.coaches.id))
     .where(eq(schema.fixtureLineups.fixtureId, fixtureId));
 
-  return rows.map((r) => {
-    const rawStarters = r.starters as Array<LineupPlayer | { player: LineupPlayer }>;
-    const rawSubs = r.substitutes as Array<
-      Omit<LineupPlayer, 'grid'> | { player: Omit<LineupPlayer, 'grid'> }
-    >;
-
+  // Collect all player IDs from starters to hydrate photos
+  type RawPlayer = {
+    id: number;
+    name: string;
+    number: number;
+    pos: string | null;
+    grid?: string | null;
+  };
+  const allPlayerIds = new Set<number>();
+  const parsed = rows.map((r) => {
+    const rawStarters = (r.starters as Array<RawPlayer | { player: RawPlayer }>).map((s) =>
+      'player' in s ? s.player : s,
+    );
+    const rawSubs = (r.substitutes as Array<RawPlayer | { player: RawPlayer }>).map((s) =>
+      'player' in s ? s.player : s,
+    );
+    for (const p of [...rawStarters, ...rawSubs]) allPlayerIds.add(p.id);
     return {
       teamId: r.teamId,
       formation: r.formation,
-      coach: r.coachId != null && r.coachName != null ? { id: r.coachId, name: r.coachName } : null,
-      starters: rawStarters.map((s) => ('player' in s ? s.player : s)),
-      substitutes: rawSubs.map((s) => ('player' in s ? s.player : s)),
+      coachId: r.coachId,
+      coachName: r.coachName,
+      rawStarters,
+      rawSubs,
     };
   });
+
+  // Batch-fetch photos from players table
+  const photoMap = new Map<number, string | null>();
+  if (allPlayerIds.size > 0) {
+    const playerRows = await db
+      .select({ id: schema.players.id, photoUrl: schema.players.photoUrl })
+      .from(schema.players)
+      .where(inArray(schema.players.id, [...allPlayerIds]));
+    for (const pr of playerRows) photoMap.set(pr.id, pr.photoUrl);
+  }
+
+  return parsed.map((r) => ({
+    teamId: r.teamId,
+    formation: r.formation,
+    coach: r.coachId != null && r.coachName != null ? { id: r.coachId, name: r.coachName } : null,
+    starters: r.rawStarters.map((s) => ({
+      id: s.id,
+      name: s.name,
+      number: s.number,
+      pos: s.pos,
+      grid: s.grid ?? null,
+      photoUrl: photoMap.get(s.id) ?? null,
+    })),
+    substitutes: r.rawSubs.map((s) => ({
+      id: s.id,
+      name: s.name,
+      number: s.number,
+      pos: s.pos,
+      photoUrl: photoMap.get(s.id) ?? null,
+    })),
+  }));
 }
 
 // ── Match statistics ──
@@ -320,10 +364,19 @@ export async function getMatchStatistics(
     .from(schema.fixtureStatistics)
     .where(eq(schema.fixtureStatistics.fixtureId, fixtureId));
 
-  return rows.map((r) => ({
-    teamId: r.teamId,
-    stats: r.stats as StatEntry[],
-  }));
+  return rows.map((r) => {
+    const raw = r.stats;
+    // Handle both object { "Fouls": 9, ... } and array [{ type, value }] formats
+    const stats: StatEntry[] = Array.isArray(raw)
+      ? raw
+      : raw && typeof raw === 'object'
+        ? Object.entries(raw as Record<string, unknown>).map(([type, value]) => ({
+            type,
+            value: value as number | string | null,
+          }))
+        : [];
+    return { teamId: r.teamId, stats };
+  });
 }
 
 // ── Match player stats ──

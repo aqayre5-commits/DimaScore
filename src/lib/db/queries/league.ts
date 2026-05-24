@@ -196,7 +196,20 @@ export async function getLeagueFeaturedMatch(
   competitionId: number,
   seasonYear: number,
 ): Promise<FixtureWithTeams | null> {
-  // Dynamic import to avoid circular dependency with queries.ts
+  const matches = await getLeagueFeaturedMatches(db, competitionId, seasonYear, 1);
+  return matches[0] ?? null;
+}
+
+/**
+ * Best N matches for the current/next matchweek.
+ * Prioritises upcoming, falls back to most recent finished.
+ */
+export async function getLeagueFeaturedMatches(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+  limit = 2,
+): Promise<FixtureWithTeams[]> {
   const now = new Date();
 
   // Next upcoming
@@ -212,14 +225,14 @@ export async function getLeagueFeaturedMatch(
       ),
     )
     .orderBy(asc(schema.fixtures.kickoffAt))
-    .limit(1);
+    .limit(limit);
 
-  if (upcoming.length > 0) {
-    const hydrated = await hydrateFixtures(db, upcoming);
-    return hydrated[0] ?? null;
+  if (upcoming.length >= limit) {
+    return hydrateFixtures(db, upcoming);
   }
 
-  // Fallback: most recent finished
+  // Fill remaining with most recent finished
+  const remaining = limit - upcoming.length;
   const recent = await db
     .select()
     .from(schema.fixtures)
@@ -231,14 +244,11 @@ export async function getLeagueFeaturedMatch(
       ),
     )
     .orderBy(desc(schema.fixtures.kickoffAt))
-    .limit(1);
+    .limit(remaining);
 
-  if (recent.length > 0) {
-    const hydrated = await hydrateFixtures(db, recent);
-    return hydrated[0] ?? null;
-  }
-
-  return null;
+  const all = [...upcoming, ...recent];
+  if (all.length === 0) return [];
+  return hydrateFixtures(db, all);
 }
 
 /**

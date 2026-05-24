@@ -1,65 +1,65 @@
 /*
- * Atlas Royal — design tokens
+ * Atlas Kings — Midnight Pitch design tokens
  * Single source of truth for all colours, mapped to Tailwind via @theme.
  * Dark mode is the default (data pages). Light mode for Media/About pages.
  *
  * Part C of docs/atlaskings-v2-rebuild-plan-final.md
  */
 
-/* ─── Dark mode (default) ─── */
+/* ─── Dark mode (default) — Midnight Pitch ─── */
 
 :root {
-  --bg-canvas: #101112;
-  --bg-surface: #1A1D20;
-  --bg-surface-2: #22262A;
-  --bg-surface-3: #2A2F34;
-  --border-subtle: #31363B;
-  --border-strong: #42484F;
-  --text-primary: #F5F3EE;
-  --text-secondary: #D5D9DD;
-  --text-tertiary: #A3ABB2;
-  --accent-green: #6EBE9C;
-  --accent-green-bright: #7FC9A7;
-  --accent-green-deep: #55A889;
-  --accent-crimson: #EF4444;
-  --accent-emerald: #16A765;
-  --accent-emerald-bright: #22C97A;
-  --accent-azure: #60A5FA;
-  --accent-amber: #F59E0B;
-  --accent-violet: #A78BFA;
-  --score-live: #E06A63;
-  --score-live-bg: #2D1A1A;
+  --bg-canvas: #0d1117;
+  --bg-surface: #161b22;
+  --bg-surface-2: #1e2530;
+  --bg-surface-3: #252d3a;
+  --border-subtle: #2d3748;
+  --border-strong: #4a5568;
+  --text-primary: #f0f4f8;
+  --text-secondary: #a8b8c8;
+  --text-tertiary: #627080;
+  --accent-green: #00d9a6;
+  --accent-green-bright: #33e4b8;
+  --accent-green-deep: #00a87f;
+  --accent-crimson: #ff4757;
+  --accent-emerald: #00e676;
+  --accent-emerald-bright: #69f0ae;
+  --accent-azure: #4361ee;
+  --accent-amber: #ff9f43;
+  --accent-violet: #9b59b6;
+  --score-live: #ff4757;
+  --score-live-bg: #ff475714;
 }
 
 /* ─── Light mode (Media tab, About pages) ─── */
 
 [data-theme='light'] {
-  --bg-canvas: #F7F8FA;
-  --bg-surface: #FFFFFF;
-  --bg-surface-2: #F5F7F6;
-  --bg-surface-3: #EEF2EF;
-  --border-subtle: #E1E6E2;
-  --border-strong: #CDD5CF;
-  --text-primary: #121614;
-  --text-secondary: #4F5953;
-  --text-tertiary: #737D76;
-  --accent-green: #176B52;
-  --accent-green-bright: #2A8065;
-  --accent-green-deep: #12533F;
-  --accent-crimson: #D64545;
-  --accent-emerald: #16A765;
-  --accent-emerald-bright: #22C97A;
-  --accent-azure: #1E3A8A;
-  --accent-amber: #E2A12B;
-  --accent-violet: #7C3AED;
-  --score-live: #C94741;
-  --score-live-bg: #FDE8E8;
+  --bg-canvas: #f0f4f8;
+  --bg-surface: #ffffff;
+  --bg-surface-2: #e8eef4;
+  --bg-surface-3: #dce4ec;
+  --border-subtle: #c8d1dc;
+  --border-strong: #a8b8c8;
+  --text-primary: #0d1117;
+  --text-secondary: #3d4f5f;
+  --text-tertiary: #627080;
+  --accent-green: #00a87f;
+  --accent-green-bright: #00c99a;
+  --accent-green-deep: #008f6b;
+  --accent-crimson: #e63950;
+  --accent-emerald: #00c853;
+  --accent-emerald-bright: #00e676;
+  --accent-azure: #3a56d4;
+  --accent-amber: #e8913a;
+  --accent-violet: #8e44ad;
+  --score-live: #e63950;
+  --score-live-bg: #e6395014;
 }
 
 /* ─── Tailwind @theme mapping ─── */
 
 @theme {
-  /* Atlas Royal palette */
+  /* Atlas Midnight Pitch palette */
   --color-bg-canvas: var(--bg-canvas);
   --color-bg-surface: var(--bg-surface);
   --color-bg-surface-2: var(--bg-surface-2);
@@ -84,5 +84,5 @@
   /* Fonts */
   --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
   --font-arabic: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Fraunces', serif;
+  --font-display: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 }

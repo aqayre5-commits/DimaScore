@@ -2,7 +2,6 @@ import { useTranslations } from 'next-intl';
 import type { TeamDetail } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 import { codeToFlag } from '@/lib/flags';
-
 interface TeamPageHeaderProps {
   team: TeamDetail;
   locale: Locale;
@@ -18,7 +17,6 @@ export function TeamPageHeader({ team, locale }: TeamPageHeaderProps) {
   const t = useTranslations('teamPage');
   const name = resolveTeamName(team, locale);
   const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
-
   return (
     <div className="flex items-start gap-4 py-4">
       {/* Team logo or flag */}

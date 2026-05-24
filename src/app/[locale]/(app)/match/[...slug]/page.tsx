@@ -19,7 +19,6 @@ import {
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
-import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
 import { EventTimeline } from '@/components/match/EventTimeline';
 import { LineupPitch } from '@/components/match/LineupPitch';
@@ -28,6 +27,7 @@ import { PlayerRatingsPanel } from '@/components/match/PlayerRatingBadge';
 import { H2HPanel } from '@/components/match/H2HPanel';
 import { PredictionCard } from '@/components/match/PredictionCard';
 import { MatchMediaSection } from '@/components/match/MatchMediaSection';
+import { MatchSectionNav } from '@/components/match/MatchSectionNav';
 import { NewsletterCard } from '@/components/tournament/NewsletterCard';
 import { getMediaVideos } from '@/lib/db/queries/media';
 import type { Locale } from '@/lib/i18n/config';
@@ -64,40 +64,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `${home} vs ${away} — ${compName}${match.round ? `, ${match.round}` : ''}`,
   };
 }
-
-// Tab hash fragments per locale
-const MATCH_TAB_HASHES: Record<string, Record<string, string>> = {
-  fr: {
-    summary: 'resume',
-    events: 'evenements',
-    lineups: 'compositions',
-    stats: 'stats',
-    playerRatings: 'notes',
-    h2h: 'h2h',
-    prediction: 'pronostic',
-    media: 'media',
-  },
-  en: {
-    summary: 'summary',
-    events: 'events',
-    lineups: 'lineups',
-    stats: 'stats',
-    playerRatings: 'ratings',
-    h2h: 'h2h',
-    prediction: 'prediction',
-    media: 'media',
-  },
-  ar: {
-    summary: 'ملخص',
-    events: 'أحداث',
-    lineups: 'التشكيلات',
-    stats: 'الإحصائيات',
-    playerRatings: 'التقييمات',
-    h2h: 'مواجهات',
-    prediction: 'التوقعات',
-    media: 'وسائط',
-  },
-};
 
 export default async function MatchDetailPage({ params }: PageProps) {
   const { locale, slug: rawSlug } = await params;
@@ -159,109 +125,17 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const hasStats = (coverage?.statisticsFixtures ?? false) && teamStats.length === 2;
   const hasRatings = (coverage?.statisticsPlayers ?? false) && playerStats.length > 0;
 
-  // Lineup helpers
   const homeLineup = lineups.find((l) => l.teamId === homeTeamId);
   const awayLineup = lineups.find((l) => l.teamId === awayTeamId);
-  const homeStats = teamStats.find((s) => s.teamId === homeTeamId);
-  const awayStats = teamStats.find((s) => s.teamId === awayTeamId);
+  const homeStatData = teamStats.find((s) => s.teamId === homeTeamId);
+  const awayStatData = teamStats.find((s) => s.teamId === awayTeamId);
 
-  const hashes = MATCH_TAB_HASHES[locale] ?? MATCH_TAB_HASHES.en;
-
-  // Build center tabs — coverage-gated
-  const centerTabs = [
-    // Summary: events timeline (if available) as the main summary view
-    {
-      key: 'summary',
-      hash: hashes.summary,
-      labelKey: 'summary',
-      content: hasEvents ? (
-        <EventTimeline events={events} homeTeamId={homeTeamId} locale={typedLocale} />
-      ) : (
-        <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-8 text-center">
-          <p className="text-sm text-text-tertiary">{t('predictionComingSoon')}</p>
-        </div>
-      ),
-    },
-    // Lineups
-    ...(hasLineups && homeLineup && awayLineup
-      ? [
-          {
-            key: 'lineups',
-            hash: hashes.lineups,
-            labelKey: 'lineups',
-            content: (
-              <LineupPitch
-                homeLineup={homeLineup}
-                awayLineup={awayLineup}
-                homeTeamName={home}
-                awayTeamName={away}
-                locale={typedLocale}
-              />
-            ),
-          },
-        ]
-      : []),
-    // Statistics
-    ...(hasStats && homeStats && awayStats
-      ? [
-          {
-            key: 'stats',
-            hash: hashes.stats,
-            labelKey: 'stats',
-            content: (
-              <StatsBars
-                homeStats={homeStats}
-                awayStats={awayStats}
-                homeTeamName={home}
-                awayTeamName={away}
-              />
-            ),
-          },
-        ]
-      : []),
-    // Player Ratings
-    ...(hasRatings
-      ? [
-          {
-            key: 'playerRatings',
-            hash: hashes.playerRatings,
-            labelKey: 'playerRatings',
-            content: (
-              <PlayerRatingsPanel
-                playerStats={playerStats}
-                homeTeamId={homeTeamId}
-                awayTeamId={awayTeamId}
-                homeTeamName={home}
-                awayTeamName={away}
-                locale={typedLocale}
-              />
-            ),
-          },
-        ]
-      : []),
-    // H2H
-    {
-      key: 'h2h',
-      hash: hashes.h2h,
-      labelKey: 'h2h',
-      content: (
-        <H2HPanel
-          fixtures={h2hFixtures}
-          homeTeamId={homeTeamId}
-          homeTeamName={home}
-          awayTeamName={away}
-          locale={typedLocale}
-        />
-      ),
-    },
-    // Media
-    {
-      key: 'media',
-      hash: hashes.media,
-      labelKey: 'media',
-      content: <MatchMediaSection videos={matchVideos} />,
-    },
-  ];
+  // Build sticky nav sections — only include sections that have data
+  const navSections: Array<{ id: string; label: string }> = [];
+  if (hasLineups) navSections.push({ id: 'sec-lineups', label: t('lineups') });
+  if (hasEvents) navSections.push({ id: 'sec-events', label: t('events') });
+  if (hasStats) navSections.push({ id: 'sec-statistics', label: t('stats') });
+  if (hasRatings) navSections.push({ id: 'sec-players', label: t('playerRatings') });
 
   return (
     <>
@@ -275,12 +149,76 @@ export default async function MatchDetailPage({ params }: PageProps) {
         }
         leftRail={
           <div className="space-y-4">
-            {/* Prediction */}
             {coverage?.predictions && <PredictionCard />}
             <NewsletterCard tournamentName={compName} />
           </div>
         }
-        center={<CenterTabs tabs={centerTabs} />}
+        center={
+          <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+            {/* ── Lineups (pitch + coaches, no substitutes list) ── */}
+            {hasLineups && homeLineup && awayLineup && (
+              <section id="sec-lineups" className="scroll-mt-14">
+                <LineupPitch
+                  homeLineup={homeLineup}
+                  awayLineup={awayLineup}
+                  homeTeamName={home}
+                  awayTeamName={away}
+                  locale={typedLocale}
+                  pitchOnly
+                />
+              </section>
+            )}
+
+            {/* ── Sticky section nav ── */}
+            {navSections.length > 0 && <MatchSectionNav sections={navSections} />}
+
+            {/* ── Events ── */}
+            {hasEvents && (
+              <section id="sec-events" className="scroll-mt-14">
+                <SectionHeader label={t('events')} />
+                <EventTimeline events={events} homeTeamId={homeTeamId} locale={typedLocale} />
+              </section>
+            )}
+
+            {/* ── Statistics ── */}
+            {hasStats && homeStatData && awayStatData && (
+              <section id="sec-statistics" className="scroll-mt-14">
+                <SectionHeader label={t('stats')} />
+                <StatsBars homeStats={homeStatData} awayStats={awayStatData} />
+              </section>
+            )}
+
+            {/* ── Player Statistics ── */}
+            {hasRatings && (
+              <section id="sec-players" className="scroll-mt-14">
+                <SectionHeader label={t('playerRatings')} />
+                <PlayerRatingsPanel
+                  playerStats={playerStats}
+                  homeTeamId={homeTeamId}
+                  awayTeamId={awayTeamId}
+                  homeTeamName={home}
+                  awayTeamName={away}
+                  locale={typedLocale}
+                />
+              </section>
+            )}
+
+            {/* ── Media ── */}
+            {matchVideos.length > 0 && (
+              <section>
+                <SectionHeader label={t('media')} />
+                <MatchMediaSection videos={matchVideos} />
+              </section>
+            )}
+
+            {/* Fallback if no sections at all */}
+            {!hasEvents && !hasLineups && !hasStats && !hasRatings && (
+              <div className="px-4 py-10 text-center">
+                <p className="text-sm text-text-tertiary">{t('predictionComingSoon')}</p>
+              </div>
+            )}
+          </div>
+        }
         rightRail={
           <div className="space-y-4">
             <H2HPanel
@@ -294,5 +232,13 @@ export default async function MatchDetailPage({ params }: PageProps) {
         }
       />
     </>
+  );
+}
+
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="border-t border-border-subtle bg-bg-surface-2 px-4 py-2.5">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-accent-green">{label}</h3>
+    </div>
   );
 }

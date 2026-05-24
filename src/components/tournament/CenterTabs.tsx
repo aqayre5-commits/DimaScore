@@ -47,28 +47,33 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
 
   return (
     <div>
-      {/* Tabs row */}
-      <div className="flex overflow-x-auto border-b border-border-subtle" role="tablist">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            role="tab"
-            aria-selected={tab.key === activeKey}
-            aria-controls={`tabpanel-${tab.key}`}
-            onClick={() => handleTabClick(tab)}
-            className={cn(
-              'relative shrink-0 flex-1 px-4 py-3 text-center text-base font-medium transition-colors',
-              tab.key === activeKey
-                ? 'rounded-t-md bg-bg-surface-2 font-semibold text-text-primary'
-                : 'text-text-tertiary hover:text-text-secondary',
-            )}
-          >
-            {t(tab.labelKey)}
-            {tab.key === activeKey && (
-              <span className="absolute inset-x-0 bottom-0 h-[3px] bg-accent-green" />
-            )}
-          </button>
-        ))}
+      {/* Tabs row — card container for the tab bar only */}
+      <div
+        className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface-2"
+        role="tablist"
+      >
+        <div className="flex overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              role="tab"
+              aria-selected={tab.key === activeKey}
+              aria-controls={`tabpanel-${tab.key}`}
+              onClick={() => handleTabClick(tab)}
+              className={cn(
+                'relative shrink-0 flex-1 px-4 py-3 text-center text-base font-medium transition-colors',
+                tab.key === activeKey
+                  ? 'bg-bg-surface-3 font-semibold text-text-primary'
+                  : 'text-text-tertiary hover:text-text-secondary',
+              )}
+            >
+              {t(tab.labelKey)}
+              {tab.key === activeKey && (
+                <span className="absolute inset-x-0 bottom-0 h-[3px] bg-accent-green" />
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Active tab content */}

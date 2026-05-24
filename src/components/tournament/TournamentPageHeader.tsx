@@ -50,56 +50,55 @@ export function TournamentPageHeader({
       : locale === 'en'
         ? `${metadata.teamsCount} nations`
         : `${metadata.teamsCount} nations`;
-
   return (
     <div>
       {breadcrumb}
 
-      <div className="px-0 py-6">
-        {/* Row: Identity (left) + Edition selector (right) */}
-        <div className="flex items-start justify-between gap-4">
-          {/* Sub-zone A: Identity */}
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            {metadata.competitionId === 1 && (
-              <>
-                <Image
-                  src="/competitions/wc-2026-trophy.png"
-                  alt=""
-                  width={96}
-                  height={148}
-                  className="hidden h-[96px] w-auto shrink-0 drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:block"
-                  priority
-                />
-                <Image
-                  src="/competitions/wc-2026-trophy.png"
-                  alt=""
-                  width={64}
-                  height={99}
-                  className="h-[64px] w-auto shrink-0 drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:hidden"
-                  priority
-                />
-              </>
-            )}
-            <div className="min-w-0">
-              <h1 className="text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
-                {pageTitle}
-              </h1>
-              <p className="mt-1 max-w-prose text-sm text-text-secondary">
-                {hostFlags} {confederationLabel} · {teamsLabel}
-              </p>
-            </div>
-          </div>
+      <div className="mt-3 rounded-xl border border-border-subtle bg-bg-surface p-4">
+        <div className="flex items-start gap-4">
+          {/* Logo */}
+          {metadata.competitionId === 1 && (
+            <Image
+              src="/competitions/wc-2026-trophy.png"
+              alt=""
+              width={128}
+              height={197}
+              className="hidden h-[128px] w-auto shrink-0 drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:block"
+              priority
+            />
+          )}
+          {metadata.competitionId === 1 && (
+            <Image
+              src="/competitions/wc-2026-trophy.png"
+              alt=""
+              width={96}
+              height={148}
+              className="h-[96px] w-auto shrink-0 drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:hidden"
+              priority
+            />
+          )}
 
-          {/* Sub-zone B: Edition selector */}
-          <div className="shrink-0 pt-1">
-            <EditionSelector currentYear={metadata.editionYear} />
+          {/* Title + meta + intro */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
+                  {pageTitle}
+                </h1>
+                <p className="mt-1 max-w-prose text-sm text-text-secondary">
+                  {hostFlags} {confederationLabel} · {teamsLabel}
+                </p>
+              </div>
+              <div className="shrink-0 pt-1">
+                <EditionSelector currentYear={metadata.editionYear} />
+              </div>
+            </div>
+
+            <p className="mt-3 max-w-[720px] text-sm leading-relaxed text-text-secondary">
+              {introText}
+            </p>
           </div>
         </div>
-
-        {/* Intro paragraph */}
-        <p className="mt-4 max-w-[720px] text-base leading-relaxed text-text-secondary">
-          {introText}
-        </p>
       </div>
     </div>
   );

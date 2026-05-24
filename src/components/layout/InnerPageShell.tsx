@@ -9,12 +9,11 @@ interface InnerPageShellProps {
 }
 
 /**
- * 3-column inner-page shell used by competition, team, player, and match pages.
- * Desktop >=1280px: left (~360-380) + center (~500-520 flex) + right (~280-300).
- * Tablet 768-1279: center full-width, left + right stack below.
- * Mobile <768: single column — center, then left, then right.
- *
- * NOT used by the homepage (single-column layout).
+ * 3-column inner-page shell (matchwire-derived).
+ * Desktop >=1280px: 256px left (sticky) + 1fr center + 320px right.
+ * Max-width 1280px, 16px container padding, 24px column gap.
+ * <=1280px: right rail hidden, left rail 224px.
+ * <768px: single column — center, then left, then right.
  */
 export function InnerPageShell({
   pageHeader,
@@ -27,12 +26,14 @@ export function InnerPageShell({
     <div className="mx-auto w-full max-w-[1280px] px-4">
       {pageHeader && <div className="mb-4">{pageHeader}</div>}
 
-      <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[minmax(360px,380px)_minmax(0,1fr)_minmax(280px,300px)] xl:gap-4">
+      <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:gap-6">
         {/* Center column — first in DOM for mobile, reordered via grid on desktop */}
         <div className="order-1 min-w-0 xl:order-2">{center}</div>
 
-        {/* Left rail */}
-        <aside className="order-2 xl:order-1">{leftRail}</aside>
+        {/* Left rail — sticky below header stack */}
+        <aside className="order-2 xl:order-1 xl:sticky xl:top-[156px] xl:max-h-[calc(100vh-172px)] xl:overflow-y-auto">
+          {leftRail}
+        </aside>
 
         {/* Right rail — hidden below xl breakpoint */}
         <aside className="order-3 hidden xl:block">{rightRail}</aside>

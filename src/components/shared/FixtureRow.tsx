@@ -8,6 +8,7 @@ interface FixtureTeam {
   shortName: Record<string, string>;
   code: string | null;
   countryCode: string | null;
+  logoUrl?: string | null;
   isNational: boolean | null;
 }
 
@@ -73,9 +74,9 @@ export function FixtureRow({
         )}
       </div>
 
-      {/* Home team: [flag] [full name] */}
+      {/* Home team: [logo/flag] [full name] */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        {homeFlag && <span className="shrink-0 text-sm leading-none">{homeFlag}</span>}
+        <TeamBadge team={homeTeam} flag={homeFlag} />
         <span
           className={`overflow-hidden text-ellipsis whitespace-nowrap ${homeWon ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
         >
@@ -96,17 +97,29 @@ export function FixtureRow({
         )}
       </div>
 
-      {/* Away team: [full name] [flag] */}
+      {/* Away team: [full name] [logo/flag] */}
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
         <span
           className={`overflow-hidden text-ellipsis whitespace-nowrap ${awayWon ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
         >
           {awayName}
         </span>
-        {awayFlag && <span className="shrink-0 text-sm leading-none">{awayFlag}</span>}
+        <TeamBadge team={awayTeam} flag={awayFlag} />
       </div>
     </Link>
   );
+}
+
+function TeamBadge({ team, flag }: { team: FixtureTeam | null; flag: string | null }) {
+  if (team?.logoUrl) {
+    return (
+      <img src={team.logoUrl} alt="" className="size-5 shrink-0 object-contain" loading="lazy" />
+    );
+  }
+  if (flag) {
+    return <span className="shrink-0 text-sm leading-none">{flag}</span>;
+  }
+  return <span className="inline-block size-5 shrink-0 rounded bg-bg-surface-2" />;
 }
 
 /** Full localized name: name[locale] → name['en'] → shortName[locale] → shortName['en'] → code → '—' */

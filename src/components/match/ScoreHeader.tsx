@@ -57,7 +57,7 @@ export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps
       : null;
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-surface">
+    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       {/* Competition + round */}
       <div className="border-b border-border-subtle px-4 py-2.5 text-center">
         <p className="text-xs font-medium text-text-secondary">
@@ -88,7 +88,7 @@ export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps
                   <img
                     src={match.homeTeam.logoUrl}
                     alt=""
-                    className="size-10 object-contain"
+                    className="size-14 object-contain"
                     loading="lazy"
                   />
                 )}
@@ -103,7 +103,7 @@ export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps
                   <img
                     src={match.homeTeam.logoUrl}
                     alt=""
-                    className="size-10 object-contain"
+                    className="size-14 object-contain"
                     loading="lazy"
                   />
                 )}
@@ -191,7 +191,7 @@ export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps
                   <img
                     src={match.awayTeam.logoUrl}
                     alt=""
-                    className="size-10 object-contain"
+                    className="size-14 object-contain"
                     loading="lazy"
                   />
                 )}
@@ -206,7 +206,7 @@ export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps
                   <img
                     src={match.awayTeam.logoUrl}
                     alt=""
-                    className="size-10 object-contain"
+                    className="size-14 object-contain"
                     loading="lazy"
                   />
                 )}

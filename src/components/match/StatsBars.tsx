@@ -3,8 +3,6 @@ import type { MatchTeamStats, StatEntry } from '@/lib/db/queries/match-detail';
 interface StatsBarsProps {
   homeStats: MatchTeamStats;
   awayStats: MatchTeamStats;
-  homeTeamName: string;
-  awayTeamName: string;
 }
 
 interface PairedStat {
@@ -30,6 +28,7 @@ function parseStatValue(value: number | string | null): {
 }
 
 function pairStats(home: StatEntry[], away: StatEntry[]): PairedStat[] {
+  if (!Array.isArray(home) || !Array.isArray(away)) return [];
   const awayMap = new Map<string, StatEntry>();
   for (const s of away) {
     awayMap.set(s.type, s);
@@ -64,25 +63,17 @@ function formatDisplay(value: number | string | null): string {
   return String(value);
 }
 
-export function StatsBars({ homeStats, awayStats, homeTeamName, awayTeamName }: StatsBarsProps) {
+export function StatsBars({ homeStats, awayStats }: StatsBarsProps) {
   if (homeStats.stats.length === 0 && awayStats.stats.length === 0) return null;
 
   const paired = pairStats(homeStats.stats, awayStats.stats);
   if (paired.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-surface">
-      {/* Team name header */}
-      <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2.5">
-        <span className="text-xs font-medium text-text-primary">{homeTeamName}</span>
-        <span className="text-xs font-medium text-text-primary">{awayTeamName}</span>
-      </div>
-
-      <div className="divide-y divide-border-subtle">
-        {paired.map((stat) => (
-          <StatRow key={stat.label} stat={stat} />
-        ))}
-      </div>
+    <div className="divide-y divide-border-subtle">
+      {paired.map((stat) => (
+        <StatRow key={stat.label} stat={stat} />
+      ))}
     </div>
   );
 }

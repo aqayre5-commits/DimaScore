@@ -56,6 +56,7 @@ import {
   getLeagueRounds,
   getCurrentRound,
   getLeagueFeaturedMatch,
+  getLeagueFeaturedMatches,
   getLeagueFixtures,
   getTopScorersForLeague,
   getTopAssistsForLeague,
@@ -70,6 +71,12 @@ import { LeaguePageHeader } from '@/components/league/LeaguePageHeader';
 import { LeagueStandingsTab } from '@/components/league/LeagueStandingsTab';
 import { LeagueFixturesCard } from '@/components/league/LeagueFixturesCard';
 import { LeagueRightRail } from '@/components/league/LeagueRightRail';
+import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
+import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
+import { LeagueOverviewTab } from '@/components/league/LeagueOverviewTab';
+import { LeagueFixturesTab } from '@/components/league/LeagueFixturesTab';
+import { LeaguePlayersTab } from '@/components/league/LeaguePlayersTab';
+import { LeagueTeamsTab } from '@/components/league/LeagueTeamsTab';
 import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-content';
 
 interface PageProps {
@@ -263,11 +270,20 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
   const cupContent =
     getCupContentForSeason(competitionId, seasonYear) ?? getCupContent(competitionId);
 
-  const [moroccoTeamId, standings, round1Fixtures, knockoutFixtures] = await Promise.all([
+  const [
+    moroccoTeamId,
+    standings,
+    round1Fixtures,
+    knockoutFixtures,
+    cupFeaturedMatches,
+    allCupFixtures,
+  ] = await Promise.all([
     getMoroccoTeamId(db),
     getStandings(db, competitionId, seasonYear),
     getFixturesByRound(db, competitionId, seasonYear, 1),
     getKnockoutFixtures(db, competitionId, seasonYear),
+    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
+    getLeagueFixtures(db, competitionId, seasonYear),
   ]);
 
   const featuredMatch = moroccoTeamId
@@ -331,7 +347,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
       labelKey: 'overview',
       content: (
         <OverviewTab
-          featuredFixtures={round1Fixtures.slice(0, 2)}
+          fixtures={allCupFixtures}
           standings={standings}
           metadata={metadata}
           locale={typedLocale}
@@ -346,6 +362,12 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
       hash: hashes.standings,
       labelKey: 'standings',
       content: <StandingsTab standings={standings} metadata={metadata} locale={typedLocale} />,
+    },
+    {
+      key: 'fixtures',
+      hash: 'fixtures',
+      labelKey: 'fixtures',
+      content: <CupFixturesByRound fixtures={allCupFixtures} locale={typedLocale} />,
     },
     ...(bestThird
       ? [
@@ -395,28 +417,25 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
       }
       leftRail={
         <div className="space-y-4">
-          {featuredMatch && (
-            <FeaturedMatchCard
-              fixture={featuredMatch}
-              locale={typedLocale}
-              cardTitle={tT('featured')}
-              shareHash="featured"
-            />
-          )}
-
-          <MatchesList fixtures={round1Fixtures} locale={typedLocale} />
-
           <NewsletterCard tournamentName={pageTitle} />
         </div>
       }
       center={<CenterTabs tabs={tabs} />}
       rightRail={
-        <RightRail
-          metadata={metadata}
-          standings={standings}
-          locale={typedLocale}
-          tournamentName={pageTitle}
-        />
+        <div className="space-y-4">
+          <LeagueRightRailCard
+            featuredMatches={cupFeaturedMatches}
+            topScorer={null}
+            locale={typedLocale}
+            competitionName={pageTitle}
+          />
+          <RightRail
+            metadata={metadata}
+            standings={standings}
+            locale={typedLocale}
+            tournamentName={pageTitle}
+          />
+        </div>
       }
       belowCenter={
         <>
@@ -446,11 +465,29 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
 
 const LEAGUE_TAB_HASHES: Record<
   Locale,
-  { standings: string; stats: string; details: string; media: string }
+  { overview: string; standings: string; fixtures: string; stats: string; teams: string }
 > = {
-  fr: { standings: 'classement', stats: 'stats', details: 'details', media: 'media' },
-  en: { standings: 'standings', stats: 'stats', details: 'details', media: 'media' },
-  ar: { standings: 'الترتيب', stats: 'الإحصائيات', details: 'التفاصيل', media: 'وسائط' },
+  fr: {
+    overview: 'apercu',
+    standings: 'classement',
+    fixtures: 'matchs',
+    stats: 'statistiques',
+    teams: 'equipes',
+  },
+  en: {
+    overview: 'overview',
+    standings: 'standings',
+    fixtures: 'fixtures',
+    stats: 'stats',
+    teams: 'teams',
+  },
+  ar: {
+    overview: 'نظرة-عامة',
+    standings: 'الترتيب',
+    fixtures: 'المباريات',
+    stats: 'الإحصائيات',
+    teams: 'الفرق',
+  },
 };
 
 async function renderLeaguePage(
@@ -496,7 +533,7 @@ async function renderLeaguePage(
     standings,
     rounds,
     currentRound,
-    featuredMatch,
+    featuredMatches,
     fixtures,
     topScorers,
     topAssists,
@@ -507,7 +544,7 @@ async function renderLeaguePage(
     getStandings(db, competition.id, seasonYear),
     getLeagueRounds(db, competition.id, seasonYear),
     getCurrentRound(db, competition.id, seasonYear),
-    getLeagueFeaturedMatch(db, competition.id, seasonYear),
+    getLeagueFeaturedMatches(db, competition.id, seasonYear, 2),
     getLeagueFixtures(db, competition.id, seasonYear),
     getTopScorersForLeague(db, competition.id, seasonYear),
     getTopAssistsForLeague(db, competition.id, seasonYear),
@@ -526,9 +563,27 @@ async function renderLeaguePage(
     { label: competitionName },
   ];
 
-  // Center tabs
+  // Center tabs — matchwire pattern: Overview / Standings / Fixtures / Players / Teams
   const hashes = LEAGUE_TAB_HASHES[locale];
   const tabs = [
+    {
+      key: 'overview',
+      hash: hashes.overview,
+      labelKey: 'overview',
+      content: (
+        <LeagueOverviewTab
+          standings={standings}
+          fixtures={fixtures}
+          rounds={rounds}
+          defaultRound={currentRound ?? 1}
+          topScorers={topScorers}
+          topAssists={topAssists}
+          topCards={topCards}
+          coverage={coverage}
+          locale={locale}
+        />
+      ),
+    },
     {
       key: 'standings',
       hash: hashes.standings,
@@ -537,17 +592,30 @@ async function renderLeaguePage(
         coverage?.standings !== false && standings.length > 0 ? (
           <LeagueStandingsTab standings={standings} locale={locale} />
         ) : (
-          <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-8 text-center">
+          <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-8 text-center">
             <p className="text-sm text-text-tertiary">{tL('comingSoon')}</p>
           </div>
         ),
+    },
+    {
+      key: 'fixtures',
+      hash: hashes.fixtures,
+      labelKey: 'fixtures',
+      content: (
+        <LeagueFixturesTab
+          fixtures={fixtures}
+          rounds={rounds}
+          defaultRound={currentRound ?? 1}
+          locale={locale}
+        />
+      ),
     },
     {
       key: 'stats',
       hash: hashes.stats,
       labelKey: 'stats',
       content: (
-        <LeagueStatsTab
+        <LeaguePlayersTab
           coverage={coverage}
           topScorers={topScorers}
           topAssists={topAssists}
@@ -557,21 +625,10 @@ async function renderLeaguePage(
       ),
     },
     {
-      key: 'details',
-      hash: hashes.details,
-      labelKey: 'details',
-      content: (
-        <div className="space-y-6">
-          <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
-          {coverage?.injuries && <InjuriesTab injuries={injuries} />}
-        </div>
-      ),
-    },
-    {
-      key: 'media',
-      hash: hashes.media,
-      labelKey: 'media',
-      content: <CompetitionMediaSection competitionId={competition.id} locale={locale} />,
+      key: 'teams',
+      hash: hashes.teams,
+      labelKey: 'teams',
+      content: <LeagueTeamsTab standings={standings} locale={locale} />,
     },
   ];
 
@@ -592,40 +649,20 @@ async function renderLeaguePage(
             availableSeasons={availableSeasons}
           />
         }
-        leftRail={
-          <div className="space-y-4">
-            {featuredMatch && (
-              <FeaturedMatchCard
-                fixture={featuredMatch}
-                locale={locale}
-                cardTitle={competitionName}
-              />
-            )}
-            {rounds.length > 0 && currentRound != null && (
-              <LeagueFixturesCard
-                fixtures={fixtures}
-                rounds={rounds}
-                defaultRound={currentRound}
-                locale={locale}
-              />
-            )}
-            <NewsletterCard tournamentName={competitionName} />
-          </div>
-        }
+        leftRail={<LeagueLeftRail locale={locale} activeCompetitionId={competition.id} />}
         center={<CenterTabs tabs={tabs} />}
         rightRail={
-          <LeagueRightRail
-            competitionName={competitionName}
-            coverage={coverage}
-            standings={standings}
-            topScorers={topScorers}
-            topAssists={topAssists}
-            topCards={topCards}
+          <LeagueRightRailCard
+            featuredMatches={featuredMatches}
+            topScorer={topScorers[0] ?? null}
             locale={locale}
+            competitionName={competitionName}
           />
         }
         belowCenter={
           <>
+            <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
+            {coverage?.injuries && <InjuriesTab injuries={injuries} />}
             <RelatedCompetitions
               competitionIds={getRelatedCompetitionIds(competition.id)}
               locale={locale}
@@ -663,15 +700,23 @@ async function renderGenericCupPage(
     );
   }
 
-  const [standings, knockoutFixtures, allFixtures, coverage, cupInjuries, topScorers] =
-    await Promise.all([
-      getStandings(db, competition.id, seasonYear),
-      getKnockoutFixtures(db, competition.id, seasonYear),
-      getLeagueFixtures(db, competition.id, seasonYear),
-      getLeagueCoverage(db, competition.id, seasonYear),
-      getInjuriesForCompetition(db, competition.id, seasonYear),
-      getTopScorersForLeague(db, competition.id, seasonYear, 5),
-    ]);
+  const [
+    standings,
+    knockoutFixtures,
+    allFixtures,
+    coverage,
+    cupInjuries,
+    topScorers,
+    genericFeaturedMatches,
+  ] = await Promise.all([
+    getStandings(db, competition.id, seasonYear),
+    getKnockoutFixtures(db, competition.id, seasonYear),
+    getLeagueFixtures(db, competition.id, seasonYear),
+    getLeagueCoverage(db, competition.id, seasonYear),
+    getInjuriesForCompetition(db, competition.id, seasonYear),
+    getTopScorersForLeague(db, competition.id, seasonYear, 5),
+    getLeagueFeaturedMatches(db, competition.id, seasonYear, 2),
+  ]);
 
   const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
   const countryName = getLeagueCountryName(competition.countryCode, locale);
@@ -769,6 +814,12 @@ async function renderGenericCupPage(
         center={<CenterTabs tabs={tabs} />}
         rightRail={
           <div className="space-y-4">
+            <LeagueRightRailCard
+              featuredMatches={genericFeaturedMatches}
+              topScorer={topScorers[0] ?? null}
+              locale={locale}
+              competitionName={competitionName}
+            />
             {hasStandings && <CupGroupsSummary standings={standings} locale={locale} />}
             <LeagueRightRail
               competitionName={competitionName}
