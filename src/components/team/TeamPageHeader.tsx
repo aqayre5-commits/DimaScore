@@ -18,51 +18,56 @@ export function TeamPageHeader({ team, locale }: TeamPageHeaderProps) {
   const name = resolveTeamName(team, locale);
   const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
   return (
-    <div className="flex items-start gap-4 py-4">
-      {/* Team logo or flag */}
-      <div className="flex size-20 shrink-0 items-center justify-center rounded-xl bg-bg-surface-2">
-        {team.logoUrl ? (
-          <img
-            src={team.logoUrl}
-            alt={name}
-            width={64}
-            height={64}
-            className="size-16 object-contain"
-            loading="eager"
-          />
-        ) : flag ? (
-          <span className="text-4xl">{flag}</span>
-        ) : (
-          <span className="text-2xl text-text-tertiary">⚽</span>
-        )}
-      </div>
-
-      {/* Identity */}
-      <div className="min-w-0 flex-1">
-        <h1 className="text-2xl font-semibold leading-tight text-text-primary">{name}</h1>
-
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-text-secondary">
-          {flag && <span>{flag}</span>}
-          {team.countryCode && <span>{team.countryCode}</span>}
-          {team.founded && (
-            <>
-              <span className="text-text-tertiary">·</span>
-              <span>{t('founded', { year: team.founded })}</span>
-            </>
+    <div className="rounded-xl border border-border-subtle bg-bg-surface p-6">
+      <div className="flex items-start gap-5">
+        {/* Team logo */}
+        <div className="flex size-[88px] shrink-0 items-center justify-center rounded-xl bg-bg-surface-2 p-2">
+          {team.logoUrl ? (
+            <img
+              src={team.logoUrl}
+              alt={name}
+              width={72}
+              height={72}
+              className="size-[72px] object-contain"
+              loading="eager"
+            />
+          ) : flag ? (
+            <span className="text-5xl">{flag}</span>
+          ) : (
+            <span className="text-3xl text-text-tertiary">⚽</span>
           )}
         </div>
 
-        {team.coach && (
-          <p className="mt-1 text-sm text-text-secondary">
-            {t('coach')}: {team.coach.name}
-          </p>
-        )}
+        {/* Identity */}
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-2xl font-bold leading-tight text-text-primary">
+            {name}
+          </h1>
 
-        {team.venue && (team.venue.name || team.venue.city) && (
-          <p className="mt-0.5 text-sm text-text-tertiary">
-            {[team.venue.name, team.venue.city].filter(Boolean).join(', ')}
-          </p>
-        )}
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[13px] text-text-secondary">
+            {flag && <span>{flag}</span>}
+            {team.countryCode && <span>{team.countryCode}</span>}
+            {team.founded && (
+              <>
+                <span className="text-text-tertiary">·</span>
+                <span>{t('founded', { year: team.founded })}</span>
+              </>
+            )}
+          </div>
+
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-tertiary">
+            {team.coach && (
+              <span className="flex items-center gap-1">
+                {t('coach')}: <span className="text-text-secondary">{team.coach.name}</span>
+              </span>
+            )}
+            {team.venue && (team.venue.name || team.venue.city) && (
+              <span className="flex items-center gap-1">
+                {[team.venue.name, team.venue.city].filter(Boolean).join(', ')}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

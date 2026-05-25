@@ -5,10 +5,10 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { PlayerPageHeader } from '@/components/player/PlayerPageHeader';
+import { PlayerInfoCard } from '@/components/player/PlayerInfoCard';
 import { PlayerSeasonStats } from '@/components/player/PlayerSeasonStats';
 import { PlayerTransfers } from '@/components/player/PlayerTransfers';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
-import { MatchesList } from '@/components/tournament/MatchesList';
 import { NewsletterCard } from '@/components/tournament/NewsletterCard';
 import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { PlayerMediaSection } from '@/components/player/PlayerMediaSection';
@@ -109,7 +109,7 @@ export default async function PlayerPage({ params }: PageProps) {
     { label: playerName },
   ];
 
-  // Center tabs
+  // Center tabs — Statistics shows current season stats, Career shows transfers
   const hashes = TAB_HASHES[typedLocale];
   const tabs = [
     {
@@ -136,6 +136,7 @@ export default async function PlayerPage({ params }: PageProps) {
         pageHeader={<PlayerPageHeader player={player} locale={typedLocale} />}
         leftRail={
           <div className="space-y-4">
+            <PlayerInfoCard player={player} locale={typedLocale} />
             {upcomingFixture && (
               <FeaturedMatchCard
                 fixture={upcomingFixture}
@@ -143,14 +144,13 @@ export default async function PlayerPage({ params }: PageProps) {
                 cardTitle={playerName}
               />
             )}
-            {fixtures.length > 0 && <MatchesList fixtures={fixtures} locale={typedLocale} />}
             <NewsletterCard tournamentName={playerName} />
           </div>
         }
         center={<CenterTabs tabs={tabs} />}
         rightRail={
           <div className="space-y-4">
-            <NewsletterCard tournamentName={playerName} />
+            <PlayerTransfers transfers={transfers} locale={typedLocale} />
           </div>
         }
         belowCenter={

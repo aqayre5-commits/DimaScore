@@ -67,69 +67,49 @@ export function TeamSquadTable({ players, locale }: TeamSquadTableProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {POSITION_ORDER.map((pos) => {
         const group = grouped.get(pos);
         if (!group || group.length === 0) return null;
         return (
-          <div
-            key={pos}
-            className="rounded-lg border border-border-subtle bg-bg-surface overflow-hidden"
-          >
-            <div className="border-b border-border-subtle px-4 py-2">
-              <h3 className="label-caps">{t(positionKey(pos))}</h3>
+          <div key={pos}>
+            <h3 className="label-caps mb-3 border-b border-border-subtle pb-2 text-accent-green">
+              {t(positionKey(pos))}
+            </h3>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2.5">
+              {group.map((player) => {
+                const age = computeAge(player.birthDate);
+                return (
+                  <a
+                    key={player.id}
+                    href={`/${locale}/joueur/${player.slug}`}
+                    className="flex flex-col items-center gap-1 rounded-lg px-1 py-2.5 transition-colors hover:bg-accent-green/[0.06]"
+                  >
+                    {player.photoUrl ? (
+                      <img
+                        src={player.photoUrl}
+                        alt=""
+                        width={48}
+                        height={48}
+                        className="size-12 rounded-full border-2 border-border-subtle object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex size-12 items-center justify-center rounded-full border-2 border-border-subtle bg-bg-surface-2 text-sm text-text-tertiary">
+                        {player.shirtNumber ?? '?'}
+                      </div>
+                    )}
+                    <span className="text-center text-xs font-semibold leading-tight text-text-primary">
+                      {resolvePlayerName(player, locale)}
+                    </span>
+                    {age != null && <span className="text-[11px] text-text-secondary">{age}</span>}
+                    {player.injured && (
+                      <span className="text-[10px] font-semibold text-accent-crimson">+</span>
+                    )}
+                  </a>
+                );
+              })}
             </div>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border-subtle text-xs text-text-tertiary">
-                  <th className="px-4 py-2 text-start font-medium">{t('number')}</th>
-                  <th className="px-4 py-2 text-start font-medium">{t('player')}</th>
-                  <th className="px-4 py-2 text-start font-medium">{t('age')}</th>
-                  <th className="px-4 py-2 text-start font-medium">{t('nationality')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-subtle">
-                {group.map((player) => {
-                  const age = computeAge(player.birthDate);
-                  const flag = player.nationalityCode ? codeToFlag(player.nationalityCode) : null;
-                  return (
-                    <tr key={player.id} className="hover:bg-bg-surface-2 transition-colors">
-                      <td className="px-4 py-2 tabular-nums text-text-secondary">
-                        {player.shirtNumber ?? '—'}
-                      </td>
-                      <td className="px-4 py-2">
-                        <div className="flex items-center gap-2">
-                          {player.photoUrl ? (
-                            <img
-                              src={player.photoUrl}
-                              alt=""
-                              width={28}
-                              height={28}
-                              className="size-7 rounded-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="size-7 rounded-full bg-bg-surface-2" />
-                          )}
-                          <span className="font-medium text-text-primary">
-                            {resolvePlayerName(player, locale)}
-                          </span>
-                          {player.injured && (
-                            <span className="text-xs text-accent-crimson" title="Injured">
-                              +
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 tabular-nums text-text-secondary">{age ?? '—'}</td>
-                      <td className="px-4 py-2">
-                        {flag && <span title={player.nationalityCode ?? ''}>{flag}</span>}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
           </div>
         );
       })}

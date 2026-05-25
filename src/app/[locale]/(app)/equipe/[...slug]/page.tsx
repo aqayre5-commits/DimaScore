@@ -149,14 +149,13 @@ export default async function TeamPage({ params }: PageProps) {
                 cardTitle={teamName}
               />
             )}
-            <MatchesList fixtures={fixtures} locale={typedLocale} />
             <NewsletterCard tournamentName={teamName} />
           </div>
         }
         center={<CenterTabs tabs={tabs} />}
         rightRail={
           <div className="space-y-4">
-            <NewsletterCard tournamentName={teamName} />
+            <MatchesList fixtures={fixtures} locale={typedLocale} />
           </div>
         }
         belowCenter={

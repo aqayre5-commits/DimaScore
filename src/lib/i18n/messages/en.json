@@ -307,7 +307,16 @@
     "goalkeeper": "GK",
     "defender": "DEF",
     "midfielder": "MID",
-    "attacker": "FWD"
+    "attacker": "FWD",
+    "playerInfo": "Player Info",
+    "nationality": "Nationality",
+    "dateOfBirth": "Date of Birth",
+    "birthPlace": "Birthplace",
+    "height": "Height",
+    "weight": "Weight",
+    "competition": "Competition",
+    "teamCol": "Team",
+    "transfers": "Transfers"
   },
   "leaguePage": {
     "standings": "Standings",

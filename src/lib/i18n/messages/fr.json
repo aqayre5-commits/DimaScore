@@ -307,7 +307,16 @@
     "goalkeeper": "GB",
     "defender": "D\u00c9F",
     "midfielder": "MIL",
-    "attacker": "ATT"
+    "attacker": "ATT",
+    "playerInfo": "Infos joueur",
+    "nationality": "Nationalit\u00e9",
+    "dateOfBirth": "Date de naissance",
+    "birthPlace": "Lieu de naissance",
+    "height": "Taille",
+    "weight": "Poids",
+    "competition": "Comp\u00e9tition",
+    "teamCol": "\u00c9quipe",
+    "transfers": "Transferts"
   },
   "leaguePage": {
     "standings": "Classement",

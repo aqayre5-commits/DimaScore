@@ -29,6 +29,13 @@ function computeAge(birthDate: string | null): number | null {
   return age;
 }
 
+const POSITION_COLORS: Record<string, string> = {
+  Attacker: 'bg-accent-crimson/15 text-accent-crimson',
+  Midfielder: 'bg-accent-green/15 text-accent-green',
+  Defender: 'bg-accent-azure/15 text-accent-azure',
+  Goalkeeper: 'bg-accent-amber/15 text-accent-amber',
+};
+
 function positionLabel(position: string | null, t: ReturnType<typeof useTranslations>): string {
   switch (position) {
     case 'Goalkeeper':
@@ -55,75 +62,76 @@ export function PlayerPageHeader({ player, locale }: PlayerPageHeaderProps) {
       player.currentTeam.code ??
       '—')
     : null;
+  const posBadgeColor =
+    POSITION_COLORS[player.position ?? ''] ?? 'bg-bg-surface-2 text-text-secondary';
 
   return (
-    <div className="flex items-start gap-4 py-4">
-      {/* Player photo */}
-      <div className="flex size-24 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 overflow-hidden">
-        {player.photoUrl ? (
-          <img
-            src={player.photoUrl}
-            alt={name}
-            width={96}
-            height={96}
-            className="size-24 object-cover"
-            loading="eager"
-          />
-        ) : (
-          <span className="text-3xl text-text-tertiary">👤</span>
-        )}
-      </div>
-
-      {/* Identity */}
-      <div className="min-w-0 flex-1">
-        <h1 className="text-2xl font-semibold leading-tight text-text-primary">{name}</h1>
-
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-text-secondary">
-          <span>{positionLabel(player.position, t)}</span>
-          {player.shirtNumber != null && (
-            <>
-              <span className="text-text-tertiary">·</span>
-              <span>#{player.shirtNumber}</span>
-            </>
-          )}
-          {age != null && (
-            <>
-              <span className="text-text-tertiary">·</span>
-              <span>
-                {t('age')}: {age}
-              </span>
-            </>
+    <div className="rounded-xl border border-border-subtle bg-bg-surface p-6">
+      <div className="flex items-start gap-5">
+        {/* Player photo */}
+        <div className="size-[100px] shrink-0 overflow-hidden rounded-full border-[3px] border-border-subtle bg-bg-surface-2">
+          {player.photoUrl ? (
+            <img
+              src={player.photoUrl}
+              alt={name}
+              width={100}
+              height={100}
+              className="size-full object-cover"
+              loading="eager"
+            />
+          ) : (
+            <div className="flex size-full items-center justify-center text-3xl text-text-tertiary">
+              👤
+            </div>
           )}
         </div>
 
-        {clubName && (
-          <div className="mt-1 flex items-center gap-2 text-sm text-text-secondary">
-            {player.currentTeam?.logoUrl && (
-              <img
-                src={player.currentTeam.logoUrl}
-                alt=""
-                width={20}
-                height={20}
-                className="size-5 object-contain"
-                loading="eager"
-              />
+        {/* Identity */}
+        <div className="min-w-0 flex-1">
+          <h1 className="font-display text-2xl font-bold leading-tight text-text-primary">
+            {name}
+          </h1>
+
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-text-secondary">
+            <span
+              className={`inline-block rounded px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${posBadgeColor}`}
+            >
+              {positionLabel(player.position, t)}
+            </span>
+            {flag && <span>{flag}</span>}
+            {player.nationalityCode && <span>{player.nationalityCode}</span>}
+            {age != null && (
+              <>
+                <span className="text-text-tertiary">·</span>
+                <span>
+                  {t('age')}: {age}
+                </span>
+              </>
             )}
-            <span>{clubName}</span>
+            {player.shirtNumber != null && (
+              <>
+                <span className="text-text-tertiary">·</span>
+                <span>#{player.shirtNumber}</span>
+              </>
+            )}
           </div>
-        )}
 
-        {flag && (
-          <p className="mt-1 text-sm text-text-tertiary">
-            {flag} {player.nationalityCode}
-          </p>
-        )}
-
-        {player.height && (
-          <p className="mt-0.5 text-sm text-text-tertiary">
-            {player.height}
-            {player.weight ? ` · ${player.weight}` : ''}
-          </p>
-        )}
+          {clubName && (
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-bg-surface-2 px-2.5 py-1 text-[13px] font-medium text-text-primary">
+              {player.currentTeam?.logoUrl && (
+                <img
+                  src={player.currentTeam.logoUrl}
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="size-5 object-contain"
+                  loading="eager"
+                />
+              )}
+              <span>{clubName}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

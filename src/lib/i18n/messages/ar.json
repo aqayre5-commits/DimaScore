@@ -307,7 +307,16 @@
     "goalkeeper": "حارس",
     "defender": "مدافع",
     "midfielder": "وسط",
-    "attacker": "مهاجم"
+    "attacker": "مهاجم",
+    "playerInfo": "معلومات اللاعب",
+    "nationality": "الجنسية",
+    "dateOfBirth": "تاريخ الميلاد",
+    "birthPlace": "مكان الميلاد",
+    "height": "الطول",
+    "weight": "الوزن",
+    "competition": "المسابقة",
+    "teamCol": "الفريق",
+    "transfers": "الانتقالات"
   },
   "leaguePage": {
     "standings": "الترتيب",
