@@ -73,7 +73,7 @@ export function FixtureRow({
             <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
             {statusCode === 'HT' ? t('halfTime') : statusCode}
           </span>
-        ) : isFinished && hasScore ? (
+        ) : isFinished ? (
           <span className="text-xs text-text-tertiary">
             {statusCode === 'AET'
               ? t('extraTime')

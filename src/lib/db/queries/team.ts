@@ -282,15 +282,19 @@ export async function getTeamsInSameCompetition(
   db: NeonHttpDatabase<typeof schema>,
   teamId: number,
 ): Promise<{ competitionName: Record<string, string> | null; teams: CompetitionTeamTile[] }> {
-  // Find the team's primary competition (most recent standings entry)
+  // Find the team's primary competition — prefer domestic league over cup/continental
   const standingRow = await db
     .select({
       competitionId: schema.standings.competitionId,
       seasonYear: schema.standings.seasonYear,
     })
     .from(schema.standings)
+    .innerJoin(schema.competitions, eq(schema.standings.competitionId, schema.competitions.id))
     .where(eq(schema.standings.teamId, teamId))
-    .orderBy(desc(schema.standings.seasonYear))
+    .orderBy(
+      sql`CASE WHEN ${schema.competitions.type} = 'League' THEN 0 ELSE 1 END`,
+      desc(schema.standings.seasonYear),
+    )
     .limit(1);
 
   if (standingRow.length === 0 || standingRow[0].competitionId == null) {
