@@ -25,6 +25,8 @@ export function isLive(statusCode: string): boolean {
   return LIVE_CODES.has(statusCode);
 }
 
-export function isFinished(statusCode: string): boolean {
-  return FINISHED_CODES.has(statusCode);
+export function isFinished(statusCode: string, kickoffAt?: Date): boolean {
+  if (FINISHED_CODES.has(statusCode)) return true;
+  if (kickoffAt && kickoffAt <= new Date()) return true;
+  return false;
 }

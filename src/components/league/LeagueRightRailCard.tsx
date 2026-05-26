@@ -186,12 +186,12 @@ function FeaturedMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale:
 
         {/* Score / Kickoff time */}
         <div className="text-center">
-          {(isFinished || isLive) && homeScore != null && awayScore != null ? (
+          {isFinished || isLive ? (
             <>
               <div
                 className={`text-2xl font-bold tabular-nums ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
               >
-                {homeScore} - {awayScore}
+                {homeScore != null && awayScore != null ? `${homeScore} - ${awayScore}` : '- : -'}
               </div>
               {isLive ? (
                 <div className="mt-1 flex items-center justify-center gap-1">
