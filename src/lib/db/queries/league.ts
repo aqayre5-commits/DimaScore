@@ -1,8 +1,9 @@
-import { eq, and, asc, desc, sql } from 'drizzle-orm';
+import { eq, and, asc, desc, sql, inArray } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { FixtureWithTeams } from '../queries';
 import { hydrateFixtures } from '../queries-hydrate';
+import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 
 // ── Types ──
 
@@ -146,24 +147,45 @@ export async function getLeagueRounds(
 }
 
 /**
- * Determine the "current" round: the most recent round that has at least one
- * finished match, or the first round with upcoming matches if none are finished.
+ * Determine the "current" round.
+ * Priority: round with live matches > most recent round with finished matches > first round.
+ * Uses full status code sets + kickoff-time fallback for stale statuses.
  */
 export async function getCurrentRound(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number,
   seasonYear: number,
 ): Promise<number | null> {
-  // Most recent round with a finished match
+  const base = and(
+    eq(schema.fixtures.competitionId, competitionId),
+    eq(schema.fixtures.seasonYear, seasonYear),
+    sql`${schema.fixtures.roundNumber} IS NOT NULL`,
+  );
+
+  // 1. Round with any live match — that's THE current round
+  const live = await db
+    .select({ roundNumber: schema.fixtures.roundNumber })
+    .from(schema.fixtures)
+    .where(and(base, inArray(schema.fixtures.statusCode, [...LIVE_CODES_ARRAY])))
+    .orderBy(desc(schema.fixtures.roundNumber))
+    .limit(1);
+
+  if (live[0]?.roundNumber != null) return live[0].roundNumber;
+
+  // 2. Most recent round with a finished match (explicit codes OR stale status with past kickoff)
   const finished = await db
     .select({ roundNumber: schema.fixtures.roundNumber })
     .from(schema.fixtures)
     .where(
       and(
-        eq(schema.fixtures.competitionId, competitionId),
-        eq(schema.fixtures.seasonYear, seasonYear),
-        eq(schema.fixtures.statusCode, 'FT'),
-        sql`${schema.fixtures.roundNumber} IS NOT NULL`,
+        base,
+        sql`(${schema.fixtures.statusCode} IN (${sql.join(
+          FINISHED_CODES_ARRAY.map((c) => sql`${c}`),
+          sql`, `,
+        )}) OR (${schema.fixtures.kickoffAt} <= NOW() AND ${schema.fixtures.statusCode} NOT IN (${sql.join(
+          LIVE_CODES_ARRAY.map((c) => sql`${c}`),
+          sql`, `,
+        )})))`,
       ),
     )
     .orderBy(desc(schema.fixtures.roundNumber))
@@ -171,17 +193,11 @@ export async function getCurrentRound(
 
   if (finished[0]?.roundNumber != null) return finished[0].roundNumber;
 
-  // Fallback: first round with any match
+  // 3. Fallback: first round with any match
   const first = await db
     .select({ roundNumber: schema.fixtures.roundNumber })
     .from(schema.fixtures)
-    .where(
-      and(
-        eq(schema.fixtures.competitionId, competitionId),
-        eq(schema.fixtures.seasonYear, seasonYear),
-        sql`${schema.fixtures.roundNumber} IS NOT NULL`,
-      ),
-    )
+    .where(base)
     .orderBy(asc(schema.fixtures.roundNumber))
     .limit(1);
 
@@ -202,7 +218,8 @@ export async function getLeagueFeaturedMatch(
 
 /**
  * Best N matches for the current/next matchweek.
- * Prioritises upcoming, falls back to most recent finished.
+ * Priority: live > upcoming > most recent finished.
+ * Uses full status code sets + kickoff-time fallback for stale statuses.
  */
 export async function getLeagueFeaturedMatches(
   db: NeonHttpDatabase<typeof schema>,
@@ -210,45 +227,71 @@ export async function getLeagueFeaturedMatches(
   seasonYear: number,
   limit = 2,
 ): Promise<FixtureWithTeams[]> {
-  const now = new Date();
+  const base = and(
+    eq(schema.fixtures.competitionId, competitionId),
+    eq(schema.fixtures.seasonYear, seasonYear),
+  );
 
-  // Next upcoming
-  const upcoming = await db
+  // 1. Live matches first
+  const live = await db
     .select()
     .from(schema.fixtures)
-    .where(
-      and(
-        eq(schema.fixtures.competitionId, competitionId),
-        eq(schema.fixtures.seasonYear, seasonYear),
-        sql`${schema.fixtures.kickoffAt} > ${now.toISOString()}`,
-        eq(schema.fixtures.statusCode, 'NS'),
-      ),
-    )
+    .where(and(base, inArray(schema.fixtures.statusCode, [...LIVE_CODES_ARRAY])))
     .orderBy(asc(schema.fixtures.kickoffAt))
     .limit(limit);
 
-  if (upcoming.length >= limit) {
-    return hydrateFixtures(db, upcoming);
+  if (live.length >= limit) {
+    return hydrateFixtures(db, live.slice(0, limit));
   }
 
-  // Fill remaining with most recent finished
-  const remaining = limit - upcoming.length;
-  const recent = await db
-    .select()
-    .from(schema.fixtures)
-    .where(
-      and(
-        eq(schema.fixtures.competitionId, competitionId),
-        eq(schema.fixtures.seasonYear, seasonYear),
-        eq(schema.fixtures.statusCode, 'FT'),
-      ),
-    )
-    .orderBy(desc(schema.fixtures.kickoffAt))
-    .limit(remaining);
+  const collected = [...live];
 
-  const all = [...upcoming, ...recent];
-  if (all.length === 0) return [];
-  return hydrateFixtures(db, all);
+  // 2. Fill with upcoming (future kickoff, not live, not finished)
+  if (collected.length < limit) {
+    const upcoming = await db
+      .select()
+      .from(schema.fixtures)
+      .where(
+        and(
+          base,
+          sql`${schema.fixtures.kickoffAt} > NOW()`,
+          sql`${schema.fixtures.statusCode} NOT IN (${sql.join(
+            [...LIVE_CODES_ARRAY, ...FINISHED_CODES_ARRAY].map((c) => sql`${c}`),
+            sql`, `,
+          )})`,
+        ),
+      )
+      .orderBy(asc(schema.fixtures.kickoffAt))
+      .limit(limit - collected.length);
+
+    collected.push(...upcoming);
+  }
+
+  // 3. Fill remaining with most recent finished
+  if (collected.length < limit) {
+    const recent = await db
+      .select()
+      .from(schema.fixtures)
+      .where(
+        and(
+          base,
+          sql`(${schema.fixtures.statusCode} IN (${sql.join(
+            FINISHED_CODES_ARRAY.map((c) => sql`${c}`),
+            sql`, `,
+          )}) OR (${schema.fixtures.kickoffAt} <= NOW() AND ${schema.fixtures.statusCode} NOT IN (${sql.join(
+            LIVE_CODES_ARRAY.map((c) => sql`${c}`),
+            sql`, `,
+          )})))`,
+        ),
+      )
+      .orderBy(desc(schema.fixtures.kickoffAt))
+      .limit(limit - collected.length);
+
+    collected.push(...recent);
+  }
+
+  if (collected.length === 0) return [];
+  return hydrateFixtures(db, collected);
 }
 
 /**

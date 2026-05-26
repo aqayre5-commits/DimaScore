@@ -1,1 +1,1 @@
-Phase 6 — Competition page (reopened). WC 2026 cup template shipped; league template (Botola Pro, Premier League, LaLiga, CAF Champions League, etc.) still needs building. Generic league page reads league_coverage, renders covered tabs: standings, top scorers, fixtures by matchday, injuries, media. Exit criterion: /competition/botola-pro-322 renders. See docs/atlaskings-v2-rebuild-plan-final.md §J.6.
+Phase 7

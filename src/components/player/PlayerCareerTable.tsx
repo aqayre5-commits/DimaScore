@@ -37,7 +37,7 @@ export function PlayerCareerTable({ stats, locale }: PlayerCareerTableProps) {
   const latestSeason = sorted[0]?.seasonYear;
 
   return (
-    <div className="overflow-x-auto">
+    <div className="rounded-lg border border-border-subtle bg-bg-surface overflow-hidden">
       <table className="w-full text-[13px]">
         <thead>
           <tr className="border-b border-border-subtle text-[11px] font-semibold uppercase text-text-tertiary">

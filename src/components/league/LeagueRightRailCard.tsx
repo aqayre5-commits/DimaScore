@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
+import { getMatchState } from '@/lib/match-status';
 import { KickoffCountdown } from '@/components/shared/KickoffCountdown';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { TopPlayerRow } from '@/lib/db/queries/league';
@@ -153,8 +154,9 @@ function FeaturedMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale:
   const awayCode = resolveTeamCode(awayTeam, locale);
   const homeName = resolveTeamName(homeTeam, locale);
   const awayName = resolveTeamName(awayTeam, locale);
-  const isFinished = statusCode === 'FT' || statusCode === 'AET' || statusCode === 'PEN';
-  const isLive = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'].includes(statusCode);
+  const _state = getMatchState(statusCode, kickoffAt);
+  const isFinished = _state === 'finished';
+  const isLive = _state === 'live';
 
   const headerDate = formatHeaderDate(kickoffAt, locale);
   const kickoffTime = formatMatchTime(kickoffAt, locale);
@@ -184,12 +186,12 @@ function FeaturedMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale:
 
         {/* Score / Kickoff time */}
         <div className="text-center">
-          {isFinished || isLive ? (
+          {(isFinished || isLive) && homeScore != null && awayScore != null ? (
             <>
               <div
                 className={`text-2xl font-bold tabular-nums ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
               >
-                {homeScore ?? 0} - {awayScore ?? 0}
+                {homeScore} - {awayScore}
               </div>
               {isLive ? (
                 <div className="mt-1 flex items-center justify-center gap-1">
@@ -199,7 +201,9 @@ function FeaturedMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale:
                   </span>
                 </div>
               ) : (
-                <span className="text-xs text-text-tertiary">FT</span>
+                <span className="mt-0.5 inline-block rounded bg-bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-text-tertiary">
+                  {statusCode === 'AET' ? 'AET' : statusCode === 'PEN' ? 'PEN' : 'FT'}
+                </span>
               )}
             </>
           ) : (
@@ -249,8 +253,9 @@ function CompactMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale: 
 
   const homeCode = resolveTeamCode(homeTeam, locale);
   const awayCode = resolveTeamCode(awayTeam, locale);
-  const isFinished = statusCode === 'FT' || statusCode === 'AET' || statusCode === 'PEN';
-  const isLive = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'].includes(statusCode);
+  const _state = getMatchState(statusCode, kickoffAt);
+  const isFinished = _state === 'finished';
+  const isLive = _state === 'live';
   const kickoffTime = formatMatchTime(kickoffAt, locale);
 
   return (
@@ -270,14 +275,16 @@ function CompactMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale: 
 
       {/* Score / time */}
       <div className="w-14 shrink-0 text-center">
-        {isFinished || isLive ? (
+        {homeScore != null && awayScore != null ? (
           <span
             className={`text-sm font-bold tabular-nums ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
           >
-            {homeScore ?? 0}-{awayScore ?? 0}
+            {homeScore}-{awayScore}
           </span>
         ) : (
-          <span className="text-xs tabular-nums text-text-secondary">{kickoffTime}</span>
+          <span className="text-xs tabular-nums text-text-secondary">
+            {isFinished ? '- : -' : kickoffTime}
+          </span>
         )}
       </div>
 

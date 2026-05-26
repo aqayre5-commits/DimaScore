@@ -357,6 +357,21 @@ export const playerSeasonStats = pgTable(
   ],
 );
 
+export const teamSeasonStats = pgTable(
+  'team_season_stats',
+  {
+    teamId: bigint('team_id', { mode: 'number' })
+      .notNull()
+      .references(() => teams.id),
+    competitionId: bigint('competition_id', { mode: 'number' })
+      .notNull()
+      .references(() => competitions.id),
+    seasonYear: integer('season_year').notNull(),
+    stats: jsonb('stats').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.teamId, t.competitionId, t.seasonYear] })],
+);
+
 export const transfers = pgTable('transfers', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),
   playerId: bigint('player_id', { mode: 'number' }).references(() => players.id),
@@ -366,6 +381,21 @@ export const transfers = pgTable('transfers', {
   toTeamId: bigint('to_team_id', { mode: 'number' }).references(() => teams.id),
   fee: text('fee'),
 });
+
+export const playerTrophies = pgTable(
+  'player_trophies',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    playerId: bigint('player_id', { mode: 'number' })
+      .notNull()
+      .references(() => players.id),
+    league: text('league').notNull(),
+    country: text('country'),
+    season: text('season'),
+    place: text('place'),
+  },
+  (t) => [index('player_trophies_player_id_idx').on(t.playerId)],
+);
 
 export const injuries = pgTable('injuries', {
   id: bigserial('id', { mode: 'number' }).primaryKey(),

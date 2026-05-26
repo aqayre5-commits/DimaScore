@@ -45,7 +45,13 @@ function buildLegend(standings: StandingRow[]): ZoneLegendItem[] {
   return items;
 }
 
-function FormPills({ form }: { form: string | null }) {
+function FormPills({
+  form,
+  formLabels,
+}: {
+  form: string | null;
+  formLabels: { W: string; D: string; L: string };
+}) {
   if (!form) return null;
 
   const chars = form.split('').slice(-5);
@@ -61,7 +67,7 @@ function FormPills({ form }: { form: string | null }) {
             c === 'D' && 'bg-zinc-500',
             c === 'L' && 'bg-red-500',
           )}
-          title={c === 'W' ? 'Win' : c === 'D' ? 'Draw' : 'Loss'}
+          title={c === 'W' ? formLabels.W : c === 'D' ? formLabels.D : formLabels.L}
         />
       ))}
     </div>
@@ -164,7 +170,10 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
                     {row.goalsFor ?? 0}:{row.goalsAgainst ?? 0}
                   </td>
                   <td className="hidden px-1 py-2 text-center sm:table-cell">
-                    <FormPills form={row.form} />
+                    <FormPills
+                      form={row.form}
+                      formLabels={{ W: t('formWin'), D: t('formDraw'), L: t('formLoss') }}
+                    />
                   </td>
                   <td className="px-1 py-2 text-center tabular-nums font-semibold text-text-primary">
                     {row.points}

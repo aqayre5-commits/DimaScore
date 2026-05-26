@@ -24,17 +24,13 @@ export function ThemeToggle() {
   function toggle() {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
-    if (next === 'light') {
-      document.documentElement.dataset.theme = 'light';
-    } else {
-      delete document.documentElement.dataset.theme;
-    }
-    localStorage.setItem('atlas-theme', next);
   }
+
+  const Icon = theme === 'dark' ? Sun : Moon;
 
   return (
     <Button variant="ghost" size="icon" onClick={toggle} aria-label={t('toggle')}>
-      {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+      <Icon className="size-4" />
     </Button>
   );
 }

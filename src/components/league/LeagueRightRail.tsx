@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { NewsletterCard } from '@/components/tournament/NewsletterCard';
+
 import type { StandingRow } from '@/lib/db/queries';
 import type { LeagueCoverageRecord, TopPlayerRow, TopCardRow } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
@@ -78,6 +78,7 @@ function TopCardsList({
   players: TopCardRow[];
   locale: Locale;
 }) {
+  const t = useTranslations('leaguePage');
   if (players.length === 0) return null;
 
   return (
@@ -111,13 +112,19 @@ function TopCardsList({
               <p className="truncate text-[10px] text-text-tertiary">{p.teamName}</p>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="inline-block size-3 rounded-sm bg-yellow-400" title="Yellow" />
+              <span
+                className="inline-block size-3 rounded-sm bg-yellow-400"
+                title={t('cardYellow')}
+              />
               <span className="text-xs font-semibold tabular-nums text-text-primary">
                 {p.yellowCards}
               </span>
               {p.redCards > 0 && (
                 <>
-                  <span className="inline-block size-3 rounded-sm bg-red-500" title="Red" />
+                  <span
+                    className="inline-block size-3 rounded-sm bg-red-500"
+                    title={t('cardRed')}
+                  />
                   <span className="text-xs font-semibold tabular-nums text-text-primary">
                     {p.redCards}
                   </span>
@@ -140,6 +147,7 @@ function MiniStandingsWidget({
   standings: StandingRow[];
   locale: Locale;
 }) {
+  const t = useTranslations('leaguePage');
   // Show top 5 teams only
   const top5 = standings.slice(0, 5);
   if (top5.length === 0) return null;
@@ -153,9 +161,9 @@ function MiniStandingsWidget({
         <thead>
           <tr className="border-b border-border-subtle text-[10px] font-medium uppercase text-text-tertiary">
             <th className="w-6 py-1.5 text-center">#</th>
-            <th className="py-1.5 text-start">Team</th>
-            <th className="w-6 py-1.5 text-center">P</th>
-            <th className="w-8 py-1.5 text-center font-semibold">Pts</th>
+            <th className="py-1.5 text-start">{t('miniTeam')}</th>
+            <th className="w-6 py-1.5 text-center">{t('miniPlayed')}</th>
+            <th className="w-8 py-1.5 text-center font-semibold">{t('miniPoints')}</th>
           </tr>
         </thead>
         <tbody>
@@ -218,7 +226,6 @@ function MiniStandingsWidget({
 }
 
 export function LeagueRightRail({
-  competitionName,
   coverage,
   standings,
   topScorers,
@@ -255,8 +262,6 @@ export function LeagueRightRail({
       {coverage?.topCards && topCards && (
         <TopCardsList title={t('topCards')} players={topCards} locale={locale} />
       )}
-
-      <NewsletterCard tournamentName={competitionName} />
     </div>
   );
 }

@@ -17,7 +17,6 @@ interface CenterTabsProps {
 
 /**
  * Center column tab switcher with hash-fragment sync.
- * Per competition-cup.md Section 7: 3 tabs, NOT sticky, gold underline active.
  * Hash updates on tab change; reads hash on mount for deep-link support.
  */
 export function CenterTabs({ tabs }: CenterTabsProps) {
@@ -47,37 +46,40 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
 
   return (
     <div>
-      {/* Tabs row — card container for the tab bar only */}
+      {/* Tab bar */}
       <div
-        className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface-2"
+        className="rounded-xl border border-border-subtle bg-bg-surface overflow-hidden"
         role="tablist"
       >
-        <div className="flex overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              role="tab"
-              aria-selected={tab.key === activeKey}
-              aria-controls={`tabpanel-${tab.key}`}
-              onClick={() => handleTabClick(tab)}
-              className={cn(
-                'relative shrink-0 flex-1 px-4 py-3 text-center text-base font-medium transition-colors',
-                tab.key === activeKey
-                  ? 'bg-bg-surface-3 font-semibold text-text-primary'
-                  : 'text-text-tertiary hover:text-text-secondary',
-              )}
-            >
-              {t(tab.labelKey)}
-              {tab.key === activeKey && (
-                <span className="absolute inset-x-0 bottom-0 h-[3px] bg-accent-green" />
-              )}
-            </button>
-          ))}
+        <div className="flex">
+          {tabs.map((tab) => {
+            const isActive = tab.key === activeKey;
+            return (
+              <button
+                key={tab.key}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`tabpanel-${tab.key}`}
+                onClick={() => handleTabClick(tab)}
+                className={cn(
+                  'relative shrink-0 flex-1 px-4 py-3 text-center text-[13px] font-semibold tracking-wide transition-colors',
+                  isActive
+                    ? 'text-text-primary'
+                    : 'text-text-tertiary hover:text-text-secondary hover:bg-bg-surface-2',
+                )}
+              >
+                {t(tab.labelKey)}
+                {isActive && (
+                  <span className="absolute inset-x-0 bottom-0 h-[2.5px] bg-accent-green" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Active tab content */}
-      <div role="tabpanel" id={`tabpanel-${activeTab?.key}`} className="pt-4">
+      <div role="tabpanel" id={`tabpanel-${activeTab?.key}`} className="mt-4">
         <h2 className="sr-only">{t(activeTab?.labelKey ?? '')}</h2>
         {activeTab?.content}
       </div>

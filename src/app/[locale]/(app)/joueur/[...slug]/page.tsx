@@ -7,18 +7,22 @@ import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBr
 import { PlayerPageHeader } from '@/components/player/PlayerPageHeader';
 import { PlayerInfoCard } from '@/components/player/PlayerInfoCard';
 import { PlayerSeasonStats } from '@/components/player/PlayerSeasonStats';
+import { PlayerCareerTable } from '@/components/player/PlayerCareerTable';
 import { PlayerTransfers } from '@/components/player/PlayerTransfers';
+import { PlayerTrophies } from '@/components/player/PlayerTrophies';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
-import { NewsletterCard } from '@/components/tournament/NewsletterCard';
+
 import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { PlayerMediaSection } from '@/components/player/PlayerMediaSection';
 import { db } from '@/lib/db/client';
+import { getMatchState } from '@/lib/match-status';
 import {
   getPlayerBySlug,
-  getPlayerTeamFixtures,
   getPlayerSeasonStats,
   getPlayerTransfers,
+  getPlayerTrophies,
 } from '@/lib/db/queries/player';
+import { getTeamFixturesWithCompetition } from '@/lib/db/queries/team';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -28,10 +32,10 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 // ── Tab hash fragments per locale ──
 
-const TAB_HASHES: Record<Locale, { season: string; career: string }> = {
-  fr: { season: 'saison', career: 'carriere' },
-  en: { season: 'season', career: 'career' },
-  ar: { season: 'الموسم', career: 'المسيرة' },
+const TAB_HASHES: Record<Locale, { season: string; career: string; trophies: string }> = {
+  fr: { season: 'saison', career: 'carriere', trophies: 'palmares' },
+  en: { season: 'season', career: 'career', trophies: 'trophies' },
+  ar: { season: 'الموسم', career: 'المسيرة', trophies: 'الألقاب' },
 };
 
 // ── Metadata ──
@@ -84,7 +88,6 @@ export default async function PlayerPage({ params }: PageProps) {
   const player = await getPlayerBySlug(db, playerSlug);
   if (!player) notFound();
 
-  const t = await getTranslations({ locale, namespace: 'playerPage' });
   const tBc = await getTranslations({ locale, namespace: 'breadcrumb' });
   const playerName =
     player.name[typedLocale] ??
@@ -93,15 +96,25 @@ export default async function PlayerPage({ params }: PageProps) {
     playerSlug;
 
   // Parallel data fetching
-  const [fixtures, seasonStats, transfers] = await Promise.all([
-    player.currentTeam ? getPlayerTeamFixtures(db, player.currentTeam.id, 20) : [],
+  const [fixtures, seasonStats, transfers, trophies] = await Promise.all([
+    player.currentTeam ? getTeamFixturesWithCompetition(db, player.currentTeam.id, 200) : [],
     getPlayerSeasonStats(db, player.id),
     getPlayerTransfers(db, player.id),
+    getPlayerTrophies(db, player.id),
   ]);
 
-  // Featured match: first upcoming fixture from the player's team
-  const now = new Date();
-  const upcomingFixture = fixtures.find((f) => f.kickoffAt > now) ?? fixtures[0] ?? null;
+  // Featured match priority: live > next upcoming > most recent completed
+  const liveMatch = fixtures.find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
+  const nextUpcoming = fixtures.find(
+    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming',
+  );
+  const mostRecentCompleted = [...fixtures]
+    .reverse()
+    .find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
+  const upcomingFixture = liveMatch ?? nextUpcoming ?? mostRecentCompleted ?? null;
+
+  // Header card: next upcoming only
+  const nextMatch = nextUpcoming ?? null;
 
   // Breadcrumbs
   const breadcrumbs: BreadcrumbSegment[] = [
@@ -109,7 +122,7 @@ export default async function PlayerPage({ params }: PageProps) {
     { label: playerName },
   ];
 
-  // Center tabs — Statistics shows current season stats, Career shows transfers
+  // Center tabs — Statistics (season dropdown), Career (all-seasons table), Trophies (placeholder)
   const hashes = TAB_HASHES[typedLocale];
   const tabs = [
     {
@@ -122,7 +135,13 @@ export default async function PlayerPage({ params }: PageProps) {
       key: 'career',
       hash: hashes.career,
       labelKey: 'career',
-      content: <PlayerTransfers transfers={transfers} locale={typedLocale} />,
+      content: <PlayerCareerTable stats={seasonStats} locale={typedLocale} />,
+    },
+    {
+      key: 'trophies',
+      hash: hashes.trophies,
+      labelKey: 'trophies',
+      content: <PlayerTrophies trophies={trophies} locale={typedLocale} />,
     },
   ];
 
@@ -133,7 +152,7 @@ export default async function PlayerPage({ params }: PageProps) {
       </div>
 
       <InnerPageShell
-        pageHeader={<PlayerPageHeader player={player} locale={typedLocale} />}
+        pageHeader={<PlayerPageHeader player={player} locale={typedLocale} nextMatch={nextMatch} />}
         leftRail={
           <div className="space-y-4">
             <PlayerInfoCard player={player} locale={typedLocale} />
@@ -144,7 +163,6 @@ export default async function PlayerPage({ params }: PageProps) {
                 cardTitle={playerName}
               />
             )}
-            <NewsletterCard tournamentName={playerName} />
           </div>
         }
         center={<CenterTabs tabs={tabs} />}

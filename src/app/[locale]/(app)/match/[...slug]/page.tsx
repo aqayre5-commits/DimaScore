@@ -28,7 +28,7 @@ import { H2HPanel } from '@/components/match/H2HPanel';
 import { PredictionCard } from '@/components/match/PredictionCard';
 import { MatchMediaSection } from '@/components/match/MatchMediaSection';
 import { MatchSectionNav } from '@/components/match/MatchSectionNav';
-import { NewsletterCard } from '@/components/tournament/NewsletterCard';
+
 import { getMediaVideos } from '@/lib/db/queries/media';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -147,12 +147,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
         pageHeader={
           <ScoreHeader match={match} locale={typedLocale} competitionHref={competitionHref} />
         }
-        leftRail={
-          <div className="space-y-4">
-            {coverage?.predictions && <PredictionCard />}
-            <NewsletterCard tournamentName={compName} />
-          </div>
-        }
+        leftRail={<div className="space-y-4">{coverage?.predictions && <PredictionCard />}</div>}
         center={
           <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
             {/* ── Lineups (pitch + coaches, no substitutes list) ── */}

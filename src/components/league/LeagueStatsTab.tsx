@@ -177,10 +177,13 @@ function CardsTable({
               <th className="px-2 py-2 text-start">{t('colPlayer')}</th>
               <th className="px-2 py-2 text-start">{t('colTeam')}</th>
               <th className="w-12 px-2 py-2 text-center">
-                <span className="inline-block size-3 rounded-sm bg-yellow-400" title="Yellow" />
+                <span
+                  className="inline-block size-3 rounded-sm bg-yellow-400"
+                  title={t('cardYellow')}
+                />
               </th>
               <th className="w-12 px-2 py-2 text-center">
-                <span className="inline-block size-3 rounded-sm bg-red-500" title="Red" />
+                <span className="inline-block size-3 rounded-sm bg-red-500" title={t('cardRed')} />
               </th>
             </tr>
           </thead>

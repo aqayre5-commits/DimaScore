@@ -23,7 +23,7 @@ import {
 import { TournamentPageHeader } from '@/components/tournament/TournamentPageHeader';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 import { MatchesList } from '@/components/tournament/MatchesList';
-import { NewsletterCard } from '@/components/tournament/NewsletterCard';
+
 import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { OverviewTab } from '@/components/tournament/OverviewTab';
 import { StandingsTab } from '@/components/tournament/StandingsTab';
@@ -415,11 +415,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
           breadcrumb={breadcrumb}
         />
       }
-      leftRail={
-        <div className="space-y-4">
-          <NewsletterCard tournamentName={pageTitle} />
-        </div>
-      }
+      leftRail={<div className="space-y-4" />}
       center={<CenterTabs tabs={tabs} />}
       rightRail={
         <div className="space-y-4">
@@ -806,11 +802,7 @@ async function renderGenericCupPage(
             availableSeasons={[{ year: seasonYear, isCurrent: true }]}
           />
         }
-        leftRail={
-          <div className="space-y-4">
-            <NewsletterCard tournamentName={competitionName} />
-          </div>
-        }
+        leftRail={<div className="space-y-4" />}
         center={<CenterTabs tabs={tabs} />}
         rightRail={
           <div className="space-y-4">

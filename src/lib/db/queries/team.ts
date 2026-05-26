@@ -268,31 +268,111 @@ export async function getTeamStandings(
   return { competitionId, seasonYear, standings };
 }
 
+// ── Q4b: Teams in same competition (for team tiles) ──
+
+export interface CompetitionTeamTile {
+  id: number;
+  slug: string;
+  name: Record<string, string>;
+  shortName: Record<string, string>;
+  logoUrl: string | null;
+}
+
+export async function getTeamsInSameCompetition(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+): Promise<{ competitionName: Record<string, string> | null; teams: CompetitionTeamTile[] }> {
+  // Find the team's primary competition (most recent standings entry)
+  const standingRow = await db
+    .select({
+      competitionId: schema.standings.competitionId,
+      seasonYear: schema.standings.seasonYear,
+    })
+    .from(schema.standings)
+    .where(eq(schema.standings.teamId, teamId))
+    .orderBy(desc(schema.standings.seasonYear))
+    .limit(1);
+
+  if (standingRow.length === 0 || standingRow[0].competitionId == null) {
+    return { competitionName: null, teams: [] };
+  }
+
+  const { competitionId, seasonYear } = standingRow[0];
+
+  // Get competition name
+  const compRow = await db
+    .select({ name: schema.competitions.name })
+    .from(schema.competitions)
+    .where(eq(schema.competitions.id, competitionId))
+    .limit(1);
+  const competitionName = compRow[0]?.name ?? null;
+
+  // Get all team IDs from standings in this comp/season
+  const standingsRows = await db
+    .select({ teamId: schema.standings.teamId })
+    .from(schema.standings)
+    .where(
+      and(
+        eq(schema.standings.competitionId, competitionId),
+        eq(schema.standings.seasonYear, seasonYear),
+      ),
+    )
+    .orderBy(asc(schema.standings.rank));
+
+  const teamIds = standingsRows.map((r) => r.teamId).filter((id): id is number => id != null);
+
+  if (teamIds.length === 0) return { competitionName, teams: [] };
+
+  // Fetch team details
+  const tMap = await getTeamsMap(db, teamIds);
+
+  // Preserve rank order
+  const teams: CompetitionTeamTile[] = teamIds
+    .map((id) => {
+      const t = tMap.get(id);
+      if (!t) return null;
+      return {
+        id: t.id,
+        slug: t.slug,
+        name: t.name,
+        shortName: t.shortName,
+        logoUrl: t.logoUrl,
+      };
+    })
+    .filter((t): t is CompetitionTeamTile => t != null);
+
+  return { competitionName, teams };
+}
+
 // ── Q5: All standings for team (grouped by competition) ──
 
 export interface TeamCompetitionStandings {
   competitions: CompetitionSnapshot[];
-  standingsByComp: Record<number, StandingRow[]>;
+  seasons: number[];
+  standingsByCompSeason: Record<string, StandingRow[]>; // key: `${compId}-${season}`
 }
 
 export async function getTeamAllStandings(
   db: NeonHttpDatabase<typeof schema>,
   teamId: number,
 ): Promise<TeamCompetitionStandings> {
-  // Find all competitions this team has standings in (most recent season per comp)
+  // Find ALL competition/season pairs this team has standings in
   const compSeasons = await db
     .select({
       competitionId: schema.standings.competitionId,
-      seasonYear: sql<number>`MAX(${schema.standings.seasonYear})`.as('seasonYear'),
+      seasonYear: schema.standings.seasonYear,
     })
     .from(schema.standings)
     .where(eq(schema.standings.teamId, teamId))
-    .groupBy(schema.standings.competitionId);
+    .groupBy(schema.standings.competitionId, schema.standings.seasonYear)
+    .orderBy(desc(schema.standings.seasonYear));
 
-  if (compSeasons.length === 0) return { competitions: [], standingsByComp: {} };
+  if (compSeasons.length === 0) return { competitions: [], seasons: [], standingsByCompSeason: {} };
 
-  // Fetch competition metadata
-  const compIds = compSeasons.map((c) => c.competitionId).filter((id): id is number => id != null);
+  const compIds = [
+    ...new Set(compSeasons.map((c) => c.competitionId).filter((id): id is number => id != null)),
+  ];
+  const seasons = [...new Set(compSeasons.map((c) => c.seasonYear))].sort((a, b) => b - a);
   const compsMap = await getCompetitionsMap(db, compIds);
 
   const competitions: CompetitionSnapshot[] = compIds
@@ -300,10 +380,11 @@ export async function getTeamAllStandings(
     .filter((c): c is CompetitionSnapshot => c != null);
 
   // Fetch standings for each competition/season pair
-  const standingsByComp: Record<number, StandingRow[]> = {};
+  const standingsByCompSeason: Record<string, StandingRow[]> = {};
 
   for (const { competitionId, seasonYear } of compSeasons) {
     if (competitionId == null) continue;
+    const key = `${competitionId}-${seasonYear}`;
 
     const rows = await db
       .select()
@@ -321,7 +402,7 @@ export async function getTeamAllStandings(
     ];
     const tMap = await getTeamsMap(db, teamIds);
 
-    standingsByComp[competitionId] = rows.map((r) => ({
+    standingsByCompSeason[key] = rows.map((r) => ({
       groupLabel: r.groupLabel.replace(/^Group\s+/i, ''),
       teamId: r.teamId,
       rank: r.rank,
@@ -339,7 +420,58 @@ export async function getTeamAllStandings(
     }));
   }
 
-  return { competitions, standingsByComp };
+  return { competitions, seasons, standingsByCompSeason };
+}
+
+// ── Q6: Team season statistics from team_season_stats ──
+
+export interface TeamSeasonStatsEntry {
+  competitionId: number;
+  seasonYear: number;
+  stats: Record<string, unknown>;
+}
+
+export interface TeamSeasonStatsResult {
+  competitions: CompetitionSnapshot[];
+  seasons: number[];
+  statsByCompSeason: Record<string, TeamSeasonStatsEntry>; // key: `${compId}-${season}`
+}
+
+export async function getTeamSeasonStats(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+): Promise<TeamSeasonStatsResult> {
+  const rows = await db
+    .select({
+      competitionId: schema.teamSeasonStats.competitionId,
+      seasonYear: schema.teamSeasonStats.seasonYear,
+      stats: schema.teamSeasonStats.stats,
+    })
+    .from(schema.teamSeasonStats)
+    .where(eq(schema.teamSeasonStats.teamId, teamId))
+    .orderBy(desc(schema.teamSeasonStats.seasonYear));
+
+  if (rows.length === 0) return { competitions: [], seasons: [], statsByCompSeason: {} };
+
+  const compIds = [...new Set(rows.map((r) => r.competitionId))];
+  const seasons = [...new Set(rows.map((r) => r.seasonYear))].sort((a, b) => b - a);
+  const compsMap = await getCompetitionsMap(db, compIds);
+
+  const competitions = compIds
+    .map((id) => compsMap.get(id))
+    .filter((c): c is CompetitionSnapshot => c != null);
+
+  const statsByCompSeason: Record<string, TeamSeasonStatsEntry> = {};
+  for (const row of rows) {
+    const key = `${row.competitionId}-${row.seasonYear}`;
+    statsByCompSeason[key] = {
+      competitionId: row.competitionId,
+      seasonYear: row.seasonYear,
+      stats: row.stats as Record<string, unknown>,
+    };
+  }
+
+  return { competitions, seasons, statsByCompSeason };
 }
 
 // ── Hydration helpers (duplicated from queries.ts to keep this module self-contained) ──

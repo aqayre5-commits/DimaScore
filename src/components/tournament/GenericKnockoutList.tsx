@@ -52,7 +52,7 @@ export function GenericKnockoutList({ fixtures, locale }: GenericKnockoutListPro
   // Group by round name
   const byRound = new Map<string, FixtureWithTeams[]>();
   for (const f of fixtures) {
-    const round = f.round ?? 'Unknown';
+    const round = f.round ?? t('unknownRound');
     if (!byRound.has(round)) byRound.set(round, []);
     byRound.get(round)!.push(f);
   }

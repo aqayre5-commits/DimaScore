@@ -6,18 +6,23 @@ import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { TeamPageHeader } from '@/components/team/TeamPageHeader';
 import { TeamSquadTable } from '@/components/team/TeamSquadTable';
-import { TeamStandingsSection } from '@/components/team/TeamStandingsSection';
+import { TeamStandingsWithFilter } from '@/components/team/TeamStandingsWithFilter';
+import { TeamCompetitionTeams } from '@/components/team/TeamCompetitionTeams';
+import { TeamStatistics } from '@/components/team/TeamStatistics';
+import { TeamMatchesList } from '@/components/team/TeamMatchesList';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
-import { MatchesList } from '@/components/tournament/MatchesList';
-import { NewsletterCard } from '@/components/tournament/NewsletterCard';
+
 import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { TeamMediaSection } from '@/components/team/TeamMediaSection';
 import { db } from '@/lib/db/client';
+import { getMatchState } from '@/lib/match-status';
 import {
   getTeamBySlug,
-  getTeamFixtures,
+  getTeamFixturesWithCompetition,
   getTeamSquad,
-  getTeamStandings,
+  getTeamAllStandings,
+  getTeamSeasonStats,
+  getTeamsInSameCompetition,
 } from '@/lib/db/queries/team';
 
 interface PageProps {
@@ -28,10 +33,10 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 // ── Tab hash fragments per locale ──
 
-const TAB_HASHES: Record<Locale, { squad: string; standings: string }> = {
-  fr: { squad: 'effectif', standings: 'classement' },
-  en: { squad: 'squad', standings: 'standings' },
-  ar: { squad: 'التشكيلة', standings: 'الترتيب' },
+const TAB_HASHES: Record<Locale, { standings: string; statistics: string; players: string }> = {
+  fr: { standings: 'classement', statistics: 'statistiques', players: 'effectif' },
+  en: { standings: 'standings', statistics: 'statistics', players: 'squad' },
+  ar: { standings: 'الترتيب', statistics: 'الإحصائيات', players: 'التشكيلة' },
 };
 
 // ── Metadata ──
@@ -84,20 +89,37 @@ export default async function TeamPage({ params }: PageProps) {
   const team = await getTeamBySlug(db, teamSlug);
   if (!team) notFound();
 
-  const t = await getTranslations({ locale, namespace: 'teamPage' });
   const tBc = await getTranslations({ locale, namespace: 'breadcrumb' });
   const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
 
   // Parallel data fetching
-  const [fixtures, squad, standingsData] = await Promise.all([
-    getTeamFixtures(db, team.id, 20),
+  const [fixtures, squad, allStandings, teamSeasonStats, competitionTeams] = await Promise.all([
+    getTeamFixturesWithCompetition(db, team.id, 200),
     getTeamSquad(db, team.id),
-    getTeamStandings(db, team.id),
+    getTeamAllStandings(db, team.id),
+    getTeamSeasonStats(db, team.id),
+    getTeamsInSameCompetition(db, team.id),
   ]);
 
-  // Featured match: first upcoming fixture, or most recent
-  const now = new Date();
-  const upcomingFixture = fixtures.find((f) => f.kickoffAt > now) ?? fixtures[0] ?? null;
+  // Featured match priority: live > next upcoming > most recent completed
+  const liveMatch = fixtures.find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
+  const nextUpcoming = fixtures.find(
+    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming',
+  );
+  const mostRecentCompleted = [...fixtures]
+    .reverse()
+    .find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
+  const upcomingFixture = liveMatch ?? nextUpcoming ?? mostRecentCompleted ?? null;
+
+  // Header card: next upcoming only (previous match lives in left rail as fallback)
+  const nextMatch = nextUpcoming ?? null;
+
+  // Competition name for left rail team tiles
+  const compTeamsName = competitionTeams.competitionName
+    ? (competitionTeams.competitionName[typedLocale] ??
+      competitionTeams.competitionName['en'] ??
+      '')
+    : '';
 
   // Breadcrumbs
   const breadcrumbs: BreadcrumbSegment[] = [
@@ -105,30 +127,34 @@ export default async function TeamPage({ params }: PageProps) {
     { label: teamName },
   ];
 
-  // Center tabs — use CenterTabs interface: { key, hash, labelKey, content }
+  // Center tabs — Standings, Statistics, Players (per schematic)
   const hashes = TAB_HASHES[typedLocale];
   const tabs = [
-    {
-      key: 'squad',
-      hash: hashes.squad,
-      labelKey: 'squad',
-      content: <TeamSquadTable players={squad} locale={typedLocale} />,
-    },
     {
       key: 'standings',
       hash: hashes.standings,
       labelKey: 'standings',
-      content: standingsData ? (
-        <TeamStandingsSection
-          standings={standingsData.standings}
+      content: (
+        <TeamStandingsWithFilter
+          competitions={allStandings.competitions}
+          seasons={allStandings.seasons}
+          standingsByCompSeason={allStandings.standingsByCompSeason}
           highlightTeamId={team.id}
           locale={typedLocale}
         />
-      ) : (
-        <div className="rounded-lg border border-border-subtle bg-bg-surface px-4 py-8 text-center">
-          <p className="text-sm text-text-tertiary">{t('noStandingsData')}</p>
-        </div>
       ),
+    },
+    {
+      key: 'statistics',
+      hash: hashes.statistics,
+      labelKey: 'statistics',
+      content: <TeamStatistics data={teamSeasonStats} locale={typedLocale} />,
+    },
+    {
+      key: 'players',
+      hash: hashes.players,
+      labelKey: 'players',
+      content: <TeamSquadTable players={squad} locale={typedLocale} />,
     },
   ];
 
@@ -139,7 +165,7 @@ export default async function TeamPage({ params }: PageProps) {
       </div>
 
       <InnerPageShell
-        pageHeader={<TeamPageHeader team={team} locale={typedLocale} />}
+        pageHeader={<TeamPageHeader team={team} locale={typedLocale} nextMatch={nextMatch} />}
         leftRail={
           <div className="space-y-4">
             {upcomingFixture && (
@@ -149,20 +175,19 @@ export default async function TeamPage({ params }: PageProps) {
                 cardTitle={teamName}
               />
             )}
-            <NewsletterCard tournamentName={teamName} />
+            {competitionTeams.teams.length > 0 && (
+              <TeamCompetitionTeams
+                teams={competitionTeams.teams}
+                competitionName={compTeamsName}
+                highlightTeamId={team.id}
+                locale={typedLocale}
+              />
+            )}
           </div>
         }
         center={<CenterTabs tabs={tabs} />}
-        rightRail={
-          <div className="space-y-4">
-            <MatchesList fixtures={fixtures} locale={typedLocale} />
-          </div>
-        }
-        belowCenter={
-          <div className="mt-6 space-y-6">
-            <TeamMediaSection teamId={team.id} locale={typedLocale} />
-          </div>
-        }
+        rightRail={<TeamMatchesList fixtures={fixtures} locale={typedLocale} />}
+        belowCenter={<TeamMediaSection teamId={team.id} locale={typedLocale} />}
       />
     </>
   );

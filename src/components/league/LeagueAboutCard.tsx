@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import type { CompetitionRecord } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
@@ -14,23 +17,27 @@ function formatSeason(year: number): string {
 }
 
 export function LeagueAboutCard({ competition, seasonYear, locale }: LeagueAboutCardProps) {
+  const t = useTranslations('leaguePage');
   const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
   const countryName = getLeagueCountryName(competition.countryCode, locale);
 
+  const typeMap: Record<string, string> = { League: t('typeLeague'), Cup: t('typeCup') };
+  const translatedType = typeMap[competition.type] ?? competition.type;
+
   const rows: { label: string; value: string }[] = [
-    { label: 'Competition', value: name },
-    { label: 'Type', value: competition.type },
-    { label: 'Season', value: formatSeason(seasonYear) },
+    { label: t('competitionLabel'), value: name },
+    { label: t('typeLabel'), value: translatedType },
+    { label: t('seasonLabel'), value: formatSeason(seasonYear) },
   ];
 
   if (countryName) {
-    rows.push({ label: 'Country', value: countryName });
+    rows.push({ label: t('countryLabel'), value: countryName });
   }
 
   return (
     <div className="rounded-lg border border-border-subtle bg-bg-surface">
       <div className="border-b border-border-subtle px-4 py-2.5">
-        <h3 className="text-sm font-semibold text-text-primary">About</h3>
+        <h3 className="text-sm font-semibold text-text-primary">{t('about')}</h3>
       </div>
       <div className="divide-y divide-border-subtle">
         {rows.map((row) => (

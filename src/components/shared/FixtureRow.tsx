@@ -1,6 +1,10 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { formatMatchTime } from '@/lib/utils/date';
+import { getMatchState } from '@/lib/match-status';
 import type { Locale } from '@/lib/i18n/config';
 
 interface FixtureTeam {
@@ -39,9 +43,11 @@ export function FixtureRow({
   awayScore,
   locale,
 }: FixtureRowProps) {
-  const isFinished = statusCode === 'FT' || statusCode === 'AET' || statusCode === 'PEN';
-  const isLive = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'].includes(statusCode);
-  const isUpcoming = !isFinished && !isLive;
+  const t = useTranslations('matchDetail');
+  const state = getMatchState(statusCode, kickoffAt);
+  const isLive = state === 'live';
+  const isFinished = state === 'finished';
+  const hasScore = homeScore != null && awayScore != null;
 
   const time = formatMatchTime(kickoffAt, locale);
 
@@ -52,8 +58,8 @@ export function FixtureRow({
   const awayFlag =
     awayTeam?.isNational && awayTeam.countryCode ? codeToFlag(awayTeam.countryCode) : null;
 
-  const homeWon = isFinished && homeScore != null && awayScore != null && homeScore > awayScore;
-  const awayWon = isFinished && awayScore != null && homeScore != null && awayScore > homeScore;
+  const homeWon = isFinished && hasScore && homeScore! > awayScore!;
+  const awayWon = isFinished && hasScore && awayScore! > homeScore!;
 
   return (
     <Link
@@ -65,12 +71,18 @@ export function FixtureRow({
         {isLive ? (
           <span className="flex items-center justify-center gap-1 text-xs font-semibold text-accent-emerald">
             <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
-            {statusCode === 'HT' ? 'HT' : statusCode}
+            {statusCode === 'HT' ? t('halfTime') : statusCode}
           </span>
-        ) : isUpcoming ? (
-          <span className="text-xs tabular-nums text-text-secondary">{time}</span>
+        ) : isFinished && hasScore ? (
+          <span className="text-xs text-text-tertiary">
+            {statusCode === 'AET'
+              ? t('extraTime')
+              : statusCode === 'PEN'
+                ? t('penalties')
+                : t('fullTime')}
+          </span>
         ) : (
-          <span className="text-xs text-text-tertiary">FT</span>
+          <span className="text-xs tabular-nums text-text-secondary">{time}</span>
         )}
       </div>
 
@@ -86,14 +98,14 @@ export function FixtureRow({
 
       {/* Score */}
       <div className="w-12 shrink-0 text-center tabular-nums">
-        {isUpcoming ? (
-          <span className="text-xs text-text-tertiary">&ndash;</span>
-        ) : (
+        {hasScore ? (
           <span
             className={`text-base font-semibold ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
           >
-            {homeScore ?? 0} - {awayScore ?? 0}
+            {homeScore} - {awayScore}
           </span>
+        ) : (
+          <span className="text-xs text-text-tertiary">- : -</span>
         )}
       </div>
 

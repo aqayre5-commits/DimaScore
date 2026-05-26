@@ -228,6 +228,35 @@ export async function getPlayerTransfers(
   }));
 }
 
+// ── Q5: Player trophies ──
+
+export interface PlayerTrophy {
+  id: number;
+  league: string;
+  country: string | null;
+  season: string | null;
+  place: string | null;
+}
+
+export async function getPlayerTrophies(
+  db: NeonHttpDatabase<typeof schema>,
+  playerId: number,
+): Promise<PlayerTrophy[]> {
+  const rows = await db
+    .select({
+      id: schema.playerTrophies.id,
+      league: schema.playerTrophies.league,
+      country: schema.playerTrophies.country,
+      season: schema.playerTrophies.season,
+      place: schema.playerTrophies.place,
+    })
+    .from(schema.playerTrophies)
+    .where(eq(schema.playerTrophies.playerId, playerId))
+    .orderBy(desc(schema.playerTrophies.season));
+
+  return rows;
+}
+
 // ── Hydration helpers ──
 
 type TeamSnapshot = {

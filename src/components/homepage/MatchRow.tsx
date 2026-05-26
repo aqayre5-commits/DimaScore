@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { DayFixture } from '@/lib/db/queries/fixtures-by-day';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
+import { getMatchState } from '@/lib/match-status';
 import type { Locale } from '@/lib/i18n/config';
 
 interface MatchRowProps {
@@ -9,12 +10,10 @@ interface MatchRowProps {
   locale: string;
 }
 
-const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE']);
-const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN', 'AWD', 'WO']);
-
 export function MatchRow({ fixture, locale }: MatchRowProps) {
-  const isLive = LIVE_STATUSES.has(fixture.statusCode);
-  const isFinished = FINISHED_STATUSES.has(fixture.statusCode);
+  const state = getMatchState(fixture.statusCode, fixture.kickoffAt);
+  const isLive = state === 'live';
+  const isFinished = state === 'finished';
 
   const homeLabel = getTeamDisplayName(fixture.homeTeam, locale);
   const awayLabel = getTeamDisplayName(fixture.awayTeam, locale);
@@ -82,14 +81,14 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
 
       {/* Score or vs */}
       <div className="w-10 shrink-0 text-center tabular-nums">
-        {isLive || isFinished ? (
+        {fixture.homeScore != null && fixture.awayScore != null ? (
           <span
             className={`text-sm font-semibold ${isLive ? 'text-score-live' : 'text-text-primary'}`}
           >
-            {fixture.homeScore ?? 0} - {fixture.awayScore ?? 0}
+            {fixture.homeScore} - {fixture.awayScore}
           </span>
         ) : (
-          <span className="text-xs text-text-tertiary">vs</span>
+          <span className="text-xs text-text-tertiary">{isFinished ? '\u2013' : 'vs'}</span>
         )}
       </div>
 

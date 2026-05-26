@@ -10,7 +10,7 @@ interface InnerPageShellProps {
 
 /**
  * 3-column inner-page shell (matchwire-derived).
- * Desktop >=1280px: 256px left (sticky) + 1fr center + 320px right.
+ * Desktop >=1280px: 256px left (sticky) + 1fr center + 320px right (sticky, scrolls to footer).
  * Max-width 1280px, 16px container padding, 24px column gap.
  * <=1280px: right rail hidden, left rail 224px.
  * <768px: single column — center, then left, then right.
@@ -28,18 +28,21 @@ export function InnerPageShell({
 
       <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:gap-6">
         {/* Center column — first in DOM for mobile, reordered via grid on desktop */}
-        <div className="order-1 min-w-0 xl:order-2">{center}</div>
+        <div className="order-1 min-w-0 xl:order-2">
+          {center}
+          {belowCenter && <div className="mt-6">{belowCenter}</div>}
+        </div>
 
         {/* Left rail — sticky below header stack */}
         <aside className="order-2 xl:order-1 xl:sticky xl:top-[156px] xl:max-h-[calc(100vh-172px)] xl:overflow-y-auto">
           {leftRail}
         </aside>
 
-        {/* Right rail — hidden below xl breakpoint */}
-        <aside className="order-3 hidden xl:block">{rightRail}</aside>
+        {/* Right rail — sticky, scrollable, reaches footer */}
+        <aside className="order-3 hidden xl:block xl:sticky xl:top-[156px] xl:max-h-[calc(100vh-172px)] xl:overflow-y-auto">
+          {rightRail}
+        </aside>
       </div>
-
-      {belowCenter && <div className="mt-6 space-y-6">{belowCenter}</div>}
     </div>
   );
 }
