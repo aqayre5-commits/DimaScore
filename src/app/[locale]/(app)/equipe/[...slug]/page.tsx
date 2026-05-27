@@ -165,7 +165,7 @@ export default async function TeamPage({ params }: PageProps) {
       </div>
 
       <InnerPageShell
-        pageHeader={<TeamPageHeader team={team} locale={typedLocale} nextMatch={nextMatch} />}
+        pageHeader={<TeamPageHeader team={team} locale={typedLocale} />}
         leftRail={
           <div className="space-y-4">
             {upcomingFixture && (

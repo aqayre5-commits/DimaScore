@@ -5,6 +5,7 @@ import { codeToFlag } from '@/lib/flags';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import { ShareButton } from '@/components/shared/ShareButton';
+import { KickoffCountdown } from '@/components/shared/KickoffCountdown';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -148,6 +149,9 @@ export function FeaturedMatchCard({
           </p>
         )}
       </div>
+
+      {/* Countdown for upcoming matches */}
+      {state === 'upcoming' && <KickoffCountdown kickoffAt={kickoffAt} label={t('match')} />}
     </div>
   );
 }
