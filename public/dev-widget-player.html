@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Player Page — Widget Test</title>
+  <style>
+    :root {
+      --bg-page: #0d1117; --bg-card: #161b22; --bg-hover: #21262d;
+      --border: #30363d; --border-subtle: #21262d;
+      --text-1: #e6edf3; --text-2: #8b949e; --text-3: #484f58;
+      --accent: #2ec4b6; --gold: #d29922; --red: #f85149; --blue: #58a6ff;
+      --accent-bg: rgba(46,196,182,0.06);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-page: #f6f8fa; --bg-card: #ffffff; --bg-hover: #f3f4f6;
+        --border: #d0d7de; --border-subtle: #e8e8e8;
+        --text-1: #1f2328; --text-2: #656d76; --text-3: #8b949e;
+        --accent: #0e9384; --gold: #b08800; --red: #cf222e; --blue: #0969da;
+        --accent-bg: rgba(14,147,132,0.06);
+      }
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg-page); color: var(--text-1); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; font-size: 14px; }
+
+    /* ── Controls bar ── */
+    .controls-bar {
+      position: sticky; top: 0; z-index: 100; background: var(--bg-page);
+      border-bottom: 1px solid var(--border); padding: 10px 24px;
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    }
+    .controls-bar button {
+      padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer;
+      font-size: 12px; font-weight: 500; background: var(--bg-card); color: var(--text-2); transition: all 0.15s;
+    }
+    .controls-bar button:hover { color: var(--text-1); border-color: var(--text-2); }
+    .controls-bar button.active { background: var(--accent); color: var(--bg-page); border-color: var(--accent); }
+    .controls-bar input {
+      width: 80px; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-1); font-size: 12px;
+    }
+    .controls-bar .id-label { font-size: 11px; color: var(--text-3); margin-left: 6px; }
+    .controls-bar .id-label span { color: var(--text-2); font-family: monospace; }
+
+    /* ── Loading ── */
+    #loading { text-align: center; padding: 80px 20px; color: var(--text-2); }
+    .spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Hero ── */
+    .hero { max-width: 1280px; margin: 20px auto 0; padding: 0 16px; }
+    .hero-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px;
+      display: flex; align-items: flex-start; gap: 20px;
+    }
+    .hero-photo {
+      width: 100px; height: 100px; border-radius: 50%; object-fit: cover;
+      background: var(--bg-hover); border: 3px solid var(--border); flex-shrink: 0;
+    }
+    .hero-info { flex: 1; min-width: 0; }
+    .hero-name { font-size: 24px; font-weight: 700; }
+    .hero-meta { font-size: 13px; color: var(--text-2); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .hero-meta .dot { color: var(--text-3); }
+    .hero-team-badge {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 8px;
+      padding: 4px 10px; border-radius: 6px; background: var(--bg-hover); font-size: 13px; font-weight: 500;
+    }
+    .hero-team-badge img { width: 20px; height: 20px; object-fit: contain; }
+    .position-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .position-badge.attacker { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+    .position-badge.midfielder { background: rgba(46, 196, 182, 0.15); color: var(--accent); }
+    .position-badge.defender { background: rgba(88, 166, 255, 0.15); color: var(--blue); }
+    .position-badge.goalkeeper { background: rgba(210, 153, 34, 0.15); color: var(--gold); }
+
+    /* ── 3-column layout ── */
+    .layout {
+      max-width: 1280px; margin: 16px auto 0; padding: 0 16px 40px;
+      display: grid; grid-template-columns: 256px minmax(0, 1fr) 320px; gap: 24px;
+    }
+    @media (max-width: 1280px) { .layout { grid-template-columns: 256px 1fr; }
+      .layout > :last-child { display: none; } }
+    @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+
+    /* ── Cards ── */
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .card-header {
+      padding: 12px 16px; font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.04em; color: var(--text-2); border-bottom: 1px solid var(--border-subtle);
+    }
+    .card-body { padding: 12px 16px; }
+
+    /* ── Left rail: player info ── */
+    .info-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 0; border-bottom: 1px solid var(--border-subtle); font-size: 13px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: var(--text-2); }
+    .info-value { color: var(--text-1); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+
+    /* ── Center: tabs ── */
+    .tab-bar { display: flex; border-bottom: 2px solid var(--border-subtle); }
+    .tab-btn {
+      padding: 10px 20px; background: none; border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; color: var(--text-2); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--text-1); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Dropdowns ── */
+    .filters { display: flex; gap: 10px; padding: 12px 0; flex-wrap: wrap; }
+    .filter-select {
+      padding: 6px 28px 6px 10px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg-page); color: var(--text-1); font-size: 13px; appearance: none; cursor: pointer; min-width: 120px;
+    }
+    .filter-select:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+    /* ── Stats overview table ── */
+    .stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .stats-table th {
+      text-align: left; padding: 8px 6px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; color: var(--text-3); border-bottom: 1px solid var(--border-subtle);
+    }
+    .stats-table th.num { text-align: center; }
+    .stats-table td { padding: 8px 6px; border-bottom: 1px solid var(--border-subtle); }
+    .stats-table td.num { text-align: center; }
+    .stats-table tr:last-child td { border-bottom: none; }
+    .stats-table .comp-cell { display: flex; align-items: center; gap: 8px; }
+    .stats-table .comp-cell img { width: 18px; height: 18px; object-fit: contain; }
+    .stats-table .rating { font-weight: 700; }
+    .stats-table .rating.good { color: var(--accent); }
+    .stats-table .rating.avg { color: var(--gold); }
+    .stats-table .rating.low { color: var(--red); }
+
+    /* ── Trophies ── */
+    .trophy-section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 0 4px;
+    }
+    .trophy-section-title.winners { color: var(--gold); }
+    .trophy-section-title.runners { color: var(--text-2); padding-top: 12px; }
+    .trophy-row {
+      display: flex; align-items: center; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle); font-size: 13px;
+    }
+    .trophy-row:last-child { border-bottom: none; }
+    .trophy-icon { font-size: 18px; width: 28px; text-align: center; flex-shrink: 0; }
+    .trophy-info { flex: 1; min-width: 0; }
+    .trophy-name { font-weight: 600; color: var(--text-1); }
+    .trophy-meta { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+
+    /* ── Right rail: transfers ── */
+    .transfer-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle); font-size: 13px;
+    }
+    .transfer-item:last-child { border-bottom: none; }
+    .transfer-date { font-size: 11px; color: var(--text-3); width: 70px; flex-shrink: 0; }
+    .transfer-clubs { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .transfer-club { display: flex; align-items: center; gap: 6px; }
+    .transfer-club img { width: 18px; height: 18px; object-fit: contain; flex-shrink: 0; }
+    .transfer-club .club-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .transfer-arrow { color: var(--text-3); font-size: 11px; padding-left: 24px; }
+    .transfer-type {
+      font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+      padding: 2px 6px; border-radius: 4px; background: var(--bg-hover); color: var(--text-2); flex-shrink: 0;
+    }
+
+    /* ── Career table ── */
+    .career-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .career-table th {
+      text-align: left; padding: 8px 6px; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; color: var(--text-3); border-bottom: 1px solid var(--border-subtle);
+    }
+    .career-table th.num { text-align: center; }
+    .career-table td { padding: 7px 6px; border-bottom: 1px solid var(--border-subtle); }
+    .career-table td.num { text-align: center; }
+    .career-table tr:last-child td { border-bottom: none; }
+    .career-table .team-cell { display: flex; align-items: center; gap: 6px; }
+    .career-table .team-cell img { width: 16px; height: 16px; object-fit: contain; }
+    .career-table tr.active-season td { background: var(--accent-bg); }
+
+    .muted { color: var(--text-2); }
+    .error { color: var(--red); }
+  </style>
+</head>
+<body>
+
+  <!-- Controls bar -->
+  <div class="controls-bar" id="controls-bar">
+    <span class="id-label">ID: <span id="current-id">891</span></span>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading"><div class="spinner"></div>Loading player data...</div>
+
+  <!-- Page content -->
+  <div id="page-content" style="display:none;">
+
+    <!-- Hero -->
+    <div class="hero"><div class="hero-card" id="hero-card"></div></div>
+
+    <!-- 3-column layout -->
+    <div class="layout">
+
+      <!-- Left rail: player info -->
+      <div>
+        <div class="card">
+          <div class="card-header">Player Info</div>
+          <div class="card-body" id="left-info" style="padding:4px 16px;"></div>
+        </div>
+      </div>
+
+      <!-- Center: tabs -->
+      <div>
+        <div class="card">
+          <div class="tab-bar">
+            <button class="tab-btn active" data-tab="statistics">Statistics</button>
+            <button class="tab-btn" data-tab="career">Career</button>
+            <button class="tab-btn" data-tab="trophies">Trophies</button>
+          </div>
+          <div class="tab-content active" data-tab="statistics">
+            <div class="card-body">
+              <div class="filters">
+                <select class="filter-select" id="season-filter"></select>
+              </div>
+              <div id="stats-overview"><div class="muted">Loading statistics...</div></div>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="career">
+            <div class="card-body">
+              <div id="career-content"><div class="muted">Loading career...</div></div>
+            </div>
+          </div>
+          <div class="tab-content" data-tab="trophies">
+            <div class="card-body">
+              <div id="trophies-content"><div class="muted">Loading trophies...</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right rail: transfers -->
+      <div>
+        <div class="card">
+          <div class="card-header">Transfer History</div>
+          <div class="card-body" id="transfers-body" style="padding:4px 16px;">
+            <div class="muted" style="font-size:13px;">Loading transfers...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+/* ══════════════════════════════════════════════
+   Config
+══════════════════════════════════════════════ */
+let currentPlayer = 891;
+const API_KEY = 'e2724650131e4dbf7065c7073d88c08e';
+
+const PRESETS = [
+  { id: 184826, label: 'Brahim Diaz' },
+  { id: 891,    label: 'Achraf Hakimi' },
+  { id: 2295,   label: 'Youssef En-Nesyri' },
+  { id: 1100,   label: 'Hakim Ziyech' },
+  { id: 874,    label: 'Yassine Bounou' },
+  { id: 1485,   label: 'Jude Bellingham' },
+  { id: 521,    label: 'Vinicius Jr' },
+];
+
+const M = '<div class="muted">';
+const E = '<div class="error">';
+
+/* ══════════════════════════════════════════════
+   API helper
+══════════════════════════════════════════════ */
+async function apiFetch(path) {
+  const res = await fetch(`https://v3.football.api-sports.io${path}`, {
+    headers: { 'x-apisports-key': API_KEY }
+  });
+  const data = await res.json();
+  return data.response || [];
+}
+
+/* ══════════════════════════════════════════════
+   Controls
+══════════════════════════════════════════════ */
+function buildControls() {
+  const bar = document.getElementById('controls-bar');
+  const label = bar.querySelector('.id-label');
+  PRESETS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.textContent = p.label; btn.dataset.id = p.id;
+    btn.onclick = () => { currentPlayer = p.id; loadPlayer(p.id); };
+    bar.insertBefore(btn, label);
+  });
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.placeholder = 'ID';
+  inp.onkeydown = e => { if (e.key === 'Enter' && +inp.value > 0) { currentPlayer = +inp.value; loadPlayer(currentPlayer); } };
+  bar.insertBefore(inp, label);
+  const go = document.createElement('button');
+  go.textContent = 'Go';
+  go.onclick = () => { if (+bar.querySelector('input').value > 0) { currentPlayer = +bar.querySelector('input').value; loadPlayer(currentPlayer); } };
+  bar.insertBefore(go, label);
+}
+
+function syncActiveBtn() {
+  document.querySelectorAll('.controls-bar button[data-id]').forEach(b =>
+    b.classList.toggle('active', +b.dataset.id === currentPlayer));
+  document.getElementById('current-id').textContent = currentPlayer;
+}
+
+/* ══════════════════════════════════════════════
+   Tab switching
+══════════════════════════════════════════════ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector(`.tab-content[data-tab="${btn.dataset.tab}"]`).classList.add('active');
+  };
+});
+
+/* ══════════════════════════════════════════════
+   State
+══════════════════════════════════════════════ */
+let playerSeasons = [];
+let seasonData = {};
+let currentSeason = null;
+
+/* ══════════════════════════════════════════════
+   Load player
+══════════════════════════════════════════════ */
+async function loadPlayer(playerId) {
+  syncActiveBtn();
+  playerSeasons = []; seasonData = {}; currentSeason = null;
+
+  document.getElementById('loading').style.display = '';
+  document.getElementById('page-content').style.display = 'none';
+
+  document.getElementById('hero-card').innerHTML = '';
+  document.getElementById('left-info').innerHTML = '';
+  document.getElementById('stats-overview').innerHTML = M + 'Loading statistics...</div>';
+  document.getElementById('season-filter').innerHTML = '';
+  document.getElementById('career-content').innerHTML = M + 'Loading career...</div>';
+  document.getElementById('transfers-body').innerHTML = M + 'Loading transfers...</div>';
+  document.getElementById('trophies-content').innerHTML = M + 'Loading trophies...</div>';
+
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === 'statistics'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.dataset.tab === 'statistics'));
+
+  try {
+    const seasonsResp = await apiFetch(`/players/seasons?player=${playerId}`);
+    playerSeasons = (seasonsResp || []).sort((a, b) => b - a);
+
+    if (!playerSeasons.length) {
+      document.getElementById('loading').innerHTML = E + 'No data found for this player.</div>';
+      return;
+    }
+
+    currentSeason = playerSeasons[0];
+
+    const [playerResp, transfersResp, trophiesResp] = await Promise.all([
+      apiFetch(`/players?id=${playerId}&season=${currentSeason}`),
+      apiFetch(`/transfers?player=${playerId}`),
+      apiFetch(`/trophies?player=${playerId}`),
+    ]);
+
+    if (!playerResp.length) {
+      document.getElementById('loading').innerHTML = E + 'No player data found.</div>';
+      return;
+    }
+
+    const data = playerResp[0];
+    seasonData[currentSeason] = data;
+
+    buildHero(data);
+    buildLeftInfo(data);
+    buildSeasonFilter();
+    renderStats(data);
+    buildTransfers(transfersResp);
+    buildTrophies(trophiesResp);
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('page-content').style.display = '';
+
+    loadCareer(playerId);
+
+  } catch (err) {
+    console.error('Load error:', err);
+    document.getElementById('loading').innerHTML = E + 'Failed to load. See console.</div>';
+  }
+}
+
+/* ══════════════════════════════════════════════
+   Hero
+══════════════════════════════════════════════ */
+function buildHero(data) {
+  const p = data.player;
+  const mainStat = data.statistics[0];
+  const position = mainStat?.games?.position || 'Unknown';
+  const posClass = position.toLowerCase().replace(/\s+/g, '');
+
+  let html = `<img class="hero-photo" src="${p.photo}" alt="" onerror="this.style.opacity='0.3'">`;
+  html += '<div class="hero-info">';
+  html += `<div class="hero-name">${p.firstname} ${p.lastname}</div>`;
+  html += '<div class="hero-meta">';
+  html += `<span class="position-badge ${posClass}">${position}</span>`;
+  html += `<span class="dot">&middot;</span>`;
+  if (p.nationality) html += `${p.nationality}`;
+  if (p.age) html += `<span class="dot">&middot;</span>${p.age} years`;
+  html += '</div>';
+  if (mainStat?.team) {
+    html += `<div class="hero-team-badge"><img src="${mainStat.team.logo}" alt="">${mainStat.team.name}</div>`;
+  }
+  html += '</div>';
+  document.getElementById('hero-card').innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════
+   Left rail: player info
+══════════════════════════════════════════════ */
+function buildLeftInfo(data) {
+  const p = data.player;
+  const mainStat = data.statistics[0];
+  const target = document.getElementById('left-info');
+
+  const rows = [];
+  if (p.nationality) rows.push(['Nationality', p.nationality]);
+  if (p.birth?.date) rows.push(['Date of Birth', formatDate(p.birth.date)]);
+  if (p.age) rows.push(['Age', `${p.age} years`]);
+  if (p.birth?.place) rows.push(['Birthplace', `${p.birth.place}${p.birth.country ? ', ' + p.birth.country : ''}`]);
+  if (p.height) rows.push(['Height', p.height.includes('cm') ? p.height : p.height + ' cm']);
+  if (p.weight) rows.push(['Weight', p.weight.includes('kg') ? p.weight : p.weight + ' kg']);
+  if (mainStat?.games?.position) rows.push(['Position', mainStat.games.position]);
+  if (mainStat?.team) rows.push(['Team', `<span style="display:inline-flex;align-items:center;gap:5px;"><img style="width:18px;height:18px;object-fit:contain;" src="${mainStat.team.logo}" alt="">${mainStat.team.name}</span>`]);
+
+  target.innerHTML = rows.map(([label, val]) =>
+    `<div class="info-row"><span class="info-label">${label}</span><span class="info-value">${val}</span></div>`
+  ).join('');
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/* ══════════════════════════════════════════════
+   Season filter
+══════════════════════════════════════════════ */
+function buildSeasonFilter() {
+  const sel = document.getElementById('season-filter');
+  sel.innerHTML = '';
+  playerSeasons.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = `${s}/${(s + 1).toString().slice(-2)}`;
+    sel.appendChild(opt);
+  });
+  sel.value = currentSeason;
+  sel.onchange = async () => {
+    const season = +sel.value;
+    currentSeason = season;
+    if (!seasonData[season]) {
+      document.getElementById('stats-overview').innerHTML = '<div style="padding:12px 0;"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div></div>';
+      const resp = await apiFetch(`/players?id=${currentPlayer}&season=${season}`);
+      if (resp.length) seasonData[season] = resp[0];
+    }
+    if (seasonData[season]) {
+      renderStats(seasonData[season]);
+    } else {
+      document.getElementById('stats-overview').innerHTML = M + 'No data for this season.</div>';
+    }
+  };
+}
+
+/* ══════════════════════════════════════════════
+   Statistics
+══════════════════════════════════════════════ */
+function renderStats(data) {
+  const stats = data.statistics;
+  const overview = document.getElementById('stats-overview');
+
+  if (!stats || !stats.length) {
+    overview.innerHTML = M + 'No statistics for this season.</div>';
+    return;
+  }
+
+  const sorted = stats.map((s, i) => ({ s, i })).sort((a, b) => (b.s.games.appearences ?? 0) - (a.s.games.appearences ?? 0));
+
+  let html = '<table class="stats-table"><thead><tr>';
+  html += '<th>Competition</th><th class="num">App</th><th class="num">G</th><th class="num">A</th>';
+  html += '<th class="num">Min</th><th class="num">Rating</th>';
+  html += '</tr></thead><tbody>';
+
+  sorted.forEach(({ s, i }) => {
+    const rating = s.games.rating ? parseFloat(s.games.rating).toFixed(1) : '-';
+    const ratingClass = rating !== '-' ? (+rating >= 7.5 ? 'good' : +rating >= 6.5 ? 'avg' : 'low') : '';
+    html += '<tr>';
+    html += `<td><div class="comp-cell"><img src="${s.league.logo || ''}" alt="" onerror="this.style.display='none'">${s.league.name || 'Unknown'}</div></td>`;
+    html += `<td class="num">${s.games.appearences ?? 0}</td>`;
+    html += `<td class="num">${s.goals.total ?? 0}</td>`;
+    html += `<td class="num">${s.goals.assists ?? 0}</td>`;
+    html += `<td class="num">${s.games.minutes ?? 0}</td>`;
+    html += `<td class="num"><span class="rating ${ratingClass}">${rating}</span></td>`;
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  overview.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════
+   Career
+══════════════════════════════════════════════ */
+async function loadCareer(playerId) {
+  const target = document.getElementById('career-content');
+
+  const toFetch = playerSeasons.filter(s => !seasonData[s]);
+  const results = await Promise.all(
+    toFetch.map(s => apiFetch(`/players?id=${playerId}&season=${s}`).then(r => ({ season: s, data: r[0] || null })))
+  );
+  results.forEach(r => { if (r.data) seasonData[r.season] = r.data; });
+
+  const rows = [];
+  playerSeasons.forEach(season => {
+    const d = seasonData[season];
+    if (!d) return;
+    d.statistics.forEach(s => {
+      rows.push({
+        season,
+        team: s.team,
+        league: s.league,
+        apps: s.games.appearences ?? 0,
+        goals: s.goals.total ?? 0,
+        assists: s.goals.assists ?? 0,
+        rating: s.games.rating ? parseFloat(s.games.rating).toFixed(1) : '-',
+      });
+    });
+  });
+
+  if (!rows.length) {
+    target.innerHTML = M + 'No career data.</div>';
+    return;
+  }
+
+  let html = '<table class="career-table"><thead><tr>';
+  html += '<th>Season</th><th>Team</th><th>Competition</th>';
+  html += '<th class="num">App</th><th class="num">G</th><th class="num">A</th><th class="num">Rat</th>';
+  html += '</tr></thead><tbody>';
+
+  const latestSeason = playerSeasons[0];
+  rows.forEach(r => {
+    html += `<tr class="${r.season === latestSeason ? 'active-season' : ''}">`;
+    html += `<td>${r.season}/${(r.season + 1).toString().slice(-2)}</td>`;
+    html += `<td><div class="team-cell"><img src="${r.team.logo}" alt="">${r.team.name}</div></td>`;
+    html += `<td>${r.league.name || '-'}</td>`;
+    html += `<td class="num">${r.apps}</td><td class="num">${r.goals}</td><td class="num">${r.assists}</td>`;
+    const rc = r.rating !== '-' ? (+r.rating >= 7.5 ? 'good' : +r.rating >= 6.5 ? 'avg' : 'low') : '';
+    html += `<td class="num"><span class="rating ${rc}">${r.rating}</span></td>`;
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  target.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════
+   Transfers
+══════════════════════════════════════════════ */
+function buildTransfers(transfersResp) {
+  const target = document.getElementById('transfers-body');
+  const transfers = transfersResp[0]?.transfers || [];
+
+  if (!transfers.length) {
+    target.innerHTML = M + 'No transfer history.</div>';
+    return;
+  }
+
+  let html = '';
+  transfers.forEach(t => {
+    const date = t.date ? formatDate(t.date) : '?';
+    html += `
+      <div class="transfer-item">
+        <div class="transfer-date">${date}</div>
+        <div class="transfer-clubs">
+          <div class="transfer-club">
+            <img src="${t.teams.in.logo}" alt="">
+            <span class="club-name">${t.teams.in.name}</span>
+          </div>
+          <div class="transfer-arrow">from ${t.teams.out.name}</div>
+        </div>
+        <div class="transfer-type">${t.type || '?'}</div>
+      </div>
+    `;
+  });
+
+  target.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════
+   Trophies
+══════════════════════════════════════════════ */
+function buildTrophies(trophiesResp) {
+  const target = document.getElementById('trophies-content');
+  const trophies = trophiesResp || [];
+
+  if (!trophies.length) {
+    target.innerHTML = M + 'No trophies found.</div>';
+    return;
+  }
+
+  const winners = trophies.filter(t => t.place === 'Winner');
+  const runnerUps = trophies.filter(t => t.place !== 'Winner');
+
+  let html = '';
+
+  if (winners.length) {
+    html += `<div class="trophy-section-title winners">Winners (${winners.length})</div>`;
+    winners.forEach(t => {
+      html += `<div class="trophy-row">
+        <div class="trophy-icon">&#127942;</div>
+        <div class="trophy-info">
+          <div class="trophy-name">${t.league}</div>
+          <div class="trophy-meta">${t.season} &middot; ${t.country}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  if (runnerUps.length) {
+    html += `<div class="trophy-section-title runners">Runner-up (${runnerUps.length})</div>`;
+    runnerUps.forEach(t => {
+      html += `<div class="trophy-row">
+        <div class="trophy-icon">&#129352;</div>
+        <div class="trophy-info">
+          <div class="trophy-name">${t.league}</div>
+          <div class="trophy-meta">${t.season} &middot; ${t.country} &middot; ${t.place}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  target.innerHTML = html;
+}
+
+/* ══════════════════════════════════════════════
+   Init
+══════════════════════════════════════════════ */
+buildControls();
+loadPlayer(currentPlayer);
+</script>
+</body>
+</html>
