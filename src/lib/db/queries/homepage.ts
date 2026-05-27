@@ -417,11 +417,16 @@ export async function getTeamForm(
 ): Promise<Map<number, FormResult[]>> {
   if (teamIds.length === 0) return new Map();
 
+  const idList = sql.join(
+    teamIds.map((id) => sql`${id}`),
+    sql`, `,
+  );
+
   const rows = await db.execute(
     sql`SELECT f.home_team_id, f.away_team_id, f.home_score, f.away_score
         FROM fixtures f
         WHERE f.status_code IN ('FT', 'AET', 'PEN', 'WO', 'AWD')
-          AND (f.home_team_id = ANY(${teamIds}) OR f.away_team_id = ANY(${teamIds}))
+          AND (f.home_team_id IN (${idList}) OR f.away_team_id IN (${idList}))
         ORDER BY f.kickoff_at DESC
         LIMIT ${teamIds.length * limit * 2}`,
   );

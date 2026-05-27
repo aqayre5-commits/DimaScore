@@ -22,7 +22,6 @@ import {
   getTrendingPlayers,
   getLiveMatchGoals,
   getCompetitionsByIds,
-  getTeamForm,
 } from '@/lib/db/queries/homepage';
 import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
@@ -206,7 +205,12 @@ export default async function HomePage({ params }: PageProps) {
   const WC_COMP_ID = 1;
   for (const m of featured) {
     if (m.competition.id === WC_COMP_ID && !m.venueName) {
-      const wcVenue = getWcVenueByTeamCodes(m.homeTeam?.code ?? null, m.awayTeam?.code ?? null);
+      const wcVenue = getWcVenueByTeamCodes(
+        m.homeTeam?.code ?? null,
+        m.awayTeam?.code ?? null,
+        m.homeTeam?.name['en'],
+        m.awayTeam?.name['en'],
+      );
       if (wcVenue) {
         m.venueName = wcVenue.stadium;
         m.venueCity = wcVenue.city;
@@ -214,15 +218,6 @@ export default async function HomePage({ params }: PageProps) {
       }
     }
   }
-
-  const featuredTeamIds = new Set<number>();
-  for (const m of featured) {
-    if (m.homeTeamId != null) featuredTeamIds.add(m.homeTeamId);
-    if (m.awayTeamId != null) featuredTeamIds.add(m.awayTeamId);
-  }
-  const teamFormMap = await getTeamForm(db, [...featuredTeamIds], 5);
-  const teamForm: Record<number, ('W' | 'D' | 'L')[]> = {};
-  for (const [id, form] of teamFormMap) teamForm[id] = form;
 
   // Live match card: first live match + goals
   const firstLive = matchesByCategory.live[0] ?? null;
@@ -303,13 +298,10 @@ export default async function HomePage({ params }: PageProps) {
           <div className="space-y-4">
             <HomeFeaturedCarousel
               matches={featured}
-              teamForm={teamForm}
               locale={typedLocale}
               labels={{
                 featuredMatch: t('featured'),
                 kicksOffIn: t('kicksOffIn'),
-                viewMatchPreview: t('viewMatchPreview'),
-                setReminder: t('setReminder'),
                 stadium: t('stadium'),
                 expectedAttendance: t('expectedAttendance'),
               }}
