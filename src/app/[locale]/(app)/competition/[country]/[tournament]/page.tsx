@@ -48,6 +48,7 @@ import {
   getKnockoutFixtures,
   getStandings,
   getMoroccoTeamId,
+  type FixtureWithTeams,
 } from '@/lib/db/queries';
 import {
   getCompetitionById,
@@ -94,12 +95,26 @@ function resolveEntry(tournament: string, locale: Locale): MegaMenuEntry | undef
   return ALL_ENTRIES.find((entry) => entry.slugs[locale] === tournament);
 }
 
-function computeTournamentPhase(metadata: CupMetadata): TournamentPhase {
+const TERMINAL_STATUSES = new Set(['FT', 'AET', 'PEN', 'AWD', 'WO', 'CANC', 'ABD', 'PST']);
+const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE']);
+
+function phaseFromRound(round: string | null): TournamentPhase['phase'] {
+  if (!round) return 'group-stage';
+  if (round.startsWith('Group')) return 'group-stage';
+  if (round === 'Final') return 'final';
+  return 'knockout';
+}
+
+function computeTournamentPhase(
+  metadata: CupMetadata,
+  fixtures: FixtureWithTeams[],
+): TournamentPhase {
   const now = new Date();
   const kickoff = new Date(metadata.kickoffDate);
   const daysUntil = Math.ceil((kickoff.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (daysUntil > 0) {
+  // 1. No fixtures or tournament hasn't started
+  if (fixtures.length === 0 || daysUntil > 0) {
     const kickoffFormatted = kickoff.toLocaleDateString('fr', {
       day: 'numeric',
       month: 'long',
@@ -107,12 +122,100 @@ function computeTournamentPhase(metadata: CupMetadata): TournamentPhase {
     });
     return {
       phase: 'pre-tournament',
-      daysUntilKickoff: daysUntil,
+      daysUntilKickoff: Math.max(0, daysUntil),
       kickoffDateFormatted: kickoffFormatted,
     };
   }
 
-  // TODO: compute live/knockout/post-tournament states from fixture data
+  // 2. All fixtures terminal → post-tournament
+  const allTerminal = fixtures.every((f) => TERMINAL_STATUSES.has(f.statusCode));
+  if (allTerminal) {
+    const finalMatch = fixtures.find((f) => f.round === 'Final');
+    let winnerName = '';
+    const titleNumber: number | null = null;
+    if (finalMatch) {
+      const homeWon = (finalMatch.homeScore ?? 0) > (finalMatch.awayScore ?? 0);
+      const winner = homeWon ? finalMatch.homeTeam : finalMatch.awayTeam;
+      winnerName = winner?.name?.en ?? '';
+    }
+    return { phase: 'post-tournament', winnerName, titleNumber };
+  }
+
+  // 3. Any live fixture → phase from that fixture's round
+  const liveFixture = fixtures.find((f) => LIVE_STATUSES.has(f.statusCode));
+  if (liveFixture) {
+    const p = phaseFromRound(liveFixture.round);
+    if (p === 'group-stage') {
+      const groupFixtures = fixtures.filter((f) => f.round?.startsWith('Group'));
+      const played = groupFixtures.filter((f) => TERMINAL_STATUSES.has(f.statusCode)).length;
+      const total = groupFixtures.length;
+      const currentRound = total > 0 ? Math.ceil(played / (total / 3) + 0.01) : 1;
+      const todayLive = fixtures.filter((f) => LIVE_STATUSES.has(f.statusCode)).length;
+      return {
+        phase: 'group-stage',
+        currentRound: Math.min(currentRound, 3),
+        totalRounds: 3,
+        matchesToday: todayLive,
+      };
+    }
+    if (p === 'final') {
+      return { phase: 'final', matchLabel: liveFixture.round ?? 'Final', kickoffFormatted: '' };
+    }
+    return { phase: 'knockout', roundLabel: liveFixture.round ?? '', isLive: true };
+  }
+
+  // 4. Next upcoming fixture → phase from that fixture's round
+  const upcoming = fixtures
+    .filter((f) => !TERMINAL_STATUSES.has(f.statusCode) && !LIVE_STATUSES.has(f.statusCode))
+    .sort((a, b) => a.kickoffAt.getTime() - b.kickoffAt.getTime());
+  const nextFixture = upcoming[0];
+  if (nextFixture) {
+    const p = phaseFromRound(nextFixture.round);
+    if (p === 'group-stage') {
+      const groupFixtures = fixtures.filter((f) => f.round?.startsWith('Group'));
+      const played = groupFixtures.filter((f) => TERMINAL_STATUSES.has(f.statusCode)).length;
+      const total = groupFixtures.length;
+      const currentRound = total > 0 ? Math.ceil(played / (total / 3) + 0.01) : 1;
+      const todayUpcoming = upcoming.filter((f) => {
+        const fDate = f.kickoffAt;
+        return (
+          fDate.getUTCFullYear() === now.getUTCFullYear() &&
+          fDate.getUTCMonth() === now.getUTCMonth() &&
+          fDate.getUTCDate() === now.getUTCDate()
+        );
+      }).length;
+      return {
+        phase: 'group-stage',
+        currentRound: Math.min(currentRound, 3),
+        totalRounds: 3,
+        matchesToday: todayUpcoming,
+      };
+    }
+    if (p === 'final') {
+      const kickoffFormatted = nextFixture.kickoffAt.toLocaleDateString('fr', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+      return { phase: 'final', matchLabel: nextFixture.round ?? 'Final', kickoffFormatted };
+    }
+    return { phase: 'knockout', roundLabel: nextFixture.round ?? '', isLive: false };
+  }
+
+  // 5. Fallback: latest completed fixture
+  const completed = fixtures
+    .filter((f) => TERMINAL_STATUSES.has(f.statusCode))
+    .sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
+  const latest = completed[0];
+  if (latest) {
+    const p = phaseFromRound(latest.round);
+    if (p === 'group-stage') {
+      return { phase: 'group-stage', currentRound: 3, totalRounds: 3, matchesToday: 0 };
+    }
+    return { phase: 'knockout', roundLabel: latest.round ?? '', isLive: false };
+  }
+
+  // Should not reach here, but safe fallback
   return {
     phase: 'pre-tournament',
     daysUntilKickoff: 0,
@@ -290,7 +393,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
     ? await getFeaturedMatch(db, competitionId, seasonYear, moroccoTeamId)
     : null;
 
-  const tournamentPhase = computeTournamentPhase(metadata);
+  const tournamentPhase = computeTournamentPhase(metadata, allCupFixtures);
   const pageTitle = cupContent?.titles[typedLocale] ?? metadata.competitionId.toString();
   const introText = cupContent?.intro[typedLocale] ?? '';
 

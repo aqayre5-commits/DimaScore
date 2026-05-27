@@ -149,11 +149,7 @@ const competitionLinks = [
   },
 ];
 
-const legalLinks = [
-  { key: 'legalNotice', href: '#' },
-  { key: 'privacyPolicy', href: '#' },
-  { key: 'contact', href: '#' },
-] as const;
+const legalLinks = [{ key: 'legalNotice' }, { key: 'privacyPolicy' }, { key: 'contact' }] as const;
 
 export function Footer() {
   const t = useTranslations('footer');
@@ -212,12 +208,7 @@ export function Footer() {
               <ul className="flex flex-col gap-1">
                 {legalLinks.map((link) => (
                   <li key={link.key}>
-                    <a
-                      href={link.href}
-                      className="text-base text-text-secondary transition-colors hover:text-text-primary"
-                    >
-                      {t(link.key)}
-                    </a>
+                    <span className="text-base text-text-tertiary">{t(link.key)}</span>
                   </li>
                 ))}
               </ul>
@@ -228,20 +219,10 @@ export function Footer() {
               <h3 className="label-caps mb-2">{t('about')}</h3>
               <ul className="flex flex-col gap-1">
                 <li>
-                  <a
-                    href="#"
-                    className="text-base text-text-secondary transition-colors hover:text-text-primary"
-                  >
-                    {t('aboutUs')}
-                  </a>
+                  <span className="text-base text-text-tertiary">{t('aboutUs')}</span>
                 </li>
                 <li>
-                  <a
-                    href="#"
-                    className="text-base text-text-secondary transition-colors hover:text-text-primary"
-                  >
-                    {t('faq')}
-                  </a>
+                  <span className="text-base text-text-tertiary">{t('faq')}</span>
                 </li>
               </ul>
             </div>

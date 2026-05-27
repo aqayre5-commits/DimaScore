@@ -161,6 +161,7 @@ export async function getHomeMatchesByCategory(
   db: NeonHttpDatabase<typeof schema>,
 ): Promise<{ live: HomeFixture[]; upcoming: HomeFixture[]; results: HomeFixture[] }> {
   const now = new Date();
+  const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const thirtyDaysOut = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
@@ -190,7 +191,7 @@ export async function getHomeMatchesByCategory(
         inArray(schema.fixtures.statusCode, LIVE_CODES),
         and(
           eq(schema.fixtures.statusCode, 'NS'),
-          gte(schema.fixtures.kickoffAt, now),
+          gte(schema.fixtures.kickoffAt, fourHoursAgo),
           lt(schema.fixtures.kickoffAt, thirtyDaysOut),
         ),
         and(
