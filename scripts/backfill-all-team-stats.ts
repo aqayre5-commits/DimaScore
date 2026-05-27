@@ -44,17 +44,28 @@ async function main() {
     process.exit(1);
   }
 
-  // Get all unique team IDs from standings (these are teams in tracked competitions)
-  const teamRows = await db
+  // Get all unique team IDs from standings + fixtures (union covers teams without standings)
+  const standingsTeams = await db
     .selectDistinct({ teamId: schema.standings.teamId })
     .from(schema.standings)
     .where(
       sql`${schema.standings.teamId} IS NOT NULL AND ${schema.standings.teamId} >= ${resumeFromTeamId}`,
-    )
-    .orderBy(asc(schema.standings.teamId));
+    );
 
-  const teamIds = teamRows.map((r) => r.teamId).filter((id): id is number => id != null);
-  log(`Found ${teamIds.length} teams in standings to process`);
+  const fixtureTeams = await db.execute(
+    sql`SELECT DISTINCT team_id FROM (
+      SELECT home_team_id AS team_id FROM fixtures WHERE home_team_id IS NOT NULL AND home_team_id >= ${resumeFromTeamId}
+      UNION
+      SELECT away_team_id AS team_id FROM fixtures WHERE away_team_id IS NOT NULL AND away_team_id >= ${resumeFromTeamId}
+    ) t`,
+  );
+
+  const teamIdSet = new Set<number>();
+  for (const r of standingsTeams) if (r.teamId != null) teamIdSet.add(r.teamId);
+  for (const r of fixtureTeams.rows as { team_id: string | number }[])
+    teamIdSet.add(Number(r.team_id));
+  const teamIds = [...teamIdSet].sort((a, b) => a - b);
+  log(`Found ${teamIds.length} teams (standings + fixtures) to process`);
 
   // For each team, find which competitions they participate in
   let totalUpserted = 0;
@@ -67,12 +78,22 @@ async function main() {
     const teamId = teamIds[ti];
 
     // Find competitions this team appears in (from standings + fixtures)
-    const compRows = await db
+    const standingsComps = await db
       .selectDistinct({ competitionId: schema.standings.competitionId })
       .from(schema.standings)
       .where(eq(schema.standings.teamId, teamId));
 
-    const compIds = compRows.map((r) => r.competitionId).filter((id): id is number => id != null);
+    const fixtureComps = await db
+      .selectDistinct({ competitionId: schema.fixtures.competitionId })
+      .from(schema.fixtures)
+      .where(
+        sql`(${schema.fixtures.homeTeamId} = ${teamId} OR ${schema.fixtures.awayTeamId} = ${teamId})`,
+      );
+
+    const compIdSet = new Set<number>();
+    for (const r of standingsComps) if (r.competitionId != null) compIdSet.add(r.competitionId);
+    for (const r of fixtureComps) if (r.competitionId != null) compIdSet.add(r.competitionId);
+    const compIds = [...compIdSet].sort((a, b) => a - b);
 
     log(`Team ${teamId} (${ti + 1}/${teamIds.length}): ${compIds.length} competitions`);
 
