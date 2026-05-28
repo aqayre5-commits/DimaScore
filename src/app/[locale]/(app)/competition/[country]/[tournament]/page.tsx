@@ -363,6 +363,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
           typedLocale,
           locale,
           rawCountry,
+          seasonParam,
           competitionLogos,
         );
       }
@@ -818,12 +819,23 @@ async function renderGenericCupPage(
   locale: Locale,
   rawLocale: string,
   _rawCountry: string,
+  seasonParam?: string,
   competitionLogos?: Record<number, string | null>,
 ) {
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
 
-  const seasonYear = await getCurrentSeasonYear(db, competition.id);
+  const [availableSeasons, currentSeasonYear] = await Promise.all([
+    getAvailableSeasons(db, competition.id),
+    getCurrentSeasonYear(db, competition.id),
+  ]);
+
+  const requestedYear = seasonParam ? Number(seasonParam) : null;
+  const seasonYear =
+    requestedYear && availableSeasons.some((s) => s.year === requestedYear)
+      ? requestedYear
+      : currentSeasonYear;
+
   if (!seasonYear) {
     const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
     return (
@@ -897,32 +909,6 @@ async function renderGenericCupPage(
           },
         ]
       : []),
-    ...(coverage?.injuries
-      ? [
-          {
-            key: 'injuries',
-            hash: 'injuries',
-            labelKey: 'injuries',
-            content: <InjuriesTab injuries={cupInjuries} />,
-          },
-        ]
-      : []),
-    {
-      key: 'details',
-      hash: 'details',
-      labelKey: 'details',
-      content: (
-        <div className="space-y-4">
-          <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
-        </div>
-      ),
-    },
-    {
-      key: 'media',
-      hash: 'media',
-      labelKey: 'media',
-      content: <CompetitionMediaSection competitionId={competition.id} locale={locale} />,
-    },
   ];
 
   return (
@@ -939,7 +925,7 @@ async function renderGenericCupPage(
             locale={locale}
             countryName={countryName}
             introText={null}
-            availableSeasons={[{ year: seasonYear, isCurrent: true }]}
+            availableSeasons={availableSeasons}
           />
         }
         leftRail={
@@ -970,6 +956,8 @@ async function renderGenericCupPage(
         }
         belowCenter={
           <>
+            <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
+            {coverage?.injuries && <InjuriesTab injuries={cupInjuries} />}
             <RelatedCompetitions
               competitionIds={getRelatedCompetitionIds(competition.id)}
               locale={locale}
