@@ -42,6 +42,8 @@ import { getAboutContent } from '@/lib/constants/about-content';
 import { computeBestThirdPlaced } from '@/lib/standings/best-third';
 import type { TournamentPhase } from '@/components/tournament/StatusDescriptor';
 import { db } from '@/lib/db/client';
+import { competitions } from '@/lib/db/schema';
+import { inArray } from 'drizzle-orm';
 import {
   getFeaturedMatch,
   getFixturesByRound,
@@ -93,6 +95,16 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 function resolveEntry(tournament: string, locale: Locale): MegaMenuEntry | undefined {
   return ALL_ENTRIES.find((entry) => entry.slugs[locale] === tournament);
+}
+
+const LEFT_RAIL_COMP_IDS = [200, 201, 822, 1, 922, 6, 39, 140, 78, 135, 61, 2, 3, 848];
+
+async function getLeftRailLogos(): Promise<Record<number, string | null>> {
+  const rows = await db
+    .select({ id: competitions.id, logoUrl: competitions.logoUrl })
+    .from(competitions)
+    .where(inArray(competitions.id, LEFT_RAIL_COMP_IDS));
+  return Object.fromEntries(rows.map((r) => [r.id, r.logoUrl]));
 }
 
 const TERMINAL_STATUSES = new Set(['FT', 'AET', 'PEN', 'AWD', 'WO', 'CANC', 'ABD', 'PST']);
@@ -325,6 +337,9 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
     }
   }
 
+  // Fetch left rail logos once (shared across all render paths)
+  const competitionLogos = await getLeftRailLogos();
+
   // League or generic cup branch: competition exists in DB but no hardcoded cup metadata
   if (!metadata || metadata.type !== 'cup') {
     if (entry) {
@@ -338,10 +353,18 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
           rawCountry,
           rawTournament,
           seasonParam,
+          competitionLogos,
         );
       }
       if (competition && competition.type === 'Cup') {
-        return renderGenericCupPage(competition, entry, typedLocale, locale, rawCountry);
+        return renderGenericCupPage(
+          competition,
+          entry,
+          typedLocale,
+          locale,
+          rawCountry,
+          competitionLogos,
+        );
       }
     }
 
@@ -518,7 +541,13 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
           breadcrumb={breadcrumb}
         />
       }
-      leftRail={<div className="space-y-4" />}
+      leftRail={
+        <LeagueLeftRail
+          locale={typedLocale}
+          activeCompetitionId={competitionId}
+          competitionLogos={competitionLogos}
+        />
+      }
       center={<CenterTabs tabs={tabs} />}
       rightRail={
         <div className="space-y-4">
@@ -597,6 +626,7 @@ async function renderLeaguePage(
   rawCountry: string,
   rawTournament: string,
   seasonParam?: string,
+  competitionLogos?: Record<number, string | null>,
 ) {
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
@@ -748,7 +778,13 @@ async function renderLeaguePage(
             availableSeasons={availableSeasons}
           />
         }
-        leftRail={<LeagueLeftRail locale={locale} activeCompetitionId={competition.id} />}
+        leftRail={
+          <LeagueLeftRail
+            locale={locale}
+            activeCompetitionId={competition.id}
+            competitionLogos={competitionLogos}
+          />
+        }
         center={<CenterTabs tabs={tabs} />}
         rightRail={
           <LeagueRightRailCard
@@ -782,6 +818,7 @@ async function renderGenericCupPage(
   locale: Locale,
   rawLocale: string,
   _rawCountry: string,
+  competitionLogos?: Record<number, string | null>,
 ) {
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
@@ -905,7 +942,13 @@ async function renderGenericCupPage(
             availableSeasons={[{ year: seasonYear, isCurrent: true }]}
           />
         }
-        leftRail={<div className="space-y-4" />}
+        leftRail={
+          <LeagueLeftRail
+            locale={locale}
+            activeCompetitionId={competition.id}
+            competitionLogos={competitionLogos}
+          />
+        }
         center={<CenterTabs tabs={tabs} />}
         rightRail={
           <div className="space-y-4">

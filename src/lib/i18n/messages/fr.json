@@ -77,7 +77,10 @@
     "algeriaLigue1": "Ligue 1 Algérie",
     "tunisiaLigue1": "Ligue 1 Tunisie",
     "uaeProLeague": "UAE Pro League",
-    "superLig": "Süper Lig"
+    "superLig": "Süper Lig",
+    "tournaments": "Tournois",
+    "topLeagues": "Top championnats",
+    "cupsAndContinental": "Coupes & Continental"
   },
   "mobileTabBar": {
     "matches": "Matchs",
@@ -136,8 +139,6 @@
     "featuredVideos": "Vidéos à la une",
     "featured": "À la une",
     "kicksOffIn": "Coup d'envoi dans",
-    "viewMatchPreview": "Aperçu du match",
-    "setReminder": "Rappel",
     "stadium": "Stade",
     "expectedAttendance": "Affluence prévue",
     "all": "Tout",
@@ -524,7 +525,8 @@
     "algeriaLigue1": "Ligue 1 Algérie",
     "tunisiaLigue1": "Ligue 1 Tunisie",
     "uaeProLeague": "UAE Pro League",
-    "superLig": "Süper Lig"
+    "superLig": "Süper Lig",
+    "viewAllCompetitions": "Voir toutes les compétitions"
   },
   "matchDetail": {
     "vs": "vs",

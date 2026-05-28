@@ -77,7 +77,10 @@
     "algeriaLigue1": "الدوري الجزائري",
     "tunisiaLigue1": "الدوري التونسي",
     "uaeProLeague": "دوري المحترفين الإماراتي",
-    "superLig": "الدوري التركي"
+    "superLig": "الدوري التركي",
+    "tournaments": "البطولات",
+    "topLeagues": "أفضل الدوريات",
+    "cupsAndContinental": "الكؤوس والقارية"
   },
   "mobileTabBar": {
     "matches": "المباريات",
@@ -136,8 +139,6 @@
     "featuredVideos": "فيديوهات مختارة",
     "featured": "المميزة",
     "kicksOffIn": "انطلاق المباراة خلال",
-    "viewMatchPreview": "معاينة المباراة",
-    "setReminder": "تعيين تذكير",
     "stadium": "الملعب",
     "expectedAttendance": "الحضور المتوقع",
     "all": "الكل",
@@ -524,7 +525,8 @@
     "algeriaLigue1": "الدوري الجزائري",
     "tunisiaLigue1": "الدوري التونسي",
     "uaeProLeague": "دوري المحترفين الإماراتي",
-    "superLig": "الدوري التركي"
+    "superLig": "الدوري التركي",
+    "viewAllCompetitions": "عرض جميع المسابقات"
   },
   "matchDetail": {
     "vs": "ضد",

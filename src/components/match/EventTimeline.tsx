@@ -13,7 +13,7 @@ function playerName(
   player: { id: number; name: Record<string, string> } | null,
   locale: string,
 ): string {
-  if (!player) return '';
+  if (!player?.name) return '';
   return player.name[locale] ?? player.name['en'] ?? '';
 }
 

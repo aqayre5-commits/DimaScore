@@ -35,6 +35,9 @@
   },
   "megaMenu": {
     "morocco": "Morocco",
+    "tournaments": "Tournaments",
+    "topLeagues": "Top Leagues",
+    "cupsAndContinental": "Cups & Continental",
     "international": "International",
     "africa": "Africa",
     "europe": "Europe",
@@ -136,8 +139,6 @@
     "featuredVideos": "Featured videos",
     "featured": "Featured",
     "kicksOffIn": "Kicks off in",
-    "viewMatchPreview": "View Match Preview",
-    "setReminder": "Set Reminder",
     "stadium": "Stadium",
     "expectedAttendance": "Expected Attendance",
     "all": "All",
@@ -524,7 +525,8 @@
     "algeriaLigue1": "Algeria Ligue 1",
     "tunisiaLigue1": "Tunisia Ligue 1",
     "uaeProLeague": "UAE Pro League",
-    "superLig": "Süper Lig"
+    "superLig": "Süper Lig",
+    "viewAllCompetitions": "View all competitions"
   },
   "matchDetail": {
     "vs": "vs",

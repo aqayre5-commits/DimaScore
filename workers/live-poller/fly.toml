@@ -1,0 +1,13 @@
+app = "atlaskings-live-poller"
+primary_region = "cdg"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[processes]
+  worker = "tsx src/index.ts"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+  processes = ["worker"]

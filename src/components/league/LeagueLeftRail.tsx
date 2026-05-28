@@ -1,148 +1,160 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import {
   ALL_ENTRIES,
   MEGA_MENU_SECTIONS,
-  TOP_NAV_COMPETITION_IDS,
   buildCompetitionHref,
   type MegaMenuEntry,
 } from '@/lib/constants/competitions-mega-menu';
 import type { Locale } from '@/lib/i18n/config';
 import { useTranslations } from 'next-intl';
-import { ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface LeagueLeftRailProps {
   locale: Locale;
   activeCompetitionId?: number;
+  competitionLogos?: Record<number, string | null>;
 }
 
-const TOP_10_IDS = [
-  200, // Botola Pro
-  39, // Premier League
-  140, // LaLiga
-  78, // Bundesliga
-  135, // Serie A
-  61, // Ligue 1
-  2, // Champions League
-  3, // Europa League
-  307, // Saudi Pro League
-  233, // Egyptian Premier League
+/** Primary sections shown by default (matches homepage left rail). */
+const PRIMARY_SECTION_IDS: { labelKey: string; ids: number[] }[] = [
+  { labelKey: 'morocco', ids: [200, 201, 822] },
+  { labelKey: 'tournaments', ids: [1, 922, 6] },
+  { labelKey: 'topLeagues', ids: [39, 140, 78, 135, 61] },
+  { labelKey: 'cupsAndContinental', ids: [2, 3, 848] },
 ];
 
-function getTop10Entries(): MegaMenuEntry[] {
-  return TOP_10_IDS.map((id) => ALL_ENTRIES.find((e) => e.competitionId === id)!).filter(Boolean);
+const PRIMARY_IDS = new Set(PRIMARY_SECTION_IDS.flatMap((s) => s.ids));
+
+/** Remaining mega menu sections shown when "View all" is expanded. */
+const EXTRA_SECTIONS = MEGA_MENU_SECTIONS.filter((s) =>
+  s.entries.some((e) => !PRIMARY_IDS.has(e.competitionId)),
+);
+
+function findEntry(id: number): MegaMenuEntry | undefined {
+  return ALL_ENTRIES.find((e) => e.competitionId === id);
 }
 
-export function LeagueLeftRail({ locale, activeCompetitionId }: LeagueLeftRailProps) {
-  const t = useTranslations('competition');
-  const top10 = getTop10Entries();
+export function LeagueLeftRail({
+  locale,
+  activeCompetitionId,
+  competitionLogos,
+}: LeagueLeftRailProps) {
+  const t = useTranslations('megaMenu');
+  const tC = useTranslations('competition');
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <nav className="space-y-4">
-      {/* Top 10 Competitions */}
-      <div className="rounded-xl border border-border-subtle bg-bg-surface p-4">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-          {t('top10')}
-        </h3>
-        <ul className="space-y-1">
-          {top10.map((entry, i) => {
-            const isActive = entry.competitionId === activeCompetitionId;
-            return (
-              <li key={`${entry.competitionId}-${entry.labelKey}`}>
-                <Link
-                  href={buildCompetitionHref(entry, locale)}
-                  className={`flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors ${
-                    isActive
-                      ? 'bg-bg-surface-2 font-medium text-text-primary'
-                      : 'text-text-secondary hover:bg-bg-surface-2 hover:text-text-primary'
-                  }`}
-                >
-                  <span className="w-4 text-center text-xs text-text-tertiary">{i + 1}</span>
-                  <span className="truncate">{t(entry.labelKey)}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+      <nav>
+        {PRIMARY_SECTION_IDS.map((section) => (
+          <div key={section.labelKey}>
+            <div className="px-4 py-2">
+              <h2 className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                {t(section.labelKey)}
+              </h2>
+            </div>
+            {section.ids.map((id) => {
+              const entry = findEntry(id);
+              if (!entry) return null;
+              const logoUrl = competitionLogos?.[id] ?? null;
+              return (
+                <CompLink
+                  key={`${id}-${entry.labelKey}`}
+                  entry={entry}
+                  locale={locale}
+                  isActive={id === activeCompetitionId}
+                  logoUrl={logoUrl}
+                  label={tC(entry.labelKey)}
+                />
+              );
+            })}
+          </div>
+        ))}
 
-      {/* All Competitions by organisation */}
-      <div className="rounded-xl border border-border-subtle bg-bg-surface p-4">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-          {t('allCompetitions')}
-        </h3>
-        <div className="space-y-1">
-          {MEGA_MENU_SECTIONS.map((section) => (
-            <CollapsibleSection
-              key={section.titleKey}
-              titleKey={section.titleKey}
-              entries={section.entries}
-              locale={locale}
-              activeCompetitionId={activeCompetitionId}
-            />
+        {/* Expanded extra sections */}
+        {expanded &&
+          EXTRA_SECTIONS.map((section) => (
+            <div key={section.titleKey}>
+              <div className="px-4 py-2">
+                <h2 className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                  {t(section.titleKey)}
+                </h2>
+              </div>
+              {section.entries.map((entry) => {
+                const logoUrl = competitionLogos?.[entry.competitionId] ?? null;
+                return (
+                  <CompLink
+                    key={`${entry.competitionId}-${entry.labelKey}`}
+                    entry={entry}
+                    locale={locale}
+                    isActive={entry.competitionId === activeCompetitionId}
+                    logoUrl={logoUrl}
+                    label={tC(entry.labelKey)}
+                  />
+                );
+              })}
+            </div>
           ))}
-        </div>
+      </nav>
+
+      {/* View all competitions toggle */}
+      <div className="border-t border-border-subtle">
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex w-full items-center justify-between px-4 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+        >
+          {tC('viewAllCompetitions')}
+          {expanded ? (
+            <ChevronDown className="size-3.5 rotate-180 transition-transform" />
+          ) : (
+            <ChevronRight className="size-3.5" />
+          )}
+        </button>
       </div>
-    </nav>
+    </div>
   );
 }
 
-function CollapsibleSection({
-  titleKey,
-  entries,
+function CompLink({
+  entry,
   locale,
-  activeCompetitionId,
+  isActive,
+  logoUrl,
+  label,
 }: {
-  titleKey: string;
-  entries: MegaMenuEntry[];
+  entry: MegaMenuEntry;
   locale: Locale;
-  activeCompetitionId?: number;
+  isActive: boolean;
+  logoUrl: string | null;
+  label: string;
 }) {
-  const t = useTranslations('megaMenu');
-  const tC = useTranslations('competition');
-  const hasActive = entries.some((e) => e.competitionId === activeCompetitionId);
-  const [open, setOpen] = useState(hasActive);
-
-  if (entries.length === 0) return null;
-
   return (
-    <div>
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-      >
-        <span>{t(titleKey)}</span>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-text-tertiary">{entries.length}</span>
-          <ChevronDown
-            className={`size-3.5 text-text-tertiary transition-transform ${open ? 'rotate-180' : ''}`}
-          />
-        </div>
-      </button>
-      {open && (
-        <ul className="ml-2 mt-0.5 space-y-0.5 border-l border-border-subtle pl-3">
-          {entries.map((entry) => {
-            const isActive = entry.competitionId === activeCompetitionId;
-            return (
-              <li key={`${entry.competitionId}-${entry.labelKey}`}>
-                <Link
-                  href={buildCompetitionHref(entry, locale)}
-                  className={`block rounded-lg px-2 py-1 text-sm transition-colors ${
-                    isActive
-                      ? 'font-medium text-text-primary'
-                      : 'text-text-secondary hover:text-text-primary'
-                  }`}
-                >
-                  {tC(entry.labelKey)}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+    <Link
+      href={buildCompetitionHref(entry, locale)}
+      className={cn(
+        'flex items-center gap-3 px-4 py-2 transition-colors hover:bg-bg-surface-2',
+        isActive && 'bg-bg-surface-2',
       )}
-    </div>
+    >
+      {logoUrl ? (
+        <img src={logoUrl} alt="" className="size-5 shrink-0 object-contain" loading="lazy" />
+      ) : (
+        <div className="flex size-5 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">
+          {label.slice(0, 2)}
+        </div>
+      )}
+      <p
+        className={cn(
+          'min-w-0 flex-1 truncate text-sm',
+          isActive ? 'font-medium text-text-primary' : 'text-text-primary',
+        )}
+      >
+        {label}
+      </p>
+    </Link>
   );
 }
