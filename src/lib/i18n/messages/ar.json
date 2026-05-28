@@ -424,6 +424,16 @@
     "place3rd": "المركز الثالث",
     "placeRunnerUp": "الوصيف"
   },
+  "coachPage": {
+    "manager": "مدرب",
+    "age": "العمر",
+    "careerHistory": "المسيرة التدريبية",
+    "team": "الفريق",
+    "from": "من",
+    "to": "إلى",
+    "present": "حالياً",
+    "noCareerData": "بيانات المسيرة قريباً"
+  },
   "leaguePage": {
     "standings": "الترتيب",
     "fixtures": "المباريات",

@@ -346,3 +346,30 @@ async function getVenuesMap(
   for (const v of venues) map.set(v.id, v);
   return map;
 }
+
+// ── Last N ratings for sparkline ──
+
+export async function getPlayerLastRatings(
+  db: NeonHttpDatabase<typeof schema>,
+  playerId: number,
+  n = 5,
+): Promise<number[]> {
+  const rows = await db
+    .select({
+      rating: schema.fixturePlayerStats.rating,
+      kickoffAt: schema.fixtures.kickoffAt,
+    })
+    .from(schema.fixturePlayerStats)
+    .innerJoin(schema.fixtures, eq(schema.fixturePlayerStats.fixtureId, schema.fixtures.id))
+    .where(
+      and(
+        eq(schema.fixturePlayerStats.playerId, playerId),
+        sql`${schema.fixturePlayerStats.rating} IS NOT NULL`,
+      ),
+    )
+    .orderBy(desc(schema.fixtures.kickoffAt))
+    .limit(n);
+
+  // Return oldest-first for chart rendering
+  return rows.reverse().map((r) => Number(r.rating));
+}

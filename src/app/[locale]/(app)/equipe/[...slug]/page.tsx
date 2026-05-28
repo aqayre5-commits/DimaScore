@@ -23,6 +23,7 @@ import {
   getTeamAllStandings,
   getTeamSeasonStats,
   getTeamsInSameCompetition,
+  getTeamFormResults,
 } from '@/lib/db/queries/team';
 
 interface PageProps {
@@ -93,13 +94,15 @@ export default async function TeamPage({ params }: PageProps) {
   const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
 
   // Parallel data fetching
-  const [fixtures, squad, allStandings, teamSeasonStats, competitionTeams] = await Promise.all([
-    getTeamFixturesWithCompetition(db, team.id, 200),
-    getTeamSquad(db, team.id),
-    getTeamAllStandings(db, team.id),
-    getTeamSeasonStats(db, team.id),
-    getTeamsInSameCompetition(db, team.id),
-  ]);
+  const [fixtures, squad, allStandings, teamSeasonStats, competitionTeams, formResults] =
+    await Promise.all([
+      getTeamFixturesWithCompetition(db, team.id, 200),
+      getTeamSquad(db, team.id),
+      getTeamAllStandings(db, team.id),
+      getTeamSeasonStats(db, team.id),
+      getTeamsInSameCompetition(db, team.id),
+      getTeamFormResults(db, team.id),
+    ]);
 
   // Featured match priority: live > next upcoming > most recent completed
   const liveMatch = fixtures.find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
@@ -165,7 +168,7 @@ export default async function TeamPage({ params }: PageProps) {
       </div>
 
       <InnerPageShell
-        pageHeader={<TeamPageHeader team={team} locale={typedLocale} />}
+        pageHeader={<TeamPageHeader team={team} locale={typedLocale} formResults={formResults} />}
         leftRail={
           <div className="space-y-4">
             {upcomingFixture && (

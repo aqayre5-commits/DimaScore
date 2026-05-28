@@ -84,6 +84,11 @@ async function main() {
   // Build country lookup for nationality resolution
   const countryLookup = await buildCountryLookup(db);
 
+  // Build set of existing team IDs for FK validation
+  const teamRows = await db.select({ id: schema.teams.id }).from(schema.teams);
+  const teamIdSet = new Set(teamRows.map((r) => r.id));
+  console.log(`[backfill-coaches] ${teamIdSet.size} teams in DB for FK validation`);
+
   let fetched = 0;
   let inserted = 0;
   let failed = 0;
@@ -103,7 +108,15 @@ async function main() {
         ? (countryLookup.get(coach.nationality.toLowerCase()) ?? null)
         : null;
 
-      const teamId = coach.team?.id ?? null;
+      const rawTeamId = coach.team?.id ?? null;
+      // Only set currentTeamId if the team exists in our DB (FK constraint)
+      const teamId = rawTeamId != null && teamIdSet.has(rawTeamId) ? rawTeamId : null;
+
+      if (rawTeamId != null && teamId == null) {
+        console.log(
+          `  [WARN] Coach ${coachId}: team ${rawTeamId} not in DB, setting currentTeamId=null`,
+        );
+      }
 
       console.log(
         `  [${dryRun ? 'DRY' : 'INSERT'}] #${coachId} ${coach.name} (${coach.nationality ?? '?'} → ${nationalityCode ?? '?'})`,

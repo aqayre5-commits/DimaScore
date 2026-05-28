@@ -21,6 +21,7 @@ import {
   getPlayerSeasonStats,
   getPlayerTransfers,
   getPlayerTrophies,
+  getPlayerLastRatings,
 } from '@/lib/db/queries/player';
 import { getTeamFixturesWithCompetition } from '@/lib/db/queries/team';
 
@@ -96,11 +97,12 @@ export default async function PlayerPage({ params }: PageProps) {
     playerSlug;
 
   // Parallel data fetching
-  const [fixtures, seasonStats, transfers, trophies] = await Promise.all([
+  const [fixtures, seasonStats, transfers, trophies, lastRatings] = await Promise.all([
     player.currentTeam ? getTeamFixturesWithCompetition(db, player.currentTeam.id, 200) : [],
     getPlayerSeasonStats(db, player.id),
     getPlayerTransfers(db, player.id),
     getPlayerTrophies(db, player.id),
+    getPlayerLastRatings(db, player.id),
   ]);
 
   // Featured match priority: live > next upcoming > most recent completed
@@ -152,7 +154,14 @@ export default async function PlayerPage({ params }: PageProps) {
       </div>
 
       <InnerPageShell
-        pageHeader={<PlayerPageHeader player={player} locale={typedLocale} nextMatch={nextMatch} />}
+        pageHeader={
+          <PlayerPageHeader
+            player={player}
+            locale={typedLocale}
+            nextMatch={nextMatch}
+            lastRatings={lastRatings}
+          />
+        }
         leftRail={
           <div className="space-y-4">
             <PlayerInfoCard player={player} locale={typedLocale} />

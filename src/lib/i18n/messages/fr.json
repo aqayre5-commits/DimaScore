@@ -424,6 +424,16 @@
     "place3rd": "3e place",
     "placeRunnerUp": "Finaliste"
   },
+  "coachPage": {
+    "manager": "Entraîneur",
+    "age": "Âge",
+    "careerHistory": "Parcours",
+    "team": "Équipe",
+    "from": "Depuis",
+    "to": "Jusqu'à",
+    "present": "Actuel",
+    "noCareerData": "Données de carrière à venir"
+  },
   "leaguePage": {
     "standings": "Classement",
     "fixtures": "Matchs",

@@ -567,3 +567,45 @@ async function getVenuesMap(
   for (const v of venues) map.set(v.id, v);
   return map;
 }
+
+// ── Last N form results (W/D/L) ──
+
+const TERMINAL_STATUSES = ['FT', 'AET', 'PEN'];
+
+export type FormResult = 'W' | 'D' | 'L';
+
+export async function getTeamFormResults(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+  n = 5,
+): Promise<FormResult[]> {
+  const rows = await db
+    .select({
+      homeTeamId: schema.fixtures.homeTeamId,
+      awayTeamId: schema.fixtures.awayTeamId,
+      homeScore: schema.fixtures.homeScore,
+      awayScore: schema.fixtures.awayScore,
+      kickoffAt: schema.fixtures.kickoffAt,
+    })
+    .from(schema.fixtures)
+    .where(
+      and(
+        or(eq(schema.fixtures.homeTeamId, teamId), eq(schema.fixtures.awayTeamId, teamId)),
+        inArray(schema.fixtures.statusCode, TERMINAL_STATUSES),
+        sql`${schema.fixtures.homeScore} IS NOT NULL`,
+        sql`${schema.fixtures.awayScore} IS NOT NULL`,
+      ),
+    )
+    .orderBy(desc(schema.fixtures.kickoffAt))
+    .limit(n);
+
+  // Return oldest-first for display
+  return rows.reverse().map((r) => {
+    const isHome = r.homeTeamId === teamId;
+    const teamGoals = isHome ? r.homeScore! : r.awayScore!;
+    const oppGoals = isHome ? r.awayScore! : r.homeScore!;
+    if (teamGoals > oppGoals) return 'W';
+    if (teamGoals < oppGoals) return 'L';
+    return 'D';
+  });
+}

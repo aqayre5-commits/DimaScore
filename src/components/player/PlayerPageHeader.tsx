@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { getMatchState } from '@/lib/match-status';
+import { RatingSparkline } from '@/components/shared/FormSparkline';
 import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
@@ -10,6 +11,7 @@ interface PlayerPageHeaderProps {
   player: PlayerDetail;
   locale: Locale;
   nextMatch: FixtureWithCompetition | null;
+  lastRatings?: number[];
 }
 
 function resolvePlayerName(player: PlayerDetail, locale: Locale): string {
@@ -85,7 +87,12 @@ function formatCardTime(date: Date): string {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
-export function PlayerPageHeader({ player, locale, nextMatch }: PlayerPageHeaderProps) {
+export function PlayerPageHeader({
+  player,
+  locale,
+  nextMatch,
+  lastRatings,
+}: PlayerPageHeaderProps) {
   const t = useTranslations('playerPage');
   const name = resolvePlayerName(player, locale);
   const age = computeAge(player.birthDate);
@@ -152,21 +159,31 @@ export function PlayerPageHeader({ player, locale, nextMatch }: PlayerPageHeader
               )}
             </div>
 
-            {clubName && (
-              <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-bg-surface-2 px-2.5 py-1 text-[13px] font-medium text-text-primary">
-                {player.currentTeam?.logoUrl && (
-                  <img
-                    src={player.currentTeam.logoUrl}
-                    alt=""
-                    width={20}
-                    height={20}
-                    className="size-5 object-contain"
-                    loading="eager"
-                  />
-                )}
-                <span>{clubName}</span>
-              </div>
-            )}
+            <div className="mt-2 flex items-center gap-3">
+              {clubName && (
+                <div className="inline-flex items-center gap-1.5 rounded-md bg-bg-surface-2 px-2.5 py-1 text-[13px] font-medium text-text-primary">
+                  {player.currentTeam?.logoUrl && (
+                    <img
+                      src={player.currentTeam.logoUrl}
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="size-5 object-contain"
+                      loading="eager"
+                    />
+                  )}
+                  <span>{clubName}</span>
+                </div>
+              )}
+              {lastRatings && lastRatings.length > 0 && (
+                <div className="flex items-center gap-1.5 rounded-md bg-bg-surface-2 px-2 py-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                    {t('rating')}
+                  </span>
+                  <RatingSparkline ratings={lastRatings} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

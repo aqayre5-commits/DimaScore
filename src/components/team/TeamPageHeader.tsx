@@ -1,11 +1,15 @@
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import type { TeamDetail } from '@/lib/db/queries/team';
+import { FormDots } from '@/components/shared/FormSparkline';
+import type { TeamDetail, FormResult } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 import { codeToFlag } from '@/lib/flags';
+import { slugify } from '@/lib/ingestion/slug';
 
 interface TeamPageHeaderProps {
   team: TeamDetail;
   locale: Locale;
+  formResults?: FormResult[];
 }
 
 function resolveTeamName(team: TeamDetail, locale: Locale): string {
@@ -18,7 +22,7 @@ function resolveTeamName(team: TeamDetail, locale: Locale): string {
   );
 }
 
-export function TeamPageHeader({ team, locale }: TeamPageHeaderProps) {
+export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProps) {
   const t = useTranslations('teamPage');
   const name = resolveTeamName(team, locale);
   const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
@@ -65,13 +69,28 @@ export function TeamPageHeader({ team, locale }: TeamPageHeaderProps) {
             <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-tertiary">
               {team.coach && (
                 <span>
-                  {t('coach')}: <span className="text-text-secondary">{team.coach.name}</span>
+                  {t('coach')}:{' '}
+                  <Link
+                    href={`/${locale}/entraineur/${slugify(team.coach.name)}-${team.coach.id}`}
+                    className="text-text-secondary hover:text-text-primary hover:underline"
+                  >
+                    {team.coach.name}
+                  </Link>
                 </span>
               )}
               {team.venue && (team.venue.name || team.venue.city) && (
                 <span>{[team.venue.name, team.venue.city].filter(Boolean).join(', ')}</span>
               )}
             </div>
+
+            {formResults && formResults.length > 0 && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                  {t('form')}
+                </span>
+                <FormDots results={formResults} />
+              </div>
+            )}
           </div>
         </div>
       </div>

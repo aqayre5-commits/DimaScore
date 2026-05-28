@@ -424,6 +424,16 @@
     "place3rd": "3rd Place",
     "placeRunnerUp": "Runner-up"
   },
+  "coachPage": {
+    "manager": "Manager",
+    "age": "Age",
+    "careerHistory": "Career History",
+    "team": "Team",
+    "from": "From",
+    "to": "To",
+    "present": "Present",
+    "noCareerData": "Career data coming soon"
+  },
   "leaguePage": {
     "standings": "Standings",
     "fixtures": "Matches",
