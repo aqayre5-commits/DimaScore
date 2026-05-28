@@ -28,9 +28,12 @@ import { H2HPanel } from '@/components/match/H2HPanel';
 import { PredictionCard } from '@/components/match/PredictionCard';
 import { MatchMediaSection } from '@/components/match/MatchMediaSection';
 import { MatchSectionNav } from '@/components/match/MatchSectionNav';
+import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 
 import { getMediaVideos } from '@/lib/db/queries/media';
 import type { Locale } from '@/lib/i18n/config';
+
+const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -137,7 +140,9 @@ export default async function MatchDetailPage({ params }: PageProps) {
   if (hasStats) navSections.push({ id: 'sec-statistics', label: t('stats') });
   if (hasRatings) navSections.push({ id: 'sec-players', label: t('playerRatings') });
 
-  return (
+  const isLive = LIVE_CODES.has(match.statusCode);
+
+  const pageContent = (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
         <SeoBreadcrumb segments={breadcrumbs} />
@@ -228,6 +233,23 @@ export default async function MatchDetailPage({ params }: PageProps) {
       />
     </>
   );
+
+  if (isLive) {
+    return (
+      <MatchLiveUpdater
+        fixtureId={match.id}
+        initialStatus={match.statusCode}
+        initialHomeScore={match.homeScore}
+        initialAwayScore={match.awayScore}
+        initialMinute={match.minute}
+        initialExtraMinute={match.extraMinute}
+      >
+        {pageContent}
+      </MatchLiveUpdater>
+    );
+  }
+
+  return pageContent;
 }
 
 function SectionHeader({ label }: { label: string }) {
