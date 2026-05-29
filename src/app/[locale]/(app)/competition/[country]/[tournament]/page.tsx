@@ -30,11 +30,13 @@ import { StandingsTab } from '@/components/tournament/StandingsTab';
 import { KnockoutTab } from '@/components/tournament/KnockoutTab';
 import { GenericKnockoutList } from '@/components/tournament/GenericKnockoutList';
 import { CupFixturesByRound } from '@/components/tournament/CupFixturesByRound';
+import { WCFixturesTab } from '@/components/tournament/WCFixturesTab';
 import { CupGroupsSummary } from '@/components/tournament/CupGroupsSummary';
 import { BestThirdTab } from '@/components/tournament/BestThirdTab';
 import { RightRail } from '@/components/tournament/RightRail';
 import { CompetitionMediaSection } from '@/components/tournament/CompetitionMediaSection';
 import { AboutCard } from '@/components/tournament/AboutCard';
+import { TournamentInfoStrip } from '@/components/tournament/TournamentInfoStrip';
 import { SportsEventJsonLd } from '@/components/seo/SportsEventJsonLd';
 import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
 import { HashScrollHighlight } from '@/components/shared/HashScrollHighlight';
@@ -467,11 +469,22 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
   // Best 3rd-placed teams (conditional on tournament format)
   const bestThird = metadata.hasBestThirdPlace ? computeBestThirdPlaced(standings) : null;
 
+  const isWC = competitionId === 1;
+
+  // Build team → group mapping from standings for WC fixtures filtering
+  const teamGroupMap: Record<number, string> = {};
+  if (isWC) {
+    for (const s of standings) {
+      if (s.teamId != null) teamGroupMap[s.teamId] = s.groupLabel;
+    }
+  }
+
   const tabs = [
     {
       key: 'overview',
       hash: hashes.overview,
       labelKey: 'overview',
+      ...(isWC && { icon: 'home' }),
       content: (
         <OverviewTab
           fixtures={allCupFixtures}
@@ -485,16 +498,27 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
       ),
     },
     {
-      key: 'standings',
-      hash: hashes.standings,
-      labelKey: 'standings',
-      content: <StandingsTab standings={standings} metadata={metadata} locale={typedLocale} />,
-    },
-    {
       key: 'fixtures',
       hash: 'fixtures',
       labelKey: 'fixtures',
-      content: <CupFixturesByRound fixtures={allCupFixtures} locale={typedLocale} />,
+      ...(isWC && { icon: 'calendar' }),
+      content: isWC ? (
+        <WCFixturesTab
+          fixtures={allCupFixtures}
+          locale={typedLocale}
+          groupLabels={metadata.groups.map((g) => g.label)}
+          teamGroupMap={teamGroupMap}
+        />
+      ) : (
+        <CupFixturesByRound fixtures={allCupFixtures} locale={typedLocale} />
+      ),
+    },
+    {
+      key: 'standings',
+      hash: hashes.standings,
+      labelKey: 'standings',
+      ...(isWC && { icon: 'table' }),
+      content: <StandingsTab standings={standings} metadata={metadata} locale={typedLocale} />,
     },
     ...(bestThird
       ? [
@@ -502,6 +526,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
             key: 'bestThird',
             hash: hashes.bestThird,
             labelKey: 'bestThird',
+            ...(isWC && { icon: 'award' }),
             content: (
               <BestThirdTab
                 rows={bestThird.rows}
@@ -517,6 +542,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
       key: 'knockout',
       hash: hashes.knockout,
       labelKey: 'knockout',
+      ...(isWC && { icon: 'swords' }),
       content:
         competitionId === 1 ? (
           <KnockoutTab
@@ -530,63 +556,77 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
   ];
 
   return (
-    <InnerPageShell
-      pageHeader={
-        <TournamentPageHeader
-          metadata={metadata}
-          locale={typedLocale}
-          pageTitle={pageTitle}
-          introText={introText}
-          tournamentPhase={tournamentPhase}
-          moroccoGroup={moroccoContext}
-          breadcrumb={breadcrumb}
-        />
-      }
-      leftRail={
-        <LeagueLeftRail
-          locale={typedLocale}
-          activeCompetitionId={competitionId}
-          competitionLogos={competitionLogos}
-        />
-      }
-      center={<CenterTabs tabs={tabs} />}
-      rightRail={
-        <div className="space-y-4">
-          <LeagueRightRailCard
-            featuredMatches={cupFeaturedMatches}
-            topScorer={null}
-            locale={typedLocale}
-            competitionName={pageTitle}
-          />
-          <RightRail
+    <>
+      {isWC && <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">{breadcrumb}</div>}
+      <InnerPageShell
+        pageHeader={
+          <TournamentPageHeader
             metadata={metadata}
-            standings={standings}
             locale={typedLocale}
-            tournamentName={pageTitle}
+            pageTitle={pageTitle}
+            introText={introText}
+            tournamentPhase={tournamentPhase}
+            moroccoGroup={moroccoContext}
+            breadcrumb={isWC ? undefined : breadcrumb}
           />
-        </div>
-      }
-      belowCenter={
-        <>
-          <HashScrollHighlight />
-          <RelatedCompetitions
-            competitionIds={getRelatedCompetitionIds(competitionId)}
+        }
+        leftRail={
+          <LeagueLeftRail
             locale={typedLocale}
+            activeCompetitionId={competitionId}
+            competitionLogos={competitionLogos}
           />
-          <CompetitionMediaSection competitionId={competitionId} locale={typedLocale} />
-          {aboutContent && <AboutCard content={aboutContent} />}
-          <SportsEventJsonLd
-            metadata={metadata}
-            tournamentName={pageTitle}
-            alternateNames={
-              cupContent ? Object.values(cupContent.titles).filter((t) => t !== pageTitle) : []
-            }
-            canonicalUrl={cupContent?.urls[typedLocale] ?? ''}
-          />
-          {aboutContent && <FaqPageJsonLd faqs={aboutContent.faqs} />}
-        </>
-      }
-    />
+        }
+        center={<CenterTabs tabs={tabs} />}
+        rightRailTop={
+          isWC && cupFeaturedMatches.length > 0 ? (
+            <LeagueRightRailCard
+              featuredMatches={cupFeaturedMatches.slice(0, 1)}
+              locale={typedLocale}
+              competitionName={pageTitle}
+              stretch
+            />
+          ) : undefined
+        }
+        rightRail={
+          <div className="space-y-4">
+            <LeagueRightRailCard
+              featuredMatches={isWC ? cupFeaturedMatches.slice(1) : cupFeaturedMatches}
+              topScorer={null}
+              locale={typedLocale}
+              competitionName={pageTitle}
+            />
+            <RightRail
+              metadata={metadata}
+              standings={standings}
+              locale={typedLocale}
+              tournamentName={pageTitle}
+            />
+          </div>
+        }
+        belowCenter={
+          <>
+            {isWC && <TournamentInfoStrip />}
+            <HashScrollHighlight />
+            <RelatedCompetitions
+              competitionIds={getRelatedCompetitionIds(competitionId)}
+              locale={typedLocale}
+            />
+            <CompetitionMediaSection competitionId={competitionId} locale={typedLocale} />
+            {aboutContent && <AboutCard content={aboutContent} />}
+            <SportsEventJsonLd
+              metadata={metadata}
+              tournamentName={pageTitle}
+              alternateNames={
+                cupContent ? Object.values(cupContent.titles).filter((t) => t !== pageTitle) : []
+              }
+              canonicalUrl={cupContent?.urls[typedLocale] ?? ''}
+            />
+            {aboutContent && <FaqPageJsonLd faqs={aboutContent.faqs} />}
+          </>
+        }
+      />
+    </>
   );
 }
 
@@ -693,13 +733,14 @@ async function renderLeaguePage(
     { label: competitionName },
   ];
 
-  // Center tabs — matchwire pattern: Overview / Standings / Fixtures / Players / Teams
+  // Center tabs — Overview / Matches / Standings / Stats / Teams
   const hashes = LEAGUE_TAB_HASHES[locale];
   const tabs = [
     {
       key: 'overview',
       hash: hashes.overview,
       labelKey: 'overview',
+      icon: 'home',
       content: (
         <LeagueOverviewTab
           standings={standings}
@@ -715,22 +756,10 @@ async function renderLeaguePage(
       ),
     },
     {
-      key: 'standings',
-      hash: hashes.standings,
-      labelKey: 'standings',
-      content:
-        coverage?.standings !== false && standings.length > 0 ? (
-          <LeagueStandingsTab standings={standings} locale={locale} />
-        ) : (
-          <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-8 text-center">
-            <p className="text-sm text-text-tertiary">{tL('comingSoon')}</p>
-          </div>
-        ),
-    },
-    {
       key: 'fixtures',
       hash: hashes.fixtures,
       labelKey: 'fixtures',
+      icon: 'calendar',
       content: (
         <LeagueFixturesTab
           fixtures={fixtures}
@@ -741,9 +770,24 @@ async function renderLeaguePage(
       ),
     },
     {
+      key: 'standings',
+      hash: hashes.standings,
+      labelKey: 'standings',
+      icon: 'table',
+      content:
+        coverage?.standings !== false && standings.length > 0 ? (
+          <LeagueStandingsTab standings={standings} locale={locale} />
+        ) : (
+          <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-8 text-center">
+            <p className="text-sm text-text-tertiary">{tL('comingSoon')}</p>
+          </div>
+        ),
+    },
+    {
       key: 'stats',
       hash: hashes.stats,
       labelKey: 'stats',
+      icon: 'chart',
       content: (
         <LeaguePlayersTab
           coverage={coverage}
@@ -758,6 +802,7 @@ async function renderLeaguePage(
       key: 'teams',
       hash: hashes.teams,
       labelKey: 'teams',
+      icon: 'shield',
       content: <LeagueTeamsTab standings={standings} locale={locale} />,
     },
   ];
@@ -777,6 +822,9 @@ async function renderLeaguePage(
             countryName={countryName}
             introText={introText}
             availableSeasons={availableSeasons}
+            teamsCount={standings.length}
+            matchesCount={fixtures.length}
+            totalRounds={rounds.length}
           />
         }
         leftRail={
@@ -787,10 +835,20 @@ async function renderLeaguePage(
           />
         }
         center={<CenterTabs tabs={tabs} />}
+        rightRailTop={
+          featuredMatches.length > 0 ? (
+            <LeagueRightRailCard
+              featuredMatches={featuredMatches.slice(0, 1)}
+              locale={locale}
+              competitionName={competitionName}
+              stretch
+            />
+          ) : undefined
+        }
         rightRail={
           <LeagueRightRailCard
-            featuredMatches={featuredMatches}
-            topScorer={topScorers[0] ?? null}
+            featuredMatches={featuredMatches.slice(1)}
+            topScorers={topScorers.slice(0, 3)}
             locale={locale}
             competitionName={competitionName}
           />
@@ -926,6 +984,8 @@ async function renderGenericCupPage(
             countryName={countryName}
             introText={null}
             availableSeasons={availableSeasons}
+            teamsCount={standings.length}
+            matchesCount={allFixtures.length}
           />
         }
         leftRail={

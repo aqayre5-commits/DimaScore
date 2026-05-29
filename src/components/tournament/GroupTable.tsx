@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
-import { ShareButton } from '@/components/shared/ShareButton';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
@@ -48,21 +47,15 @@ export function GroupTable({
     >
       {/* Group header */}
       <div className="border-b border-border-subtle px-4 py-2.5">
-        <div className="flex items-center justify-between">
-          <h3
-            className={cn(
-              'text-xs font-semibold',
-              isMoroccoGroup ? 'text-accent-green' : 'text-text-primary',
-            )}
-          >
-            {t('groupLabel', { label: groupLabel })}
-            {isMoroccoGroup && <span className="ml-1">&#9733;</span>}
-          </h3>
-          <ShareButton
-            title={t('groupLabel', { label: groupLabel })}
-            hash={`group-${groupLabel.toLowerCase()}`}
-          />
-        </div>
+        <h3
+          className={cn(
+            'text-xs font-semibold',
+            isMoroccoGroup ? 'text-accent-azure' : 'text-text-primary',
+          )}
+        >
+          {t('groupLabel', { label: groupLabel })}
+          {isMoroccoGroup && <span className="ml-1">&#9733;</span>}
+        </h3>
       </div>
 
       <div className="overflow-x-auto">
@@ -141,15 +134,15 @@ export function GroupTable({
                     {row.rank}
                   </td>
                   <td className="py-2">
-                    <span className="flex items-center gap-1.5">
-                      {flag && <span className="shrink-0 text-sm leading-none">{flag}</span>}
+                    <span className="flex items-center gap-2">
+                      {flag && <span className="shrink-0 text-base leading-none">{flag}</span>}
                       {row.team?.slug ? (
                         <Link
                           href={`/${locale}/equipe/${row.team.slug}`}
                           className={cn(
-                            'overflow-hidden text-ellipsis whitespace-nowrap hover:underline',
+                            'overflow-hidden text-ellipsis whitespace-nowrap text-sm hover:underline',
                             isMorocco
-                              ? 'text-accent-green'
+                              ? 'text-accent-azure'
                               : 'text-text-secondary hover:text-accent',
                           )}
                         >
@@ -158,8 +151,8 @@ export function GroupTable({
                       ) : (
                         <span
                           className={cn(
-                            'overflow-hidden text-ellipsis whitespace-nowrap',
-                            isMorocco ? 'text-accent-green' : 'text-text-secondary',
+                            'overflow-hidden text-ellipsis whitespace-nowrap text-sm',
+                            isMorocco ? 'text-accent-azure' : 'text-text-secondary',
                           )}
                         >
                           {teamName}
@@ -191,7 +184,7 @@ export function GroupTable({
                   <td
                     className={cn(
                       'py-2 text-center tabular-nums font-semibold',
-                      isMorocco ? 'text-accent-green' : 'text-text-primary',
+                      isMorocco ? 'text-accent-azure' : 'text-text-primary',
                     )}
                   >
                     {row.points}

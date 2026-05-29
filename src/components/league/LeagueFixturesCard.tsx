@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, ListFilter } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { FixtureRow } from '@/components/shared/FixtureRow';
 import type { FixtureWithTeams } from '@/lib/db/queries';
@@ -16,7 +16,6 @@ interface LeagueFixturesCardProps {
 }
 
 function formatRoundLabel(round: string): string {
-  // "Regular Season - 20" → "20"
   const match = round.match(/(\d+)$/);
   return match ? match[1] : round;
 }
@@ -29,7 +28,7 @@ const DATE_LOCALE_MAP: Record<string, string> = {
 
 function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
   const dateLocale = DATE_LOCALE_MAP[locale] ?? 'en-GB';
-  const groups: { label: string; fixtures: FixtureWithTeams[] }[] = [];
+  const groups: { dateKey: string; label: string; fixtures: FixtureWithTeams[] }[] = [];
   const seen = new Map<string, number>();
 
   for (const f of fixtures) {
@@ -44,7 +43,7 @@ function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
         month: 'short',
       }).format(f.kickoffAt);
       seen.set(dateKey, groups.length);
-      groups.push({ label, fixtures: [f] });
+      groups.push({ dateKey, label, fixtures: [f] });
     }
   }
 
@@ -59,12 +58,7 @@ export function LeagueFixturesCard({
 }: LeagueFixturesCardProps) {
   const t = useTranslations('leaguePage');
   const [selectedRound, setSelectedRound] = useState(defaultRound);
-
-  const roundNumbers = useMemo(
-    () => rounds.map((r) => r.roundNumber).sort((a, b) => a - b),
-    [rounds],
-  );
-  const currentIdx = roundNumbers.indexOf(selectedRound);
+  const [dateFilter, setDateFilter] = useState<string>('all');
 
   const roundFixtures = useMemo(
     () => fixtures.filter((f) => f.roundNumber === selectedRound),
@@ -73,76 +67,93 @@ export function LeagueFixturesCard({
 
   const dateGroups = useMemo(() => groupByDate(roundFixtures, locale), [roundFixtures, locale]);
 
-  const roundLabel = rounds.find((r) => r.roundNumber === selectedRound)?.round ?? '';
+  const finalGroups = useMemo(() => {
+    if (dateFilter === 'all') return dateGroups;
+    return dateGroups.filter((g) => g.dateKey === dateFilter);
+  }, [dateGroups, dateFilter]);
 
-  function goPrev() {
-    if (currentIdx > 0) setSelectedRound(roundNumbers[currentIdx - 1]);
-  }
-  function goNext() {
-    if (currentIdx < roundNumbers.length - 1) setSelectedRound(roundNumbers[currentIdx + 1]);
-  }
+  const handleRoundChange = (round: number) => {
+    setSelectedRound(round);
+    setDateFilter('all');
+  };
 
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-surface">
-      {/* Header */}
-      <div className="border-b border-border-subtle px-4 py-2.5">
-        <h3 className="label-caps">{t('fixtures')}</h3>
-      </div>
+    <div className="space-y-3">
+      {/* Filter bar */}
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {/* Round dropdown */}
+        <div className="relative">
+          <ListFilter className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-tertiary" />
+          <select
+            value={selectedRound}
+            onChange={(e) => handleRoundChange(Number(e.target.value))}
+            className="appearance-none rounded-lg border border-border-subtle bg-bg-surface py-1.5 pl-8 pr-6 text-xs font-medium text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+          >
+            {rounds.map((r) => (
+              <option key={r.roundNumber} value={r.roundNumber}>
+                {t('round')} {formatRoundLabel(r.round)}
+              </option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-tertiary">
+            ▼
+          </span>
+        </div>
 
-      {/* Round selector */}
-      <div className="flex items-center justify-between border-b border-border-subtle px-3 py-2">
-        <button
-          type="button"
-          onClick={goPrev}
-          disabled={currentIdx <= 0}
-          className="rounded p-1 text-text-secondary hover:bg-bg-surface-2 disabled:opacity-30"
-          aria-label={t('prevRound')}
-        >
-          <ChevronLeft className="size-4" />
-        </button>
-
-        <span className="text-sm font-medium text-text-primary">
-          {t('round')} {formatRoundLabel(roundLabel)}
-        </span>
-
-        <button
-          type="button"
-          onClick={goNext}
-          disabled={currentIdx >= roundNumbers.length - 1}
-          className="rounded p-1 text-text-secondary hover:bg-bg-surface-2 disabled:opacity-30"
-          aria-label={t('nextRound')}
-        >
-          <ChevronRight className="size-4" />
-        </button>
+        {/* Date dropdown */}
+        {dateGroups.length >= 1 && (
+          <div className="relative">
+            <CalendarDays className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-tertiary" />
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="appearance-none rounded-lg border border-border-subtle bg-bg-surface py-1.5 pl-8 pr-6 text-xs font-medium text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              <option value="all">{t('dateFilter')}</option>
+              {dateGroups.map((g) => (
+                <option key={g.dateKey} value={g.dateKey}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-tertiary">
+              ▼
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Fixtures grouped by date */}
-      {dateGroups.map((group) => (
-        <div key={group.label}>
-          <div className="border-b border-border-subtle bg-bg-surface-3 px-4 py-1.5">
-            <span className="text-xs font-medium uppercase text-text-tertiary">{group.label}</span>
+      <div className="rounded-lg border border-border-subtle bg-bg-surface">
+        {finalGroups.map((group) => (
+          <div key={group.dateKey}>
+            <div className="border-b border-border-subtle bg-bg-surface-3 px-4 py-1.5">
+              <span className="text-xs font-medium uppercase text-text-tertiary">
+                {group.label}
+              </span>
+            </div>
+            <div className="divide-y divide-border-subtle px-4">
+              {group.fixtures.map((f) => (
+                <FixtureRow
+                  key={f.id}
+                  fixtureId={f.id}
+                  kickoffAt={f.kickoffAt}
+                  statusCode={f.statusCode}
+                  homeTeam={f.homeTeam}
+                  awayTeam={f.awayTeam}
+                  homeScore={f.homeScore}
+                  awayScore={f.awayScore}
+                  locale={locale}
+                />
+              ))}
+            </div>
           </div>
-          <div className="divide-y divide-border-subtle px-4">
-            {group.fixtures.map((f) => (
-              <FixtureRow
-                key={f.id}
-                fixtureId={f.id}
-                kickoffAt={f.kickoffAt}
-                statusCode={f.statusCode}
-                homeTeam={f.homeTeam}
-                awayTeam={f.awayTeam}
-                homeScore={f.homeScore}
-                awayScore={f.awayScore}
-                locale={locale}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
+        ))}
 
-      {roundFixtures.length === 0 && (
-        <div className="px-4 py-6 text-center text-xs text-text-tertiary">{t('noFixtures')}</div>
-      )}
+        {roundFixtures.length === 0 && (
+          <div className="px-4 py-6 text-center text-xs text-text-tertiary">{t('noFixtures')}</div>
+        )}
+      </div>
     </div>
   );
 }

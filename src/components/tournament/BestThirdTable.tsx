@@ -16,6 +16,7 @@ interface BestThirdTableProps {
  */
 export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableProps) {
   const t = useTranslations('tournament');
+  const preTournament = rows.every((r) => r.played === 0);
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border-subtle bg-bg-surface">
@@ -63,18 +64,20 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
         </thead>
         <tbody>
           {rows.map((row) => {
-            const teamName =
-              row.team?.name[locale] ??
-              row.team?.name['en'] ??
-              row.team?.shortName[locale] ??
-              row.team?.code ??
-              '\u2014';
-            const flag =
-              row.team?.isNational && row.team.countryCode
+            const teamName = preTournament
+              ? '\u2014'
+              : (row.team?.name[locale] ??
+                row.team?.name['en'] ??
+                row.team?.shortName[locale] ??
+                row.team?.code ??
+                '\u2014');
+            const flag = preTournament
+              ? null
+              : row.team?.isNational && row.team.countryCode
                 ? codeToFlag(row.team.countryCode)
                 : null;
-            const isMorocco = row.team?.code === 'MA';
-            const isQualified = row.crossGroupRank <= qualifiedCount;
+            const isMorocco = !preTournament && row.team?.code === 'MA';
+            const isQualified = !preTournament && row.crossGroupRank <= qualifiedCount;
             const formChars = row.form
               ? row.form.split('').slice(-5)
               : ['\u2014', '\u2014', '\u2014', '\u2014', '\u2014'];
@@ -108,7 +111,7 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
                     <span
                       className={cn(
                         'overflow-hidden text-ellipsis whitespace-nowrap',
-                        isMorocco ? 'text-accent-green' : 'text-text-secondary',
+                        isMorocco ? 'text-accent-azure' : 'text-text-secondary',
                       )}
                     >
                       {teamName}
@@ -137,7 +140,7 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
                 <td
                   className={cn(
                     'py-2 text-center tabular-nums font-semibold',
-                    isMorocco ? 'text-accent-green' : 'text-text-primary',
+                    isMorocco ? 'text-accent-azure' : 'text-text-primary',
                   )}
                 >
                   {row.points}

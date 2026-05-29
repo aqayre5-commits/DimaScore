@@ -55,7 +55,7 @@ export function AboutCard({ content }: AboutCardProps) {
           <div className="mt-3 divide-y divide-border-subtle">
             {content.faqs.map((faq, i) => (
               <details key={i} className="group py-3">
-                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md px-2 py-1 text-base font-medium text-text-primary transition-colors hover:bg-bg-surface-2 hover:text-accent-green [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md px-2 py-1 text-base font-medium text-text-primary transition-colors hover:bg-bg-surface-2 hover:text-accent-azure [&::-webkit-details-marker]:hidden">
                   <span className="shrink-0 text-xs text-text-tertiary transition-transform group-open:rotate-90">
                     &#9654;
                   </span>

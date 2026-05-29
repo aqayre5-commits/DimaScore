@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
-import { ShareButton } from '@/components/shared/ShareButton';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -13,6 +12,7 @@ interface MiniStandingsPreviewProps {
   standings: StandingRow[];
   locale: Locale;
   defaultGroup: string;
+  moroccoGroupLabel?: string | null;
   groupLabels: string[];
   standingsHash: string;
 }
@@ -27,6 +27,7 @@ export function MiniStandingsPreview({
   standings,
   locale,
   defaultGroup,
+  moroccoGroupLabel,
   groupLabels,
   standingsHash,
 }: MiniStandingsPreviewProps) {
@@ -66,7 +67,7 @@ export function MiniStandingsPreview({
       {/* Group cards */}
       {visibleGroups.map((groupLabel) => {
         const groupRows = standingsByGroup.get(groupLabel) ?? [];
-        const isMoroccoGroup = groupLabel === defaultGroup;
+        const isMoroccoGroup = moroccoGroupLabel != null && groupLabel === moroccoGroupLabel;
         const groupHash = `group-${groupLabel.toLowerCase()}`;
 
         return (
@@ -76,17 +77,16 @@ export function MiniStandingsPreview({
             className="rounded-lg border border-border-subtle bg-bg-surface"
           >
             {/* Group header */}
-            <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2">
+            <div className="border-b border-border-subtle px-4 py-2">
               <div
                 className={cn(
                   'text-xs font-semibold',
-                  isMoroccoGroup ? 'text-accent-green' : 'text-text-primary',
+                  isMoroccoGroup ? 'text-accent-azure' : 'text-text-primary',
                 )}
               >
                 {t('groupLabel', { label: groupLabel })}
                 {isMoroccoGroup && ' \u2605'}
               </div>
-              <ShareButton title={t('groupLabel', { label: groupLabel })} hash={groupHash} />
             </div>
 
             <div className="overflow-x-auto">
@@ -157,12 +157,14 @@ export function MiniStandingsPreview({
                           {row.rank}
                         </td>
                         <td className="py-1.5">
-                          <span className="flex items-center gap-1.5">
-                            {flag && <span className="shrink-0 text-sm leading-none">{flag}</span>}
+                          <span className="flex items-center gap-2">
+                            {flag && (
+                              <span className="shrink-0 text-base leading-none">{flag}</span>
+                            )}
                             <span
                               className={cn(
-                                'overflow-hidden text-ellipsis whitespace-nowrap',
-                                isMorocco ? 'text-accent-green' : 'text-text-secondary',
+                                'overflow-hidden text-ellipsis whitespace-nowrap text-sm',
+                                isMorocco ? 'text-accent-azure' : 'text-text-secondary',
                               )}
                             >
                               {teamName}
@@ -193,7 +195,7 @@ export function MiniStandingsPreview({
                         <td
                           className={cn(
                             'py-1.5 text-center tabular-nums font-semibold',
-                            isMorocco ? 'text-accent-green' : 'text-text-primary',
+                            isMorocco ? 'text-accent-azure' : 'text-text-primary',
                           )}
                         >
                           {row.points}

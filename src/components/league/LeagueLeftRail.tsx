@@ -60,7 +60,8 @@ export function LeagueLeftRail({
             {section.ids.map((id) => {
               const entry = findEntry(id);
               if (!entry) return null;
-              const logoUrl = competitionLogos?.[id] ?? null;
+              const logoUrl =
+                id === 1 ? '/competitions/wc-2026-trophy.png' : (competitionLogos?.[id] ?? null);
               return (
                 <CompLink
                   key={`${id}-${entry.labelKey}`}
@@ -85,7 +86,10 @@ export function LeagueLeftRail({
                 </h2>
               </div>
               {section.entries.map((entry) => {
-                const logoUrl = competitionLogos?.[entry.competitionId] ?? null;
+                const logoUrl =
+                  entry.competitionId === 1
+                    ? '/competitions/wc-2026-trophy.png'
+                    : (competitionLogos?.[entry.competitionId] ?? null);
                 return (
                   <CompLink
                     key={`${entry.competitionId}-${entry.labelKey}`}
@@ -137,7 +141,9 @@ function CompLink({
       href={buildCompetitionHref(entry, locale)}
       className={cn(
         'flex items-center gap-3 px-4 py-2 transition-colors hover:bg-bg-surface-2',
-        isActive && 'bg-bg-surface-2',
+        isActive
+          ? 'border-l-2 border-accent-azure bg-accent-azure/10'
+          : 'border-l-2 border-transparent',
       )}
     >
       {logoUrl ? (
@@ -150,7 +156,7 @@ function CompLink({
       <p
         className={cn(
           'min-w-0 flex-1 truncate text-sm',
-          isActive ? 'font-medium text-text-primary' : 'text-text-primary',
+          isActive ? 'font-semibold text-accent-azure' : 'text-text-primary',
         )}
       >
         {label}

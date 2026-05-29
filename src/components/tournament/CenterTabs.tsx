@@ -3,11 +3,33 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import {
+  Home,
+  CalendarDays,
+  TableProperties,
+  BarChart3,
+  Shield,
+  LayoutGrid,
+  Award,
+  Swords,
+} from 'lucide-react';
+
+const ICON_MAP: Record<string, typeof Home> = {
+  home: Home,
+  calendar: CalendarDays,
+  table: TableProperties,
+  chart: BarChart3,
+  shield: Shield,
+  grid: LayoutGrid,
+  award: Award,
+  swords: Swords,
+};
 
 interface TabDefinition {
   key: string;
   hash: string;
   labelKey: string;
+  icon?: string;
   content: ReactNode;
 }
 
@@ -19,6 +41,12 @@ interface CenterTabsProps {
  * Center column tab switcher with hash-fragment sync.
  * Hash updates on tab change; reads hash on mount for deep-link support.
  */
+function TabIcon({ name }: { name?: string }) {
+  if (!name || !ICON_MAP[name]) return null;
+  const Icon = ICON_MAP[name];
+  return <Icon className="mr-1.5 inline-block size-3.5 align-[-2px]" />;
+}
+
 export function CenterTabs({ tabs }: CenterTabsProps) {
   const t = useTranslations('tournament');
   const [activeKey, setActiveKey] = useState<string>(() => {
@@ -64,13 +92,14 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
                 className={cn(
                   'relative shrink-0 flex-1 px-4 py-3 text-center text-[13px] font-semibold tracking-wide transition-colors',
                   isActive
-                    ? 'text-text-primary'
+                    ? 'text-accent-azure'
                     : 'text-text-tertiary hover:text-text-secondary hover:bg-bg-surface-2',
                 )}
               >
+                <TabIcon name={tab.icon} />
                 {t(tab.labelKey)}
                 {isActive && (
-                  <span className="absolute inset-x-0 bottom-0 h-[2.5px] bg-accent-green" />
+                  <span className="absolute inset-x-0 bottom-0 h-[2.5px] bg-accent-azure" />
                 )}
               </button>
             );

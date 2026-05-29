@@ -3,6 +3,7 @@ import { HistoricalWinners } from './HistoricalWinners';
 import { RelatedCompetitions } from './RelatedCompetitions';
 import { FactsPanel } from './FactsPanel';
 import { CupFixturesByRound } from './CupFixturesByRound';
+import { WCFixturesTab } from './WCFixturesTab';
 import type { FixtureWithTeams, StandingRow } from '@/lib/db/queries';
 import type { CupMetadata } from '@/lib/constants/tournament-metadata';
 import type { Locale } from '@/lib/i18n/config';
@@ -34,15 +35,32 @@ export function OverviewTab({
   const defaultGroup = moroccoGroup?.label ?? metadata.groups[0]?.label ?? 'A';
   const groupLabels = metadata.groups.map((g) => g.label);
 
+  // Build team → group mapping from standings
+  const teamGroupMap: Record<number, string> = {};
+  for (const s of standings) {
+    if (s.teamId != null) teamGroupMap[s.teamId] = s.groupLabel;
+  }
+
   return (
     <div className="space-y-4">
-      {fixtures.length > 0 && <CupFixturesByRound fixtures={fixtures} locale={locale} />}
+      {fixtures.length > 0 &&
+        (metadata.competitionId === 1 ? (
+          <WCFixturesTab
+            fixtures={fixtures}
+            locale={locale}
+            groupLabels={groupLabels}
+            teamGroupMap={teamGroupMap}
+          />
+        ) : (
+          <CupFixturesByRound fixtures={fixtures} locale={locale} />
+        ))}
 
       {standings.length > 0 && (
         <MiniStandingsPreview
           standings={standings}
           locale={locale}
           defaultGroup={defaultGroup}
+          moroccoGroupLabel={moroccoGroup?.label ?? null}
           groupLabels={groupLabels}
           standingsHash={standingsHash}
         />

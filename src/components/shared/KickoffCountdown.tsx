@@ -42,24 +42,23 @@ export function KickoffCountdown({ kickoffAt, label }: KickoffCountdownProps) {
     { value: remaining.days, unit: 'D' },
     { value: remaining.hours, unit: 'H' },
     { value: remaining.minutes, unit: 'M' },
-    { value: remaining.seconds, unit: 'S' },
   ];
 
   return (
-    <div className="border-t border-border-subtle px-4 py-3">
-      <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
+    <div className="px-4 py-2.5">
+      <p className="mb-1.5 text-center text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
         {label}
       </p>
-      <div className="flex justify-center gap-2">
+      <div className="flex justify-center gap-1.5">
         {units.map((u) => (
           <div
             key={u.unit}
-            className="flex w-12 flex-col items-center rounded-lg bg-bg-surface-3 py-1.5"
+            className="flex w-10 flex-col items-center rounded-md bg-bg-surface-3 py-1"
           >
-            <span className="text-lg font-bold tabular-nums text-text-primary">
+            <span className="text-sm font-bold tabular-nums text-text-primary">
               {String(u.value).padStart(2, '0')}
             </span>
-            <span className="text-[10px] font-medium text-text-tertiary">{u.unit}</span>
+            <span className="text-[8px] font-medium text-text-tertiary">{u.unit}</span>
           </div>
         ))}
       </div>

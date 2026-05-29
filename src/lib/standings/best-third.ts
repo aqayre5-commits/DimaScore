@@ -28,7 +28,9 @@ export interface BestThirdResult {
  * FIFA's full chain (fair-play, world ranking) requires unseeded data.
  */
 export function computeBestThirdPlaced(standings: StandingRow[]): BestThirdResult {
-  const thirdPlaced = standings.filter((s) => s.rank === 3);
+  const thirdPlaced = standings.filter(
+    (s) => s.rank === 3 && !s.groupLabel.toLowerCase().includes('ranking'),
+  );
 
   const sorted = [...thirdPlaced].sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;

@@ -199,10 +199,15 @@ export async function getStandings(
     )
     .orderBy(asc(schema.standings.groupLabel), asc(schema.standings.rank));
 
-  const teamIds = [...new Set(rows.map((r) => r.teamId).filter((id): id is number => id != null))];
+  // Filter out "Ranking of third-placed teams" pseudo-group from API-Football
+  const filtered = rows.filter((r) => !r.groupLabel.toLowerCase().includes('ranking'));
+
+  const teamIds = [
+    ...new Set(filtered.map((r) => r.teamId).filter((id): id is number => id != null)),
+  ];
   const teamsMap = await getTeamsMap(db, teamIds);
 
-  return rows.map((r) => ({
+  return filtered.map((r) => ({
     groupLabel: r.groupLabel.replace(/^Group\s+/i, ''),
     teamId: r.teamId,
     rank: r.rank,
