@@ -5,21 +5,34 @@ import { useTranslations } from 'next-intl';
 import { WC_2026_BRACKETS_BY_LOCALE } from '@/lib/constants/wc2026-bracket-builder';
 import { KnockoutBracket } from './KnockoutBracket';
 import type { Locale } from '@/lib/i18n/config';
+import type { BracketMatch, KnockoutPhase } from './BracketMatchCell';
 
 interface KnockoutTabProps {
   locale: Locale;
   bracketHref?: string;
+  /** DB-driven matches. When provided, static WC_2026 schedule is bypassed. */
+  matches?: BracketMatch[];
+  thirdPlaceMatch?: BracketMatch;
+  activePhase?: KnockoutPhase;
 }
 
 /**
  * Knockout tab — converging bracket visualization.
- * In-tab preview of the bracket. Links to dedicated /bracket page
- * for full-viewport view when bracketHref is provided.
+ * Accepts optional DB-driven data; falls back to static WC 2026 schedule
+ * when no dynamic data is available (pre-tournament).
  */
-export function KnockoutTab({ locale, bracketHref }: KnockoutTabProps) {
+export function KnockoutTab({
+  locale,
+  bracketHref,
+  matches,
+  thirdPlaceMatch,
+  activePhase,
+}: KnockoutTabProps) {
   const t = useTranslations('tournament');
 
-  const { matches, thirdPlaceMatch } = WC_2026_BRACKETS_BY_LOCALE[locale];
+  const data = matches ? { matches, thirdPlaceMatch } : WC_2026_BRACKETS_BY_LOCALE[locale];
+
+  const phase = activePhase ?? 'r32';
 
   return (
     <div className="space-y-4">
@@ -32,10 +45,10 @@ export function KnockoutTab({ locale, bracketHref }: KnockoutTabProps) {
         </Link>
       )}
       <KnockoutBracket
-        matches={matches}
-        thirdPlaceMatch={thirdPlaceMatch}
+        matches={data.matches}
+        thirdPlaceMatch={data.thirdPlaceMatch}
         locale={locale}
-        activePhase="r32"
+        activePhase={phase}
       />
     </div>
   );

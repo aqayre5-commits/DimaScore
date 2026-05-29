@@ -46,7 +46,7 @@ export function TeamStandingsWithFilter({
   const activeStandings = standingsByCompSeason[key] ?? [];
 
   const selectCls =
-    'rounded-lg border border-border-subtle bg-bg-surface-2 px-2.5 py-1.5 pr-7 text-[13px] text-text-primary focus:border-accent-green focus:outline-none focus:ring-1 focus:ring-accent-green';
+    'rounded-lg border border-border-subtle bg-bg-surface-2 px-2.5 py-1.5 pr-7 text-[13px] text-text-primary focus:border-accent-azure focus:outline-none focus:ring-1 focus:ring-accent-azure';
 
   return (
     <div className="space-y-3">

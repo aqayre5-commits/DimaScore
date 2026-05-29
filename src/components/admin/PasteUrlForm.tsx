@@ -58,7 +58,7 @@ export function PasteUrlForm({ onResult }: PasteUrlFormProps) {
               handleFetch();
             }
           }}
-          className="h-9 flex-1 rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-green focus:ring-1 focus:ring-accent-green"
+          className="h-9 flex-1 rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-azure focus:ring-1 focus:ring-accent-azure"
         />
         <button
           type="button"

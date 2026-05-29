@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown, Menu } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
@@ -48,7 +49,7 @@ function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void
                     <Link
                       href={buildCompetitionHref(entry, locale)}
                       onClick={onClose}
-                      className="block rounded px-2 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+                      className="block rounded px-2 py-1.5 text-sm text-text-secondary transition-colors hover:bg-accent-azure/5 hover:text-accent-azure"
                     >
                       {t(entry.labelKey)}
                     </Link>
@@ -67,6 +68,7 @@ export function Topbar() {
   const t = useTranslations('topbar');
   const tMega = useTranslations('megaMenu');
   const locale = useLocale() as Locale;
+  const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
   const topNavEntries = getTopNavEntries();
 
@@ -85,22 +87,29 @@ export function Topbar() {
 
         {/* Desktop nav — 8 direct competition links + More */}
         <div className="hidden items-center gap-0 lg:flex">
-          {topNavEntries.map((entry) => (
-            <Link
-              key={`${entry.competitionId}-${entry.labelKey}`}
-              href={buildCompetitionHref(entry, locale)}
-              className="rounded-md px-2 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-text-primary"
-            >
-              {tMega(entry.labelKey)}
-            </Link>
-          ))}
+          {topNavEntries.map((entry) => {
+            const href = buildCompetitionHref(entry, locale);
+            const isActive = pathname.startsWith(href);
+            return (
+              <Link
+                key={`${entry.competitionId}-${entry.labelKey}`}
+                href={href}
+                className={cn(
+                  'rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
+                  isActive ? 'text-accent-azure' : 'text-text-secondary hover:text-accent-azure',
+                )}
+              >
+                {tMega(entry.labelKey)}
+              </Link>
+            );
+          })}
 
           {/* More trigger */}
           <button
             onClick={() => setMoreOpen((v) => !v)}
             className={cn(
               'flex items-center gap-0.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
-              moreOpen ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary',
+              moreOpen ? 'text-accent-azure' : 'text-text-secondary hover:text-accent-azure',
             )}
           >
             {t('more')}

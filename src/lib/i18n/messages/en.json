@@ -233,6 +233,8 @@
     "round": "Round",
     "matchesToday": "{count} matches today",
     "knockoutStage": "Knockout stage",
+    "leaguePhase": "League phase",
+    "moreTeams": "more teams",
     "inProgress": "in progress",
     "final": "Final",
     "tournamentComplete": "Tournament complete",

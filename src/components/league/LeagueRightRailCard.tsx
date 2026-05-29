@@ -62,7 +62,7 @@ export function LeagueRightRailCard({
           </span>
           <Link
             href={`/${locale}`}
-            className="text-xs font-semibold text-accent-violet transition-colors hover:text-accent-violet/80"
+            className="text-xs font-semibold text-accent-azure transition-colors hover:text-accent-azure/80"
           >
             {t('seeAllLive')}
           </Link>
@@ -98,7 +98,7 @@ export function LeagueRightRailCard({
               {t('topScorers')}
             </span>
             {scorers.length > 3 && (
-              <span className="text-xs font-semibold text-accent-violet">{t('viewAll')}</span>
+              <span className="text-xs font-semibold text-accent-azure">{t('viewAll')}</span>
             )}
           </div>
           <div className="divide-y divide-border-subtle">
@@ -106,7 +106,7 @@ export function LeagueRightRailCard({
               <Link
                 key={scorer.playerId}
                 href={`/${locale}/joueur/${scorer.playerSlug}`}
-                className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-bg-surface-2"
+                className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent-azure/5"
               >
                 <span className="w-5 shrink-0 text-center text-xs font-bold text-text-tertiary">
                   {idx + 1}
@@ -166,7 +166,7 @@ function CompactMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale: 
   return (
     <Link
       href={`/${locale}/match/${fixture.id}`}
-      className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-bg-surface-2"
+      className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-accent-azure/5"
     >
       {/* Home */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">

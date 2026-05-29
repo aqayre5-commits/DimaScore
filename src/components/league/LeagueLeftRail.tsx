@@ -140,7 +140,7 @@ function CompLink({
     <Link
       href={buildCompetitionHref(entry, locale)}
       className={cn(
-        'flex items-center gap-3 px-4 py-2 transition-colors hover:bg-bg-surface-2',
+        'flex items-center gap-3 px-4 py-2 transition-colors hover:bg-accent-azure/5 hover:text-accent-azure',
         isActive
           ? 'border-l-2 border-accent-azure bg-accent-azure/10'
           : 'border-l-2 border-transparent',

@@ -177,7 +177,7 @@ function WCPageHeader({
                 <p className="mt-0.5 text-sm text-text-tertiary">{dateRange}</p>
               </div>
               {/* Edition badge */}
-              <span className="shrink-0 rounded-md bg-blue-500/15 px-3 py-1 text-xs font-semibold text-blue-400">
+              <span className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure">
                 Edition: {metadata.editionYear}
               </span>
             </div>

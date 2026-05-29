@@ -46,7 +46,7 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
             'rounded-full px-3 py-1 text-xs font-medium transition-colors',
             selectedGroup === null
               ? 'bg-accent-azure/15 text-accent-azure ring-1 ring-accent-azure/30'
-              : 'text-text-tertiary hover:text-text-secondary',
+              : 'text-text-tertiary hover:text-accent-azure/70',
           )}
         >
           {t('all')}
@@ -61,7 +61,7 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
                 ? 'bg-accent-azure/15 text-accent-azure ring-1 ring-accent-azure/30'
                 : label === moroccoGroup?.label
                   ? 'text-accent-azure/70 hover:text-accent-azure'
-                  : 'text-text-tertiary hover:text-text-secondary',
+                  : 'text-text-tertiary hover:text-accent-azure/70',
             )}
           >
             {label}

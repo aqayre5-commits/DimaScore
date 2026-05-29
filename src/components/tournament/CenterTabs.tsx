@@ -93,7 +93,7 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
                   'relative shrink-0 flex-1 px-4 py-3 text-center text-[13px] font-semibold tracking-wide transition-colors',
                   isActive
                     ? 'text-accent-azure'
-                    : 'text-text-tertiary hover:text-text-secondary hover:bg-bg-surface-2',
+                    : 'text-text-tertiary hover:text-accent-azure/70 hover:bg-accent-azure/5',
                 )}
               >
                 <TabIcon name={tab.icon} />

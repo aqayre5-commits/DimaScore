@@ -233,6 +233,8 @@
     "round": "الجولة",
     "matchesToday": "{count} مباريات اليوم",
     "knockoutStage": "مرحلة الأدوار الإقصائية",
+    "leaguePhase": "مرحلة الدوري",
+    "moreTeams": "فرق أخرى",
     "inProgress": "جاري",
     "final": "النهائي",
     "tournamentComplete": "انتهت البطولة",

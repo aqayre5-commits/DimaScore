@@ -29,6 +29,10 @@ import { StandingsTab } from '@/components/tournament/StandingsTab';
 import { KnockoutTab } from '@/components/tournament/KnockoutTab';
 import { GenericKnockoutList } from '@/components/tournament/GenericKnockoutList';
 import { CupFixturesByRound } from '@/components/tournament/CupFixturesByRound';
+import { CupOverviewTab } from '@/components/tournament/CupOverviewTab';
+import { CupFixturesTab } from '@/components/tournament/CupFixturesTab';
+import { DynamicKnockoutBracket } from '@/components/tournament/DynamicKnockoutBracket';
+import { buildDynamicBracket } from '@/lib/constants/dynamic-bracket-builder';
 import { WCFixturesTab } from '@/components/tournament/WCFixturesTab';
 import { CupGroupsSummary } from '@/components/tournament/CupGroupsSummary';
 import { BestThirdTab } from '@/components/tournament/BestThirdTab';
@@ -478,6 +482,10 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
     }
   }
 
+  // Dynamic bracket from DB (replaces static schedule when knockout data exists)
+  const wcBracket =
+    isWC && knockoutFixtures.length > 0 ? buildDynamicBracket(knockoutFixtures, typedLocale) : null;
+
   const tabs = [
     {
       key: 'overview',
@@ -547,6 +555,8 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
           <KnockoutTab
             locale={typedLocale}
             bracketHref={`/${locale}/competition/${rawCountry}/${rawTournament}/bracket`}
+            matches={wcBracket?.matches}
+            thirdPlaceMatch={wcBracket?.thirdPlaceMatch}
           />
         ) : (
           <GenericKnockoutList fixtures={knockoutFixtures} locale={typedLocale} />
@@ -821,7 +831,7 @@ async function renderLeaguePage(
             countryName={countryName}
             introText={introText}
             availableSeasons={availableSeasons}
-            teamsCount={standings.length}
+            teamsCount={new Set(standings.map((s) => s.teamId).filter(Boolean)).size}
             matchesCount={fixtures.length}
             totalRounds={rounds.length}
           />
@@ -912,6 +922,7 @@ async function renderGenericCupPage(
     coverage,
     cupInjuries,
     topScorers,
+    topAssists,
     genericFeaturedMatches,
   ] = await Promise.all([
     getStandings(db, competition.id, seasonYear),
@@ -920,6 +931,7 @@ async function renderGenericCupPage(
     getLeagueCoverage(db, competition.id, seasonYear),
     getInjuriesForCompetition(db, competition.id, seasonYear),
     getTopScorersForLeague(db, competition.id, seasonYear, 5),
+    getTopAssistsForLeague(db, competition.id, seasonYear, 5),
     getLeagueFeaturedMatches(db, competition.id, seasonYear, 2),
   ]);
 
@@ -932,37 +944,72 @@ async function renderGenericCupPage(
     { label: competitionName },
   ];
 
+  // Exclude qualifying rounds from hero match count (e.g. UCL 1st/2nd/3rd Qualifying + Play-offs)
+  const mainFixturesCount = allFixtures.filter(
+    (f) => !f.round?.includes('Qualifying') && f.round !== 'Play-offs',
+  ).length;
+
   const hasStandings = standings.length > 0;
   const hasKnockout = knockoutFixtures.length > 0;
 
+  // Build bracket data for knockout tab
+  const bracketData = hasKnockout ? buildDynamicBracket(knockoutFixtures, locale) : null;
+
   const tabs = [
-    ...(hasStandings
-      ? [
-          {
-            key: 'standings',
-            hash: 'standings',
-            labelKey: 'standings',
-            content: <LeagueStandingsTab standings={standings} locale={locale} />,
-          },
-        ]
-      : []),
-    ...(hasKnockout
-      ? [
-          {
-            key: 'knockout',
-            hash: 'knockout',
-            labelKey: 'knockout',
-            content: <GenericKnockoutList fixtures={knockoutFixtures} locale={locale} />,
-          },
-        ]
-      : []),
+    {
+      key: 'overview',
+      hash: 'overview',
+      labelKey: 'overview',
+      icon: 'home',
+      content: (
+        <CupOverviewTab
+          fixtures={allFixtures}
+          standings={standings}
+          topScorers={topScorers}
+          topAssists={topAssists}
+          coverage={coverage}
+          locale={locale}
+        />
+      ),
+    },
     ...(allFixtures.length > 0
       ? [
           {
             key: 'matches',
             hash: 'matches',
             labelKey: 'matches',
-            content: <CupFixturesByRound fixtures={allFixtures} locale={locale} />,
+            icon: 'calendar',
+            content: <CupFixturesTab fixtures={allFixtures} locale={locale} />,
+          },
+        ]
+      : []),
+    ...(hasStandings
+      ? [
+          {
+            key: 'standings',
+            hash: 'standings',
+            labelKey: 'standings',
+            icon: 'table',
+            content: <LeagueStandingsTab standings={standings} locale={locale} />,
+          },
+        ]
+      : []),
+    ...(bracketData
+      ? [
+          {
+            key: 'knockout',
+            hash: 'knockout',
+            labelKey: 'knockout',
+            icon: 'swords',
+            content: (
+              <DynamicKnockoutBracket
+                matches={bracketData.matches}
+                thirdPlaceMatch={bracketData.thirdPlaceMatch}
+                locale={locale}
+                gridConfig={bracketData.gridConfig}
+                competitionId={competition.id}
+              />
+            ),
           },
         ]
       : []),
@@ -983,8 +1030,8 @@ async function renderGenericCupPage(
             countryName={countryName}
             introText={null}
             availableSeasons={availableSeasons}
-            teamsCount={standings.length}
-            matchesCount={allFixtures.length}
+            teamsCount={new Set(standings.map((s) => s.teamId).filter(Boolean)).size}
+            matchesCount={mainFixturesCount}
           />
         }
         leftRail={
@@ -1006,22 +1053,13 @@ async function renderGenericCupPage(
           ) : undefined
         }
         rightRail={
-          <div className="space-y-4">
-            <LeagueRightRailCard
-              featuredMatches={genericFeaturedMatches.slice(1)}
-              topScorer={topScorers[0] ?? null}
-              locale={locale}
-              competitionName={competitionName}
-            />
-            {hasStandings && <CupGroupsSummary standings={standings} locale={locale} />}
-            <LeagueRightRail
-              competitionName={competitionName}
-              coverage={coverage}
-              topScorers={topScorers}
-              topAssists={[]}
-              locale={locale}
-            />
-          </div>
+          <LeagueRightRail
+            competitionName={competitionName}
+            coverage={coverage}
+            topScorers={topScorers.slice(0, 3)}
+            topAssists={topAssists.slice(0, 3)}
+            locale={locale}
+          />
         }
         belowCenter={
           <>

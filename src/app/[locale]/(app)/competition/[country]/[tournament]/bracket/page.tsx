@@ -5,6 +5,10 @@ import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBr
 import { getMetadataForCompetition } from '@/lib/constants/tournament-metadata';
 import { ALL_ENTRIES, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
 import { BracketPageClient } from '@/components/tournament/BracketPageClient';
+import { db } from '@/lib/db/client';
+import { getKnockoutFixtures } from '@/lib/db/queries';
+import { getCurrentSeasonYear } from '@/lib/db/queries/league';
+import { buildDynamicBracket } from '@/lib/constants/dynamic-bracket-builder';
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
@@ -83,6 +87,21 @@ export default async function BracketPage({ params }: PageProps) {
   const bracketTitle = tT('bracketPageTitle');
   const introText = tT('bracketIntroShort');
 
+  // Fetch dynamic bracket data from DB (falls back to static in BracketPageClient)
+  let bracketData: {
+    matches: import('@/components/tournament/BracketMatchCell').BracketMatch[];
+    thirdPlaceMatch?: import('@/components/tournament/BracketMatchCell').BracketMatch;
+  } | null = null;
+  if (entry) {
+    const seasonYear = await getCurrentSeasonYear(db, entry.competitionId);
+    if (seasonYear) {
+      const knockoutFixtures = await getKnockoutFixtures(db, entry.competitionId, seasonYear);
+      if (knockoutFixtures.length > 0) {
+        bracketData = buildDynamicBracket(knockoutFixtures, typedLocale);
+      }
+    }
+  }
+
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tB('football'), href: `/${locale}` },
     { label: tB('international') },
@@ -102,7 +121,11 @@ export default async function BracketPage({ params }: PageProps) {
       </div>
 
       <div className="w-full px-4 pb-8">
-        <BracketPageClient locale={typedLocale} />
+        <BracketPageClient
+          locale={typedLocale}
+          matches={bracketData?.matches}
+          thirdPlaceMatch={bracketData?.thirdPlaceMatch}
+        />
       </div>
 
       <script

@@ -15,6 +15,12 @@ export interface BracketMatch {
   awayLabel: string;
   homeScore?: number | null;
   awayScore?: number | null;
+  homeLeg1Score?: number | null;
+  homeLeg2Score?: number | null;
+  awayLeg1Score?: number | null;
+  awayLeg2Score?: number | null;
+  homeLogoUrl?: string | null;
+  awayLogoUrl?: string | null;
   status: 'upcoming' | 'live' | 'finished' | 'placeholder';
   statusLabel?: string;
   feedsInto?: string;
@@ -55,16 +61,11 @@ export function BracketMatchCell({ match, className }: BracketMatchCellProps) {
         className,
       )}
     >
-      {/* Header: match number */}
-      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-text-secondary">
-        M{match.fifaMatchNumber ?? match.matchNumber}
-      </p>
-
-      {/* Teams — horizontal layout */}
+      {/* Teams + score */}
       {showScores ? (
         <div className="flex items-center gap-1 text-xs">
           <span className="truncate font-medium text-text-primary">{match.homeLabel}</span>
-          <span className="shrink-0 font-semibold tabular-nums text-text-primary">
+          <span className="shrink-0 font-bold tabular-nums text-text-primary">
             {match.homeScore ?? '–'}–{match.awayScore ?? '–'}
           </span>
           <span className="truncate font-medium text-text-primary">{match.awayLabel}</span>

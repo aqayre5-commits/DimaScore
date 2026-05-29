@@ -233,6 +233,8 @@
     "round": "Tour",
     "matchesToday": "{count} matchs aujourd'hui",
     "knockoutStage": "Phase à élimination directe",
+    "leaguePhase": "Phase de ligue",
+    "moreTeams": "équipes de plus",
     "inProgress": "en cours",
     "final": "Finale",
     "tournamentComplete": "Tournoi terminé",

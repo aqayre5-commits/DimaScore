@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { codeToFlag } from '@/lib/flags';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import type { FixtureWithTeams } from '@/lib/db/queries';
@@ -44,41 +43,29 @@ function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
   return groups;
 }
 
-interface WCFixturesTabProps {
+interface CupFixturesTabProps {
   fixtures: FixtureWithTeams[];
   locale: Locale;
-  groupLabels: string[];
-  /** Maps teamId → group label (e.g. 16 → "A") from standings */
-  teamGroupMap: Record<number, string>;
+  /** When true, show fewer rows and no expand button (used in overview tab). */
+  compact?: boolean;
 }
 
 const INITIAL_VISIBLE = 10;
+const COMPACT_VISIBLE = 6;
 
-export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: WCFixturesTabProps) {
+/**
+ * Generic cup fixtures tab with status and round-type filters.
+ * Works for UCL, UEL, AFCON, etc.
+ */
+export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProps) {
   const t = useTranslations('tournament');
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [roundFilter, setRoundFilter] = useState<string>('all');
-  const [groupFilter, setGroupFilter] = useState<string>('all');
   const [expanded, setExpanded] = useState(false);
 
-  // Derive unique round types from fixtures
-  const roundTypes = useMemo(() => {
-    const types = new Set<string>();
-    for (const f of fixtures) {
-      if (f.round?.startsWith('Group')) types.add('group');
-      else if (f.round) types.add('knockout');
-    }
-    return Array.from(types);
-  }, [fixtures]);
-
-  // Filter fixtures
   const filtered = useMemo(() => {
-    let result = [...fixtures]
-      .filter((f) => !f.round?.toLowerCase().includes('ranking of third'))
-      .sort((a, b) => a.kickoffAt.getTime() - b.kickoffAt.getTime());
+    let result = [...fixtures].sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
 
-    // Status filter
     if (statusFilter !== 'all') {
       result = result.filter((f) => {
         const state = getMatchState(f.statusCode, f.kickoffAt);
@@ -89,35 +76,27 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
       });
     }
 
-    // Round filter
-    if (roundFilter === 'group') {
-      result = result.filter((f) => f.round?.startsWith('Group'));
-    } else if (roundFilter === 'knockout') {
-      result = result.filter((f) => f.round && !f.round.startsWith('Group'));
-    }
-
-    // Group filter — match via team-to-group mapping from standings
-    if (groupFilter !== 'all') {
-      result = result.filter((f) => {
-        const homeGroup = f.homeTeamId != null ? teamGroupMap[f.homeTeamId] : null;
-        const awayGroup = f.awayTeamId != null ? teamGroupMap[f.awayTeamId] : null;
-        return homeGroup === groupFilter || awayGroup === groupFilter;
-      });
-    }
-
     return result;
-  }, [fixtures, statusFilter, roundFilter, groupFilter]);
+  }, [fixtures, statusFilter]);
 
-  const visible = expanded ? filtered : filtered.slice(0, INITIAL_VISIBLE);
-  const hasMore = filtered.length > INITIAL_VISIBLE;
+  const limit = compact ? COMPACT_VISIBLE : INITIAL_VISIBLE;
+  const visible = expanded ? filtered : filtered.slice(0, limit);
+  const hasMore = !compact && filtered.length > limit;
 
-  // Only show Live/Results pills when relevant matches exist
   const hasLive = fixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
   const hasFinished = fixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
 
   const statusPills: { key: StatusFilter; label: string; dot?: boolean }[] = [
     { key: 'all', label: t('wcFixturesAll') },
-    ...(hasLive ? [{ key: 'live' as StatusFilter, label: t('wcFixturesLive'), dot: true }] : []),
+    ...(hasLive
+      ? [
+          {
+            key: 'live' as StatusFilter,
+            label: t('wcFixturesLive'),
+            dot: true,
+          },
+        ]
+      : []),
     { key: 'upcoming', label: t('wcFixturesUpcoming') },
     ...(hasFinished ? [{ key: 'results' as StatusFilter, label: t('wcFixturesResults') }] : []),
   ];
@@ -126,7 +105,6 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       {/* Filter bar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border-subtle px-4 py-2.5">
-        {/* Status pills */}
         <div className="flex items-center gap-1.5">
           {statusPills.map((pill) => (
             <button
@@ -144,39 +122,6 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
             </button>
           ))}
         </div>
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Dropdowns */}
-        <div className="flex items-center gap-2">
-          {roundTypes.length > 1 && (
-            <select
-              value={roundFilter}
-              onChange={(e) => setRoundFilter(e.target.value)}
-              className="rounded-md border border-border-subtle bg-bg-surface px-2 py-1 text-xs font-medium text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              <option value="all">{t('wcFixturesAll')}</option>
-              <option value="group">{t('groupStage')}</option>
-              <option value="knockout">{t('knockoutStage')}</option>
-            </select>
-          )}
-
-          {groupLabels.length > 0 && (
-            <select
-              value={groupFilter}
-              onChange={(e) => setGroupFilter(e.target.value)}
-              className="rounded-md border border-border-subtle bg-bg-surface px-2 py-1 text-xs font-medium text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
-            >
-              <option value="all">{t('wcAllGroups')}</option>
-              {groupLabels.map((g) => (
-                <option key={g} value={g}>
-                  {t('groupLabel', { label: g })}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
       </div>
 
       {/* Match rows grouped by date */}
@@ -193,7 +138,7 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
               </div>
               <div className="divide-y divide-border-subtle">
                 {group.fixtures.map((f) => (
-                  <WCMatchRow key={f.id} fixture={f} locale={locale} teamGroupMap={teamGroupMap} />
+                  <CupMatchRow key={f.id} fixture={f} locale={locale} />
                 ))}
               </div>
             </div>
@@ -201,7 +146,6 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
         )}
       </div>
 
-      {/* View full fixture list */}
       {hasMore && !expanded && (
         <button
           onClick={() => setExpanded(true)}
@@ -215,15 +159,7 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
   );
 }
 
-function WCMatchRow({
-  fixture,
-  locale,
-  teamGroupMap,
-}: {
-  fixture: FixtureWithTeams;
-  locale: Locale;
-  teamGroupMap: Record<number, string>;
-}) {
+function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Locale }) {
   const { homeTeam, awayTeam, kickoffAt, statusCode, homeScore, awayScore, venue } = fixture;
   const state = getMatchState(statusCode, kickoffAt);
   const isLive = state === 'live';
@@ -233,17 +169,10 @@ function WCMatchRow({
 
   const homeName = resolveFullName(homeTeam, locale);
   const awayName = resolveFullName(awayTeam, locale);
-  const homeFlag =
-    homeTeam?.isNational && homeTeam.countryCode ? codeToFlag(homeTeam.countryCode) : null;
-  const awayFlag =
-    awayTeam?.isNational && awayTeam.countryCode ? codeToFlag(awayTeam.countryCode) : null;
-
   const homeWon = isFinished && hasScore && homeScore! > awayScore!;
   const awayWon = isFinished && hasScore && awayScore! > homeScore!;
 
-  // Resolve group label from team-to-group mapping
-  const homeGroup = fixture.homeTeamId != null ? teamGroupMap[fixture.homeTeamId] : null;
-  const groupLabel = homeGroup ? `Group ${homeGroup}` : null;
+  const roundLabel = fixture.round ?? null;
   const venueName = venue?.name ?? venue?.city ?? null;
 
   return (
@@ -267,7 +196,7 @@ function WCMatchRow({
 
       {/* Home team */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        <TeamBadge team={homeTeam} flag={homeFlag} />
+        <TeamBadge team={homeTeam} />
         <span
           className={cn(
             'truncate text-sm',
@@ -278,7 +207,7 @@ function WCMatchRow({
         </span>
       </div>
 
-      {/* Center: vs + group + venue */}
+      {/* Score / vs */}
       <div className="flex shrink-0 flex-col items-center text-center">
         {hasScore ? (
           <span
@@ -292,9 +221,9 @@ function WCMatchRow({
         ) : (
           <span className="text-xs text-text-tertiary">vs</span>
         )}
-        {(groupLabel || venueName) && (
+        {(roundLabel || venueName) && (
           <span className="max-w-[180px] truncate text-[10px] text-text-tertiary">
-            {[groupLabel, venueName].filter(Boolean).join(' \u00B7 ')}
+            {[roundLabel, venueName].filter(Boolean).join(' \u00B7 ')}
           </span>
         )}
       </div>
@@ -309,20 +238,17 @@ function WCMatchRow({
         >
           {awayName}
         </span>
-        <TeamBadge team={awayTeam} flag={awayFlag} />
+        <TeamBadge team={awayTeam} />
       </div>
     </Link>
   );
 }
 
-function TeamBadge({ team, flag }: { team: FixtureWithTeams['homeTeam']; flag: string | null }) {
+function TeamBadge({ team }: { team: FixtureWithTeams['homeTeam'] }) {
   if (team?.logoUrl) {
     return (
       <img src={team.logoUrl} alt="" className="size-5 shrink-0 object-contain" loading="lazy" />
     );
-  }
-  if (flag) {
-    return <span className="shrink-0 text-sm leading-none">{flag}</span>;
   }
   return <span className="inline-block size-5 shrink-0 rounded bg-bg-surface-2" />;
 }

@@ -75,7 +75,7 @@
   --destructive: var(--accent-crimson);
   --border: var(--border-subtle);
   --input: var(--border-strong);
-  --ring: var(--accent-green);
+  --ring: var(--accent-azure);
   --chart-1: var(--accent-green);
   --chart-2: var(--accent-emerald);
   --chart-3: var(--accent-azure);
@@ -89,7 +89,7 @@
   --sidebar-accent: var(--bg-surface-2);
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--border-subtle);
-  --sidebar-ring: var(--accent-green);
+  --sidebar-ring: var(--accent-azure);
 }
 
 @layer base {
@@ -131,8 +131,8 @@
 }
 
 @keyframes hash-ring {
-  0% { box-shadow: 0 0 0 2px var(--accent-green); }
-  70% { box-shadow: 0 0 0 2px var(--accent-green); }
+  0% { box-shadow: 0 0 0 2px var(--accent-azure); }
+  70% { box-shadow: 0 0 0 2px var(--accent-azure); }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 

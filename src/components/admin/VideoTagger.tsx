@@ -89,7 +89,7 @@ function TagSelect({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
-          className="h-8 w-full rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-green focus:ring-1 focus:ring-accent-green"
+          className="h-8 w-full rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-azure focus:ring-1 focus:ring-accent-azure"
         />
         {open && filtered.length > 0 && (
           <ul className="absolute z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-md border border-border-subtle bg-bg-surface shadow-lg">
@@ -164,7 +164,7 @@ function NumericIdInput({
               add();
             }
           }}
-          className="h-8 w-32 rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-green focus:ring-1 focus:ring-accent-green"
+          className="h-8 w-32 rounded-md border border-border-subtle bg-bg-canvas px-3 text-sm text-text-primary outline-none focus:border-accent-azure focus:ring-1 focus:ring-accent-azure"
         />
         <button
           type="button"

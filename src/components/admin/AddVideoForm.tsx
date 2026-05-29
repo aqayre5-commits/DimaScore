@@ -121,7 +121,7 @@ export function AddVideoForm({ competitions, initialTeams }: AddVideoFormProps) 
                   id="category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="h-9 w-full rounded-md border border-border-subtle bg-bg-canvas px-2 text-sm text-text-primary outline-none focus:border-accent-green"
+                  className="h-9 w-full rounded-md border border-border-subtle bg-bg-canvas px-2 text-sm text-text-primary outline-none focus:border-accent-azure"
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c} value={c}>
@@ -139,7 +139,7 @@ export function AddVideoForm({ competitions, initialTeams }: AddVideoFormProps) 
                   id="language"
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="h-9 w-full rounded-md border border-border-subtle bg-bg-canvas px-2 text-sm text-text-primary outline-none focus:border-accent-green"
+                  className="h-9 w-full rounded-md border border-border-subtle bg-bg-canvas px-2 text-sm text-text-primary outline-none focus:border-accent-azure"
                 >
                   <option value="fr">French</option>
                   <option value="en">English</option>

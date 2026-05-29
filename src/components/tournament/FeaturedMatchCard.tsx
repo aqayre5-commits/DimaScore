@@ -49,7 +49,7 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
     <div className="flex flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface md:h-[180px]">
       <Link
         href={`/${locale}/match/${fixture.id}`}
-        className="flex h-full flex-col transition-colors hover:bg-bg-surface-2"
+        className="flex h-full flex-col transition-colors hover:bg-accent-azure/5"
       >
         {/* Live banner */}
         {isLive && (
