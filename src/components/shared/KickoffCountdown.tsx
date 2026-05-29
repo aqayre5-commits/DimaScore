@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 
 interface KickoffCountdownProps {
   kickoffAt: Date;
-  label: string;
+  label?: string;
+  /** Compact mode: no label, reduced padding. Used in fixed-height featured cards. */
+  compact?: boolean;
 }
 
 function computeRemaining(kickoffAt: Date) {
@@ -19,7 +21,7 @@ function computeRemaining(kickoffAt: Date) {
   return { days, hours, minutes, seconds };
 }
 
-export function KickoffCountdown({ kickoffAt, label }: KickoffCountdownProps) {
+export function KickoffCountdown({ kickoffAt, label, compact }: KickoffCountdownProps) {
   const [remaining, setRemaining] = useState(() => computeRemaining(kickoffAt));
 
   useEffect(() => {
@@ -43,6 +45,24 @@ export function KickoffCountdown({ kickoffAt, label }: KickoffCountdownProps) {
     { value: remaining.hours, unit: 'H' },
     { value: remaining.minutes, unit: 'M' },
   ];
+
+  if (compact) {
+    return (
+      <div className="flex justify-center gap-1.5">
+        {units.map((u) => (
+          <div
+            key={u.unit}
+            className="flex w-9 flex-col items-center rounded-md bg-bg-surface-3 py-0.5"
+          >
+            <span className="text-xs font-bold tabular-nums text-text-primary">
+              {String(u.value).padStart(2, '0')}
+            </span>
+            <span className="text-[7px] font-medium text-text-tertiary">{u.unit}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 py-2.5">

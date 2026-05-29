@@ -79,7 +79,7 @@ export function TournamentPageHeader({
     <div>
       {breadcrumb}
 
-      <div className="mt-3 rounded-xl border border-border-subtle bg-bg-surface p-4">
+      <div className="mt-3 rounded-xl border border-border-subtle bg-bg-surface p-2">
         <div className="flex items-start gap-4">
           {/* Title + meta + intro */}
           <div className="min-w-0 flex-1">
@@ -145,9 +145,8 @@ function WCPageHeader({
       {breadcrumb}
 
       <div
-        className={`relative flex flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15 p-4${breadcrumb ? ' mt-3' : ' h-full'}`}
+        className={`relative flex flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15 p-2${breadcrumb ? ' mt-3' : ' h-full'}`}
       >
-        {/* Watermark trophy */}
         <div className="relative flex flex-1 items-stretch gap-5">
           {/* Trophy logo */}
           <Image
@@ -155,7 +154,7 @@ function WCPageHeader({
             alt=""
             width={200}
             height={308}
-            className="hidden h-[200px] w-auto shrink-0 self-start drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:block"
+            className="hidden h-[164px] w-auto shrink-0 self-end drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:block"
             priority
           />
           <Image
@@ -163,12 +162,12 @@ function WCPageHeader({
             alt=""
             width={140}
             height={216}
-            className="h-[140px] w-auto shrink-0 self-start drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:hidden"
+            className="h-[120px] w-auto shrink-0 self-start drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:hidden"
             priority
           />
 
           {/* Title + meta + stats — height matches trophy */}
-          <div className="flex h-[140px] min-w-0 flex-1 flex-col md:h-[200px]">
+          <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h1 className="font-display text-2xl font-semibold text-text-primary md:text-3xl">

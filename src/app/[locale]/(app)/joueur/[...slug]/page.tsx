@@ -166,11 +166,7 @@ export default async function PlayerPage({ params }: PageProps) {
           <div className="space-y-4">
             <PlayerInfoCard player={player} locale={typedLocale} />
             {upcomingFixture && (
-              <FeaturedMatchCard
-                fixture={upcomingFixture}
-                locale={typedLocale}
-                cardTitle={playerName}
-              />
+              <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
             )}
           </div>
         }

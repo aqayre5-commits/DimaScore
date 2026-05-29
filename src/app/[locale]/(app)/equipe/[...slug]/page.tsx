@@ -172,11 +172,7 @@ export default async function TeamPage({ params }: PageProps) {
         leftRail={
           <div className="space-y-4">
             {upcomingFixture && (
-              <FeaturedMatchCard
-                fixture={upcomingFixture}
-                locale={typedLocale}
-                cardTitle={teamName}
-              />
+              <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
             )}
             {competitionTeams.teams.length > 0 && (
               <TeamCompetitionTeams

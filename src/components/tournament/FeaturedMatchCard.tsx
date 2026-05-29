@@ -1,10 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
-import { ShareButton } from '@/components/shared/ShareButton';
 import { KickoffCountdown } from '@/components/shared/KickoffCountdown';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
@@ -12,146 +11,157 @@ import type { Locale } from '@/lib/i18n/config';
 interface FeaturedMatchCardProps {
   fixture: FixtureWithTeams;
   locale: Locale;
-  cardTitle: string;
-  shareHash?: string;
 }
 
-function resolveFullName(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
+function resolveTeamCode(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
   if (!team) return '\u2014';
   return (
+    team.code ??
     team.shortName[locale] ??
     team.shortName['en'] ??
-    team.name[locale] ??
-    team.name['en'] ??
-    team.code ??
-    '\u2014'
+    (team.name[locale] ?? team.name['en'] ?? '\u2014').slice(0, 3).toUpperCase()
   );
 }
 
-function TeamBadge({ team, locale }: { team: FixtureWithTeams['homeTeam']; locale: Locale }) {
-  if (!team) return null;
-  const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
-  const name = resolveFullName(team, locale);
+function formatHeaderDate(date: Date, locale: Locale): string {
+  const formatted = formatMatchDate(date, locale, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+  const time = formatMatchTime(date, locale);
+  return `${formatted.toUpperCase()} \u00B7 ${time}`;
+}
+
+export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
+  const t = useTranslations('leaguePage');
+  const { homeTeam, awayTeam, kickoffAt, venue, statusCode, homeScore, awayScore } = fixture;
+
+  const homeCode = resolveTeamCode(homeTeam, locale);
+  const awayCode = resolveTeamCode(awayTeam, locale);
+  const state = getMatchState(statusCode, kickoffAt);
+  const isFinished = state === 'finished';
+  const isLive = state === 'live';
+
+  const headerDate = formatHeaderDate(kickoffAt, locale);
 
   return (
-    <div className="flex flex-1 flex-col items-center gap-2 text-center min-w-0">
-      {flag ? (
-        <span className="text-3xl leading-none">{flag}</span>
-      ) : team.logoUrl ? (
-        <img src={team.logoUrl} alt="" className="size-10 object-contain" loading="lazy" />
-      ) : (
-        <div className="flex size-10 items-center justify-center rounded-full bg-bg-surface-2 text-sm font-bold text-text-tertiary">
-          {(name[0] ?? '?').toUpperCase()}
+    <div className="flex flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface md:h-[180px]">
+      <Link
+        href={`/${locale}/match/${fixture.id}`}
+        className="flex h-full flex-col transition-colors hover:bg-bg-surface-2"
+      >
+        {/* Live banner */}
+        {isLive && (
+          <div className="bg-bg-surface-3 px-4 py-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-accent-emerald">
+              {t('featuredMatch')}
+            </span>
+          </div>
+        )}
+
+        {/* Date + time header */}
+        <div className="px-4 pt-2 pb-1 text-center">
+          <span className="text-xs tabular-nums text-text-tertiary">{headerDate}</span>
         </div>
-      )}
-      <span className="text-[13px] font-medium leading-tight text-text-primary truncate w-full">
-        {name}
-      </span>
+
+        {/* Teams + Score/VS */}
+        <div className="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2">
+          {/* Home */}
+          <div className="flex flex-col items-center justify-center gap-1.5 text-center">
+            {homeTeam?.logoUrl ? (
+              <img src={homeTeam.logoUrl} alt="" className="size-10 object-contain" />
+            ) : (
+              <div className="flex size-10 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
+                {homeCode}
+              </div>
+            )}
+            <span className="max-w-full truncate text-xs font-semibold text-text-primary">
+              {homeCode}
+            </span>
+          </div>
+
+          {/* Center: Score or VS — fixed height for consistent logo alignment */}
+          <div className="flex min-h-[48px] flex-col items-center justify-center text-center">
+            {isFinished || isLive ? (
+              <>
+                <div
+                  className={`text-xl font-bold tabular-nums ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
+                >
+                  {homeScore != null && awayScore != null ? `${homeScore} - ${awayScore}` : '- : -'}
+                </div>
+                {isLive ? (
+                  <div className="mt-1 flex items-center justify-center gap-1">
+                    <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
+                    <span className="text-xs font-semibold text-accent-emerald">
+                      {statusCode === 'HT' ? 'HT' : statusCode}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="mt-0.5 inline-block rounded bg-bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-text-tertiary">
+                    {statusCode === 'AET' ? 'AET' : statusCode === 'PEN' ? 'PEN' : 'FT'}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-xl font-bold text-text-tertiary">VS</span>
+            )}
+          </div>
+
+          {/* Away */}
+          <div className="flex flex-col items-center justify-center gap-1.5 text-center">
+            {awayTeam?.logoUrl ? (
+              <img src={awayTeam.logoUrl} alt="" className="size-10 object-contain" />
+            ) : (
+              <div className="flex size-10 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
+                {awayCode}
+              </div>
+            )}
+            <span className="max-w-full truncate text-xs font-semibold text-text-primary">
+              {awayCode}
+            </span>
+          </div>
+        </div>
+
+        {/* Footer zone */}
+        <div className="flex h-[48px] flex-col items-center justify-center">
+          {isLive ? (
+            <MatchProgressBar statusCode={statusCode} />
+          ) : !isFinished ? (
+            <KickoffCountdown kickoffAt={kickoffAt} compact />
+          ) : venue && (venue.name || venue.city) ? (
+            <p className="text-xs text-text-tertiary">{venue.name ?? venue.city}</p>
+          ) : null}
+        </div>
+      </Link>
     </div>
   );
 }
 
-export function FeaturedMatchCard({
-  fixture,
-  locale,
-  cardTitle,
-  shareHash,
-}: FeaturedMatchCardProps) {
-  const t = useTranslations('shared');
-  const { homeTeam, awayTeam, kickoffAt, venue, statusCode, homeScore, awayScore } = fixture;
-
-  const state = getMatchState(statusCode, kickoffAt);
-  const isLive = state === 'live';
-  const isDone = state === 'finished';
-  const hasScore = homeScore != null && awayScore != null;
-
-  const kickoffDate = formatMatchDate(kickoffAt, locale);
-  const kickoffTime = formatMatchTime(kickoffAt, locale);
-
-  const now = new Date();
-  const ko = new Date(kickoffAt);
-  const isToday =
-    ko.getFullYear() === now.getFullYear() &&
-    ko.getMonth() === now.getMonth() &&
-    ko.getDate() === now.getDate();
+/** Visual timeline dots for a live match. */
+function MatchProgressBar({ statusCode }: { statusCode: string }) {
+  const segments = 10;
+  let filled = 5;
+  if (statusCode === '1H') filled = 3;
+  else if (statusCode === 'HT') filled = 5;
+  else if (statusCode === '2H') filled = 7;
+  else if (statusCode === 'ET') filled = 9;
+  else if (statusCode === 'P' || statusCode === 'BT') filled = 10;
 
   return (
-    <div id={shareHash} className="relative rounded-xl border border-border-subtle bg-bg-surface">
-      {shareHash && (
-        <div className="absolute end-2 top-2 z-10">
-          <ShareButton title={cardTitle || t('match')} hash={shareHash} />
-        </div>
-      )}
-
-      <div className="flex flex-col items-center gap-3 px-4 py-5">
-        {/* Score or Kickoff */}
-        {(isDone || isLive) && hasScore ? (
-          <div className="text-center">
-            <p
-              className={`text-2xl font-bold tabular-nums ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
-            >
-              {homeScore} - {awayScore}
-            </p>
-            {isLive ? (
-              <div className="mt-1 flex items-center justify-center gap-1">
-                <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
-                <span className="text-xs font-semibold text-accent-emerald">{statusCode}</span>
-              </div>
-            ) : (
-              <p className="text-[11px] uppercase tracking-wide text-text-tertiary">FT</p>
-            )}
-            {!isToday && (
-              <p className="mt-0.5 text-[11px] uppercase tracking-wide text-text-tertiary">
-                {kickoffDate}
-              </p>
-            )}
-          </div>
-        ) : (isDone || isLive) && !hasScore ? (
-          <div className="text-center">
-            <p className="text-lg font-semibold tabular-nums text-text-primary">{kickoffTime}</p>
-            <p className="text-[11px] uppercase tracking-wide text-text-tertiary">
-              {isDone ? 'FT' : statusCode}
-            </p>
-            {!isToday && (
-              <p className="mt-0.5 text-[11px] uppercase tracking-wide text-text-tertiary">
-                {kickoffDate}
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="text-center">
-            <p className="text-lg font-semibold tabular-nums text-text-primary">{kickoffTime}</p>
-            {!isToday && (
-              <p className="text-[11px] uppercase tracking-wide text-text-tertiary">
-                {kickoffDate}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Teams */}
-        <div className="flex w-full items-center gap-3">
-          <TeamBadge team={homeTeam} locale={locale} />
-          {(isDone || isLive) && hasScore ? (
-            <span className="shrink-0" />
-          ) : (
-            <span className="shrink-0 text-[11px] font-semibold uppercase text-text-tertiary">
-              vs
-            </span>
-          )}
-          <TeamBadge team={awayTeam} locale={locale} />
-        </div>
-
-        {/* Venue */}
-        {venue && (venue.name || venue.city) && (
-          <p className="text-[11px] text-text-tertiary">
-            {[venue.name, venue.city].filter(Boolean).join(', ')}
-          </p>
-        )}
-      </div>
-
-      {/* Countdown for upcoming matches */}
-      {state === 'upcoming' && <KickoffCountdown kickoffAt={kickoffAt} label={t('match')} />}
+    <div className="flex items-center justify-center gap-1 px-4 py-2">
+      {Array.from({ length: segments }, (_, i) => (
+        <span
+          key={i}
+          className={`size-2 rounded-full ${
+            i < filled
+              ? i < filled - 1
+                ? 'bg-accent-emerald'
+                : 'animate-pulse bg-accent-emerald'
+              : 'bg-bg-surface-3'
+          }`}
+        />
+      ))}
     </div>
   );
 }

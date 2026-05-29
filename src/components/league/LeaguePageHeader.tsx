@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { Users, CalendarDays, LayoutGrid } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
 import type { CompetitionRecord } from '@/lib/db/queries/league';
 
@@ -9,33 +10,29 @@ import type { CompetitionRecord } from '@/lib/db/queries/league';
 const CURATED_LOGOS: Record<number, string> = {
   39: '/competitions/premier-league.png',
   2: '/competitions/champions-league.svg',
+  61: '/competitions/ligue-1.svg',
+  140: '/competitions/la-liga.svg',
   922: '/competitions/wafcon.png',
 };
 
 /** Competition IDs whose API-Football logos are dark artwork that needs
  *  inversion (white) on our dark theme. Curated logos are included. */
 const DARK_LOGOS: Set<number> = new Set([
-  // Curated replacements (still dark artwork)
-  2, // Champions League
-  39, // Premier League
-  922, // WAFCON
-  // API-Football logos with dark/black artwork
-  1, // World Cup
-  3, // Europa League
-  29, // WC Qualifiers Africa
-  36, // AFCON Qualifiers
-  61, // Ligue 1 (France)
-  82, // Frauen Bundesliga
-  203, // Süper Lig
-  233, // Egyptian Premier League
-  525, // UEFA Women's Champions League
-  848, // Europa Conference League
-  1191, // UEFA Women's Europa Cup
+  2, 3, 29, 36, 39, 61, 82, 140, 203, 233, 525, 848, 922, 1, 1191,
 ]);
 
-/** Convert ISO 3166-1 alpha-2 country code to flag emoji. */
+/** Sub-nation flag emojis (Unicode tag sequences). */
+const SUB_FLAGS: Record<string, string> = {
+  'GB-ENG': '\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}', // 🏴󠁧󠁢󠁥󠁮󠁧󠁿
+  'GB-SCT': '\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}', // 🏴󠁧󠁢󠁳󠁣󠁴󠁿
+  'GB-WLS': '\u{1F3F4}\u{E0067}\u{E0062}\u{E0077}\u{E006C}\u{E0073}\u{E007F}', // 🏴󠁧󠁢󠁷󠁬󠁳󠁿
+};
+
+/** Convert country code to flag emoji. Handles ISO 3166-2 sub-codes. */
 function countryFlag(code: string | null): string | null {
-  if (!code || code.length !== 2) return null;
+  if (!code) return null;
+  if (SUB_FLAGS[code]) return SUB_FLAGS[code];
+  if (code.length !== 2) return null;
   const cp1 = 0x1f1e6 + code.toUpperCase().charCodeAt(0) - 65;
   const cp2 = 0x1f1e6 + code.toUpperCase().charCodeAt(1) - 65;
   return String.fromCodePoint(cp1, cp2);
@@ -58,12 +55,6 @@ function formatSeason(year: number): string {
   return `${year}/${next.toString().padStart(2, '0')}`;
 }
 
-function getSeasonSpan(year: number): string {
-  const startMonth = 'Aug';
-  const endMonth = 'May';
-  return `${startMonth} – ${endMonth}`;
-}
-
 export function LeaguePageHeader({
   competition,
   seasonYear,
@@ -82,11 +73,6 @@ export function LeaguePageHeader({
   const logoSrc = CURATED_LOGOS[competition.id] ?? competition.logoUrl;
   const needsInvert = DARK_LOGOS.has(competition.id);
 
-  const hasStats =
-    (teamsCount && teamsCount > 0) ||
-    (matchesCount && matchesCount > 0) ||
-    (totalRounds && totalRounds > 0);
-
   function handleSeasonChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const year = e.target.value;
     const currentSeason = availableSeasons.find((s) => s.isCurrent);
@@ -97,117 +83,102 @@ export function LeaguePageHeader({
     }
   }
 
+  const stats = [
+    ...(teamsCount && teamsCount > 0
+      ? [{ icon: Users, value: teamsCount, label: t('teamsCount') }]
+      : []),
+    ...(matchesCount && matchesCount > 0
+      ? [{ icon: CalendarDays, value: matchesCount, label: t('matchesCount') }]
+      : []),
+    ...(totalRounds && totalRounds > 0
+      ? [{ icon: LayoutGrid, value: totalRounds, label: t('roundsCount') }]
+      : []),
+  ];
+
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-accent-violet/5 via-50% to-accent-violet/20 p-4">
-      {/* Decorative watermark logo */}
-      {logoSrc && (
-        <img
-          src={logoSrc}
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-8 top-1/2 hidden h-[200px] w-auto -translate-y-1/2 object-contain opacity-[0.06] md:block"
-        />
-      )}
-
-      <div className="relative flex flex-1 items-start gap-4">
-        {/* Logo */}
-        {logoSrc ? (
-          <>
-            <img
-              src={logoSrc}
-              alt=""
-              className={`hidden h-[128px] w-auto shrink-0 object-contain md:block${needsInvert ? ' logo-invert' : ''}`}
-              loading="eager"
-            />
-            <img
-              src={logoSrc}
-              alt=""
-              className={`h-[96px] w-auto shrink-0 object-contain md:hidden${needsInvert ? ' logo-invert' : ''}`}
-              loading="eager"
-            />
-          </>
-        ) : (
-          <div className="flex size-24 shrink-0 items-center justify-center rounded-lg bg-bg-surface-2 md:size-32">
-            <span className="text-4xl">🏆</span>
-          </div>
-        )}
-
-        {/* Title + meta + intro + buttons + stats */}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <h1 className="font-display text-2xl font-semibold text-text-primary md:text-3xl">
-                {name}
-              </h1>
-              <div className="mt-1 flex items-center gap-2">
-                {countryName && (
-                  <span className="text-sm text-text-tertiary">
-                    {countryFlag(competition.countryCode)} {countryName}
-                  </span>
-                )}
-                {countryName && availableSeasons.length > 1 && (
-                  <span className="text-text-tertiary">·</span>
-                )}
-                {availableSeasons.length > 1 ? (
-                  <select
-                    value={seasonYear}
-                    onChange={handleSeasonChange}
-                    className="rounded-md border border-border-subtle bg-bg-surface px-2 py-0.5 text-sm font-medium text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
-                  >
-                    {availableSeasons.map((s) => (
-                      <option key={s.year} value={s.year}>
-                        {formatSeason(s.year)}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <span className="text-sm font-medium text-text-secondary">
-                    {formatSeason(seasonYear)}
-                  </span>
-                )}
-              </div>
+    <div className="h-full">
+      <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15 p-2 md:min-h-[180px]">
+        <div className="relative flex flex-1 items-stretch gap-5">
+          {/* Logo */}
+          {logoSrc ? (
+            <>
+              <img
+                src={logoSrc}
+                alt=""
+                className={`hidden h-full max-h-[160px] max-w-[200px] w-auto shrink-0 object-contain object-bottom md:block${needsInvert ? ' logo-invert' : ''}`}
+                loading="eager"
+              />
+              <img
+                src={logoSrc}
+                alt=""
+                className={`h-[80px] w-auto shrink-0 self-end object-contain md:hidden${needsInvert ? ' logo-invert' : ''}`}
+                loading="eager"
+              />
+            </>
+          ) : (
+            <div className="flex size-24 shrink-0 items-center justify-center rounded-lg bg-bg-surface-2 md:size-32">
+              <span className="text-4xl">🏆</span>
             </div>
-          </div>
-
-          {introText && (
-            <p className="mt-3 max-w-[720px] text-sm leading-relaxed text-text-secondary">
-              {introText}
-            </p>
           )}
+
+          {/* Title + meta + stats — height matches logo */}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <h1 className="font-display text-2xl font-semibold text-text-primary md:text-3xl">
+                  {name}
+                </h1>
+                <div className="mt-1.5 flex items-center gap-2">
+                  {countryName && (
+                    <span className="text-base text-text-secondary">
+                      <span className="text-lg">{countryFlag(competition.countryCode)}</span>{' '}
+                      {countryName}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {/* Season selector badge */}
+              {availableSeasons.length > 1 ? (
+                <select
+                  value={seasonYear}
+                  onChange={handleSeasonChange}
+                  className="shrink-0 rounded-md bg-blue-500/15 px-3 py-1 text-xs font-semibold text-blue-400 focus:outline-none focus:ring-1 focus:ring-accent"
+                >
+                  {availableSeasons.map((s) => (
+                    <option key={s.year} value={s.year}>
+                      {formatSeason(s.year)}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="shrink-0 rounded-md bg-blue-500/15 px-3 py-1 text-xs font-semibold text-blue-400">
+                  {formatSeason(seasonYear)}
+                </span>
+              )}
+            </div>
+
+            {/* Stats — bordered pills, pushed to bottom */}
+            {stats.length > 0 && (
+              <div className="mt-auto flex flex-wrap gap-3">
+                {stats.map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex flex-col items-center rounded-lg border border-accent-azure/20 bg-accent-azure/5 px-3 py-1.5"
+                  >
+                    <div className="flex items-center gap-1">
+                      <s.icon className="size-3.5 text-accent-azure" />
+                      <span className="text-sm font-bold tabular-nums text-text-primary">
+                        {s.value}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-text-tertiary">{s.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Quick stats strip — full-width bottom row */}
-      {hasStats && (
-        <div className="mt-4 flex flex-wrap items-center justify-end gap-8 border-t border-border-subtle pt-3">
-          {teamsCount != null && teamsCount > 0 && (
-            <div className="flex flex-col items-center">
-              <span className="text-lg font-bold tabular-nums text-text-primary">{teamsCount}</span>
-              <span className="text-xs text-text-tertiary">{t('teamsCount')}</span>
-            </div>
-          )}
-          {matchesCount != null && matchesCount > 0 && (
-            <div className="flex flex-col items-center">
-              <span className="text-lg font-bold tabular-nums text-text-primary">
-                {matchesCount}
-              </span>
-              <span className="text-xs text-text-tertiary">{t('matchesCount')}</span>
-            </div>
-          )}
-          {totalRounds != null && totalRounds > 0 && (
-            <div className="flex flex-col items-center">
-              <span className="text-lg font-bold tabular-nums text-text-primary">
-                {totalRounds}
-              </span>
-              <span className="text-xs text-text-tertiary">{t('roundsCount')}</span>
-            </div>
-          )}
-          <div className="flex flex-col items-center">
-            <span className="text-lg font-bold text-text-primary">{getSeasonSpan(seasonYear)}</span>
-            <span className="text-xs text-text-tertiary">{t('seasonSpan')}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

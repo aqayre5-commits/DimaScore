@@ -19,13 +19,7 @@ export function OverviewFeaturedPair({ fixtures, locale }: OverviewFeaturedPairP
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
       {pair.map((fixture, i) => (
-        <FeaturedMatchCard
-          key={fixture.id}
-          fixture={fixture}
-          locale={locale}
-          cardTitle=""
-          shareHash={`featured-${i + 1}`}
-        />
+        <FeaturedMatchCard key={fixture.id} fixture={fixture} locale={locale} />
       ))}
     </div>
   );

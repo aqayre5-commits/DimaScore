@@ -21,7 +21,6 @@ import {
   findEditionYearBySlug,
 } from '@/lib/constants/cup-content';
 import { TournamentPageHeader } from '@/components/tournament/TournamentPageHeader';
-import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 import { MatchesList } from '@/components/tournament/MatchesList';
 
 import { CenterTabs } from '@/components/tournament/CenterTabs';
@@ -996,10 +995,20 @@ async function renderGenericCupPage(
           />
         }
         center={<CenterTabs tabs={tabs} />}
+        rightRailTop={
+          genericFeaturedMatches.length > 0 ? (
+            <LeagueRightRailCard
+              featuredMatches={genericFeaturedMatches.slice(0, 1)}
+              locale={locale}
+              competitionName={competitionName}
+              stretch
+            />
+          ) : undefined
+        }
         rightRail={
           <div className="space-y-4">
             <LeagueRightRailCard
-              featuredMatches={genericFeaturedMatches}
+              featuredMatches={genericFeaturedMatches.slice(1)}
               topScorer={topScorers[0] ?? null}
               locale={locale}
               competitionName={competitionName}

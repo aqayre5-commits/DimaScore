@@ -35,13 +35,7 @@ export async function EditorialCards({ locale }: EditorialCardsProps) {
   return (
     <div className="grid grid-cols-1 gap-3 self-start">
       {fixtures.map((fixture, i) => (
-        <FeaturedMatchCard
-          key={fixture.id}
-          fixture={fixture}
-          locale={locale}
-          cardTitle=""
-          shareHash={`homepage-featured-${i + 1}`}
-        />
+        <FeaturedMatchCard key={fixture.id} fixture={fixture} locale={locale} />
       ))}
     </div>
   );
