@@ -115,6 +115,93 @@ const WC_2026: CupContent = {
   breadcrumbOrg: 'FIFA',
 };
 
+// ── AFCON 2025 (competitionId: 6, season 2025 — 21 Dec 2025 – 18 Jan 2026 in Morocco) ──
+
+const AFCON_2025: CupContent = {
+  meta: {
+    fr: {
+      title: 'CAN 2025 — Calendrier, groupes, classement et phase finale | Atlas Kings',
+      description:
+        "Suivez la Coupe d'Afrique des Nations 2025 en direct au Maroc : calendrier des 52 matchs, 6 groupes, classement, phase à élimination directe.",
+    },
+    en: {
+      title: 'AFCON 2025 — Fixtures, groups, standings and knockout | Atlas Kings',
+      description:
+        'Follow the Africa Cup of Nations 2025 live from Morocco: 52-match schedule, 6 groups, standings, knockout bracket.',
+    },
+    ar: {
+      title: 'كأس أمم إفريقيا 2025 — الجدول، المجموعات، الترتيب ومرحلة الإقصاء | أطلس كينغز',
+      description:
+        'تابعوا كأس أمم إفريقيا 2025 مباشرة من المغرب: جدول 52 مباراة، 6 مجموعات، ترتيب كل مجموعة، الأدوار الإقصائية.',
+    },
+  },
+  intro: {
+    fr: "La Coupe d'Afrique des Nations 2025 se déroule au Maroc du 21 décembre 2025 au 18 janvier 2026. 24 équipes s'affrontent dans 6 groupes de 4, suivis d'une phase à élimination directe.",
+    en: 'The Africa Cup of Nations 2025 takes place in Morocco from 21 December 2025 to 18 January 2026. 24 teams compete in 6 groups of 4, followed by a knockout phase.',
+    ar: 'تقام بطولة كأس أمم إفريقيا 2025 في المغرب من 21 ديسمبر 2025 إلى 18 يناير 2026. تتنافس 24 منتخباً في 6 مجموعات من 4 فرق، تليها مرحلة إقصائية.',
+  },
+  titles: {
+    fr: 'CAN 2025',
+    en: 'AFCON 2025',
+    ar: 'كأس أمم إفريقيا 2025',
+  },
+  slugs: ['can-2025', 'afcon-2025', 'كأس-أمم-إفريقيا-2025'],
+  urls: {
+    fr: `${baseUrl}/fr/competition/caf/can-2025`,
+    en: `${baseUrl}/en/competition/caf/afcon-2025`,
+    ar: `${baseUrl}/ar/competition/كاف/كأس-أمم-إفريقيا-2025`,
+  },
+  tabHashes: {
+    fr: {
+      overview: 'vue-densemble',
+      standings: 'classement',
+      bestThird: 'meilleurs-3emes',
+      knockout: 'elimination',
+    },
+    en: {
+      overview: 'overview',
+      standings: 'standings',
+      bestThird: 'best-3rd',
+      knockout: 'knockout',
+    },
+    ar: {
+      overview: 'نظرة-عامة',
+      standings: 'ترتيب',
+      bestThird: 'افضل-الثالثة',
+      knockout: 'إقصائيات',
+    },
+  },
+  facts: {
+    fr: [
+      '24 équipes nationales',
+      '6 groupes de 4 équipes',
+      '52 matchs au total',
+      'Pays hôte : Maroc',
+      '21 décembre 2025 → 18 janvier 2026',
+    ],
+    en: [
+      '24 national teams',
+      '6 groups of 4 teams',
+      '52 total matches',
+      'Host country: Morocco',
+      '21 December 2025 → 18 January 2026',
+    ],
+    ar: [
+      '24 منتخباً وطنياً',
+      '6 مجموعات من 4 فرق',
+      '52 مباراة إجمالاً',
+      'البلد المستضيف: المغرب',
+      '21 ديسمبر 2025 → 18 يناير 2026',
+    ],
+  },
+  historicalTeamNames: {
+    fr: { CI: "Côte d'Ivoire", SN: 'Sénégal', DZ: 'Algérie', CM: 'Cameroun', EG: 'Égypte' },
+    en: { CI: 'Ivory Coast', SN: 'Senegal', DZ: 'Algeria', CM: 'Cameroon', EG: 'Egypt' },
+    ar: { CI: 'ساحل العاج', SN: 'السنغال', DZ: 'الجزائر', CM: 'الكاميرون', EG: 'مصر' },
+  },
+  breadcrumbOrg: 'CAF',
+};
+
 // ── WAFCON 2024 (competitionId: 922, season 2024 — played July 2025, completed) ──
 
 const WAFCON_2024: CupContent = {
@@ -339,18 +426,20 @@ const WAFCON_2026: CupContent = {
 /** Default (latest/upcoming) cup content per competition. */
 const CUP_CONTENT_REGISTRY: Record<number, CupContent> = {
   1: WC_2026,
+  6: AFCON_2025,
   922: WAFCON_2026,
 };
 
 /** Season-specific cup content: key = "competitionId:editionYear". */
 const CUP_CONTENT_BY_SEASON: Record<string, CupContent> = {
   '1:2026': WC_2026,
+  '6:2025': AFCON_2025,
   '922:2024': WAFCON_2024,
   '922:2026': WAFCON_2026,
 };
 
 /** All cup content entries (for slug lookups across all editions). */
-const ALL_CUP_CONTENT: CupContent[] = [WC_2026, WAFCON_2024, WAFCON_2026];
+const ALL_CUP_CONTENT: CupContent[] = [WC_2026, AFCON_2025, WAFCON_2024, WAFCON_2026];
 
 /** Look up cup content by competitionId (returns latest/upcoming edition). */
 export function getCupContent(competitionId: number): CupContent | undefined {

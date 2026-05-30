@@ -18,11 +18,13 @@ export interface PlayerDetail {
   birthDate: string | null;
   birthPlace: string | null;
   nationalityCode: string | null;
+  birthCountryCode: string | null;
   height: string | null;
   weight: string | null;
   injured: boolean | null;
   currentTeam: {
     id: number;
+    slug: string;
     name: Record<string, string>;
     shortName: Record<string, string>;
     code: string | null;
@@ -45,8 +47,18 @@ export interface PlayerTransfer {
   date: string | null;
   type: string | null;
   fee: string | null;
-  fromTeam: { id: number; name: Record<string, string>; logoUrl: string | null } | null;
-  toTeam: { id: number; name: Record<string, string>; logoUrl: string | null } | null;
+  fromTeam: {
+    id: number;
+    name: Record<string, string>;
+    code: string | null;
+    logoUrl: string | null;
+  } | null;
+  toTeam: {
+    id: number;
+    name: Record<string, string>;
+    code: string | null;
+    logoUrl: string | null;
+  } | null;
 }
 
 // ── Q1: Player by slug ──
@@ -68,6 +80,7 @@ export async function getPlayerBySlug(
       birthDate: schema.players.birthDate,
       birthPlace: schema.players.birthPlace,
       nationalityCode: schema.players.nationalityCode,
+      birthCountryCode: schema.players.birthCountryCode,
       height: schema.players.height,
       weight: schema.players.weight,
       injured: schema.players.injured,
@@ -84,6 +97,7 @@ export async function getPlayerBySlug(
     ? await db
         .select({
           id: schema.teams.id,
+          slug: schema.teams.slug,
           name: schema.teams.name,
           shortName: schema.teams.shortName,
           code: schema.teams.code,
@@ -108,6 +122,7 @@ export async function getPlayerBySlug(
     birthDate: player.birthDate,
     birthPlace: player.birthPlace,
     nationalityCode: player.nationalityCode,
+    birthCountryCode: player.birthCountryCode,
     height: player.height,
     weight: player.weight,
     injured: player.injured,
@@ -210,6 +225,7 @@ export async function getPlayerTransfers(
           .select({
             id: schema.teams.id,
             name: schema.teams.name,
+            code: schema.teams.code,
             logoUrl: schema.teams.logoUrl,
           })
           .from(schema.teams)

@@ -8,6 +8,7 @@ import { TeamPageHeader } from '@/components/team/TeamPageHeader';
 import { TeamSquadTable } from '@/components/team/TeamSquadTable';
 import { TeamStandingsWithFilter } from '@/components/team/TeamStandingsWithFilter';
 import { TeamCompetitionTeams } from '@/components/team/TeamCompetitionTeams';
+import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { TeamStatistics } from '@/components/team/TeamStatistics';
 import { TeamMatchesList } from '@/components/team/TeamMatchesList';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
@@ -24,7 +25,9 @@ import {
   getTeamSeasonStats,
   getTeamsInSameCompetition,
   getTeamFormResults,
+  getTeamPrimaryCompetition,
 } from '@/lib/db/queries/team';
+import { getLeagueCountryName } from '@/lib/constants/league-content';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -94,15 +97,23 @@ export default async function TeamPage({ params }: PageProps) {
   const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
 
   // Parallel data fetching
-  const [fixtures, squad, allStandings, teamSeasonStats, competitionTeams, formResults] =
-    await Promise.all([
-      getTeamFixturesWithCompetition(db, team.id, 200),
-      getTeamSquad(db, team.id),
-      getTeamAllStandings(db, team.id),
-      getTeamSeasonStats(db, team.id),
-      getTeamsInSameCompetition(db, team.id),
-      getTeamFormResults(db, team.id),
-    ]);
+  const [
+    fixtures,
+    squad,
+    allStandings,
+    teamSeasonStats,
+    competitionTeams,
+    formResults,
+    primaryComp,
+  ] = await Promise.all([
+    getTeamFixturesWithCompetition(db, team.id, 200),
+    getTeamSquad(db, team.id),
+    getTeamAllStandings(db, team.id),
+    getTeamSeasonStats(db, team.id),
+    getTeamsInSameCompetition(db, team.id),
+    getTeamFormResults(db, team.id),
+    getTeamPrimaryCompetition(db, team.id),
+  ]);
 
   // Featured match priority: live > next upcoming > most recent completed
   const liveMatch = fixtures.find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
@@ -114,9 +125,6 @@ export default async function TeamPage({ params }: PageProps) {
     .find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
   const upcomingFixture = liveMatch ?? nextUpcoming ?? mostRecentCompleted ?? null;
 
-  // Header card: next upcoming only (previous match lives in left rail as fallback)
-  const nextMatch = nextUpcoming ?? null;
-
   // Competition name for left rail team tiles
   const compTeamsName = competitionTeams.competitionName
     ? (competitionTeams.competitionName[typedLocale] ??
@@ -124,11 +132,21 @@ export default async function TeamPage({ params }: PageProps) {
       '')
     : '';
 
-  // Breadcrumbs
-  const breadcrumbs: BreadcrumbSegment[] = [
-    { label: tBc('football'), href: `/${locale}` },
-    { label: teamName },
-  ];
+  // Breadcrumbs: Football > Country > League > Team
+  const breadcrumbs: BreadcrumbSegment[] = [{ label: tBc('football'), href: `/${locale}` }];
+  if (primaryComp) {
+    const countryName = getLeagueCountryName(primaryComp.countryCode, typedLocale);
+    if (countryName) {
+      breadcrumbs.push({ label: countryName });
+    }
+    const compName = primaryComp.name[typedLocale] ?? primaryComp.name['en'] ?? primaryComp.slug;
+    const countrySlug = (primaryComp.countryCode ?? '').toLowerCase();
+    breadcrumbs.push({
+      label: compName,
+      href: `/${locale}/competition/${countrySlug}/${primaryComp.slug}`,
+    });
+  }
+  breadcrumbs.push({ label: teamName });
 
   // Center tabs — Standings, Statistics, Players (per schematic)
   const hashes = TAB_HASHES[typedLocale];
@@ -169,11 +187,14 @@ export default async function TeamPage({ params }: PageProps) {
 
       <InnerPageShell
         pageHeader={<TeamPageHeader team={team} locale={typedLocale} formResults={formResults} />}
+        rightRailTop={
+          upcomingFixture ? (
+            <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
+          ) : undefined
+        }
         leftRail={
           <div className="space-y-4">
-            {upcomingFixture && (
-              <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
-            )}
+            <LeagueLeftRail locale={typedLocale} activeCompetitionId={primaryComp?.id} />
             {competitionTeams.teams.length > 0 && (
               <TeamCompetitionTeams
                 teams={competitionTeams.teams}
@@ -185,7 +206,7 @@ export default async function TeamPage({ params }: PageProps) {
           </div>
         }
         center={<CenterTabs tabs={tabs} />}
-        rightRail={<TeamMatchesList fixtures={fixtures} locale={typedLocale} />}
+        rightRail={<TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />}
         belowCenter={<TeamMediaSection teamId={team.id} locale={typedLocale} />}
       />
     </>

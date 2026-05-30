@@ -10,9 +10,12 @@ import type { CompetitionRecord } from '@/lib/db/queries/league';
 const CURATED_LOGOS: Record<number, string> = {
   39: '/competitions/premier-league.png',
   2: '/competitions/champions-league.svg',
+  6: '/competitions/afcon-trophy.svg',
   61: '/competitions/ligue-1.svg',
   140: '/competitions/la-liga.svg',
   922: '/competitions/wafcon.png',
+  202: '/competitions/tunisia-ligue-1.svg',
+  203: '/competitions/turkey-super-lig.svg',
 };
 
 /** Competition IDs whose API-Football logos are dark artwork that needs

@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { getMatchState, isLive as isLiveStatus } from '@/lib/match-status';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
@@ -6,6 +9,7 @@ import type { Locale } from '@/lib/i18n/config';
 interface TeamMatchesListProps {
   fixtures: FixtureWithCompetition[];
   locale: Locale;
+  teamId: number;
 }
 
 function resolveTeamName(
@@ -35,8 +39,27 @@ function formatMatchTime(date: Date): string {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
-export function TeamMatchesList({ fixtures, locale }: TeamMatchesListProps) {
+type Tab = 'upcoming' | 'results';
+
+function getResult(f: FixtureWithCompetition, teamId: number): 'W' | 'D' | 'L' | null {
+  if (f.homeScore == null || f.awayScore == null) return null;
+  const isHome = f.homeTeam?.id === teamId;
+  const teamGoals = isHome ? f.homeScore : f.awayScore;
+  const oppGoals = isHome ? f.awayScore : f.homeScore;
+  if (teamGoals > oppGoals) return 'W';
+  if (teamGoals < oppGoals) return 'L';
+  return 'D';
+}
+
+const RESULT_STYLES: Record<string, string> = {
+  W: 'bg-emerald-500/15 text-emerald-600',
+  D: 'bg-amber-500/15 text-amber-600',
+  L: 'bg-red-500/15 text-red-600',
+};
+
+export function TeamMatchesList({ fixtures, locale, teamId }: TeamMatchesListProps) {
   const t = useTranslations('teamPage');
+  const [activeTab, setActiveTab] = useState<Tab>('upcoming');
 
   if (fixtures.length === 0) {
     return (
@@ -60,20 +83,52 @@ export function TeamMatchesList({ fixtures, locale }: TeamMatchesListProps) {
   // Completed: most recent first
   completed.reverse();
 
+  const tabs: { key: Tab; label: string; count: number }[] = [
+    { key: 'upcoming', label: t('upcoming'), count: upcoming.length + live.length },
+    { key: 'results', label: t('completed'), count: completed.length },
+  ];
+
+  const visibleFixtures = activeTab === 'upcoming' ? [...live, ...upcoming] : completed;
+
   return (
     <div className="rounded-xl border border-border-subtle bg-bg-surface overflow-hidden">
       <div className="border-b border-border-subtle px-4 py-3">
         <h3 className="label-caps">{t('matches')}</h3>
       </div>
+
+      {/* Tab switcher */}
+      <div className="flex border-b border-border-subtle">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex-1 px-3 py-2 text-center text-xs font-medium transition-colors ${
+              activeTab === tab.key
+                ? 'border-b-2 border-accent-azure text-accent-azure'
+                : 'text-text-tertiary hover:text-text-secondary'
+            }`}
+          >
+            {tab.label} <span className="text-text-quaternary">({tab.count})</span>
+          </button>
+        ))}
+      </div>
+
       <div className="divide-y divide-border-subtle/40">
-        {live.length > 0 && (
-          <MatchSection label={t('live')} fixtures={live} locale={locale} isLive />
+        {live.length > 0 && activeTab === 'upcoming' && (
+          <MatchSection label={t('live')} fixtures={live} locale={locale} isLive teamId={teamId} />
         )}
-        {upcoming.length > 0 && (
-          <MatchSection label={t('upcoming')} fixtures={upcoming} locale={locale} />
-        )}
-        {completed.length > 0 && (
-          <MatchSection label={t('completed')} fixtures={completed} locale={locale} />
+        {visibleFixtures.length > 0 ? (
+          activeTab === 'upcoming' ? (
+            upcoming.length > 0 && (
+              <MatchSection label="" fixtures={upcoming} locale={locale} teamId={teamId} />
+            )
+          ) : (
+            <MatchSection label="" fixtures={completed} locale={locale} teamId={teamId} />
+          )
+        ) : (
+          <div className="px-4 py-8 text-center text-sm text-text-tertiary">
+            {t('noMatchesData')}
+          </div>
         )}
       </div>
     </div>
@@ -85,11 +140,13 @@ function MatchSection({
   fixtures,
   locale,
   isLive = false,
+  teamId,
 }: {
   label: string;
   fixtures: FixtureWithCompetition[];
   locale: Locale;
   isLive?: boolean;
+  teamId: number;
 }) {
   const groups: {
     comp: FixtureWithCompetition['competition'];
@@ -109,20 +166,22 @@ function MatchSection({
 
   return (
     <div className="px-3 py-2">
-      <div className="flex items-center gap-1.5 py-2">
-        {isLive && (
-          <span className="inline-block size-1.5 rounded-full bg-accent-crimson live-pulse" />
-        )}
-        <span className="text-[10px] font-bold uppercase tracking-wider text-accent-green">
-          {label}
-        </span>
-        <span className="text-[10px] text-text-tertiary">({fixtures.length})</span>
-      </div>
+      {label && (
+        <div className="flex items-center gap-1.5 py-2">
+          {isLive && (
+            <span className="inline-block size-1.5 rounded-full bg-accent-crimson live-pulse" />
+          )}
+          <span className="text-[10px] font-bold uppercase tracking-wider text-accent-green">
+            {label}
+          </span>
+          <span className="text-[10px] text-text-tertiary">({fixtures.length})</span>
+        </div>
+      )}
       {groups.map((group, gi) => (
         <div key={gi}>
           {group.comp && <CompDivider comp={group.comp} locale={locale} />}
           {group.matches.map((f) => (
-            <MatchRow key={f.id} fixture={f} locale={locale} />
+            <MatchRow key={f.id} fixture={f} locale={locale} teamId={teamId} />
           ))}
         </div>
       ))}
@@ -155,7 +214,16 @@ function CompDivider({
   );
 }
 
-function MatchRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; locale: Locale }) {
+function MatchRow({
+  fixture: f,
+  locale,
+  teamId,
+}: {
+  fixture: FixtureWithCompetition;
+  locale: Locale;
+  teamId: number;
+}) {
+  const t = useTranslations('teamPage');
   const state = getMatchState(f.statusCode, f.kickoffAt);
   const isLive = state === 'live';
   const isDone = state === 'finished';
@@ -165,6 +233,7 @@ function MatchRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; loc
   const aGoals = f.awayScore;
   const hWin = hasScore && hGoals! > aGoals!;
   const aWin = hasScore && aGoals! > hGoals!;
+  const result = isDone ? getResult(f, teamId) : null;
 
   return (
     <a
@@ -228,16 +297,20 @@ function MatchRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; loc
         </div>
       </div>
 
-      {/* Status */}
+      {/* Status / Result badge */}
       <div className="w-10 shrink-0 text-center text-[10px] font-semibold">
         {isLive ? (
           <span className="text-accent-crimson">
             {isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE'}
           </span>
-        ) : isDone ? (
-          <span className="text-text-tertiary">
-            {hasScore ? 'FT' : formatMatchTime(f.kickoffAt)}
+        ) : result ? (
+          <span
+            className={`inline-flex size-5 items-center justify-center rounded text-[10px] font-bold ${RESULT_STYLES[result]}`}
+          >
+            {t(`form${result === 'W' ? 'Win' : result === 'D' ? 'Draw' : 'Loss'}`)}
           </span>
+        ) : isDone ? (
+          <span className="text-text-tertiary">FT</span>
         ) : (
           <span className="text-text-secondary tabular-nums">{formatMatchTime(f.kickoffAt)}</span>
         )}

@@ -44,7 +44,7 @@ export function OverviewTab({
   return (
     <div className="space-y-4">
       {fixtures.length > 0 &&
-        (metadata.competitionId === 1 ? (
+        (metadata.groups.length > 0 ? (
           <WCFixturesTab
             fixtures={fixtures}
             locale={locale}

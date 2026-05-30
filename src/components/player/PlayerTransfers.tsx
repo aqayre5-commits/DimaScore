@@ -7,9 +7,17 @@ interface PlayerTransfersProps {
   locale: Locale;
 }
 
-function resolveTeamName(team: { name: Record<string, string> } | null, locale: Locale): string {
+function resolveTeamCode(
+  team: { name: Record<string, string>; code: string | null } | null,
+  locale: Locale,
+): string {
   if (!team) return '—';
-  return team.name[locale] ?? team.name['en'] ?? '—';
+  return (
+    team.code ??
+    team.name[locale]?.slice(0, 3).toUpperCase() ??
+    team.name['en']?.slice(0, 3).toUpperCase() ??
+    '—'
+  );
 }
 
 export function PlayerTransfers({ transfers, locale }: PlayerTransfersProps) {
@@ -26,7 +34,7 @@ export function PlayerTransfers({ transfers, locale }: PlayerTransfersProps) {
   return (
     <div className="rounded-lg border border-border-subtle bg-bg-surface overflow-hidden">
       <div className="border-b border-border-subtle px-4 py-2">
-        <h3 className="label-caps">{t('career')}</h3>
+        <h3 className="label-caps">{t('careerTimeline')}</h3>
       </div>
 
       <div className="divide-y divide-border-subtle">
@@ -51,7 +59,7 @@ export function PlayerTransfers({ transfers, locale }: PlayerTransfersProps) {
                   />
                 )}
                 <span className="text-sm text-text-secondary">
-                  {resolveTeamName(transfer.fromTeam, locale)}
+                  {resolveTeamCode(transfer.fromTeam, locale)}
                 </span>
               </div>
 
@@ -69,7 +77,7 @@ export function PlayerTransfers({ transfers, locale }: PlayerTransfersProps) {
                   />
                 )}
                 <span className="text-sm font-medium text-text-primary">
-                  {resolveTeamName(transfer.toTeam, locale)}
+                  {resolveTeamCode(transfer.toTeam, locale)}
                 </span>
               </div>
             </div>

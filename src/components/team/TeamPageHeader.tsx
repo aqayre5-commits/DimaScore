@@ -28,70 +28,91 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
   const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
 
   return (
-    <div className="rounded-xl border border-border-subtle bg-bg-surface px-5 py-3">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
-        {/* Left: logo + identity */}
-        <div className="flex flex-1 items-center gap-4">
-          {/* Team logo */}
-          <div className="flex size-[120px] shrink-0 items-center justify-center">
-            {team.logoUrl ? (
-              <img
-                src={team.logoUrl}
-                alt={name}
-                width={76}
-                height={76}
-                className="size-full object-contain"
-                loading="eager"
-              />
-            ) : flag ? (
-              <span className="text-5xl">{flag}</span>
-            ) : (
-              <span className="text-2xl text-text-tertiary">&#9917;</span>
-            )}
+    <div className="h-full overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15">
+      <div className="flex h-full items-stretch gap-5 p-2">
+        {/* Team logo — fills vertical space */}
+        {team.logoUrl ? (
+          <img
+            src={team.logoUrl}
+            alt={name}
+            className="hidden h-full max-h-[140px] w-auto shrink-0 object-contain object-center md:block"
+            loading="eager"
+          />
+        ) : flag ? (
+          <span className="hidden text-6xl md:flex md:items-center">{flag}</span>
+        ) : (
+          <div className="hidden size-24 shrink-0 items-center justify-center rounded-lg bg-bg-surface-2 md:flex">
+            <span className="text-3xl">&#9917;</span>
           </div>
+        )}
+        {/* Mobile-only smaller logo */}
+        {team.logoUrl ? (
+          <img
+            src={team.logoUrl}
+            alt={name}
+            className="h-[72px] w-auto shrink-0 self-center object-contain md:hidden"
+            loading="eager"
+          />
+        ) : flag ? (
+          <span className="flex items-center text-4xl md:hidden">{flag}</span>
+        ) : null}
 
-          {/* Identity */}
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-xl font-bold leading-tight text-text-primary">
-              {name}
-            </h1>
+        {/* Identity */}
+        <div className="flex min-w-0 flex-1 flex-col py-1">
+          <h1 className="font-display text-xl font-bold leading-tight text-text-primary md:text-2xl">
+            {name}
+          </h1>
 
-            <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-sm text-text-secondary">
-              {flag && <span>{flag}</span>}
+          {team.coach && (
+            <div className="mt-1 text-sm text-text-tertiary">
+              <span>
+                {t('coach')}:{' '}
+                <Link
+                  href={`/${locale}/entraineur/${slugify(team.coach.name)}-${team.coach.id}`}
+                  className="text-text-secondary hover:text-text-primary hover:underline"
+                >
+                  {team.coach.name}
+                </Link>
+              </span>
+            </div>
+          )}
+
+          {formResults && formResults.length > 0 && (
+            <div className="mt-1.5 flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+                {t('form')}
+              </span>
+              <FormDots results={formResults} />
+            </div>
+          )}
+
+          {/* Quick facts — bordered pills, pushed to bottom */}
+          {(team.venue || team.founded) && (
+            <div className="mt-auto flex flex-wrap gap-3 pt-2">
               {team.founded && (
-                <>
-                  {flag && <span className="text-text-tertiary">&middot;</span>}
-                  <span>{t('founded', { year: team.founded })}</span>
-                </>
+                <div className="flex flex-col items-center rounded-lg border border-accent-azure/20 bg-accent-azure/5 px-3 py-1.5">
+                  <span className="text-sm font-bold tabular-nums text-text-primary">
+                    {team.founded}
+                  </span>
+                  <span className="text-[10px] text-text-tertiary">{t('founded_label')}</span>
+                </div>
+              )}
+              {team.venue?.name && (
+                <div className="flex flex-col items-center rounded-lg border border-accent-azure/20 bg-accent-azure/5 px-3 py-1.5">
+                  <span className="text-sm font-bold text-text-primary">{team.venue.name}</span>
+                  <span className="text-[10px] text-text-tertiary">{t('stadium')}</span>
+                </div>
+              )}
+              {team.venue?.capacity && (
+                <div className="flex flex-col items-center rounded-lg border border-accent-azure/20 bg-accent-azure/5 px-3 py-1.5">
+                  <span className="text-sm font-bold tabular-nums text-text-primary">
+                    {team.venue.capacity.toLocaleString()}
+                  </span>
+                  <span className="text-[10px] text-text-tertiary">{t('capacity')}</span>
+                </div>
               )}
             </div>
-
-            <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-tertiary">
-              {team.coach && (
-                <span>
-                  {t('coach')}:{' '}
-                  <Link
-                    href={`/${locale}/entraineur/${slugify(team.coach.name)}-${team.coach.id}`}
-                    className="text-text-secondary hover:text-text-primary hover:underline"
-                  >
-                    {team.coach.name}
-                  </Link>
-                </span>
-              )}
-              {team.venue && (team.venue.name || team.venue.city) && (
-                <span>{[team.venue.name, team.venue.city].filter(Boolean).join(', ')}</span>
-              )}
-            </div>
-
-            {formResults && formResults.length > 0 && (
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
-                  {t('form')}
-                </span>
-                <FormDots results={formResults} />
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -7,10 +7,10 @@ import { Trophy, Search, Heart, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
-  { key: 'matches', icon: Trophy, href: '' },
-  { key: 'search', icon: Search, href: null },
-  { key: 'favorites', icon: Heart, href: '/favoris' },
-  { key: 'settings', icon: Settings, href: '/parametres' },
+  { key: 'matches', icon: Trophy, href: '', disabled: false },
+  { key: 'search', icon: Search, href: null, disabled: false },
+  { key: 'favorites', icon: Heart, href: null, disabled: true },
+  { key: 'settings', icon: Settings, href: null, disabled: true },
 ] as const;
 
 /**
@@ -25,12 +25,26 @@ export function MobileBottomTabBar() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex h-14 items-center justify-around border-t border-border-subtle bg-bg-surface md:hidden">
       {tabs.map((tab) => {
-        const href = tab.href != null ? `/${locale}${tab.href}` : '#';
-        const isActive =
-          tab.href === ''
-            ? pathname === `/${locale}` || pathname === `/${locale}/`
-            : tab.href != null && pathname.startsWith(`/${locale}${tab.href}`);
         const Icon = tab.icon;
+
+        if (tab.disabled) {
+          return (
+            <span
+              key={tab.key}
+              className="flex flex-col items-center gap-0.5 px-3 py-1 text-text-tertiary/40"
+            >
+              <Icon className="size-5" />
+              <span className="text-xs font-medium">{t(tab.key)}</span>
+            </span>
+          );
+        }
+
+        const tabHref = tab.href;
+        const href = tabHref != null ? `/${locale}${tabHref}` : '#';
+        const isActive =
+          tabHref === ''
+            ? pathname === `/${locale}` || pathname === `/${locale}/`
+            : tabHref != null && pathname.startsWith(`/${locale}${tabHref}`);
 
         return (
           <Link

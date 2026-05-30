@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
+import { getLeagueCountryName } from '@/lib/constants/league-content';
 import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -34,19 +35,15 @@ function formatBirthDate(birthDate: string | null, locale: Locale): string {
   }
 }
 
-function positionLabel(position: string | null, t: ReturnType<typeof useTranslations>): string {
-  switch (position) {
-    case 'Goalkeeper':
-      return t('goalkeeper');
-    case 'Defender':
-      return t('defender');
-    case 'Midfielder':
-      return t('midfielder');
-    case 'Attacker':
-      return t('attacker');
-    default:
-      return position ?? '—';
-  }
+function positionFullLabel(position: string | null, t: ReturnType<typeof useTranslations>): string {
+  const short = {
+    Goalkeeper: t('goalkeeper'),
+    Defender: t('defender'),
+    Midfielder: t('midfielder'),
+    Attacker: t('attacker'),
+  }[position ?? ''];
+  if (!short) return position ?? '—';
+  return `${position} (${short})`;
 }
 
 export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
@@ -60,12 +57,14 @@ export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
   const rows: { label: string; value: React.ReactNode }[] = [];
 
   if (player.nationalityCode) {
+    const nationalityName =
+      getLeagueCountryName(player.nationalityCode, locale) ?? player.nationalityCode;
     rows.push({
       label: t('nationality'),
       value: (
         <span className="flex items-center gap-1.5">
           {flag && <span>{flag}</span>}
-          <span>{player.nationalityCode}</span>
+          <span>{nationalityName}</span>
         </span>
       ),
     });
@@ -83,19 +82,27 @@ export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
   }
 
   if (player.birthPlace) {
-    rows.push({ label: t('birthPlace'), value: player.birthPlace });
+    const birthCountryName = player.birthCountryCode
+      ? getLeagueCountryName(player.birthCountryCode, locale)
+      : null;
+    const birthPlaceDisplay = birthCountryName
+      ? `${player.birthPlace}, ${birthCountryName}`
+      : player.birthPlace;
+    rows.push({ label: t('birthPlace'), value: birthPlaceDisplay });
   }
 
   if (player.height) {
-    rows.push({ label: t('height'), value: player.height });
+    const h = player.height.includes('cm') ? player.height : `${player.height} cm`;
+    rows.push({ label: t('height'), value: h });
   }
 
   if (player.weight) {
-    rows.push({ label: t('weight'), value: player.weight });
+    const w = player.weight.includes('kg') ? player.weight : `${player.weight} kg`;
+    rows.push({ label: t('weight'), value: w });
   }
 
   if (player.position) {
-    rows.push({ label: t('position'), value: positionLabel(player.position, t) });
+    rows.push({ label: t('position'), value: positionFullLabel(player.position, t) });
   }
 
   if (clubName) {

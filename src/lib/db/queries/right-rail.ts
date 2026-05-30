@@ -1,0 +1,720 @@
+import { eq, and, asc, desc, inArray, gte, lt, sql } from 'drizzle-orm';
+import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
+import * as schema from '../schema';
+import type { HomeFixture } from './homepage';
+import type { StandingRow } from '../queries';
+
+// ── Status code sets ──
+
+const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+const FINISHED_CODES = ['FT', 'AET', 'PEN', 'WO', 'AWD'];
+
+// ── Types ──
+
+type TeamSnapshot = {
+  id: number;
+  slug: string;
+  name: Record<string, string>;
+  shortName: Record<string, string>;
+  code: string | null;
+  countryCode: string | null;
+  logoUrl: string | null;
+  isNational: boolean | null;
+};
+
+export interface RightRailFixture {
+  id: number;
+  kickoffAt: Date;
+  statusCode: string;
+  minute: number | null;
+  round: string | null;
+  homeTeamId: number | null;
+  awayTeamId: number | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  homeTeam: TeamSnapshot | null;
+  awayTeam: TeamSnapshot | null;
+  competition: {
+    id: number;
+    name: Record<string, string>;
+    slug: string;
+    countryCode: string | null;
+    logoUrl: string | null;
+  };
+  venueName: string | null;
+  venueCity: string | null;
+}
+
+export interface GoalEvent {
+  minute: number;
+  playerName: string;
+}
+
+export interface GroupStandingsBlock {
+  competitionId: number;
+  competitionName: Record<string, string>;
+  competitionSlug: string;
+  competitionLogoUrl: string | null;
+  groupLabel: string;
+  rows: StandingRow[];
+}
+
+export interface TopMatchDateGroup {
+  dateKey: string; // ISO date e.g. '2026-05-30'
+  fixtures: RightRailFixture[];
+}
+
+export interface MoroccanPerformance {
+  playerId: number;
+  playerName: string;
+  playerSlug: string;
+  photoUrl: string | null;
+  fixtureId: number;
+  homeTeamName: string;
+  awayTeamName: string;
+  homeScore: number;
+  awayScore: number;
+  goals: number;
+  assists: number;
+  minutesPlayed: number;
+  cleanSheet: boolean;
+  position: string | null;
+}
+
+export interface TopScorerEntry {
+  playerId: number;
+  playerName: string;
+  playerSlug: string;
+  photoUrl: string | null;
+  teamName: string;
+  teamLogoUrl: string | null;
+  goals: number;
+}
+
+// ── Helpers ──
+
+async function hydrateTeams(
+  db: NeonHttpDatabase<typeof schema>,
+  teamIds: Set<number>,
+): Promise<Map<number, TeamSnapshot>> {
+  const map = new Map<number, TeamSnapshot>();
+  if (teamIds.size === 0) return map;
+  const teams = await db
+    .select({
+      id: schema.teams.id,
+      slug: schema.teams.slug,
+      name: schema.teams.name,
+      shortName: schema.teams.shortName,
+      code: schema.teams.code,
+      countryCode: schema.teams.countryCode,
+      logoUrl: schema.teams.logoUrl,
+      isNational: schema.teams.isNational,
+    })
+    .from(schema.teams)
+    .where(inArray(schema.teams.id, [...teamIds]));
+  for (const t of teams) map.set(t.id, t);
+  return map;
+}
+
+function mapToRightRailFixture(
+  r: {
+    id: number;
+    kickoffAt: Date;
+    statusCode: string;
+    minute: number | null;
+    round: string | null;
+    homeTeamId: number | null;
+    awayTeamId: number | null;
+    homeScore: number | null;
+    awayScore: number | null;
+    compId: number;
+    compName: Record<string, string>;
+    compSlug: string;
+    compCountryCode: string | null;
+    compLogoUrl: string | null;
+    venueName?: string | null;
+    venueCity?: string | null;
+  },
+  teamsMap: Map<number, TeamSnapshot>,
+): RightRailFixture {
+  return {
+    id: r.id,
+    kickoffAt: r.kickoffAt,
+    statusCode: r.statusCode,
+    minute: r.minute,
+    round: r.round,
+    homeTeamId: r.homeTeamId,
+    awayTeamId: r.awayTeamId,
+    homeScore: r.homeScore,
+    awayScore: r.awayScore,
+    homeTeam: r.homeTeamId ? (teamsMap.get(r.homeTeamId) ?? null) : null,
+    awayTeam: r.awayTeamId ? (teamsMap.get(r.awayTeamId) ?? null) : null,
+    competition: {
+      id: r.compId,
+      name: r.compName,
+      slug: r.compSlug,
+      countryCode: r.compCountryCode,
+      logoUrl: r.compLogoUrl,
+    },
+    venueName: r.venueName ?? null,
+    venueCity: r.venueCity ?? null,
+  };
+}
+
+// ── Round-based priority boost ──
+// Knockout rounds get a priority boost so a UCL Final (base 45) outranks
+// a Botola regular-season match (base 20). Qualifier rounds excluded.
+
+const FEATURED_ORDER = sql`
+  ${schema.fixtures.isFeatured} DESC,
+  (${schema.competitions.displayPriority} - CASE
+    WHEN ${schema.fixtures.round} = 'Final' THEN 30
+    WHEN ${schema.fixtures.round} = '3rd Place Final' THEN 25
+    WHEN ${schema.fixtures.round} ILIKE '%semi-final%'
+      AND ${schema.fixtures.round} NOT ILIKE '%qualifying%' THEN 20
+    WHEN ${schema.fixtures.round} ILIKE '%quarter-final%'
+      AND ${schema.fixtures.round} NOT ILIKE '%qualifying%' THEN 10
+    WHEN ${schema.fixtures.round} IN ('Round of 16', '16th Finals') THEN 5
+    WHEN ${schema.fixtures.round} IN ('Round of 32', '8th Finals') THEN 3
+    ELSE 0
+  END) ASC,
+  ${schema.fixtures.kickoffAt} ASC
+`;
+
+// ── Query 1: Next featured match (live > upcoming by priority) ──
+
+export async function getNextFeaturedMatch(
+  db: NeonHttpDatabase<typeof schema>,
+): Promise<{ match: RightRailFixture; goals: GoalEvent[] } | null> {
+  // Try live first
+  const liveRows = await db
+    .select({
+      id: schema.fixtures.id,
+      kickoffAt: schema.fixtures.kickoffAt,
+      statusCode: schema.fixtures.statusCode,
+      minute: schema.fixtures.minute,
+      round: schema.fixtures.round,
+      homeTeamId: schema.fixtures.homeTeamId,
+      awayTeamId: schema.fixtures.awayTeamId,
+      homeScore: schema.fixtures.homeScore,
+      awayScore: schema.fixtures.awayScore,
+      compId: schema.competitions.id,
+      compName: schema.competitions.name,
+      compSlug: schema.competitions.slug,
+      compCountryCode: schema.competitions.countryCode,
+      compLogoUrl: schema.competitions.logoUrl,
+      venueName: schema.venues.name,
+      venueCity: schema.venues.city,
+    })
+    .from(schema.fixtures)
+    .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+    .leftJoin(schema.venues, eq(schema.fixtures.venueId, schema.venues.id))
+    .where(inArray(schema.fixtures.statusCode, LIVE_CODES))
+    .orderBy(FEATURED_ORDER)
+    .limit(1);
+
+  let row = liveRows[0];
+
+  // If no live, get next upcoming — prefer matches within 48h, then fallback
+  if (!row) {
+    const now = new Date();
+    const horizon48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+
+    const selectFields = {
+      id: schema.fixtures.id,
+      kickoffAt: schema.fixtures.kickoffAt,
+      statusCode: schema.fixtures.statusCode,
+      minute: schema.fixtures.minute,
+      round: schema.fixtures.round,
+      homeTeamId: schema.fixtures.homeTeamId,
+      awayTeamId: schema.fixtures.awayTeamId,
+      homeScore: schema.fixtures.homeScore,
+      awayScore: schema.fixtures.awayScore,
+      compId: schema.competitions.id,
+      compName: schema.competitions.name,
+      compSlug: schema.competitions.slug,
+      compCountryCode: schema.competitions.countryCode,
+      compLogoUrl: schema.competitions.logoUrl,
+      venueName: schema.venues.name,
+      venueCity: schema.venues.city,
+    };
+
+    // Try within 48h first (captures tomorrow's UCL Final over WC in 2 weeks)
+    const nearRows = await db
+      .select(selectFields)
+      .from(schema.fixtures)
+      .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+      .leftJoin(schema.venues, eq(schema.fixtures.venueId, schema.venues.id))
+      .where(
+        and(
+          eq(schema.fixtures.statusCode, 'NS'),
+          gte(schema.fixtures.kickoffAt, now),
+          lt(schema.fixtures.kickoffAt, horizon48h),
+        ),
+      )
+      .orderBy(FEATURED_ORDER)
+      .limit(1);
+
+    row = nearRows[0];
+
+    // Fallback: absolute next match if nothing in 48h
+    if (!row) {
+      const fallbackRows = await db
+        .select(selectFields)
+        .from(schema.fixtures)
+        .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+        .leftJoin(schema.venues, eq(schema.fixtures.venueId, schema.venues.id))
+        .where(and(eq(schema.fixtures.statusCode, 'NS'), gte(schema.fixtures.kickoffAt, now)))
+        .orderBy(FEATURED_ORDER)
+        .limit(1);
+
+      row = fallbackRows[0];
+    }
+  }
+
+  if (!row) return null;
+
+  const teamIds = new Set<number>();
+  if (row.homeTeamId != null) teamIds.add(row.homeTeamId);
+  if (row.awayTeamId != null) teamIds.add(row.awayTeamId);
+  const teamsMap = await hydrateTeams(db, teamIds);
+
+  const match = mapToRightRailFixture(row, teamsMap);
+
+  // Get goals if live
+  let goals: GoalEvent[] = [];
+  if (LIVE_CODES.includes(row.statusCode)) {
+    const goalRows = await db.execute(
+      sql`SELECT fe.minute, COALESCE(p.name->>'en', p.name->>'fr', 'Unknown') AS player_name
+          FROM fixture_events fe
+          LEFT JOIN players p ON p.id = fe.player_id
+          WHERE fe.fixture_id = ${row.id} AND fe.type = 'Goal'
+          ORDER BY fe.minute ASC`,
+    );
+    goals = (goalRows.rows as { minute: number | null; player_name: string }[])
+      .filter((r) => r.minute != null)
+      .map((r) => ({ minute: Number(r.minute), playerName: r.player_name }));
+  }
+
+  return { match, goals };
+}
+
+// ── Query 2: Group standings for competitions with matches today ──
+
+export async function getLiveGroupStandings(
+  db: NeonHttpDatabase<typeof schema>,
+): Promise<GroupStandingsBlock[]> {
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const todayEnd = new Date(todayStart);
+  todayEnd.setUTCDate(todayEnd.getUTCDate() + 1);
+
+  // Find competitions that have group standings AND fixtures today
+  const compsWithGroupsToday = await db.execute(
+    sql`SELECT DISTINCT f.competition_id, f.season_year
+        FROM fixtures f
+        JOIN standings s ON s.competition_id = f.competition_id
+          AND s.season_year = f.season_year
+          AND s.group_label LIKE 'Group%'
+        WHERE f.kickoff_at >= ${todayStart}
+          AND f.kickoff_at < ${todayEnd}`,
+  );
+
+  if (compsWithGroupsToday.rows.length === 0) return [];
+
+  const blocks: GroupStandingsBlock[] = [];
+
+  for (const comp of compsWithGroupsToday.rows as {
+    competition_id: string;
+    season_year: string;
+  }[]) {
+    const compId = Number(comp.competition_id);
+    const seasonYear = Number(comp.season_year);
+
+    // Get competition info
+    const compInfo = await db
+      .select({
+        id: schema.competitions.id,
+        name: schema.competitions.name,
+        slug: schema.competitions.slug,
+        logoUrl: schema.competitions.logoUrl,
+      })
+      .from(schema.competitions)
+      .where(eq(schema.competitions.id, compId))
+      .limit(1);
+
+    if (compInfo.length === 0) continue;
+
+    // Find groups that have fixtures today
+    const groupsToday = await db.execute(
+      sql`SELECT DISTINCT s.group_label
+          FROM standings s
+          JOIN fixtures f ON f.competition_id = s.competition_id
+            AND f.season_year = s.season_year
+            AND (f.home_team_id = s.team_id OR f.away_team_id = s.team_id)
+          WHERE s.competition_id = ${compId}
+            AND s.season_year = ${seasonYear}
+            AND s.group_label LIKE 'Group%'
+            AND f.kickoff_at >= ${todayStart}
+            AND f.kickoff_at < ${todayEnd}
+          ORDER BY s.group_label`,
+    );
+
+    for (const grp of groupsToday.rows as { group_label: string }[]) {
+      const standingRows = await db
+        .select({
+          groupLabel: schema.standings.groupLabel,
+          teamId: schema.standings.teamId,
+          rank: schema.standings.rank,
+          points: schema.standings.points,
+          played: schema.standings.played,
+          won: schema.standings.won,
+          drawn: schema.standings.drawn,
+          lost: schema.standings.lost,
+          goalsFor: schema.standings.goalsFor,
+          goalsAgainst: schema.standings.goalsAgainst,
+          goalDiff: schema.standings.goalDiff,
+          form: schema.standings.form,
+          description: schema.standings.description,
+        })
+        .from(schema.standings)
+        .where(
+          and(
+            eq(schema.standings.competitionId, compId),
+            eq(schema.standings.seasonYear, seasonYear),
+            eq(schema.standings.groupLabel, grp.group_label),
+          ),
+        )
+        .orderBy(asc(schema.standings.rank));
+
+      // Hydrate teams
+      const teamIds = new Set<number>();
+      for (const r of standingRows) {
+        if (r.teamId != null) teamIds.add(r.teamId);
+      }
+      const teamsMap = await hydrateTeams(db, teamIds);
+
+      const rows: StandingRow[] = standingRows.map((r) => ({
+        groupLabel: r.groupLabel.replace(/^Group\s*/, ''),
+        teamId: r.teamId,
+        rank: r.rank,
+        points: r.points,
+        played: r.played,
+        won: r.won,
+        drawn: r.drawn,
+        lost: r.lost,
+        goalsFor: r.goalsFor,
+        goalsAgainst: r.goalsAgainst,
+        goalDiff: r.goalDiff,
+        form: r.form,
+        description: r.description,
+        team: r.teamId ? (teamsMap.get(r.teamId) ?? null) : null,
+      }));
+
+      blocks.push({
+        competitionId: compId,
+        competitionName: compInfo[0].name,
+        competitionSlug: compInfo[0].slug,
+        competitionLogoUrl: compInfo[0].logoUrl,
+        groupLabel: grp.group_label.replace(/^Group\s*/, ''),
+        rows,
+      });
+    }
+  }
+
+  return blocks;
+}
+
+// ── Query 3: Top matches this week (next 7 days) ──
+// A "top match" is defined as:
+//   1. Knockout round in any competition (Final, SF, QF, R16, R32)
+//   2. Any World Cup match (all rounds)
+//   3. Morocco NT is playing (men id=31, women id=14461)
+//   4. Any AFCON (6) or WAFCON (922) match
+
+const MOROCCO_TEAM_IDS = [31, 14461];
+const ALWAYS_TOP_COMP_IDS = [1, 6, 922]; // WC, AFCON, WAFCON
+
+const KNOCKOUT_ROUND_FILTER = sql`(
+  f.round = 'Final'
+  OR f.round = '3rd Place Final'
+  OR f.round ILIKE '%semi-final%'
+  OR f.round ILIKE '%quarter-final%'
+  OR f.round IN ('Round of 16', '16th Finals', 'Round of 32', '8th Finals')
+)`;
+
+export async function getTopMatchesThisWeek(
+  db: NeonHttpDatabase<typeof schema>,
+  limit = 8,
+): Promise<TopMatchDateGroup[]> {
+  const now = new Date();
+  const todayStart = new Date(now);
+  todayStart.setUTCHours(0, 0, 0, 0);
+  const weekOut = new Date(todayStart);
+  weekOut.setUTCDate(weekOut.getUTCDate() + 7);
+
+  const rows = await db.execute(
+    sql`SELECT
+          f.id, f.kickoff_at, f.status_code, f.minute, f.round,
+          f.home_team_id, f.away_team_id, f.home_score, f.away_score,
+          c.id AS comp_id, c.name AS comp_name, c.slug AS comp_slug,
+          c.country_code AS comp_country_code, c.logo_url AS comp_logo_url
+        FROM fixtures f
+        JOIN competitions c ON c.id = f.competition_id
+        WHERE f.status_code IN ('1H','HT','2H','ET','BT','P','LIVE','NS')
+          AND f.kickoff_at >= ${todayStart}
+          AND f.kickoff_at < ${weekOut}
+          AND (
+            ${KNOCKOUT_ROUND_FILTER}
+            OR f.competition_id IN (${sql.join(
+              ALWAYS_TOP_COMP_IDS.map((id) => sql`${id}`),
+              sql`, `,
+            )})
+            OR f.home_team_id IN (${sql.join(
+              MOROCCO_TEAM_IDS.map((id) => sql`${id}`),
+              sql`, `,
+            )})
+            OR f.away_team_id IN (${sql.join(
+              MOROCCO_TEAM_IDS.map((id) => sql`${id}`),
+              sql`, `,
+            )})
+          )
+        ORDER BY
+          f.is_featured DESC,
+          (c.display_priority - CASE
+            WHEN f.round = 'Final' THEN 30
+            WHEN f.round = '3rd Place Final' THEN 25
+            WHEN f.round ILIKE '%semi-final%' AND f.round NOT ILIKE '%qualifying%' THEN 20
+            WHEN f.round ILIKE '%quarter-final%' AND f.round NOT ILIKE '%qualifying%' THEN 10
+            WHEN f.round IN ('Round of 16', '16th Finals') THEN 5
+            WHEN f.round IN ('Round of 32', '8th Finals') THEN 3
+            ELSE 0
+          END) ASC,
+          f.kickoff_at ASC
+        LIMIT ${limit}`,
+  );
+
+  if (rows.rows.length === 0) return [];
+
+  // Map raw rows
+  const mapped = (
+    rows.rows as {
+      id: string;
+      kickoff_at: string;
+      status_code: string;
+      minute: string | null;
+      round: string | null;
+      home_team_id: string | null;
+      away_team_id: string | null;
+      home_score: string | null;
+      away_score: string | null;
+      comp_id: string;
+      comp_name: Record<string, string>;
+      comp_slug: string;
+      comp_country_code: string | null;
+      comp_logo_url: string | null;
+    }[]
+  ).map((r) => ({
+    id: Number(r.id),
+    kickoffAt: new Date(r.kickoff_at),
+    statusCode: r.status_code,
+    minute: r.minute ? Number(r.minute) : null,
+    round: r.round,
+    homeTeamId: r.home_team_id ? Number(r.home_team_id) : null,
+    awayTeamId: r.away_team_id ? Number(r.away_team_id) : null,
+    homeScore: r.home_score != null ? Number(r.home_score) : null,
+    awayScore: r.away_score != null ? Number(r.away_score) : null,
+    compId: Number(r.comp_id),
+    compName: r.comp_name,
+    compSlug: r.comp_slug,
+    compCountryCode: r.comp_country_code,
+    compLogoUrl: r.comp_logo_url,
+  }));
+
+  // Hydrate teams
+  const teamIds = new Set<number>();
+  for (const r of mapped) {
+    if (r.homeTeamId != null) teamIds.add(r.homeTeamId);
+    if (r.awayTeamId != null) teamIds.add(r.awayTeamId);
+  }
+  const teamsMap = await hydrateTeams(db, teamIds);
+
+  // Group by date
+  const groupMap = new Map<string, TopMatchDateGroup>();
+  for (const r of mapped) {
+    const dateKey = r.kickoffAt.toISOString().slice(0, 10);
+    let group = groupMap.get(dateKey);
+    if (!group) {
+      group = { dateKey, fixtures: [] };
+      groupMap.set(dateKey, group);
+    }
+    group.fixtures.push(mapToRightRailFixture(r, teamsMap));
+  }
+
+  return [...groupMap.values()].sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+}
+
+// ── Query 4: Moroccan players performances (last 48h) ──
+
+export async function getMoroccanPlayerPerformances(
+  db: NeonHttpDatabase<typeof schema>,
+  daysBack = 7,
+  limit = 6,
+): Promise<MoroccanPerformance[]> {
+  const cutoff = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
+
+  const rows = await db.execute(
+    sql`WITH moroccan_matches AS (
+          SELECT DISTINCT
+            p.id AS player_id,
+            COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
+            p.slug AS player_slug,
+            p.photo_url,
+            p.position,
+            fps.fixture_id,
+            COALESCE((fps.stats->>'minutes')::int, 0) AS minutes_played,
+            COALESCE((fps.stats->'goals'->>'total')::int, 0) AS goals,
+            COALESCE((fps.stats->'goals'->>'assists')::int, 0) AS assists,
+            f.home_team_id,
+            f.away_team_id,
+            f.home_score,
+            f.away_score,
+            fps.team_id AS player_team_id
+          FROM players p
+          JOIN fixture_player_stats fps ON fps.player_id = p.id
+          JOIN fixtures f ON f.id = fps.fixture_id
+          WHERE p.nationality_code = 'MA'
+            AND f.status_code IN ('FT', 'AET', 'PEN')
+            AND f.kickoff_at >= ${cutoff}
+            AND COALESCE((fps.stats->>'minutes')::int, 0) > 0
+        )
+        SELECT
+          mm.*,
+          COALESCE(ht.name->>'en', 'Unknown') AS home_team_name,
+          COALESCE(at.name->>'en', 'Unknown') AS away_team_name,
+          CASE
+            WHEN mm.player_team_id = mm.home_team_id AND mm.away_score = 0 AND mm.position IN ('Goalkeeper', 'G') THEN true
+            WHEN mm.player_team_id = mm.away_team_id AND mm.home_score = 0 AND mm.position IN ('Goalkeeper', 'G') THEN true
+            ELSE false
+          END AS clean_sheet
+        FROM moroccan_matches mm
+        LEFT JOIN teams ht ON ht.id = mm.home_team_id
+        LEFT JOIN teams at ON at.id = mm.away_team_id
+        ORDER BY
+          COALESCE(mm.goals, 0) + COALESCE(mm.assists, 0) DESC,
+          mm.minutes_played DESC
+        LIMIT ${limit}`,
+  );
+
+  return (
+    rows.rows as {
+      player_id: string;
+      player_name: string;
+      player_slug: string;
+      photo_url: string | null;
+      fixture_id: string;
+      home_team_name: string;
+      away_team_name: string;
+      home_score: string;
+      away_score: string;
+      goals: string | null;
+      assists: string | null;
+      minutes_played: string;
+      clean_sheet: boolean;
+      position: string | null;
+    }[]
+  ).map((r) => ({
+    playerId: Number(r.player_id),
+    playerName: r.player_name,
+    playerSlug: r.player_slug,
+    photoUrl: r.photo_url,
+    fixtureId: Number(r.fixture_id),
+    homeTeamName: r.home_team_name,
+    awayTeamName: r.away_team_name,
+    homeScore: Number(r.home_score),
+    awayScore: Number(r.away_score),
+    goals: Number(r.goals ?? 0),
+    assists: Number(r.assists ?? 0),
+    minutesPlayed: Number(r.minutes_played),
+    cleanSheet: r.clean_sheet,
+    position: r.position,
+  }));
+}
+
+// ── Query 5: Top scorers for the most relevant active competition ──
+
+export async function getRightRailTopScorers(
+  db: NeonHttpDatabase<typeof schema>,
+  limit = 5,
+): Promise<{ competitionName: Record<string, string>; scorers: TopScorerEntry[] }> {
+  // Priority order: Botola Pro (200) > WC (1) > AFCON (6) > UCL (2) > PL (39)
+  const priorityComps = [200, 1, 6, 2, 39];
+
+  // Get current seasons
+  const currentSeasons = await db
+    .select({
+      competitionId: schema.seasons.competitionId,
+      year: schema.seasons.year,
+    })
+    .from(schema.seasons)
+    .where(eq(schema.seasons.isCurrent, true));
+
+  const seasonMap = new Map(currentSeasons.map((s) => [s.competitionId, s.year]));
+
+  for (const compId of priorityComps) {
+    const year = seasonMap.get(compId);
+    if (!year) continue;
+
+    const rows = await db.execute(
+      sql`SELECT
+            pss.player_id,
+            COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
+            p.slug AS player_slug,
+            p.photo_url,
+            COALESCE(t.name->>'en', 'Unknown') AS team_name,
+            t.logo_url AS team_logo_url,
+            (pss.stats->>'goals')::int AS goals
+          FROM player_season_stats pss
+          JOIN players p ON p.id = pss.player_id
+          LEFT JOIN teams t ON t.id = pss.team_id
+          WHERE pss.competition_id = ${compId}
+            AND pss.season_year = ${year}
+            AND (pss.stats->>'goals')::int > 0
+          ORDER BY goals DESC
+          LIMIT ${limit}`,
+    );
+
+    if (rows.rows.length === 0) continue;
+
+    const compInfo = await db
+      .select({ name: schema.competitions.name })
+      .from(schema.competitions)
+      .where(eq(schema.competitions.id, compId))
+      .limit(1);
+
+    return {
+      competitionName: compInfo[0]?.name ?? {},
+      scorers: (
+        rows.rows as {
+          player_id: string;
+          player_name: string;
+          player_slug: string;
+          photo_url: string | null;
+          team_name: string;
+          team_logo_url: string | null;
+          goals: string;
+        }[]
+      ).map((r) => ({
+        playerId: Number(r.player_id),
+        playerName: r.player_name,
+        playerSlug: r.player_slug,
+        photoUrl: r.photo_url,
+        teamName: r.team_name,
+        teamLogoUrl: r.team_logo_url,
+        goals: Number(r.goals),
+      })),
+    };
+  }
+
+  return { competitionName: {}, scorers: [] };
+}

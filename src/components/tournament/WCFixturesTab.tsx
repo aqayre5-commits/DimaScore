@@ -76,7 +76,7 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
   const filtered = useMemo(() => {
     let result = [...fixtures]
       .filter((f) => !f.round?.toLowerCase().includes('ranking of third'))
-      .sort((a, b) => a.kickoffAt.getTime() - b.kickoffAt.getTime());
+      .sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
 
     // Status filter
     if (statusFilter !== 'all') {
@@ -101,7 +101,7 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
       result = result.filter((f) => {
         const homeGroup = f.homeTeamId != null ? teamGroupMap[f.homeTeamId] : null;
         const awayGroup = f.awayTeamId != null ? teamGroupMap[f.awayTeamId] : null;
-        return homeGroup === groupFilter || awayGroup === groupFilter;
+        return homeGroup === groupFilter && awayGroup === groupFilter;
       });
     }
 
@@ -241,9 +241,10 @@ function WCMatchRow({
   const homeWon = isFinished && hasScore && homeScore! > awayScore!;
   const awayWon = isFinished && hasScore && awayScore! > homeScore!;
 
-  // Resolve group label from team-to-group mapping
+  // Resolve group label — only show when both teams are in the same group (group stage match)
   const homeGroup = fixture.homeTeamId != null ? teamGroupMap[fixture.homeTeamId] : null;
-  const groupLabel = homeGroup ? `Group ${homeGroup}` : null;
+  const awayGroup = fixture.awayTeamId != null ? teamGroupMap[fixture.awayTeamId] : null;
+  const groupLabel = homeGroup && homeGroup === awayGroup ? `Group ${homeGroup}` : null;
   const venueName = venue?.name ?? venue?.city ?? null;
 
   return (

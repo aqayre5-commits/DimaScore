@@ -159,6 +159,7 @@
     "quickFilters": "Quick Filters",
     "liveNow": "Live now",
     "todaysMatches": "Today's matches",
+    "topMatches": "Top Matches",
     "upcomingFilter": "Upcoming",
     "resultsFilter": "Results",
     "liveMatch": "Live Match",
@@ -180,7 +181,21 @@
     "followDescription": "Star your favourite teams and never miss a match.",
     "browseTeams": "Browse teams",
     "getTheApp": "Get the app",
-    "appDescription": "Live scores and notifications on the go."
+    "appDescription": "Live scores and notifications on the go.",
+    "nextMatch": "Next Match",
+    "viewMatch": "View match centre",
+    "liveGroupStandings": "Group Standings",
+    "matchesToday": "matches today",
+    "viewFullGroup": "View full group",
+    "seeAll": "See all",
+    "noMatchesToday": "No matches today",
+    "lionsAbroad": "Lions Abroad",
+    "last48h": "Last 7 days",
+    "goal": "Goal",
+    "assist": "Assist",
+    "cleanSheet": "Clean sheet",
+    "topScorers": "Top Scorers",
+    "thisWeek": "This Week"
   },
   "fixtureList": {
     "matches": "Matches",
@@ -403,7 +418,12 @@
     "league": "League",
     "formWin": "W",
     "formDraw": "D",
-    "formLoss": "L"
+    "formLoss": "L",
+    "stadium": "Stadium",
+    "capacity": "Capacity",
+    "founded_label": "Founded",
+    "leagues": "Leagues",
+    "cups": "Cups & Tournaments"
   },
   "playerPage": {
     "season": "Season",
@@ -420,6 +440,8 @@
     "passes": "Passes",
     "noSeasonData": "Season stats coming soon",
     "noTransferData": "Transfer history coming soon",
+    "careerTimeline": "Career Timeline",
+    "seasonHighlights": "Season Highlights",
     "position": "Position",
     "age": "Age",
     "club": "Club",
@@ -442,7 +464,10 @@
     "placeWinner": "Winner",
     "place2nd": "2nd Place",
     "place3rd": "3rd Place",
-    "placeRunnerUp": "Runner-up"
+    "placeRunnerUp": "Runner-up",
+    "goodForm": "Good form",
+    "averageForm": "Average",
+    "poorForm": "Poor form"
   },
   "coachPage": {
     "manager": "Manager",
@@ -502,6 +527,10 @@
     "countryLabel": "Country",
     "typeLeague": "League",
     "typeCup": "Cup",
+    "founded": "Founded",
+    "governingBody": "Governing body",
+    "promotion": "Promotion",
+    "relegation": "Relegation",
     "miniTeam": "Team",
     "miniPlayed": "P",
     "miniPoints": "Pts",

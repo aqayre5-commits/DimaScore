@@ -159,6 +159,7 @@
     "quickFilters": "Filtres rapides",
     "liveNow": "En direct",
     "todaysMatches": "Matchs du jour",
+    "topMatches": "Matchs à l'affiche",
     "upcomingFilter": "À venir",
     "resultsFilter": "Résultats",
     "liveMatch": "Match en direct",
@@ -180,7 +181,21 @@
     "followDescription": "Ajoutez vos équipes favorites et ne manquez aucun match.",
     "browseTeams": "Parcourir les équipes",
     "getTheApp": "Téléchargez l'appli",
-    "appDescription": "Scores en direct et notifications en déplacement."
+    "appDescription": "Scores en direct et notifications en déplacement.",
+    "nextMatch": "Prochain match",
+    "viewMatch": "Centre du match",
+    "liveGroupStandings": "Classement des groupes",
+    "matchesToday": "matchs aujourd'hui",
+    "viewFullGroup": "Voir le groupe complet",
+    "seeAll": "Tout voir",
+    "noMatchesToday": "Aucun match aujourd'hui",
+    "lionsAbroad": "Lions à l'étranger",
+    "last48h": "Derniers 7 jours",
+    "goal": "But",
+    "assist": "Passe D.",
+    "cleanSheet": "Clean sheet",
+    "topScorers": "Meilleurs buteurs",
+    "thisWeek": "Cette semaine"
   },
   "fixtureList": {
     "matches": "Matchs",
@@ -403,7 +418,12 @@
     "league": "Ligue",
     "formWin": "V",
     "formDraw": "N",
-    "formLoss": "D"
+    "formLoss": "D",
+    "stadium": "Stade",
+    "capacity": "Capacité",
+    "founded_label": "Fondé",
+    "leagues": "Ligues",
+    "cups": "Coupes & Tournois"
   },
   "playerPage": {
     "season": "Saison",
@@ -420,6 +440,8 @@
     "passes": "Passes",
     "noSeasonData": "Statistiques de saison bient\u00f4t disponibles",
     "noTransferData": "Historique des transferts bient\u00f4t disponible",
+    "careerTimeline": "Parcours",
+    "seasonHighlights": "Temps forts",
     "position": "Poste",
     "age": "\u00c2ge",
     "club": "Club",
@@ -442,7 +464,10 @@
     "placeWinner": "Vainqueur",
     "place2nd": "2e place",
     "place3rd": "3e place",
-    "placeRunnerUp": "Finaliste"
+    "placeRunnerUp": "Finaliste",
+    "goodForm": "Bonne forme",
+    "averageForm": "Moyenne",
+    "poorForm": "Mauvaise forme"
   },
   "coachPage": {
     "manager": "Entraîneur",
@@ -502,6 +527,10 @@
     "countryLabel": "Pays",
     "typeLeague": "Championnat",
     "typeCup": "Coupe",
+    "founded": "Fondé en",
+    "governingBody": "Instance dirigeante",
+    "promotion": "Promotion",
+    "relegation": "Relégation",
     "miniTeam": "\u00c9quipe",
     "miniPlayed": "J",
     "miniPoints": "Pts",

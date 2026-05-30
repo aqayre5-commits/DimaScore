@@ -4,6 +4,16 @@ import { useTranslations } from 'next-intl';
 import type { CompetitionRecord } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
+import { getLeagueAbout } from '@/lib/constants/league-about-content';
+
+const FACT_LABEL_MAP: Record<string, string> = {
+  founded: 'founded',
+  country: 'countryLabel',
+  teams: 'teamsCount',
+  governingBody: 'governingBody',
+  promotion: 'promotion',
+  relegation: 'relegation',
+};
 
 interface LeagueAboutCardProps {
   competition: CompetitionRecord;
@@ -20,6 +30,7 @@ export function LeagueAboutCard({ competition, seasonYear, locale }: LeagueAbout
   const t = useTranslations('leaguePage');
   const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
   const countryName = getLeagueCountryName(competition.countryCode, locale);
+  const about = getLeagueAbout(competition.id);
 
   const typeMap: Record<string, string> = { League: t('typeLeague'), Cup: t('typeCup') };
   const translatedType = typeMap[competition.type] ?? competition.type;
@@ -39,11 +50,28 @@ export function LeagueAboutCard({ competition, seasonYear, locale }: LeagueAbout
       <div className="border-b border-border-subtle px-4 py-2.5">
         <h3 className="text-sm font-semibold text-text-primary">{t('about')}</h3>
       </div>
+
+      {about && (
+        <p className="px-4 py-3 text-sm leading-relaxed text-text-secondary">
+          {about.description[locale] ?? about.description.en}
+        </p>
+      )}
+
       <div className="divide-y divide-border-subtle">
         {rows.map((row) => (
           <div key={row.label} className="flex items-center justify-between px-4 py-2.5">
             <span className="text-xs text-text-tertiary">{row.label}</span>
             <span className="text-sm font-medium text-text-primary">{row.value}</span>
+          </div>
+        ))}
+        {about?.facts.map((fact) => (
+          <div key={fact.labelKey} className="flex items-center justify-between px-4 py-2.5">
+            <span className="text-xs text-text-tertiary">
+              {t(FACT_LABEL_MAP[fact.labelKey] ?? fact.labelKey)}
+            </span>
+            <span className="text-sm font-medium text-text-primary">
+              {fact.value[locale] ?? fact.value.en}
+            </span>
           </div>
         ))}
       </div>

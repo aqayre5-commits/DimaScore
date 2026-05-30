@@ -1,12 +1,19 @@
-import type { ReactNode } from 'react';
+'use client';
+
 import Image from 'next/image';
-import { Users, Trophy, LayoutGrid, MapPin, Flag } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { Users, Trophy, LayoutGrid, Flag } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
 import type { CupMetadata } from '@/lib/constants/tournament-metadata';
 import { codeToFlag } from '@/lib/flags';
-import { EditionSelector } from './EditionSelector';
-import { StatusDescriptor, type TournamentPhase } from './StatusDescriptor';
-import { MoroccoContextLine } from './MoroccoContextLine';
+import { type TournamentPhase } from './StatusDescriptor';
+
+/** Curated hero logos per competition (displayed in header like WC trophy). */
+const CUP_LOGOS: Record<number, string> = {
+  1: '/competitions/wc-2026-trophy.png',
+  6: '/competitions/afcon-trophy.svg',
+  922: '/competitions/wafcon-trophy.png',
+};
 
 /** Country code → short English name for host nations display. */
 const HOST_NAMES: Record<string, string> = {
@@ -20,6 +27,11 @@ const HOST_NAMES: Record<string, string> = {
   RU: 'Russia',
   FR: 'France',
   DE: 'Germany',
+  CI: 'Ivory Coast',
+  CM: 'Cameroon',
+  EG: 'Egypt',
+  GA: 'Gabon',
+  GH: 'Ghana',
 };
 
 interface RivalTeam {
@@ -34,19 +46,16 @@ interface TournamentPageHeaderProps {
   introText: string;
   tournamentPhase: TournamentPhase;
   moroccoGroup: { label: string; rivals: RivalTeam[] } | null;
-  breadcrumb?: ReactNode;
+  orgName?: string;
+  matchesCount?: number;
+  availableSeasons?: { year: number; isCurrent: boolean }[];
+  seasonYear?: number;
 }
 
 /**
- * Page header for cup/tournament pages (~210-240px).
- * Per competition-cup.md Section 5.
- *
- * Sub-zones:
- *   A — Identity: confederation emoji + H1 + descriptor
- *   B — Edition selector (right)
- *   C — Status descriptor
- *   D — Morocco context line
- *   + Intro paragraph below
+ * Page header for cup/tournament pages.
+ * All cups share the same visual structure: gradient, stats pills, date range.
+ * WC additionally shows a trophy image.
  */
 export function TournamentPageHeader({
   metadata,
@@ -55,72 +64,25 @@ export function TournamentPageHeader({
   introText,
   tournamentPhase,
   moroccoGroup,
-  breadcrumb,
+  orgName,
+  matchesCount,
+  availableSeasons,
+  seasonYear,
 }: TournamentPageHeaderProps) {
-  const isWC = metadata.competitionId === 1;
+  const router = useRouter();
+  const pathname = usePathname();
+  const displayYear = seasonYear ?? metadata.editionYear;
 
-  if (isWC) {
-    return (
-      <WCPageHeader
-        metadata={metadata}
-        locale={locale}
-        pageTitle={pageTitle}
-        introText={introText}
-        breadcrumb={breadcrumb}
-      />
-    );
+  function handleSeasonChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const year = e.target.value;
+    const currentSeason = availableSeasons?.find((s) => s.isCurrent);
+    if (currentSeason && Number(year) === currentSeason.year) {
+      router.push(pathname);
+    } else {
+      router.push(`${pathname}?season=${year}`);
+    }
   }
 
-  // Default cup header (WAFCON, AFCON, etc.)
-  const hostFlags = metadata.hostCountryCodes.map((c) => codeToFlag(c)).join(' ');
-  const teamsLabel =
-    locale === 'ar' ? `${metadata.teamsCount} منتخباً` : `${metadata.teamsCount} nations`;
-  return (
-    <div>
-      {breadcrumb}
-
-      <div className="mt-3 rounded-xl border border-border-subtle bg-bg-surface p-2">
-        <div className="flex items-start gap-4">
-          {/* Title + meta + intro */}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <h1 className="text-2xl font-semibold leading-tight text-text-primary md:text-3xl">
-                  {pageTitle}
-                </h1>
-                <p className="mt-1 max-w-prose text-sm text-text-secondary">
-                  {hostFlags} FIFA · {teamsLabel}
-                </p>
-              </div>
-              <div className="shrink-0 pt-1">
-                <EditionSelector currentYear={metadata.editionYear} />
-              </div>
-            </div>
-
-            <p className="mt-3 max-w-[720px] text-sm leading-relaxed text-text-secondary">
-              {introText}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** WC 2026 specific hero with blue gradient, stats strip, host nations, date range. */
-function WCPageHeader({
-  metadata,
-  locale,
-  pageTitle,
-  introText,
-  breadcrumb,
-}: {
-  metadata: CupMetadata;
-  locale: Locale;
-  pageTitle: string;
-  introText: string;
-  breadcrumb?: ReactNode;
-}) {
   const hostNations = metadata.hostCountryCodes
     .map((c) => `${codeToFlag(c)} ${HOST_NAMES[c] ?? c}`)
     .join(' · ');
@@ -129,57 +91,75 @@ function WCPageHeader({
   const final = new Date(metadata.finalDate);
   const dateRange = `${kickoff.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} – ${final.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
 
-  // WC 2026: 16 host cities across 3 nations
-  const hostCities = 16;
+  const org = orgName ?? 'FIFA';
+  const logoSrc = CUP_LOGOS[metadata.competitionId];
 
   const stats = [
     { icon: Users, value: metadata.teamsCount, label: 'Teams' },
-    { icon: Trophy, value: 104, label: 'Matches' },
-    { icon: LayoutGrid, value: metadata.groupsCount ?? metadata.groups.length, label: 'Groups' },
-    { icon: MapPin, value: hostCities, label: 'Host Cities' },
-    { icon: Flag, value: metadata.hostCountryCodes.length, label: 'Host Nations' },
+    ...(matchesCount ? [{ icon: Trophy, value: matchesCount, label: 'Matches' }] : []),
+    ...(metadata.groupsCount
+      ? [{ icon: LayoutGrid, value: metadata.groupsCount, label: 'Groups' }]
+      : []),
+    ...(metadata.hostCountryCodes.length > 1
+      ? [{ icon: Flag, value: metadata.hostCountryCodes.length, label: 'Host Nations' }]
+      : []),
   ];
 
   return (
-    <div className={breadcrumb ? '' : 'h-full'}>
-      {breadcrumb}
-
-      <div
-        className={`relative flex flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15 p-2${breadcrumb ? ' mt-3' : ' h-full'}`}
-      >
+    <div className="h-full">
+      <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15 p-2">
         <div className="relative flex flex-1 items-stretch gap-5">
-          {/* Trophy logo */}
-          <Image
-            src="/competitions/wc-2026-trophy.png"
-            alt=""
-            width={200}
-            height={308}
-            className="hidden h-[164px] w-auto shrink-0 self-end drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:block"
-            priority
-          />
-          <Image
-            src="/competitions/wc-2026-trophy.png"
-            alt=""
-            width={140}
-            height={216}
-            className="h-[120px] w-auto shrink-0 self-start drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:hidden"
-            priority
-          />
+          {/* Competition logo */}
+          {logoSrc && (
+            <>
+              <Image
+                src={logoSrc}
+                alt=""
+                width={200}
+                height={200}
+                className="hidden h-full max-h-[160px] w-auto shrink-0 object-contain object-bottom drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:block"
+                priority
+              />
+              <Image
+                src={logoSrc}
+                alt=""
+                width={80}
+                height={80}
+                className="h-[80px] w-auto shrink-0 self-end object-contain drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:hidden"
+                priority
+              />
+            </>
+          )}
 
-          {/* Title + meta + stats — height matches trophy */}
+          {/* Title + meta + stats */}
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h1 className="font-display text-2xl font-semibold text-text-primary md:text-3xl">
                   {pageTitle}
                 </h1>
-                <p className="mt-1 text-sm text-text-secondary">{hostNations}</p>
+                <p className="mt-1 text-sm text-text-secondary">
+                  {hostNations} · {org}
+                </p>
                 <p className="mt-0.5 text-sm text-text-tertiary">{dateRange}</p>
               </div>
-              {/* Edition badge */}
-              <span className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure">
-                Edition: {metadata.editionYear}
-              </span>
+              {availableSeasons && availableSeasons.length > 1 ? (
+                <select
+                  value={displayYear}
+                  onChange={handleSeasonChange}
+                  className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure focus:outline-none focus:ring-1 focus:ring-accent"
+                >
+                  {availableSeasons.map((s) => (
+                    <option key={s.year} value={s.year}>
+                      Edition: {s.year}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure">
+                  Edition: {displayYear}
+                </span>
+              )}
             </div>
 
             {/* Stats — bordered pills, pushed to bottom */}

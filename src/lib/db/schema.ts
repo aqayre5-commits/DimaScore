@@ -211,6 +211,7 @@ export const fixtures = pgTable(
     awayScorePen: integer('away_score_pen'),
     venueId: bigint('venue_id', { mode: 'number' }).references(() => venues.id),
     referee: text('referee'),
+    isFeatured: boolean('is_featured').default(false),
     detailsSyncedAt: timestamp('details_synced_at', { withTimezone: true }).default(sql`NULL`),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   },

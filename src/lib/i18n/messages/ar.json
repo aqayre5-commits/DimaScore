@@ -159,6 +159,7 @@
     "quickFilters": "تصفية سريعة",
     "liveNow": "مباشر الآن",
     "todaysMatches": "مباريات اليوم",
+    "topMatches": "أبرز المباريات",
     "upcomingFilter": "القادمة",
     "resultsFilter": "النتائج",
     "liveMatch": "مباراة مباشرة",
@@ -180,7 +181,21 @@
     "followDescription": "أضف فرقك المفضلة ولا تفوت أي مباراة.",
     "browseTeams": "تصفح الفرق",
     "getTheApp": "حمّل التطبيق",
-    "appDescription": "نتائج مباشرة وإشعارات أينما كنت."
+    "appDescription": "نتائج مباشرة وإشعارات أينما كنت.",
+    "nextMatch": "المباراة القادمة",
+    "viewMatch": "مركز المباراة",
+    "liveGroupStandings": "ترتيب المجموعات",
+    "matchesToday": "مباريات اليوم",
+    "viewFullGroup": "عرض المجموعة الكاملة",
+    "seeAll": "عرض الكل",
+    "noMatchesToday": "لا مباريات اليوم",
+    "lionsAbroad": "أسود الأطلس بالخارج",
+    "last48h": "آخر 7 أيام",
+    "goal": "هدف",
+    "assist": "تمريرة",
+    "cleanSheet": "شباك نظيفة",
+    "topScorers": "الهدافون",
+    "thisWeek": "هذا الأسبوع"
   },
   "fixtureList": {
     "matches": "\u0627\u0644\u0645\u0628\u0627\u0631\u064a\u0627\u062a",
@@ -403,7 +418,12 @@
     "league": "الدوري",
     "formWin": "ف",
     "formDraw": "ت",
-    "formLoss": "خ"
+    "formLoss": "خ",
+    "stadium": "الملعب",
+    "capacity": "السعة",
+    "founded_label": "التأسيس",
+    "leagues": "الدوريات",
+    "cups": "الكؤوس والبطولات"
   },
   "playerPage": {
     "season": "الموسم",
@@ -420,6 +440,8 @@
     "passes": "تمريرات",
     "noSeasonData": "إحصائيات الموسم قريبًا",
     "noTransferData": "سجل الانتقالات قريبًا",
+    "careerTimeline": "المسيرة المهنية",
+    "seasonHighlights": "أبرز الموسم",
     "position": "المركز",
     "age": "العمر",
     "club": "النادي",
@@ -442,7 +464,10 @@
     "placeWinner": "الفائز",
     "place2nd": "المركز الثاني",
     "place3rd": "المركز الثالث",
-    "placeRunnerUp": "الوصيف"
+    "placeRunnerUp": "الوصيف",
+    "goodForm": "أداء جيد",
+    "averageForm": "أداء متوسط",
+    "poorForm": "أداء ضعيف"
   },
   "coachPage": {
     "manager": "مدرب",
@@ -502,6 +527,10 @@
     "countryLabel": "البلد",
     "typeLeague": "دوري",
     "typeCup": "كأس",
+    "founded": "تأسس",
+    "governingBody": "الجهة المنظمة",
+    "promotion": "الصعود",
+    "relegation": "الهبوط",
     "miniTeam": "الفريق",
     "miniPlayed": "م",
     "miniPoints": "نقاط",

@@ -9,8 +9,12 @@ import { HomeFeaturedCarousel } from '@/components/homepage/HomeFeaturedCarousel
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
 import { HomeTrendingPlayers } from '@/components/homepage/HomeTrendingPlayers';
 import { HomeLeftRail } from '@/components/homepage/HomeLeftRail';
-import { HomeLiveMatchCard } from '@/components/homepage/HomeLiveMatchCard';
+import { HomeNextMatch } from '@/components/homepage/HomeNextMatch';
+import { HomeLiveGroupStandings } from '@/components/homepage/HomeLiveGroupStandings';
+import { HomeTopMatches } from '@/components/homepage/HomeTodaysMatches';
+import { HomeLionsAbroad } from '@/components/homepage/HomeLionsAbroad';
 import { HomeStandingsMini } from '@/components/homepage/HomeStandingsMini';
+import { HomeTopScorers } from '@/components/homepage/HomeTopScorers';
 import { AboutCard } from '@/components/tournament/AboutCard';
 import { getHomepageAboutContent } from '@/lib/constants/homepage-about-content';
 import { db } from '@/lib/db/client';
@@ -20,9 +24,15 @@ import {
   getHomeMatchesByCategory,
   getHomeMatchCounts,
   getTrendingPlayers,
-  getLiveMatchGoals,
   getCompetitionsByIds,
 } from '@/lib/db/queries/homepage';
+import {
+  getNextFeaturedMatch,
+  getLiveGroupStandings,
+  getTopMatchesThisWeek,
+  getMoroccanPlayerPerformances,
+  getRightRailTopScorers,
+} from '@/lib/db/queries/right-rail';
 import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import type { StandingRow } from '@/lib/db/queries';
@@ -186,6 +196,12 @@ export default async function HomePage({ params }: PageProps) {
     trendingPlayers,
     leftRailComps,
     standingsResults,
+    // Right rail data
+    nextFeatured,
+    liveGroupStandings,
+    topMatches,
+    moroccanPerformances,
+    topScorersData,
   ] = await Promise.all([
     getFeaturedMatches(db),
     getHomeMatchesByCategory(db),
@@ -199,6 +215,12 @@ export default async function HomePage({ params }: PageProps) {
         return getStandings(db, l.compId, year);
       }),
     ),
+    // Right rail queries
+    getNextFeaturedMatch(db),
+    getLiveGroupStandings(db),
+    getTopMatchesThisWeek(db),
+    getMoroccanPlayerPerformances(db),
+    getRightRailTopScorers(db),
   ]);
 
   // Enrich featured matches: WC venues + team form
@@ -219,11 +241,7 @@ export default async function HomePage({ params }: PageProps) {
     }
   }
 
-  // Live match card: first live match + goals
-  const firstLive = matchesByCategory.live[0] ?? null;
-  const liveGoals = firstLive ? await getLiveMatchGoals(db, firstLive.id) : [];
-
-  // Standings mini data
+  // Standings mini data — keep first league (Botola Pro) for right rail mini table
   const standingsLeagues = HOMEPAGE_LEAGUES.map((l, i) => ({
     compId: l.compId,
     compName: l.label[typedLocale] ?? l.label['en'],
@@ -278,6 +296,7 @@ export default async function HomePage({ params }: PageProps) {
     team: t('team'),
     played: t('played'),
     won: t('won'),
+    drawn: t('drawn'),
     lost: t('lost'),
     goalDiff: t('goalDiff'),
     points: t('points'),
@@ -326,30 +345,92 @@ export default async function HomePage({ params }: PageProps) {
         }
         rightRail={
           <div className="space-y-4">
-            {firstLive && (
-              <HomeLiveMatchCard
-                match={firstLive}
-                goals={liveGoals}
-                liveCount={matchesByCategory.live.length}
+            {/* Widget 1: Featured/Live match */}
+            {nextFeatured && (
+              <HomeNextMatch
+                match={nextFeatured.match}
+                goals={nextFeatured.goals}
                 locale={typedLocale}
                 labels={{
-                  liveMatch: t('liveMatch'),
-                  viewAll: t('viewAll'),
-                  watchLive: t('watchLive'),
+                  nextMatch: t('nextMatch'),
+                  liveNow: t('liveNow'),
+                  viewMatch: t('viewMatch'),
                 }}
               />
             )}
-            {standingsLeagues.map((league) => (
+
+            {/* Widget 2: Live group standings carousel */}
+            {liveGroupStandings.length > 0 && (
+              <HomeLiveGroupStandings
+                groups={liveGroupStandings}
+                locale={typedLocale}
+                labels={{
+                  liveGroupStandings: t('liveGroupStandings'),
+                  matchesToday: t('matchesToday'),
+                  viewFullGroup: t('viewFullGroup'),
+                  team: t('team'),
+                  played: t('played'),
+                  won: t('won'),
+                  drawn: t('drawn'),
+                  lost: t('lost'),
+                  goalDiff: t('goalDiff'),
+                  points: t('points'),
+                }}
+              />
+            )}
+
+            {/* Widget 3: Top matches this week */}
+            {topMatches.length > 0 && (
+              <HomeTopMatches
+                groups={topMatches}
+                locale={typedLocale}
+                labels={{
+                  topMatches: t('topMatches'),
+                  seeAll: t('seeAll'),
+                  today: t('today'),
+                }}
+              />
+            )}
+
+            {/* Widget 4: Lions Abroad */}
+            {moroccanPerformances.length > 0 && (
+              <HomeLionsAbroad
+                performances={moroccanPerformances}
+                locale={typedLocale}
+                labels={{
+                  lionsAbroad: t('lionsAbroad'),
+                  last48h: t('last48h'),
+                  goal: t('goal'),
+                  assist: t('assist'),
+                  cleanSheet: t('cleanSheet'),
+                  viewAll: t('viewAll'),
+                }}
+              />
+            )}
+
+            {/* Widget 5: Mini league table (Botola Pro) */}
+            {standingsLeagues[0] && (
               <HomeStandingsMini
-                key={league.compId}
-                compName={league.compName}
-                countryKey={league.countryKey}
-                slug={league.slug}
-                rows={league.rows}
+                compName={standingsLeagues[0].compName}
+                countryKey={standingsLeagues[0].countryKey}
+                slug={standingsLeagues[0].slug}
+                rows={standingsLeagues[0].rows}
                 locale={typedLocale}
                 labels={standingsLabels}
               />
-            ))}
+            )}
+
+            {/* Widget 6: Top scorers */}
+            {topScorersData.scorers.length > 0 && (
+              <HomeTopScorers
+                competitionName={topScorersData.competitionName}
+                scorers={topScorersData.scorers}
+                locale={typedLocale}
+                labels={{
+                  topScorers: t('topScorers'),
+                }}
+              />
+            )}
           </div>
         }
         belowCenter={<AboutCard content={getHomepageAboutContent(typedLocale)} />}

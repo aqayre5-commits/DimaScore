@@ -104,6 +104,120 @@ const WC_2026: CupMetadata = {
 };
 
 /**
+ * WC 2022 — FIFA World Cup Qatar 2022.
+ * 32 teams, 8 groups, R16 knockout start. Argentina won.
+ */
+const WC_2022: CupMetadata = {
+  competitionId: 1,
+  editionYear: 2022,
+  type: 'cup',
+  format: 'groups_and_knockout',
+  groupsCount: 8,
+  teamsCount: 32,
+  hostCountryCodes: ['QA'],
+  kickoffDate: '2022-11-20',
+  finalDate: '2022-12-18',
+  fifaRankingApplicable: true,
+  homeAwayMeaningful: false,
+  knockoutStartsRound: 'r16',
+  hasThirdPlaceMatch: true,
+  hasBestThirdPlace: false,
+  groups: [],
+  historicalWinners: [],
+  relatedCompetitionIds: [],
+  qualificationZones: [
+    { positions: [1, 2], type: 'qualified', color: 'var(--accent-emerald)' },
+    { positions: [3, 4], type: 'eliminated', color: 'var(--accent-crimson)' },
+  ],
+};
+
+/**
+ * WAFCON 2022 — Women's Africa Cup of Nations (played July 2022 in Morocco).
+ * 12 teams, 3 groups, QF knockout start. South Africa won.
+ */
+const WAFCON_2022: CupMetadata = {
+  competitionId: 922,
+  editionYear: 2022,
+  type: 'cup',
+  format: 'groups_and_knockout',
+  groupsCount: 3,
+  teamsCount: 12,
+  hostCountryCodes: ['MA'],
+  kickoffDate: '2022-07-02',
+  finalDate: '2022-07-23',
+  fifaRankingApplicable: false,
+  homeAwayMeaningful: false,
+  knockoutStartsRound: 'qf',
+  hasThirdPlaceMatch: true,
+  hasBestThirdPlace: false,
+  groups: [],
+  historicalWinners: [],
+  relatedCompetitionIds: [],
+  qualificationZones: [],
+};
+
+/**
+ * AFCON 2025 — Africa Cup of Nations (21 Dec 2025 – 18 Jan 2026 in Morocco).
+ * API-Football season "2025". 24 teams, 6 groups, R16 knockout start.
+ */
+const AFCON_2025: CupMetadata = {
+  competitionId: 6,
+  editionYear: 2025,
+  type: 'cup',
+  format: 'groups_and_knockout',
+  groupsCount: 6,
+  teamsCount: 24,
+  hostCountryCodes: ['MA'],
+  kickoffDate: '2025-12-21',
+  finalDate: '2026-01-18',
+  fifaRankingApplicable: false,
+  homeAwayMeaningful: false,
+  knockoutStartsRound: 'r16',
+  hasThirdPlaceMatch: true,
+  hasBestThirdPlace: true,
+  groups: [],
+  historicalWinners: [
+    { year: 2023, teamCode: 'CI', runnerUpCode: 'NG', hostCountryCodes: ['CI'], titleNumber: 3 },
+    { year: 2021, teamCode: 'SN', runnerUpCode: 'EG', hostCountryCodes: ['CM'], titleNumber: 1 },
+    { year: 2019, teamCode: 'DZ', runnerUpCode: 'SN', hostCountryCodes: ['EG'], titleNumber: 2 },
+    { year: 2017, teamCode: 'CM', runnerUpCode: 'EG', hostCountryCodes: ['GA'], titleNumber: 5 },
+  ],
+  relatedCompetitionIds: [],
+  qualificationZones: [
+    { positions: [1, 2], type: 'qualified', color: 'var(--accent-emerald)' },
+    { positions: [3, 4], type: 'eliminated', color: 'var(--accent-crimson)' },
+  ],
+};
+
+/**
+ * AFCON 2023 — Africa Cup of Nations (13 Jan – 11 Feb 2024 in Ivory Coast).
+ * API-Football season "2023". 24 teams, 6 groups. Ivory Coast won.
+ */
+const AFCON_2023: CupMetadata = {
+  competitionId: 6,
+  editionYear: 2023,
+  type: 'cup',
+  format: 'groups_and_knockout',
+  groupsCount: 6,
+  teamsCount: 24,
+  hostCountryCodes: ['CI'],
+  kickoffDate: '2024-01-13',
+  finalDate: '2024-02-11',
+  fifaRankingApplicable: false,
+  homeAwayMeaningful: false,
+  knockoutStartsRound: 'r16',
+  hasThirdPlaceMatch: true,
+  hasBestThirdPlace: true,
+  groups: [],
+  historicalWinners: [],
+  relatedCompetitionIds: [],
+  qualificationZones: [
+    { positions: [1, 2], type: 'qualified', color: 'var(--accent-emerald)' },
+    { positions: [3, 4], type: 'eliminated', color: 'var(--accent-crimson)' },
+  ],
+};
+
+/**
  * WAFCON 2024 — Women's Africa Cup of Nations (played July 2025 in Morocco).
  * API-Football labels this season "2024". All 26 matches completed. Nigeria won.
  * 12 teams, 3 groups, QF knockout start.
@@ -161,7 +275,12 @@ const WAFCON_2026: CupMetadata = {
   knockoutStartsRound: 'qf',
   hasThirdPlaceMatch: true,
   hasBestThirdPlace: false,
-  groups: [],
+  groups: [
+    { label: 'A', teamCodes: ['DZ', 'KE', 'MA', 'SN'], isMoroccoGroup: true },
+    { label: 'B', teamCodes: ['BF', 'CI', 'ZA', 'TZ'], isMoroccoGroup: false },
+    { label: 'C', teamCodes: ['EG', 'MW', 'NG', 'ZM'], isMoroccoGroup: false },
+    { label: 'D', teamCodes: ['CM', 'CV', 'GH', 'ML'], isMoroccoGroup: false },
+  ],
   historicalWinners: [
     { year: 2024, teamCode: 'NG', runnerUpCode: 'MA', hostCountryCodes: ['MA'], titleNumber: 12 },
     { year: 2022, teamCode: 'ZA', runnerUpCode: 'MA', hostCountryCodes: ['MA'], titleNumber: 1 },
@@ -175,12 +294,17 @@ const WAFCON_2026: CupMetadata = {
 /** Default metadata per competition (latest/upcoming edition). */
 const METADATA_REGISTRY: Map<number, TournamentMetadata> = new Map([
   [1, WC_2026],
+  [6, AFCON_2025],
   [922, WAFCON_2026],
 ]);
 
 /** Season-specific metadata: key = "competitionId:editionYear". */
 const METADATA_BY_SEASON: Map<string, TournamentMetadata> = new Map([
+  ['1:2022', WC_2022],
   ['1:2026', WC_2026],
+  ['6:2023', AFCON_2023],
+  ['6:2025', AFCON_2025],
+  ['922:2022', WAFCON_2022],
   ['922:2024', WAFCON_2024],
   ['922:2026', WAFCON_2026],
 ]);

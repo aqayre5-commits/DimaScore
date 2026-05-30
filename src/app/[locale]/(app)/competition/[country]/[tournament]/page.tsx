@@ -99,7 +99,11 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 // ── Helpers ──
 
 function resolveEntry(tournament: string, locale: Locale): MegaMenuEntry | undefined {
-  return ALL_ENTRIES.find((entry) => entry.slugs[locale] === tournament);
+  // Try current locale first, then fall back to any locale match
+  return (
+    ALL_ENTRIES.find((entry) => entry.slugs[locale] === tournament) ??
+    ALL_ENTRIES.find((entry) => Object.values(entry.slugs).some((slug) => slug === tournament))
+  );
 }
 
 const LEFT_RAIL_COMP_IDS = [200, 201, 822, 1, 922, 6, 39, 140, 78, 135, 61, 2, 3, 848];
@@ -398,9 +402,17 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
   // ── Cup full render — fetch real data ──
 
   const competitionId = metadata.competitionId;
-  const seasonYear = metadata.editionYear;
+  // Support ?season= param for edition switching
+  const requestedYear = seasonParam ? Number(seasonParam) : null;
+  if (requestedYear && requestedYear !== metadata.editionYear) {
+    const seasonMeta = getMetadataForCompetitionSeason(competitionId, requestedYear);
+    if (seasonMeta?.type === 'cup') metadata = seasonMeta;
+  }
+  // Use requested year for data fetching even if no CupMetadata exists for it
+  const seasonYear = requestedYear ?? metadata.editionYear;
   const cupContent =
-    getCupContentForSeason(competitionId, seasonYear) ?? getCupContent(competitionId);
+    getCupContentForSeason(competitionId, seasonYear) ??
+    (requestedYear ? undefined : getCupContent(competitionId));
 
   const [
     moroccoTeamId,
@@ -409,6 +421,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
     knockoutFixtures,
     cupFeaturedMatches,
     allCupFixtures,
+    availableSeasons,
   ] = await Promise.all([
     getMoroccoTeamId(db),
     getStandings(db, competitionId, seasonYear),
@@ -416,6 +429,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
     getKnockoutFixtures(db, competitionId, seasonYear),
     getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
     getLeagueFixtures(db, competitionId, seasonYear),
+    getAvailableSeasons(db, competitionId),
   ]);
 
   const featuredMatch = moroccoTeamId
@@ -423,7 +437,9 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
     : null;
 
   const tournamentPhase = computeTournamentPhase(metadata, allCupFixtures);
-  const pageTitle = cupContent?.titles[typedLocale] ?? metadata.competitionId.toString();
+  const fallbackName =
+    { 1: 'FIFA World Cup', 6: 'AFCON', 922: 'WAFCON' }[competitionId] ?? `Cup ${competitionId}`;
+  const pageTitle = cupContent?.titles[typedLocale] ?? `${fallbackName} ${seasonYear}`;
   const introText = cupContent?.intro[typedLocale] ?? '';
 
   // Morocco context: find Morocco's group and rivals
@@ -472,26 +488,26 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
   // Best 3rd-placed teams (conditional on tournament format)
   const bestThird = metadata.hasBestThirdPlace ? computeBestThirdPlaced(standings) : null;
 
-  const isWC = competitionId === 1;
+  const hasGroups = metadata.groups.length > 0;
 
-  // Build team → group mapping from standings for WC fixtures filtering
+  // Build team → group mapping from standings for fixtures filtering
   const teamGroupMap: Record<number, string> = {};
-  if (isWC) {
+  if (hasGroups) {
     for (const s of standings) {
       if (s.teamId != null) teamGroupMap[s.teamId] = s.groupLabel;
     }
   }
 
   // Dynamic bracket from DB (replaces static schedule when knockout data exists)
-  const wcBracket =
-    isWC && knockoutFixtures.length > 0 ? buildDynamicBracket(knockoutFixtures, typedLocale) : null;
+  const cupBracket =
+    knockoutFixtures.length > 0 ? buildDynamicBracket(knockoutFixtures, typedLocale) : null;
 
   const tabs = [
     {
       key: 'overview',
       hash: hashes.overview,
       labelKey: 'overview',
-      ...(isWC && { icon: 'home' }),
+      icon: 'home',
       content: (
         <OverviewTab
           fixtures={allCupFixtures}
@@ -508,8 +524,8 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
       key: 'fixtures',
       hash: 'fixtures',
       labelKey: 'fixtures',
-      ...(isWC && { icon: 'calendar' }),
-      content: isWC ? (
+      icon: 'calendar',
+      content: hasGroups ? (
         <WCFixturesTab
           fixtures={allCupFixtures}
           locale={typedLocale}
@@ -524,7 +540,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
       key: 'standings',
       hash: hashes.standings,
       labelKey: 'standings',
-      ...(isWC && { icon: 'table' }),
+      icon: 'table',
       content: <StandingsTab standings={standings} metadata={metadata} locale={typedLocale} />,
     },
     ...(bestThird
@@ -533,7 +549,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
             key: 'bestThird',
             hash: hashes.bestThird,
             labelKey: 'bestThird',
-            ...(isWC && { icon: 'award' }),
+            icon: 'award',
             content: (
               <BestThirdTab
                 rows={bestThird.rows}
@@ -549,14 +565,22 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
       key: 'knockout',
       hash: hashes.knockout,
       labelKey: 'knockout',
-      ...(isWC && { icon: 'swords' }),
+      icon: 'swords',
       content:
         competitionId === 1 ? (
           <KnockoutTab
             locale={typedLocale}
             bracketHref={`/${locale}/competition/${rawCountry}/${rawTournament}/bracket`}
-            matches={wcBracket?.matches}
-            thirdPlaceMatch={wcBracket?.thirdPlaceMatch}
+            matches={cupBracket?.matches}
+            thirdPlaceMatch={cupBracket?.thirdPlaceMatch}
+          />
+        ) : cupBracket ? (
+          <DynamicKnockoutBracket
+            matches={cupBracket.matches}
+            thirdPlaceMatch={cupBracket.thirdPlaceMatch}
+            locale={typedLocale}
+            gridConfig={cupBracket.gridConfig}
+            competitionId={competitionId}
           />
         ) : (
           <GenericKnockoutList fixtures={knockoutFixtures} locale={typedLocale} />
@@ -566,7 +590,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
 
   return (
     <>
-      {isWC && <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">{breadcrumb}</div>}
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">{breadcrumb}</div>
       <InnerPageShell
         pageHeader={
           <TournamentPageHeader
@@ -576,7 +600,10 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
             introText={introText}
             tournamentPhase={tournamentPhase}
             moroccoGroup={moroccoContext}
-            breadcrumb={isWC ? undefined : breadcrumb}
+            orgName={cupContent?.breadcrumbOrg}
+            matchesCount={allCupFixtures.length}
+            availableSeasons={availableSeasons}
+            seasonYear={seasonYear}
           />
         }
         leftRail={
@@ -588,7 +615,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
         }
         center={<CenterTabs tabs={tabs} />}
         rightRailTop={
-          isWC && cupFeaturedMatches.length > 0 ? (
+          cupFeaturedMatches.length > 0 ? (
             <LeagueRightRailCard
               featuredMatches={cupFeaturedMatches.slice(0, 1)}
               locale={typedLocale}
@@ -600,7 +627,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
         rightRail={
           <div className="space-y-4">
             <LeagueRightRailCard
-              featuredMatches={isWC ? cupFeaturedMatches.slice(1) : cupFeaturedMatches}
+              featuredMatches={cupFeaturedMatches.slice(1)}
               topScorer={null}
               locale={typedLocale}
               competitionName={pageTitle}
@@ -615,7 +642,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
         }
         belowCenter={
           <>
-            {isWC && <TournamentInfoStrip />}
+            <TournamentInfoStrip />
             <HashScrollHighlight />
             <RelatedCompetitions
               competitionIds={getRelatedCompetitionIds(competitionId)}

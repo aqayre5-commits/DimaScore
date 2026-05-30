@@ -17,7 +17,7 @@ export interface TeamDetail {
   logoUrl: string | null;
   isNational: boolean | null;
   isWomen: boolean | null;
-  venue: { id: number; name: string | null; city: string | null } | null;
+  venue: { id: number; name: string | null; city: string | null; capacity: number | null } | null;
   coach: { id: number; name: string; photoUrl: string | null } | null;
 }
 
@@ -66,7 +66,12 @@ export async function getTeamBySlug(
   const [venue, coach] = await Promise.all([
     team.venueId
       ? db
-          .select({ id: schema.venues.id, name: schema.venues.name, city: schema.venues.city })
+          .select({
+            id: schema.venues.id,
+            name: schema.venues.name,
+            city: schema.venues.city,
+            capacity: schema.venues.capacity,
+          })
           .from(schema.venues)
           .where(eq(schema.venues.id, team.venueId))
           .limit(1)
@@ -566,6 +571,86 @@ async function getVenuesMap(
   const map = new Map<number, { id: number; name: string | null; city: string | null }>();
   for (const v of venues) map.set(v.id, v);
   return map;
+}
+
+// ── Q8: Team's primary competition (for breadcrumb) ──
+
+export interface TeamPrimaryCompetition {
+  id: number;
+  name: Record<string, string>;
+  slug: string;
+  countryCode: string | null;
+}
+
+export async function getTeamPrimaryCompetition(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+): Promise<TeamPrimaryCompetition | null> {
+  // Find the league (not cup) where this team has the most fixtures
+  const rows = await db.execute(
+    sql`SELECT c.id, c.name, c.slug, c.country_code,
+               COUNT(*) AS fixture_count
+        FROM fixtures f
+        JOIN competitions c ON c.id = f.competition_id
+        WHERE (f.home_team_id = ${teamId} OR f.away_team_id = ${teamId})
+          AND c.type = 'League'
+        GROUP BY c.id, c.name, c.slug, c.country_code
+        ORDER BY fixture_count DESC
+        LIMIT 1`,
+  );
+
+  if (rows.rows.length === 0) return null;
+
+  const r = rows.rows[0] as {
+    id: string;
+    name: Record<string, string>;
+    slug: string;
+    country_code: string | null;
+  };
+
+  return {
+    id: Number(r.id),
+    name: r.name,
+    slug: r.slug,
+    countryCode: r.country_code,
+  };
+}
+
+// ── Q9: All competitions this team participates in (for left rail nav) ──
+
+export interface TeamCompetitionEntry {
+  id: number;
+  name: Record<string, string>;
+  slug: string;
+  type: string;
+  countryCode: string | null;
+  logoUrl: string | null;
+  fixtureCount: number;
+}
+
+export async function getTeamCompetitions(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+): Promise<TeamCompetitionEntry[]> {
+  const rows = await db.execute(
+    sql`SELECT c.id, c.name, c.slug, c.type, c.country_code, c.logo_url,
+               COUNT(*) AS fixture_count
+        FROM fixtures f
+        JOIN competitions c ON c.id = f.competition_id
+        WHERE (f.home_team_id = ${teamId} OR f.away_team_id = ${teamId})
+        GROUP BY c.id, c.name, c.slug, c.type, c.country_code, c.logo_url
+        ORDER BY fixture_count DESC`,
+  );
+
+  return rows.rows.map((r: Record<string, unknown>) => ({
+    id: Number(r.id),
+    name: r.name as Record<string, string>,
+    slug: r.slug as string,
+    type: r.type as string,
+    countryCode: r.country_code as string | null,
+    logoUrl: r.logo_url as string | null,
+    fixtureCount: Number(r.fixture_count),
+  }));
 }
 
 // ── Last N form results (W/D/L) ──

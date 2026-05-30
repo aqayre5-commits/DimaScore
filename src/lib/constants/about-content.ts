@@ -1476,6 +1476,684 @@ const WC_2026_AR: AboutContent = {
   ],
 };
 
+// ── AFCON 2025 — EN ──
+
+const AFCON_2025_EN: AboutContent = {
+  cards: [
+    {
+      id: 'quick-facts',
+      heading: null,
+      blocks: [
+        { type: 'stat-card', label: 'Teams', value: '24' },
+        { type: 'stat-card', label: 'Matches', value: '52' },
+        { type: 'stat-card', label: 'Groups', value: '6' },
+        { type: 'stat-card', label: 'Host', value: 'Morocco' },
+        { type: 'stat-card', label: 'Champion', value: 'Morocco' },
+      ],
+    },
+    {
+      id: 'overview',
+      heading: 'The 35th Africa Cup of Nations',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'The 2025 Africa Cup of Nations took place in Morocco from December 21, 2025 to January 18, 2026. It was the 35th edition of the continental championship organized by CAF, and the second time Morocco served as host after the 1988 tournament.',
+        },
+        {
+          type: 'prose',
+          text: "Morocco lifted the trophy on home soil, defeating Senegal 3-0 after extra time in the final at Stade Mohammed V in Casablanca. It marked the country's second AFCON title following their maiden triumph in 1976.",
+        },
+      ],
+    },
+    {
+      id: 'format',
+      heading: 'Tournament Format',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'Twenty-four qualified nations were drawn into six groups of four. The top two from each group advanced to the round of 16, joined by the four best third-placed teams. From there, single-elimination knockout rounds determined the champion.',
+        },
+        {
+          type: 'table',
+          headers: ['Stage', 'Matches', 'Teams'],
+          rows: [
+            ['Group Stage (3 matchdays)', '36', '24'],
+            ['Round of 16', '8', '16'],
+            ['Quarter-finals', '4', '8'],
+            ['Semi-finals', '2', '4'],
+            ['3rd Place + Final', '2', '4'],
+          ],
+        },
+      ],
+    },
+    {
+      id: 'host-cities',
+      heading: 'Host Country & Venues',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'Morocco invested heavily in stadium infrastructure ahead of the tournament. Matches were held across six cities — Rabat, Casablanca, Marrakech, Fez, Tangier, and Agadir — each bringing a distinct atmosphere to the competition.',
+        },
+        {
+          type: 'prose',
+          text: "The final was played at the Stade Mohammed V in Casablanca, the historic ground that has hosted some of Moroccan football's most iconic moments.",
+        },
+      ],
+    },
+    {
+      id: 'morocco-story',
+      heading: "Morocco's Path to Glory",
+      blocks: [
+        {
+          type: 'prose',
+          text: 'Playing in front of a passionate home crowd, Morocco topped their group with three wins and progressed through the knockout rounds without conceding a goal until the semi-finals. The Atlas Lions carried the momentum of their 2022 World Cup fourth-place finish into continental dominance.',
+        },
+        {
+          type: 'prose',
+          text: 'In the third-place match, Egypt and Nigeria played out a goalless draw before Egypt prevailed on penalties.',
+        },
+      ],
+    },
+    {
+      id: 'history',
+      heading: 'AFCON Through the Years',
+      blocks: [
+        {
+          type: 'prose',
+          text: "First held in Sudan in 1957 with just three nations, the Africa Cup of Nations has grown into one of football's great tournaments. Egypt hold the record with seven titles, followed by Cameroon with five.",
+        },
+        {
+          type: 'timeline',
+          events: [
+            {
+              date: '1957',
+              label: 'Inaugural AFCON',
+              detail: 'Egypt won the first edition in Sudan with just 3 teams',
+            },
+            {
+              date: '1976',
+              label: "Morocco's first title",
+              detail: 'Ethiopia hosted; Morocco beat Guinea in the final',
+            },
+            {
+              date: '1996',
+              label: 'Expansion to 16 teams',
+              detail: 'South Africa hosted and won the tournament',
+            },
+            {
+              date: '2019',
+              label: 'Expansion to 24 teams',
+              detail: 'Egypt hosted the first 24-team edition; Algeria won',
+            },
+            {
+              date: '2025',
+              label: "Morocco's second title",
+              detail: 'Morocco triumphed on home soil, beating Senegal 3-0 AET',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: 'When and where was AFCON 2025 held?',
+      answer:
+        'The tournament ran from December 21, 2025 to January 18, 2026 across six cities in Morocco: Rabat, Casablanca, Marrakech, Fez, Tangier, and Agadir.',
+    },
+    {
+      question: 'Who won AFCON 2025?',
+      answer:
+        'Morocco defeated Senegal 3-0 after extra time in the final, claiming their second continental title after 1976.',
+    },
+    {
+      question: 'How many teams participated?',
+      answer:
+        'Twenty-four nations competed, drawn into six groups of four. The top two per group plus the four best third-placed sides advanced to the knockout stage.',
+    },
+    {
+      question: 'When is the next AFCON?',
+      answer:
+        'The 2027 Africa Cup of Nations is scheduled to be hosted by a venue yet to be confirmed by CAF.',
+    },
+  ],
+};
+
+// ── AFCON 2025 — FR ──
+
+const AFCON_2025_FR: AboutContent = {
+  cards: [
+    {
+      id: 'quick-facts',
+      heading: null,
+      blocks: [
+        { type: 'stat-card', label: 'Equipes', value: '24' },
+        { type: 'stat-card', label: 'Matchs', value: '52' },
+        { type: 'stat-card', label: 'Groupes', value: '6' },
+        { type: 'stat-card', label: 'Pays hôte', value: 'Maroc' },
+        { type: 'stat-card', label: 'Champion', value: 'Maroc' },
+      ],
+    },
+    {
+      id: 'overview',
+      heading: "La 35e Coupe d'Afrique des Nations",
+      blocks: [
+        {
+          type: 'prose',
+          text: "La CAN 2025 s'est déroulée au Maroc du 21 décembre 2025 au 18 janvier 2026. Il s'agissait de la 35e édition du championnat continental organisé par la CAF, et du deuxième accueil marocain après le tournoi de 1988.",
+        },
+        {
+          type: 'prose',
+          text: "Le Maroc a soulevé le trophée à domicile en s'imposant 3-0 après prolongation face au Sénégal en finale au Stade Mohammed V de Casablanca. Ce sacre constituait le deuxième titre continental du pays après celui de 1976.",
+        },
+      ],
+    },
+    {
+      id: 'format',
+      heading: 'Format du tournoi',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'Vingt-quatre sélections qualifiées ont été réparties en six groupes de quatre. Les deux premiers de chaque groupe se qualifiaient pour les huitièmes de finale, rejoints par les quatre meilleurs troisièmes. Des tours à élimination directe désignaient ensuite le vainqueur.',
+        },
+        {
+          type: 'table',
+          headers: ['Phase', 'Matchs', 'Equipes'],
+          rows: [
+            ['Phase de groupes (3 journées)', '36', '24'],
+            ['Huitièmes de finale', '8', '16'],
+            ['Quarts de finale', '4', '8'],
+            ['Demi-finales', '2', '4'],
+            ['3e place + Finale', '2', '4'],
+          ],
+        },
+      ],
+    },
+    {
+      id: 'host-cities',
+      heading: 'Pays hôte et stades',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'Le Maroc a considérablement investi dans ses infrastructures sportives en amont de la compétition. Les rencontres se sont tenues dans six villes — Rabat, Casablanca, Marrakech, Fès, Tanger et Agadir — chacune apportant une ambiance unique.',
+        },
+        {
+          type: 'prose',
+          text: "La finale s'est jouée au Stade Mohammed V de Casablanca, enceinte historique ayant accueilli les plus grands moments du football marocain.",
+        },
+      ],
+    },
+    {
+      id: 'morocco-story',
+      heading: 'Le parcours du Maroc vers la gloire',
+      blocks: [
+        {
+          type: 'prose',
+          text: "Portés par un public fervent, les Lions de l'Atlas ont terminé premiers de leur groupe avec trois victoires et franchi les tours éliminatoires sans encaisser de but jusqu'aux demi-finales. L'élan de leur quatrième place au Mondial 2022 s'est transformé en domination continentale.",
+        },
+        {
+          type: 'prose',
+          text: "Dans le match pour la troisième place, l'Egypte et le Nigeria se sont séparés sur un score nul et vierge avant que l'Egypte ne s'impose aux tirs au but.",
+        },
+      ],
+    },
+    {
+      id: 'history',
+      heading: 'La CAN à travers les âges',
+      blocks: [
+        {
+          type: 'prose',
+          text: "Disputée pour la première fois au Soudan en 1957 avec seulement trois nations, la CAN est devenue l'un des grands rendez-vous du football mondial. L'Egypte détient le record avec sept titres, suivie du Cameroun avec cinq sacres.",
+        },
+        {
+          type: 'timeline',
+          events: [
+            {
+              date: '1957',
+              label: 'Première CAN',
+              detail: "L'Egypte remporte l'édition inaugurale au Soudan avec 3 équipes",
+            },
+            {
+              date: '1976',
+              label: 'Premier titre du Maroc',
+              detail: 'En Ethiopie, le Maroc bat la Guinée en finale',
+            },
+            {
+              date: '1996',
+              label: 'Passage à 16 équipes',
+              detail: "L'Afrique du Sud accueille et remporte le tournoi",
+            },
+            {
+              date: '2019',
+              label: 'Passage à 24 équipes',
+              detail: "L'Egypte accueille la première édition à 24 ; l'Algérie triomphe",
+            },
+            {
+              date: '2025',
+              label: 'Deuxième titre du Maroc',
+              detail: "Le Maroc s'impose à domicile, 3-0 AP face au Sénégal",
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: "Quand et où s'est tenue la CAN 2025 ?",
+      answer:
+        "Le tournoi s'est déroulé du 21 décembre 2025 au 18 janvier 2026 dans six villes marocaines : Rabat, Casablanca, Marrakech, Fès, Tanger et Agadir.",
+    },
+    {
+      question: 'Qui a remporté la CAN 2025 ?',
+      answer:
+        'Le Maroc a battu le Sénégal 3-0 après prolongation en finale, décrochant son deuxième titre continental après celui de 1976.',
+    },
+    {
+      question: "Combien d'équipes ont participé ?",
+      answer:
+        'Vingt-quatre sélections étaient en lice, réparties en six groupes de quatre. Les deux premiers de chaque groupe et les quatre meilleurs troisièmes accédaient au tableau final.',
+    },
+    {
+      question: 'Quand aura lieu la prochaine CAN ?',
+      answer: 'La CAN 2027 est programmée dans un pays hôte restant à confirmer par la CAF.',
+    },
+  ],
+};
+
+// ── AFCON 2025 — AR ──
+
+const AFCON_2025_AR: AboutContent = {
+  cards: [
+    {
+      id: 'quick-facts',
+      heading: null,
+      blocks: [
+        { type: 'stat-card', label: '\u0641\u0631\u0642', value: '24' },
+        { type: 'stat-card', label: '\u0645\u0628\u0627\u0631\u064a\u0627\u062a', value: '52' },
+        { type: 'stat-card', label: '\u0645\u062c\u0645\u0648\u0639\u0627\u062a', value: '6' },
+        {
+          type: 'stat-card',
+          label: '\u0627\u0644\u0628\u0644\u062f \u0627\u0644\u0645\u0636\u064a\u0641',
+          value: '\u0627\u0644\u0645\u063a\u0631\u0628',
+        },
+        {
+          type: 'stat-card',
+          label: '\u0627\u0644\u0628\u0637\u0644',
+          value: '\u0627\u0644\u0645\u063a\u0631\u0628',
+        },
+      ],
+    },
+    {
+      id: 'overview',
+      heading:
+        '\u0627\u0644\u0646\u0633\u062e\u0629 \u0627\u0644\u062e\u0627\u0645\u0633\u0629 \u0648\u0627\u0644\u062b\u0644\u0627\u062b\u0648\u0646 \u0644\u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627',
+      blocks: [
+        {
+          type: 'prose',
+          text: '\u0623\u064f\u0642\u064a\u0645\u062a \u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 2025 \u0641\u064a \u0627\u0644\u0645\u063a\u0631\u0628 \u0645\u0646 21 \u062f\u064a\u0633\u0645\u0628\u0631 2025 \u0625\u0644\u0649 18 \u064a\u0646\u0627\u064a\u0631 2026. \u0643\u0627\u0646\u062a \u0647\u0630\u0647 \u0627\u0644\u0646\u0633\u062e\u0629 \u0627\u0644\u062e\u0627\u0645\u0633\u0629 \u0648\u0627\u0644\u062b\u0644\u0627\u062b\u064a\u0646 \u0645\u0646 \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0627\u0644\u0642\u0627\u0631\u064a\u0629 \u0627\u0644\u062a\u064a \u064a\u0646\u0638\u0645\u0647\u0627 \u0627\u0644\u0643\u0627\u0641\u060c \u0648\u0627\u0644\u0645\u0631\u0629 \u0627\u0644\u062b\u0627\u0646\u064a\u0629 \u0627\u0644\u062a\u064a \u064a\u0633\u062a\u0636\u064a\u0641 \u0641\u064a\u0647\u0627 \u0627\u0644\u0645\u063a\u0631\u0628 \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0628\u0639\u062f \u0646\u0633\u062e\u0629 1988.',
+        },
+        {
+          type: 'prose',
+          text: '\u062a\u0648\u0651\u062c \u0627\u0644\u0645\u063a\u0631\u0628 \u0628\u0627\u0644\u0644\u0642\u0628 \u0639\u0644\u0649 \u0623\u0631\u0636\u0647 \u0628\u0639\u062f \u0641\u0648\u0632\u0647 3-0 \u0639\u0644\u0649 \u0627\u0644\u0633\u0646\u063a\u0627\u0644 \u0628\u0639\u062f \u0627\u0644\u062a\u0645\u062f\u064a\u062f \u0641\u064a \u0627\u0644\u0646\u0647\u0627\u0626\u064a \u0628\u0645\u0644\u0639\u0628 \u0645\u062d\u0645\u062f \u0627\u0644\u062e\u0627\u0645\u0633 \u0628\u0627\u0644\u062f\u0627\u0631 \u0627\u0644\u0628\u064a\u0636\u0627\u0621. \u0643\u0627\u0646 \u0647\u0630\u0627 \u0627\u0644\u0644\u0642\u0628 \u0627\u0644\u062b\u0627\u0646\u064a \u0644\u0644\u0645\u063a\u0631\u0628 \u0628\u0639\u062f \u0623\u0648\u0644 \u062a\u062a\u0648\u064a\u062c \u0641\u064a 1976.',
+        },
+      ],
+    },
+    {
+      id: 'format',
+      heading: '\u0646\u0638\u0627\u0645 \u0627\u0644\u0628\u0637\u0648\u0644\u0629',
+      blocks: [
+        {
+          type: 'prose',
+          text: '\u0634\u0627\u0631\u0643\u062a 24 \u0645\u0646\u062a\u062e\u0628\u0627\u064b \u0648\u064f\u0632\u0651\u0639\u062a \u0639\u0644\u0649 \u0633\u062a \u0645\u062c\u0645\u0648\u0639\u0627\u062a \u0645\u0646 \u0623\u0631\u0628\u0639\u0629. \u062a\u0623\u0647\u0644 \u0627\u0644\u0623\u0648\u0644 \u0648\u0627\u0644\u062b\u0627\u0646\u064a \u0645\u0646 \u0643\u0644 \u0645\u062c\u0645\u0648\u0639\u0629 \u0625\u0644\u0649 \u062f\u0648\u0631 \u0627\u0644\u0640 16\u060c \u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0623\u0641\u0636\u0644 \u0623\u0631\u0628\u0639\u0629 \u0645\u0646\u062a\u062e\u0628\u0627\u062a \u062b\u0627\u0644\u062b\u0629. \u0628\u0639\u062f\u0647\u0627 \u0623\u062f\u0648\u0627\u0631 \u0625\u0642\u0635\u0627\u0626\u064a\u0629 \u0645\u0628\u0627\u0634\u0631\u0629.',
+        },
+      ],
+    },
+    {
+      id: 'host-cities',
+      heading:
+        '\u0627\u0644\u0628\u0644\u062f \u0627\u0644\u0645\u0636\u064a\u0641 \u0648\u0627\u0644\u0645\u0644\u0627\u0639\u0628',
+      blocks: [
+        {
+          type: 'prose',
+          text: '\u0627\u0633\u062a\u062b\u0645\u0631 \u0627\u0644\u0645\u063a\u0631\u0628 \u0628\u0634\u0643\u0644 \u0643\u0628\u064a\u0631 \u0641\u064a \u0627\u0644\u0628\u0646\u064a\u0629 \u0627\u0644\u062a\u062d\u062a\u064a\u0629 \u0627\u0644\u0631\u064a\u0627\u0636\u064a\u0629. \u0623\u064f\u0642\u064a\u0645\u062a \u0627\u0644\u0645\u0628\u0627\u0631\u064a\u0627\u062a \u0641\u064a \u0633\u062a \u0645\u062f\u0646 \u2014 \u0627\u0644\u0631\u0628\u0627\u0637 \u0648\u0627\u0644\u062f\u0627\u0631 \u0627\u0644\u0628\u064a\u0636\u0627\u0621 \u0648\u0645\u0631\u0627\u0643\u0634 \u0648\u0641\u0627\u0633 \u0648\u0637\u0646\u062c\u0629 \u0648\u0623\u063a\u0627\u062f\u064a\u0631 \u2014 \u0648\u0642\u062f\u0651\u0645 \u0643\u0644 \u0645\u0644\u0639\u0628 \u0623\u062c\u0648\u0627\u0621 \u0641\u0631\u064a\u062f\u0629.',
+        },
+      ],
+    },
+    {
+      id: 'morocco-story',
+      heading:
+        '\u0645\u0633\u064a\u0631\u0629 \u0623\u0633\u0648\u062f \u0627\u0644\u0623\u0637\u0644\u0633 \u0646\u062d\u0648 \u0627\u0644\u0644\u0642\u0628',
+      blocks: [
+        {
+          type: 'prose',
+          text: '\u0628\u062f\u0639\u0645 \u062c\u0645\u0627\u0647\u064a\u0631\u064a \u062d\u0627\u0634\u062f\u060c \u062a\u0635\u062f\u0651\u0631 \u0627\u0644\u0645\u063a\u0631\u0628 \u0645\u062c\u0645\u0648\u0639\u062a\u0647 \u0628\u062b\u0644\u0627\u062b \u0627\u0646\u062a\u0635\u0627\u0631\u0627\u062a \u0648\u0639\u0628\u0631 \u0627\u0644\u0623\u062f\u0648\u0627\u0631 \u0627\u0644\u0625\u0642\u0635\u0627\u0626\u064a\u0629 \u062f\u0648\u0646 \u0623\u0646 \u064a\u062a\u0644\u0642\u0649 \u0647\u062f\u0641\u0627\u064b \u062d\u062a\u0649 \u0646\u0635\u0641 \u0627\u0644\u0646\u0647\u0627\u0626\u064a. \u062d\u0648\u0651\u0644 \u0623\u0633\u0648\u062f \u0627\u0644\u0623\u0637\u0644\u0633 \u0632\u062e\u0645 \u0627\u0644\u0645\u0631\u0643\u0632 \u0627\u0644\u0631\u0627\u0628\u0639 \u0641\u064a \u0645\u0648\u0646\u062f\u064a\u0627\u0644 2022 \u0625\u0644\u0649 \u0647\u064a\u0645\u0646\u0629 \u0642\u0627\u0631\u064a\u0629.',
+        },
+        {
+          type: 'prose',
+          text: '\u0641\u064a \u0645\u0628\u0627\u0631\u0627\u0629 \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0645\u0631\u0643\u0632 \u0627\u0644\u062b\u0627\u0644\u062b\u060c \u062a\u0639\u0627\u062f\u0644\u062a \u0645\u0635\u0631 \u0648\u0646\u064a\u062c\u064a\u0631\u064a\u0627 \u0633\u0644\u0628\u064a\u0627\u064b \u0642\u0628\u0644 \u0623\u0646 \u062a\u062d\u0633\u0645\u0647\u0627 \u0645\u0635\u0631 \u0628\u0631\u0643\u0644\u0627\u062a \u0627\u0644\u062a\u0631\u062c\u064a\u062d.',
+        },
+      ],
+    },
+    {
+      id: 'history',
+      heading:
+        '\u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 \u0639\u0628\u0631 \u0627\u0644\u062a\u0627\u0631\u064a\u062e',
+      blocks: [
+        {
+          type: 'prose',
+          text: '\u0627\u0646\u0637\u0644\u0642\u062a \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0641\u064a \u0627\u0644\u0633\u0648\u062f\u0627\u0646 \u0639\u0627\u0645 1957 \u0628\u062b\u0644\u0627\u062b\u0629 \u0645\u0646\u062a\u062e\u0628\u0627\u062a \u0641\u0642\u0637\u060c \u0648\u0628\u0627\u062a\u062a \u0627\u0644\u064a\u0648\u0645 \u0645\u0646 \u0623\u0628\u0631\u0632 \u0627\u0644\u0645\u0633\u0627\u0628\u0642\u0627\u062a \u0627\u0644\u0643\u0631\u0648\u064a\u0629 \u0641\u064a \u0627\u0644\u0639\u0627\u0644\u0645. \u062a\u0645\u0644\u0643 \u0645\u0635\u0631 \u0627\u0644\u0631\u0642\u0645 \u0627\u0644\u0642\u064a\u0627\u0633\u064a \u0628\u0633\u0628\u0639\u0629 \u0623\u0644\u0642\u0627\u0628\u060c \u062a\u0644\u064a\u0647\u0627 \u0627\u0644\u0643\u0627\u0645\u064a\u0631\u0648\u0646 \u0628\u062e\u0645\u0633\u0629.',
+        },
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question:
+        '\u0645\u062a\u0649 \u0648\u0623\u064a\u0646 \u0623\u064f\u0642\u064a\u0645\u062a \u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 2025\u061f',
+      answer:
+        '\u0623\u064f\u0642\u064a\u0645\u062a \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0641\u064a \u0627\u0644\u0645\u063a\u0631\u0628 \u0645\u0646 21 \u062f\u064a\u0633\u0645\u0628\u0631 2025 \u0625\u0644\u0649 18 \u064a\u0646\u0627\u064a\u0631 2026 \u0641\u064a \u0633\u062a \u0645\u062f\u0646: \u0627\u0644\u0631\u0628\u0627\u0637 \u0648\u0627\u0644\u062f\u0627\u0631 \u0627\u0644\u0628\u064a\u0636\u0627\u0621 \u0648\u0645\u0631\u0627\u0643\u0634 \u0648\u0641\u0627\u0633 \u0648\u0637\u0646\u062c\u0629 \u0648\u0623\u063a\u0627\u062f\u064a\u0631.',
+    },
+    {
+      question:
+        '\u0645\u0646 \u0641\u0627\u0632 \u0628\u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 2025\u061f',
+      answer:
+        '\u0641\u0627\u0632 \u0627\u0644\u0645\u063a\u0631\u0628 \u0628\u0627\u0644\u0644\u0642\u0628 \u0628\u0639\u062f \u0627\u0644\u062a\u063a\u0644\u0628 \u0639\u0644\u0649 \u0627\u0644\u0633\u0646\u063a\u0627\u0644 3-0 \u0628\u0639\u062f \u0627\u0644\u062a\u0645\u062f\u064a\u062f\u060c \u0645\u062d\u0642\u0642\u0627\u064b \u0644\u0642\u0628\u0647 \u0627\u0644\u062b\u0627\u0646\u064a \u0628\u0639\u062f 1976.',
+    },
+    {
+      question:
+        '\u0643\u0645 \u0645\u0646\u062a\u062e\u0628\u0627\u064b \u0634\u0627\u0631\u0643 \u0641\u064a \u0627\u0644\u0628\u0637\u0648\u0644\u0629\u061f',
+      answer:
+        '\u0634\u0627\u0631\u0643\u062a 24 \u0645\u0646\u062a\u062e\u0628\u0627\u064b \u0641\u064a \u0633\u062a \u0645\u062c\u0645\u0648\u0639\u0627\u062a. \u062a\u0623\u0647\u0644 \u0627\u0644\u0623\u0648\u0644 \u0648\u0627\u0644\u062b\u0627\u0646\u064a \u0645\u0646 \u0643\u0644 \u0645\u062c\u0645\u0648\u0639\u0629 \u0645\u0639 \u0623\u0641\u0636\u0644 \u0623\u0631\u0628\u0639\u0629 \u062b\u0648\u0627\u0644\u062b \u0625\u0644\u0649 \u0627\u0644\u062f\u0648\u0631 \u0627\u0644\u0625\u0642\u0635\u0627\u0626\u064a.',
+    },
+    {
+      question:
+        '\u0645\u062a\u0649 \u0633\u062a\u064f\u0642\u0627\u0645 \u0627\u0644\u0646\u0633\u062e\u0629 \u0627\u0644\u0645\u0642\u0628\u0644\u0629\u061f',
+      answer:
+        '\u0645\u0646 \u0627\u0644\u0645\u0642\u0631\u0631 \u0625\u0642\u0627\u0645\u0629 \u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 2027 \u0641\u064a \u0628\u0644\u062f \u0645\u0636\u064a\u0641 \u0644\u0645 \u064a\u062a\u0645 \u062a\u0623\u0643\u064a\u062f\u0647 \u0628\u0639\u062f \u0645\u0646 \u0642\u0628\u0644 \u0627\u0644\u0643\u0627\u0641.',
+    },
+  ],
+};
+
+// ── WAFCON 2024 — EN ──
+
+const WAFCON_2024_EN: AboutContent = {
+  cards: [
+    {
+      id: 'quick-facts',
+      heading: null,
+      blocks: [
+        { type: 'stat-card', label: 'Teams', value: '12' },
+        { type: 'stat-card', label: 'Matches', value: '26' },
+        { type: 'stat-card', label: 'Groups', value: '3' },
+        { type: 'stat-card', label: 'Host', value: 'Morocco' },
+        { type: 'stat-card', label: 'Champion', value: 'Nigeria' },
+      ],
+    },
+    {
+      id: 'overview',
+      heading: "Women's Africa Cup of Nations 2024",
+      blocks: [
+        {
+          type: 'prose',
+          text: "The 2024 Women's Africa Cup of Nations was held in Morocco from July 5 to July 26, 2025. Twelve nations competed for the continental crown, with Nigeria claiming the title after a thrilling 3-2 victory over host nation Morocco in the final.",
+        },
+        {
+          type: 'prose',
+          text: "The tournament also served as a qualifier for the 2027 FIFA Women's World Cup, adding extra stakes to every match on the pitch.",
+        },
+      ],
+    },
+    {
+      id: 'format',
+      heading: 'Competition Structure',
+      blocks: [
+        {
+          type: 'prose',
+          text: 'Twelve teams were split into three groups of four. The top two from each group advanced directly to the quarter-finals, joined by the two best third-placed sides. Single-elimination knockout rounds followed through to the final.',
+        },
+        {
+          type: 'table',
+          headers: ['Stage', 'Matches', 'Teams'],
+          rows: [
+            ['Group Stage (3 matchdays)', '18', '12'],
+            ['Quarter-finals', '4', '8'],
+            ['Semi-finals', '2', '4'],
+            ['3rd Place + Final', '2', '4'],
+          ],
+        },
+      ],
+    },
+    {
+      id: 'final-results',
+      heading: 'The Final & Third Place',
+      blocks: [
+        {
+          type: 'prose',
+          text: "Nigeria's Super Falcons overcame a spirited Moroccan side 3-2 in a gripping final, extending their record as the most successful team in the history of the tournament. It was their twelfth WAFCON title.",
+        },
+        {
+          type: 'prose',
+          text: 'In the bronze-medal match, Ghana and South Africa could not be separated after 90 minutes, finishing 1-1 before Ghana won on penalties.',
+        },
+      ],
+    },
+    {
+      id: 'history',
+      heading: 'A Growing Tournament',
+      blocks: [
+        {
+          type: 'prose',
+          text: "Launched in 1991, the Women's Africa Cup of Nations has been a catalyst for the growth of women's football across the continent. Nigeria have dominated the competition historically, while South Africa, Cameroon, and more recently Morocco have emerged as serious contenders.",
+        },
+        {
+          type: 'prose',
+          text: "Morocco's run to the 2024 final reflected the country's rising investment in women's football infrastructure and development programs.",
+        },
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: 'Who won WAFCON 2024?',
+      answer:
+        'Nigeria won the tournament, defeating Morocco 3-2 in the final to claim their twelfth continental title.',
+    },
+    {
+      question: 'Where was WAFCON 2024 held?',
+      answer: 'The tournament was hosted in Morocco from July 5 to July 26, 2025.',
+    },
+    {
+      question: 'How many teams competed?',
+      answer:
+        'Twelve teams took part, divided into three groups of four. Eight teams advanced to the quarter-finals.',
+    },
+  ],
+};
+
+// ── WAFCON 2024 — FR ──
+
+const WAFCON_2024_FR: AboutContent = {
+  cards: [
+    {
+      id: 'quick-facts',
+      heading: null,
+      blocks: [
+        { type: 'stat-card', label: 'Equipes', value: '12' },
+        { type: 'stat-card', label: 'Matchs', value: '26' },
+        { type: 'stat-card', label: 'Groupes', value: '3' },
+        { type: 'stat-card', label: 'Pays hôte', value: 'Maroc' },
+        { type: 'stat-card', label: 'Championne', value: 'Nigeria' },
+      ],
+    },
+    {
+      id: 'overview',
+      heading: 'CAN féminine 2024',
+      blocks: [
+        {
+          type: 'prose',
+          text: "La CAN féminine 2024 s'est tenue au Maroc du 5 au 26 juillet 2025. Douze sélections se sont disputé le titre continental, remporté par le Nigeria après une victoire 3-2 face au pays hôte en finale.",
+        },
+        {
+          type: 'prose',
+          text: 'La compétition faisait également office de qualifications pour la Coupe du Monde féminine FIFA 2027, ajoutant un enjeu supplémentaire à chaque rencontre.',
+        },
+      ],
+    },
+    {
+      id: 'format',
+      heading: 'Structure de la compétition',
+      blocks: [
+        {
+          type: 'prose',
+          text: "Douze équipes ont été réparties en trois groupes de quatre. Les deux premières de chaque poule se qualifiaient directement pour les quarts de finale, accompagnées des deux meilleures troisièmes. Des tours à élimination directe menaient jusqu'à la finale.",
+        },
+      ],
+    },
+    {
+      id: 'final-results',
+      heading: 'Finale et match pour la 3e place',
+      blocks: [
+        {
+          type: 'prose',
+          text: "Les Super Falcons du Nigeria ont dominé une vaillante équipe marocaine 3-2 lors d'une finale haletante, prolongeant leur record en tant qu'équipe la plus titrée de l'histoire du tournoi avec un douzième sacre.",
+        },
+        {
+          type: 'prose',
+          text: "Dans le match pour la médaille de bronze, le Ghana et l'Afrique du Sud se sont séparés sur un 1-1 avant que le Ghana ne l'emporte aux tirs au but.",
+        },
+      ],
+    },
+    {
+      id: 'history',
+      heading: 'Un tournoi en pleine croissance',
+      blocks: [
+        {
+          type: 'prose',
+          text: "Créée en 1991, la CAN féminine a contribué à l'essor du football féminin sur le continent. Le Nigeria domine historiquement la compétition, tandis que l'Afrique du Sud, le Cameroun et plus récemment le Maroc se sont imposés comme des forces montantes.",
+        },
+        {
+          type: 'prose',
+          text: "Le parcours du Maroc jusqu'en finale 2024 témoigne de l'investissement croissant du pays dans les infrastructures et les programmes de développement du football féminin.",
+        },
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question: 'Qui a remporté la CAN féminine 2024 ?',
+      answer:
+        "Le Nigeria a gagné le tournoi en battant le Maroc 3-2 en finale, s'adjugeant un douzième titre continental.",
+    },
+    {
+      question: "Où s'est tenue la CAN féminine 2024 ?",
+      answer: 'Le tournoi a été organisé au Maroc du 5 au 26 juillet 2025.',
+    },
+    {
+      question: "Combien d'équipes ont participé ?",
+      answer:
+        'Douze sélections étaient engagées, réparties en trois groupes de quatre. Huit équipes ont accédé aux quarts de finale.',
+    },
+  ],
+};
+
+// ── WAFCON 2024 — AR ──
+
+const WAFCON_2024_AR: AboutContent = {
+  cards: [
+    {
+      id: 'quick-facts',
+      heading: null,
+      blocks: [
+        { type: 'stat-card', label: '\u0641\u0631\u0642', value: '12' },
+        { type: 'stat-card', label: '\u0645\u0628\u0627\u0631\u064a\u0627\u062a', value: '26' },
+        { type: 'stat-card', label: '\u0645\u062c\u0645\u0648\u0639\u0627\u062a', value: '3' },
+        {
+          type: 'stat-card',
+          label: '\u0627\u0644\u0628\u0644\u062f \u0627\u0644\u0645\u0636\u064a\u0641',
+          value: '\u0627\u0644\u0645\u063a\u0631\u0628',
+        },
+        {
+          type: 'stat-card',
+          label: '\u0627\u0644\u0628\u0637\u0644\u0629',
+          value: '\u0646\u064a\u062c\u064a\u0631\u064a\u0627',
+        },
+      ],
+    },
+    {
+      id: 'overview',
+      heading:
+        '\u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a 2024',
+      blocks: [
+        {
+          type: 'prose',
+          text: '\u0623\u064f\u0642\u064a\u0645\u062a \u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a 2024 \u0641\u064a \u0627\u0644\u0645\u063a\u0631\u0628 \u0645\u0646 5 \u0625\u0644\u0649 26 \u064a\u0648\u0644\u064a\u0648 2025. \u062a\u0646\u0627\u0641\u0633\u062a 12 \u0645\u0646\u062a\u062e\u0628\u0627\u064b \u0639\u0644\u0649 \u0627\u0644\u0644\u0642\u0628 \u0627\u0644\u0642\u0627\u0631\u064a\u060c \u0648\u062a\u0648\u0651\u062c\u062a \u0646\u064a\u062c\u064a\u0631\u064a\u0627 \u0628\u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0628\u0639\u062f \u0641\u0648\u0632\u0647\u0627 3-2 \u0639\u0644\u0649 \u0627\u0644\u0645\u063a\u0631\u0628 \u0641\u064a \u0627\u0644\u0646\u0647\u0627\u0626\u064a.',
+        },
+        {
+          type: 'prose',
+          text: '\u0634\u0643\u0651\u0644\u062a \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0623\u064a\u0636\u0627\u064b \u062a\u0635\u0641\u064a\u0627\u062a \u0645\u0624\u0647\u0644\u0629 \u0644\u0643\u0623\u0633 \u0627\u0644\u0639\u0627\u0644\u0645 \u0644\u0644\u0633\u064a\u062f\u0627\u062a 2027\u060c \u0645\u0645\u0627 \u0623\u0636\u0627\u0641 \u0628\u064f\u0639\u062f\u0627\u064b \u062a\u0646\u0627\u0641\u0633\u064a\u0627\u064b \u0625\u0636\u0627\u0641\u064a\u0627\u064b.',
+        },
+      ],
+    },
+    {
+      id: 'format',
+      heading: '\u0646\u0638\u0627\u0645 \u0627\u0644\u0645\u0633\u0627\u0628\u0642\u0629',
+      blocks: [
+        {
+          type: 'prose',
+          text: '\u0648\u064f\u0632\u0651\u0639\u062a 12 \u0645\u0646\u062a\u062e\u0628\u0627\u064b \u0639\u0644\u0649 \u062b\u0644\u0627\u062b \u0645\u062c\u0645\u0648\u0639\u0627\u062a \u0645\u0646 \u0623\u0631\u0628\u0639\u0629. \u062a\u0623\u0647\u0644\u062a \u0627\u0644\u0623\u0648\u0644\u0649 \u0648\u0627\u0644\u062b\u0627\u0646\u064a\u0629 \u0645\u0646 \u0643\u0644 \u0645\u062c\u0645\u0648\u0639\u0629 \u0645\u0628\u0627\u0634\u0631\u0629 \u0625\u0644\u0649 \u0631\u0628\u0639 \u0627\u0644\u0646\u0647\u0627\u0626\u064a\u060c \u0628\u0627\u0644\u0625\u0636\u0627\u0641\u0629 \u0625\u0644\u0649 \u0623\u0641\u0636\u0644 \u062b\u0627\u0644\u062b\u062a\u064a\u0646. \u062b\u0645 \u0623\u062f\u0648\u0627\u0631 \u0625\u0642\u0635\u0627\u0626\u064a\u0629 \u062d\u062a\u0649 \u0627\u0644\u0646\u0647\u0627\u0626\u064a.',
+        },
+      ],
+    },
+    {
+      id: 'final-results',
+      heading:
+        '\u0627\u0644\u0646\u0647\u0627\u0626\u064a \u0648\u0645\u0628\u0627\u0631\u0627\u0629 \u0627\u0644\u0645\u0631\u0643\u0632 \u0627\u0644\u062b\u0627\u0644\u062b',
+      blocks: [
+        {
+          type: 'prose',
+          text: '\u062a\u063a\u0644\u0628\u062a \u0635\u0642\u0648\u0631 \u0646\u064a\u062c\u064a\u0631\u064a\u0627 \u0639\u0644\u0649 \u0627\u0644\u0645\u063a\u0631\u0628 3-2 \u0641\u064a \u0646\u0647\u0627\u0626\u064a \u0645\u062b\u064a\u0631\u060c \u0645\u0639\u0632\u0632\u0629\u064b \u0631\u0642\u0645\u0647\u0627 \u0627\u0644\u0642\u064a\u0627\u0633\u064a \u0628\u0644\u0642\u0628\u0647\u0627 \u0627\u0644\u062b\u0627\u0646\u064a \u0639\u0634\u0631 \u0641\u064a \u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0628\u0637\u0648\u0644\u0629.',
+        },
+        {
+          type: 'prose',
+          text: '\u0641\u064a \u0645\u0628\u0627\u0631\u0627\u0629 \u0627\u0644\u0645\u064a\u062f\u0627\u0644\u064a\u0629 \u0627\u0644\u0628\u0631\u0648\u0646\u0632\u064a\u0629\u060c \u062a\u0639\u0627\u062f\u0644 \u063a\u0627\u0646\u0627 \u0648\u062c\u0646\u0648\u0628 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 1-1 \u0642\u0628\u0644 \u0623\u0646 \u064a\u062d\u0633\u0645\u0647\u0627 \u063a\u0627\u0646\u0627 \u0628\u0631\u0643\u0644\u0627\u062a \u0627\u0644\u062a\u0631\u062c\u064a\u062d.',
+        },
+      ],
+    },
+    {
+      id: 'history',
+      heading:
+        '\u0628\u0637\u0648\u0644\u0629 \u0641\u064a \u062a\u0637\u0648\u0631 \u0645\u0633\u062a\u0645\u0631',
+      blocks: [
+        {
+          type: 'prose',
+          text: '\u0627\u0646\u0637\u0644\u0642\u062a \u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a \u0639\u0627\u0645 1991 \u0648\u0643\u0627\u0646\u062a \u0645\u062d\u0631\u0643\u0627\u064b \u0644\u0646\u0645\u0648 \u0643\u0631\u0629 \u0627\u0644\u0642\u062f\u0645 \u0627\u0644\u0646\u0633\u0627\u0626\u064a\u0629 \u0641\u064a \u0627\u0644\u0642\u0627\u0631\u0629. \u0647\u064a\u0645\u0646\u062a \u0646\u064a\u062c\u064a\u0631\u064a\u0627 \u062a\u0627\u0631\u064a\u062e\u064a\u0627\u064b\u060c \u0628\u064a\u0646\u0645\u0627 \u0628\u0631\u0632 \u0627\u0644\u0645\u063a\u0631\u0628 \u0643\u0642\u0648\u0629 \u0635\u0627\u0639\u062f\u0629 \u0628\u0641\u0636\u0644 \u0627\u0633\u062a\u062b\u0645\u0627\u0631\u0627\u062a\u0647 \u0641\u064a \u0627\u0644\u0628\u0646\u064a\u0629 \u0627\u0644\u062a\u062d\u062a\u064a\u0629 \u0648\u0628\u0631\u0627\u0645\u062c \u062a\u0637\u0648\u064a\u0631 \u0627\u0644\u0644\u0627\u0639\u0628\u0627\u062a.',
+        },
+      ],
+    },
+  ],
+  faqs: [
+    {
+      question:
+        '\u0645\u0646 \u0641\u0627\u0632\u062a \u0628\u0643\u0623\u0633 \u0623\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a 2024\u061f',
+      answer:
+        '\u0641\u0627\u0632\u062a \u0646\u064a\u062c\u064a\u0631\u064a\u0627 \u0628\u0627\u0644\u0644\u0642\u0628 \u0628\u0639\u062f \u062a\u063a\u0644\u0628\u0647\u0627 \u0639\u0644\u0649 \u0627\u0644\u0645\u063a\u0631\u0628 3-2 \u0641\u064a \u0627\u0644\u0646\u0647\u0627\u0626\u064a\u060c \u0645\u062d\u0642\u0642\u0629\u064b \u0644\u0642\u0628\u0647\u0627 \u0627\u0644\u062b\u0627\u0646\u064a \u0639\u0634\u0631.',
+    },
+    {
+      question:
+        '\u0623\u064a\u0646 \u0623\u064f\u0642\u064a\u0645\u062a \u0627\u0644\u0628\u0637\u0648\u0644\u0629\u061f',
+      answer:
+        '\u0627\u0633\u062a\u0636\u0627\u0641 \u0627\u0644\u0645\u063a\u0631\u0628 \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0645\u0646 5 \u0625\u0644\u0649 26 \u064a\u0648\u0644\u064a\u0648 2025.',
+    },
+    {
+      question:
+        '\u0643\u0645 \u0645\u0646\u062a\u062e\u0628\u0627\u064b \u0634\u0627\u0631\u0643\u061f',
+      answer:
+        '\u0634\u0627\u0631\u0643\u062a 12 \u0645\u0646\u062a\u062e\u0628\u0627\u064b \u0641\u064a \u062b\u0644\u0627\u062b \u0645\u062c\u0645\u0648\u0639\u0627\u062a. \u062a\u0623\u0647\u0644\u062a 8 \u0641\u0631\u0642 \u0625\u0644\u0649 \u0631\u0628\u0639 \u0627\u0644\u0646\u0647\u0627\u0626\u064a.',
+    },
+  ],
+};
+
 // ── Registry ──
 
 const ABOUT_CONTENT_REGISTRY: Record<number, Record<Locale, AboutContent>> = {
@@ -1483,6 +2161,16 @@ const ABOUT_CONTENT_REGISTRY: Record<number, Record<Locale, AboutContent>> = {
     en: WC_2026_EN,
     fr: WC_2026_FR,
     ar: WC_2026_AR,
+  },
+  6: {
+    en: AFCON_2025_EN,
+    fr: AFCON_2025_FR,
+    ar: AFCON_2025_AR,
+  },
+  922: {
+    en: WAFCON_2024_EN,
+    fr: WAFCON_2024_FR,
+    ar: WAFCON_2024_AR,
   },
 };
 

@@ -103,19 +103,30 @@ export async function getAvailableSeasons(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number,
 ): Promise<{ year: number; isCurrent: boolean }[]> {
-  const rows = await db
-    .select({
-      year: schema.seasons.year,
-      isCurrent: schema.seasons.isCurrent,
-    })
-    .from(schema.seasons)
-    .where(eq(schema.seasons.competitionId, competitionId))
-    .orderBy(desc(schema.seasons.year));
+  const [rows, fixtureCountRows] = await Promise.all([
+    db
+      .select({
+        year: schema.seasons.year,
+        isCurrent: schema.seasons.isCurrent,
+      })
+      .from(schema.seasons)
+      .where(eq(schema.seasons.competitionId, competitionId))
+      .orderBy(desc(schema.seasons.year)),
+    db
+      .select({
+        seasonYear: schema.fixtures.seasonYear,
+        count: sql<number>`count(*)`,
+      })
+      .from(schema.fixtures)
+      .where(eq(schema.fixtures.competitionId, competitionId))
+      .groupBy(schema.fixtures.seasonYear),
+  ]);
 
-  return rows.map((r) => ({
-    year: r.year,
-    isCurrent: r.isCurrent ?? false,
-  }));
+  const seasonsWithFixtures = new Set(fixtureCountRows.map((r) => r.seasonYear));
+
+  return rows
+    .filter((r) => (r.isCurrent ?? false) || seasonsWithFixtures.has(r.year))
+    .map((r) => ({ year: r.year, isCurrent: r.isCurrent ?? false }));
 }
 
 export async function getLeagueRounds(

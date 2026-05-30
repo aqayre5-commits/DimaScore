@@ -23,7 +23,8 @@ import {
   getPlayerTrophies,
   getPlayerLastRatings,
 } from '@/lib/db/queries/player';
-import { getTeamFixturesWithCompetition } from '@/lib/db/queries/team';
+import { getTeamFixturesWithCompetition, getTeamPrimaryCompetition } from '@/lib/db/queries/team';
+import { getLeagueCountryName } from '@/lib/constants/league-content';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -97,13 +98,21 @@ export default async function PlayerPage({ params }: PageProps) {
     playerSlug;
 
   // Parallel data fetching
-  const [fixtures, seasonStats, transfers, trophies, lastRatings] = await Promise.all([
+  const [fixtures, seasonStats, transfers, trophies, lastRatings, primaryComp] = await Promise.all([
     player.currentTeam ? getTeamFixturesWithCompetition(db, player.currentTeam.id, 200) : [],
     getPlayerSeasonStats(db, player.id),
     getPlayerTransfers(db, player.id),
     getPlayerTrophies(db, player.id),
     getPlayerLastRatings(db, player.id),
+    player.currentTeam ? getTeamPrimaryCompetition(db, player.currentTeam.id) : null,
   ]);
+
+  // Filter out not-yet-started seasons (European season N starts Aug N)
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-indexed, July = 6
+  const maxSeasonYear = currentMonth >= 7 ? currentYear : currentYear - 1;
+  const filteredStats = seasonStats.filter((s) => s.seasonYear <= maxSeasonYear);
 
   // Featured match priority: live > next upcoming > most recent completed
   const liveMatch = fixtures.find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
@@ -115,14 +124,28 @@ export default async function PlayerPage({ params }: PageProps) {
     .find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
   const upcomingFixture = liveMatch ?? nextUpcoming ?? mostRecentCompleted ?? null;
 
-  // Header card: next upcoming only
-  const nextMatch = nextUpcoming ?? null;
-
-  // Breadcrumbs
-  const breadcrumbs: BreadcrumbSegment[] = [
-    { label: tBc('football'), href: `/${locale}` },
-    { label: playerName },
-  ];
+  // Breadcrumbs: Football > League > Team > Player
+  const breadcrumbs: BreadcrumbSegment[] = [{ label: tBc('football'), href: `/${locale}` }];
+  if (primaryComp) {
+    const countryName = getLeagueCountryName(primaryComp.countryCode, typedLocale);
+    if (countryName) {
+      breadcrumbs.push({ label: countryName });
+    }
+    const compName = primaryComp.name[typedLocale] ?? primaryComp.name['en'] ?? primaryComp.slug;
+    const countrySlug = (primaryComp.countryCode ?? '').toLowerCase();
+    breadcrumbs.push({
+      label: compName,
+      href: `/${locale}/competition/${countrySlug}/${primaryComp.slug}`,
+    });
+  }
+  if (player.currentTeam) {
+    const teamName = player.currentTeam.name[typedLocale] ?? player.currentTeam.name['en'] ?? '';
+    breadcrumbs.push({
+      label: teamName,
+      href: `/${locale}/equipe/${player.currentTeam.slug}`,
+    });
+  }
+  breadcrumbs.push({ label: playerName });
 
   // Center tabs — Statistics (season dropdown), Career (all-seasons table), Trophies (placeholder)
   const hashes = TAB_HASHES[typedLocale];
@@ -131,13 +154,13 @@ export default async function PlayerPage({ params }: PageProps) {
       key: 'season',
       hash: hashes.season,
       labelKey: 'season',
-      content: <PlayerSeasonStats stats={seasonStats} locale={typedLocale} />,
+      content: <PlayerSeasonStats stats={filteredStats} locale={typedLocale} />,
     },
     {
       key: 'career',
       hash: hashes.career,
       labelKey: 'career',
-      content: <PlayerCareerTable stats={seasonStats} locale={typedLocale} />,
+      content: <PlayerCareerTable stats={filteredStats} locale={typedLocale} />,
     },
     {
       key: 'trophies',
@@ -155,19 +178,16 @@ export default async function PlayerPage({ params }: PageProps) {
 
       <InnerPageShell
         pageHeader={
-          <PlayerPageHeader
-            player={player}
-            locale={typedLocale}
-            nextMatch={nextMatch}
-            lastRatings={lastRatings}
-          />
+          <PlayerPageHeader player={player} locale={typedLocale} lastRatings={lastRatings} />
+        }
+        rightRailTop={
+          upcomingFixture ? (
+            <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
+          ) : undefined
         }
         leftRail={
           <div className="space-y-4">
             <PlayerInfoCard player={player} locale={typedLocale} />
-            {upcomingFixture && (
-              <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
-            )}
           </div>
         }
         center={<CenterTabs tabs={tabs} />}
