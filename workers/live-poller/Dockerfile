@@ -6,4 +6,4 @@ ENV HUSKY=0
 RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm rebuild
 COPY . .
 WORKDIR /app/workers/live-poller
-CMD ["tsx", "src/index.ts"]
+CMD ["/app/node_modules/.bin/tsx", "src/index.ts"]
