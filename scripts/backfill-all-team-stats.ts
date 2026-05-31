@@ -114,7 +114,8 @@ async function main() {
             continue;
           }
 
-          const fx = (data as Record<string, unknown>).fixtures as
+          const row = Array.isArray(data) ? data[0] : data;
+          const fx = (row as Record<string, unknown>).fixtures as
             | Record<string, Record<string, number>>
             | undefined;
           if (!fx || !fx.played || fx.played.total === 0) {
