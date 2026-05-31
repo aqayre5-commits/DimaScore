@@ -48,7 +48,6 @@ export async function syncTeams(
 ): Promise<SyncStats> {
   const countryLookup = await buildCountryLookup(db);
   const teams = await provider.getTeams({ league: params.leagueId, season: params.season });
-  const inserted = 0;
   let updated = 0;
 
   for (const t of teams) {

@@ -45,7 +45,6 @@ export async function syncFixtures(
     league: params.leagueId,
     season: params.season,
   });
-  const inserted = 0;
   let updated = 0;
 
   for (const f of fixtures) {
