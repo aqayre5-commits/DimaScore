@@ -111,9 +111,9 @@ function MatchRow({ fixture, locale }: { fixture: HomeFixture; locale: string })
 
 function isSameDay(a: Date, b: Date) {
   return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate()
   );
 }
 
@@ -122,10 +122,10 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [dateOffset, setDateOffset] = useState(0);
 
-  // Selected date
+  // Selected date (UTC to match fixture kickoff times)
   const today = new Date();
   const selectedDate = new Date(today);
-  selectedDate.setDate(today.getDate() + dateOffset);
+  selectedDate.setUTCDate(today.getUTCDate() + dateOffset);
 
   const formattedDate = selectedDate.toLocaleDateString(locale, {
     weekday: 'short',

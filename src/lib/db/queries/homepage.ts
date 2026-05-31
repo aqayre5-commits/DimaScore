@@ -160,10 +160,10 @@ function mapFixtureRow(
 export async function getHomeMatchesByCategory(
   db: NeonHttpDatabase<typeof schema>,
 ): Promise<{ live: HomeFixture[]; upcoming: HomeFixture[]; results: HomeFixture[] }> {
-  const now = new Date();
-  const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const thirtyDaysOut = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const nowSql = sql`NOW()`;
+  const fourHoursAgo = sql`NOW() - INTERVAL '4 hours'`;
+  const sevenDaysAgo = sql`NOW() - INTERVAL '7 days'`;
+  const thirtyDaysOut = sql`NOW() + INTERVAL '30 days'`;
 
   const rows = await db
     .select({
@@ -191,13 +191,13 @@ export async function getHomeMatchesByCategory(
         inArray(schema.fixtures.statusCode, LIVE_CODES),
         and(
           eq(schema.fixtures.statusCode, 'NS'),
-          gte(schema.fixtures.kickoffAt, fourHoursAgo),
-          lt(schema.fixtures.kickoffAt, thirtyDaysOut),
+          sql`${schema.fixtures.kickoffAt} >= ${fourHoursAgo}`,
+          sql`${schema.fixtures.kickoffAt} < ${thirtyDaysOut}`,
         ),
         and(
           inArray(schema.fixtures.statusCode, FINISHED_CODES),
-          gte(schema.fixtures.kickoffAt, sevenDaysAgo),
-          lt(schema.fixtures.kickoffAt, now),
+          sql`${schema.fixtures.kickoffAt} >= ${sevenDaysAgo}`,
+          sql`${schema.fixtures.kickoffAt} < ${nowSql}`,
         ),
       ),
     )
@@ -352,17 +352,11 @@ export async function getTrendingPlayers(
 export async function getHomeMatchCounts(
   db: NeonHttpDatabase<typeof schema>,
 ): Promise<{ live: number; today: number; upcoming: number; results: number }> {
-  const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setUTCHours(0, 0, 0, 0);
-  const todayEnd = new Date(todayStart);
-  todayEnd.setUTCDate(todayEnd.getUTCDate() + 1);
-
   const rows = await db.execute(
     sql`SELECT
           COUNT(*) FILTER (WHERE status_code IN ('1H','HT','2H','ET','BT','P','LIVE')) AS live,
-          COUNT(*) FILTER (WHERE kickoff_at >= ${todayStart} AND kickoff_at < ${todayEnd}) AS today,
-          COUNT(*) FILTER (WHERE status_code = 'NS' AND kickoff_at >= ${now}) AS upcoming,
+          COUNT(*) FILTER (WHERE kickoff_at >= date_trunc('day', NOW()) AND kickoff_at < date_trunc('day', NOW()) + INTERVAL '1 day') AS today,
+          COUNT(*) FILTER (WHERE status_code = 'NS' AND kickoff_at >= NOW()) AS upcoming,
           COUNT(*) FILTER (WHERE status_code IN ('FT','AET','PEN','WO','AWD')) AS results
         FROM fixtures`,
   );
