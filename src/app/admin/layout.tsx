@@ -11,7 +11,7 @@ const ibmPlexSans = IBM_Plex_Sans({
 });
 
 export const metadata = {
-  title: 'Atlas Kings Admin',
+  title: 'DimaScore Admin',
   robots: 'noindex, nofollow',
 };
 
@@ -21,7 +21,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <body className="font-[family-name:var(--font-ibm-plex-sans)] min-h-full bg-bg-canvas text-text-primary">
         <header className="flex h-10 items-center justify-between border-b border-border-subtle bg-bg-surface px-4">
           <Link href="/admin/media" className="text-sm font-semibold">
-            Atlas Kings Admin
+            <span className="text-text-primary">Dima</span>
+            <span className="text-accent-azure">Score</span> Admin
           </Link>
           <LogoutButton />
         </header>

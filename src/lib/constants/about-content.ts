@@ -473,7 +473,7 @@ const WC_2026_EN: AboutContent = {
     {
       question: 'Could the schedule change last-minute?',
       answer:
-        'FIFA reserves the right to adjust match times. Always check FIFA.com for the latest official schedule. Atlas Kings updates fixture times automatically from official data feeds.',
+        'FIFA reserves the right to adjust match times. Always check FIFA.com for the latest official schedule. DimaScore updates fixture times automatically from official data feeds.',
     },
     {
       question: 'What happens after 2026 for Morocco?',
@@ -875,7 +875,7 @@ const WC_2026_FR: AboutContent = {
     {
       question: 'Le calendrier peut-il changer \u00e0 la derni\u00e8re minute ?',
       answer:
-        'La FIFA se r\u00e9serve le droit d\u2019ajuster les horaires des matchs. Consultez toujours FIFA.com pour le calendrier officiel \u00e0 jour. Atlas Kings met \u00e0 jour automatiquement les horaires depuis les flux de donn\u00e9es officiels.',
+        'La FIFA se r\u00e9serve le droit d\u2019ajuster les horaires des matchs. Consultez toujours FIFA.com pour le calendrier officiel \u00e0 jour. DimaScore met \u00e0 jour automatiquement les horaires depuis les flux de donn\u00e9es officiels.',
     },
     {
       question: 'Que se passe-t-il apr\u00e8s 2026 pour le Maroc ?',

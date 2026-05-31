@@ -334,21 +334,24 @@ export { ALL_ENTRIES };
 // ---------------------------------------------------------------------------
 
 /** Competition IDs shown as direct links in the top nav bar, in display order. */
-export const TOP_NAV_COMPETITION_IDS = [1, 922, 200, 39, 140, 2, 61, 78] as const;
+export const TOP_NAV_COMPETITION_IDS = [200, 1, 6, 2, 39, 140, 61, 78, 135, 922, 12] as const;
 
 /** Label keys for top nav items (used by Topbar to render short labels). */
 const TOP_NAV_LABEL_KEYS: Record<number, string> = {
-  1: 'worldCup2026',
-  922: 'wafcon2026',
   200: 'botolaPro',
+  1: 'worldCup2026',
+  6: 'afcon',
+  2: 'championsLeague',
   39: 'premierLeague',
   140: 'laLiga',
-  2: 'championsLeague',
   61: 'ligue1',
   78: 'bundesliga',
+  135: 'serieA',
+  922: 'wafcon2026',
+  12: 'cafChampionsLeague',
 };
 
-/** Returns the 8 top-nav entries in display order. */
+/** Returns the 11 top-nav entries in display order. */
 export function getTopNavEntries(): MegaMenuEntry[] {
   return TOP_NAV_COMPETITION_IDS.map((id) => {
     const labelKey = TOP_NAV_LABEL_KEYS[id];

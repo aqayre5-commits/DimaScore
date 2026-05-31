@@ -28,17 +28,17 @@ export interface CupContent {
 const WC_2026: CupContent = {
   meta: {
     fr: {
-      title: 'Coupe du Monde 2026 — Calendrier, groupes, classement et phase finale | Atlas Kings',
+      title: 'Coupe du Monde 2026 — Calendrier, groupes, classement et phase finale | DimaScore',
       description:
         "Suivez la Coupe du Monde FIFA 2026 en direct : calendrier des 104 matchs, les 12 groupes, classement de chaque groupe, phase à élimination directe. Le Maroc dans le Groupe C avec le Brésil, Haïti et l'Écosse.",
     },
     en: {
-      title: 'FIFA World Cup 2026 — Fixtures, groups, standings and knockout | Atlas Kings',
+      title: 'FIFA World Cup 2026 — Fixtures, groups, standings and knockout | DimaScore',
       description:
         'Follow the FIFA World Cup 2026 live: 104-match schedule, 12 groups, standings per group, knockout bracket. Morocco in Group C with Brazil, Haiti, and Scotland.',
     },
     ar: {
-      title: 'كأس العالم 2026 — الجدول، المجموعات، الترتيب ومرحلة الإقصاء | أطلس كينغز',
+      title: 'كأس العالم 2026 — الجدول، المجموعات، الترتيب ومرحلة الإقصاء | ديماسكور',
       description:
         'تابعوا كأس العالم فيفا 2026 مباشرة: جدول 104 مباريات، 12 مجموعة، ترتيب كل مجموعة، الأدوار الإقصائية. المغرب في المجموعة C مع البرازيل وهايتي واسكتلندا.',
     },
@@ -121,17 +121,17 @@ const WC_2026: CupContent = {
 const AFCON_2025: CupContent = {
   meta: {
     fr: {
-      title: 'CAN 2025 — Calendrier, groupes, classement et phase finale | Atlas Kings',
+      title: 'CAN 2025 — Calendrier, groupes, classement et phase finale | DimaScore',
       description:
         "Suivez la Coupe d'Afrique des Nations 2025 en direct au Maroc : calendrier des 52 matchs, 6 groupes, classement, phase à élimination directe.",
     },
     en: {
-      title: 'AFCON 2025 — Fixtures, groups, standings and knockout | Atlas Kings',
+      title: 'AFCON 2025 — Fixtures, groups, standings and knockout | DimaScore',
       description:
         'Follow the Africa Cup of Nations 2025 live from Morocco: 52-match schedule, 6 groups, standings, knockout bracket.',
     },
     ar: {
-      title: 'كأس أمم إفريقيا 2025 — الجدول، المجموعات، الترتيب ومرحلة الإقصاء | أطلس كينغز',
+      title: 'كأس أمم إفريقيا 2025 — الجدول، المجموعات، الترتيب ومرحلة الإقصاء | ديماسكور',
       description:
         'تابعوا كأس أمم إفريقيا 2025 مباشرة من المغرب: جدول 52 مباراة، 6 مجموعات، ترتيب كل مجموعة، الأدوار الإقصائية.',
     },
@@ -208,17 +208,17 @@ const AFCON_2025: CupContent = {
 const WAFCON_2024: CupContent = {
   meta: {
     fr: {
-      title: 'CAN Féminine 2024 — Résultats, groupes et classement | Atlas Kings',
+      title: 'CAN Féminine 2024 — Résultats, groupes et classement | DimaScore',
       description:
         'Résultats de la CAN Féminine 2024 au Maroc : 3 groupes, classement, phase à élimination directe. Nigeria vainqueur, Maroc finaliste.',
     },
     en: {
-      title: 'WAFCON 2024 — Results, groups, standings and knockout | Atlas Kings',
+      title: 'WAFCON 2024 — Results, groups, standings and knockout | DimaScore',
       description:
         'WAFCON 2024 results from Morocco: 3 groups, standings, knockout bracket. Nigeria winners, Morocco runners-up.',
     },
     ar: {
-      title: 'كأس أمم إفريقيا للسيدات 2024 — النتائج، المجموعات، الترتيب | أطلس كينغز',
+      title: 'كأس أمم إفريقيا للسيدات 2024 — النتائج، المجموعات، الترتيب | ديماسكور',
       description:
         'نتائج كأس أمم إفريقيا للسيدات 2024 في المغرب: 3 مجموعات، الترتيب، الأدوار الإقصائية. نيجيريا البطلة، المغرب الوصيف.',
     },
@@ -319,17 +319,17 @@ const WAFCON_2024: CupContent = {
 const WAFCON_2026: CupContent = {
   meta: {
     fr: {
-      title: 'CAN Féminine 2026 — Calendrier, groupes et classement | Atlas Kings',
+      title: 'CAN Féminine 2026 — Calendrier, groupes et classement | DimaScore',
       description:
         'Suivez la CAN Féminine 2026 au Maroc : calendrier, 4 groupes, classement, phase à élimination directe. 16 équipes, format élargi.',
     },
     en: {
-      title: 'WAFCON 2026 — Fixtures, groups, standings and results | Atlas Kings',
+      title: 'WAFCON 2026 — Fixtures, groups, standings and results | DimaScore',
       description:
         'Follow WAFCON 2026 in Morocco: schedule, 4 groups, standings, knockout bracket. 16 teams, expanded format.',
     },
     ar: {
-      title: 'كأس أمم إفريقيا للسيدات 2026 — الجدول، المجموعات، الترتيب والنتائج | أطلس كينغز',
+      title: 'كأس أمم إفريقيا للسيدات 2026 — الجدول، المجموعات، الترتيب والنتائج | ديماسكور',
       description:
         'تابعوا كأس أمم إفريقيا للسيدات 2026 في المغرب: الجدول، 4 مجموعات، الترتيب، الأدوار الإقصائية. 16 منتخباً، صيغة موسعة.',
     },

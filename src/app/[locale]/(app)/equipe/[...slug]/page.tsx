@@ -53,11 +53,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const team = await getTeamBySlug(db, teamSlug);
 
   if (!team) {
-    return { title: 'Team | Atlas Kings' };
+    return { title: 'Team | DimaScore' };
   }
 
   const name = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
-  const title = `${name} | Atlas Kings`;
+  const title = `${name} | DimaScore`;
   const description = `${name} — fixtures, squad, standings and statistics.`;
   const pageUrl = `${baseUrl}/${locale}/equipe/${rawSlug.join('/')}`;
 
@@ -76,7 +76,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url: pageUrl,
-      siteName: 'Atlas Kings',
+      siteName: 'DimaScore',
       locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
       type: 'website',
     },

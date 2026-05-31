@@ -272,7 +272,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         title: meta.title,
         description: meta.description,
         url: pageUrl,
-        siteName: 'Atlas Kings',
+        siteName: 'DimaScore',
         locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
         type: 'website',
         images: [
@@ -293,7 +293,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Try to resolve a proper name from mega menu + DB
   const entry = resolveEntry(tournament, typedLocale);
   let displayName = tournament.replace(/-/g, ' ');
-  let description = `${displayName} — Atlas Kings`;
+  let description = `${displayName} — DimaScore`;
 
   if (entry) {
     const competition = await getCompetitionById(db, entry.competitionId);
@@ -302,7 +302,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       const seasonYear = await getCurrentSeasonYear(db, competition.id);
       const season = seasonYear ? `${seasonYear}/${(seasonYear + 1) % 100}` : '';
       displayName = season ? `${displayName} ${season}` : displayName;
-      description = `${displayName} — standings, matches, and statistics | Atlas Kings`;
+      description = `${displayName} — standings, matches, and statistics | DimaScore`;
     }
   }
 
@@ -315,7 +315,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   languages['x-default'] = languages[defaultLocale];
 
   return {
-    title: `${displayName} | Atlas Kings`,
+    title: `${displayName} | DimaScore`,
     description,
     alternates: { languages },
     robots: { index: true, follow: true },

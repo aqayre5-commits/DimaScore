@@ -1,8 +1,8 @@
-app = "atlaskings-live-poller"
+app = "dimascore-live-poller"
 primary_region = "cdg"
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "workers/live-poller/Dockerfile"
 
 [processes]
   worker = "tsx src/index.ts"

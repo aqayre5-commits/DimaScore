@@ -76,20 +76,20 @@ function TiktokIcon({ className }: { className?: string }) {
 }
 
 const socialLinks = [
-  { Icon: XIcon, href: 'https://x.com/atlaskings', label: 'X' },
+  { Icon: XIcon, href: 'https://x.com/dimascore', label: 'X' },
   {
     Icon: InstagramIcon,
-    href: 'https://instagram.com/atlaskings',
+    href: 'https://instagram.com/dimascore',
     label: 'Instagram',
   },
   {
     Icon: YoutubeIcon,
-    href: 'https://youtube.com/@atlaskings',
+    href: 'https://youtube.com/@dimascore',
     label: 'YouTube',
   },
   {
     Icon: TiktokIcon,
-    href: 'https://tiktok.com/@atlaskings',
+    href: 'https://tiktok.com/@dimascore',
     label: 'TikTok',
   },
 ] as const;

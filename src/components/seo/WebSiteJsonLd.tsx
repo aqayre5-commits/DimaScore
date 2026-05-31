@@ -12,8 +12,8 @@ export function WebSiteJsonLd({ baseUrl, locale }: WebSiteJsonLdProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Atlas Kings',
-    alternateName: ['\u0623\u0637\u0644\u0633 \u0643\u064a\u0646\u063a\u0632', 'Atlas Kings'],
+    name: 'DimaScore',
+    alternateName: ['ديماسكور', 'DimaScore'],
     url: `${baseUrl}/${locale}`,
     inLanguage: ['fr', 'en', 'ar'],
     potentialAction: {

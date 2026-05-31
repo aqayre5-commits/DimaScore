@@ -11,12 +11,12 @@ import type { AboutContent } from './about-content';
 const HOMEPAGE_FR: AboutContent = {
   cards: [
     {
-      id: 'about-atlas-kings',
-      heading: '\u00c0 propos d\u2019Atlas Kings',
+      id: 'about-dimascore',
+      heading: '\u00c0 propos d\u2019DimaScore',
       blocks: [
         {
           type: 'prose',
-          text: 'Atlas Kings est la plateforme de r\u00e9f\u00e9rence pour le football marocain et international. Lanc\u00e9e en 2026, elle couvre plus de 36 comp\u00e9titions, 320+ clubs et 6\u202f000+ joueurs avec des donn\u00e9es en temps r\u00e9el, des classements mis \u00e0 jour \u00e0 chaque journ\u00e9e, et une couverture \u00e9ditoriale ax\u00e9e sur le football vu du Maroc.',
+          text: 'DimaScore est la plateforme de r\u00e9f\u00e9rence pour le football marocain et international. Lanc\u00e9e en 2026, elle couvre plus de 36 comp\u00e9titions, 320+ clubs et 6\u202f000+ joueurs avec des donn\u00e9es en temps r\u00e9el, des classements mis \u00e0 jour \u00e0 chaque journ\u00e9e, et une couverture \u00e9ditoriale ax\u00e9e sur le football vu du Maroc.',
         },
       ],
     },
@@ -26,7 +26,7 @@ const HOMEPAGE_FR: AboutContent = {
       blocks: [
         {
           type: 'prose',
-          text: 'Atlas Kings suit la Botola Pro Inwi (1\u00e8re division), la Botola Pro 2 et la Coupe du Tr\u00f4ne au Maroc\u202f; la CAF Champions League, la Coupe de la Conf\u00e9d\u00e9ration CAF, l\u2019AFCON et la WAFCON pour l\u2019Afrique\u202f; la Coupe du Monde 2026, les qualifications FIFA et la Coupe du Monde U-17 2026\u202f; les cinq grandes ligues europ\u00e9ennes (Premier League, LaLiga, Bundesliga, Serie A, Ligue 1)\u202f; l\u2019UEFA Champions League, Europa League et Conference League\u202f; et les principales comp\u00e9titions MENA (AFC Asian Cup, Saudi Pro League, Egyptian Premier).',
+          text: 'DimaScore suit la Botola Pro Inwi (1\u00e8re division), la Botola Pro 2 et la Coupe du Tr\u00f4ne au Maroc\u202f; la CAF Champions League, la Coupe de la Conf\u00e9d\u00e9ration CAF, l\u2019AFCON et la WAFCON pour l\u2019Afrique\u202f; la Coupe du Monde 2026, les qualifications FIFA et la Coupe du Monde U-17 2026\u202f; les cinq grandes ligues europ\u00e9ennes (Premier League, LaLiga, Bundesliga, Serie A, Ligue 1)\u202f; l\u2019UEFA Champions League, Europa League et Conference League\u202f; et les principales comp\u00e9titions MENA (AFC Asian Cup, Saudi Pro League, Egyptian Premier).',
         },
       ],
     },
@@ -52,11 +52,11 @@ const HOMEPAGE_FR: AboutContent = {
     },
     {
       id: 'moroccans-abroad',
-      heading: 'Atlas Kings et les Marocains \u00e0 l\u2019\u00e9tranger',
+      heading: 'DimaScore et les Marocains \u00e0 l\u2019\u00e9tranger',
       blocks: [
         {
           type: 'prose',
-          text: 'Atlas Kings suit en d\u00e9tail les performances des joueurs marocains dans les championnats \u00e9trangers. Achraf Hakimi (PSG, Ligue 1 et UCL), Brahim Diaz (Bayern Munich, Bundesliga et UCL), Noussair Mazraoui (Manchester United, Premier League), Youssef En-Nesyri (Fenerbah\u00e7e, S\u00fcper Lig), Hakim Ziyech (Galatasaray, S\u00fcper Lig), Sofyan Amrabat (Real Betis, LaLiga), Nayef Aguerd (Real Sociedad, LaLiga) et Abdessamad Ezzalzouli (Real Betis, LaLiga) sont parmi les Lions de l\u2019Atlas suivis en d\u00e9tail \u00e0 chaque journ\u00e9e de leurs championnats respectifs.',
+          text: 'DimaScore suit en d\u00e9tail les performances des joueurs marocains dans les championnats \u00e9trangers. Achraf Hakimi (PSG, Ligue 1 et UCL), Brahim Diaz (Bayern Munich, Bundesliga et UCL), Noussair Mazraoui (Manchester United, Premier League), Youssef En-Nesyri (Fenerbah\u00e7e, S\u00fcper Lig), Hakim Ziyech (Galatasaray, S\u00fcper Lig), Sofyan Amrabat (Real Betis, LaLiga), Nayef Aguerd (Real Sociedad, LaLiga) et Abdessamad Ezzalzouli (Real Betis, LaLiga) sont parmi les Lions de l\u2019Atlas suivis en d\u00e9tail \u00e0 chaque journ\u00e9e de leurs championnats respectifs.',
         },
       ],
     },
@@ -85,7 +85,7 @@ const HOMEPAGE_FR: AboutContent = {
     {
       question: 'Quand commence la WAFCON 2026 au Maroc\u202f?',
       answer:
-        'La CAN F\u00e9minine 2026 (WAFCON) se d\u00e9roulera au Maroc du 25 juillet au 16 ao\u00fbt 2026, avec 16 \u00e9quipes (format \u00e9largi). La WAFCON 2024, remport\u00e9e par le Nigeria (3-2 en finale contre le Maroc), est \u00e9galement consultable sur Atlas Kings.',
+        'La CAN F\u00e9minine 2026 (WAFCON) se d\u00e9roulera au Maroc du 25 juillet au 16 ao\u00fbt 2026, avec 16 \u00e9quipes (format \u00e9largi). La WAFCON 2024, remport\u00e9e par le Nigeria (3-2 en finale contre le Maroc), est \u00e9galement consultable sur DimaScore.',
     },
     {
       question: 'Qui sont les meilleurs buteurs de la Botola Pro\u202f?',
@@ -93,14 +93,14 @@ const HOMEPAGE_FR: AboutContent = {
         '\u00c0 la mi-saison 2025-26\u202f: Diasty (Wydad AC, 14 buts), Kasami (Raja CA, 12), M\u2019Hand (AS FAR, 9), El Idrissi (Maghreb F\u00e8s, 9), Naciri (OCS Settat, 8). Le classement complet est consultable sur la page de la Botola Pro.',
     },
     {
-      question: 'Atlas Kings est-il gratuit\u202f?',
+      question: 'DimaScore est-il gratuit\u202f?',
       answer:
-        'Oui, Atlas Kings est enti\u00e8rement gratuit. Le site est financ\u00e9 par son mod\u00e8le \u00e9ditorial et ne diffuse pas de publicit\u00e9 conform\u00e9ment \u00e0 notre approche \u00e9ditoriale et \u00e0 la Loi 09-08 sur la protection des donn\u00e9es personnelles. Aucune inscription n\u2019est requise pour consulter les classements, scores ou statistiques.',
+        'Oui, DimaScore est enti\u00e8rement gratuit. Le site est financ\u00e9 par son mod\u00e8le \u00e9ditorial et ne diffuse pas de publicit\u00e9 conform\u00e9ment \u00e0 notre approche \u00e9ditoriale et \u00e0 la Loi 09-08 sur la protection des donn\u00e9es personnelles. Aucune inscription n\u2019est requise pour consulter les classements, scores ou statistiques.',
     },
     {
-      question: 'Atlas Kings couvre-t-il le football f\u00e9minin\u202f?',
+      question: 'DimaScore couvre-t-il le football f\u00e9minin\u202f?',
       answer:
-        'Oui. Atlas Kings couvre l\u2019\u00e9quipe nationale f\u00e9minine du Maroc (Lionnes de l\u2019Atlas), la Botola Pro F\u00e9minine (cr\u00e9\u00e9e en 2017), la WAFCON 2024 (r\u00e9sultats) et la WAFCON 2026 (\u00e0 venir au Maroc), la Coupe du Monde f\u00e9minine, la UEFA Women\u2019s Champions League, et les principales ligues f\u00e9minines europ\u00e9ennes.',
+        'Oui. DimaScore couvre l\u2019\u00e9quipe nationale f\u00e9minine du Maroc (Lionnes de l\u2019Atlas), la Botola Pro F\u00e9minine (cr\u00e9\u00e9e en 2017), la WAFCON 2024 (r\u00e9sultats) et la WAFCON 2026 (\u00e0 venir au Maroc), la Coupe du Monde f\u00e9minine, la UEFA Women\u2019s Champions League, et les principales ligues f\u00e9minines europ\u00e9ennes.',
     },
   ],
 };
@@ -110,12 +110,12 @@ const HOMEPAGE_FR: AboutContent = {
 const HOMEPAGE_EN: AboutContent = {
   cards: [
     {
-      id: 'about-atlas-kings',
-      heading: 'About Atlas Kings',
+      id: 'about-dimascore',
+      heading: 'About DimaScore',
       blocks: [
         {
           type: 'prose',
-          text: 'Atlas Kings is the go-to platform for Moroccan and international football. Launched in 2026, it covers 36+ competitions, 320+ clubs and 6,000+ players with real-time data, standings updated every matchday, and editorial coverage centred on football as seen from Morocco.',
+          text: 'DimaScore is the go-to platform for Moroccan and international football. Launched in 2026, it covers 36+ competitions, 320+ clubs and 6,000+ players with real-time data, standings updated every matchday, and editorial coverage centred on football as seen from Morocco.',
         },
       ],
     },
@@ -125,7 +125,7 @@ const HOMEPAGE_EN: AboutContent = {
       blocks: [
         {
           type: 'prose',
-          text: 'Atlas Kings tracks Botola Pro (1st division), Botola Pro 2 and Coupe du Tr\u00f4ne in Morocco; CAF Champions League, CAF Confederation Cup, AFCON and WAFCON for Africa; FIFA World Cup 2026, FIFA qualifiers and the U-17 World Cup 2026; the Big Five European leagues (Premier League, LaLiga, Bundesliga, Serie A, Ligue 1); UEFA Champions League, Europa League and Conference League; and key MENA competitions (AFC Asian Cup, Saudi Pro League, Egyptian Premier).',
+          text: 'DimaScore tracks Botola Pro (1st division), Botola Pro 2 and Coupe du Tr\u00f4ne in Morocco; CAF Champions League, CAF Confederation Cup, AFCON and WAFCON for Africa; FIFA World Cup 2026, FIFA qualifiers and the U-17 World Cup 2026; the Big Five European leagues (Premier League, LaLiga, Bundesliga, Serie A, Ligue 1); UEFA Champions League, Europa League and Conference League; and key MENA competitions (AFC Asian Cup, Saudi Pro League, Egyptian Premier).',
         },
       ],
     },
@@ -151,11 +151,11 @@ const HOMEPAGE_EN: AboutContent = {
     },
     {
       id: 'moroccans-abroad',
-      heading: 'Atlas Kings and Moroccans abroad',
+      heading: 'DimaScore and Moroccans abroad',
       blocks: [
         {
           type: 'prose',
-          text: 'Atlas Kings tracks Moroccan players performing in foreign leagues in detail. Achraf Hakimi (PSG, Ligue 1 & UCL), Brahim Diaz (Bayern Munich, Bundesliga & UCL), Noussair Mazraoui (Manchester United, Premier League), Youssef En-Nesyri (Fenerbah\u00e7e, S\u00fcper Lig), Hakim Ziyech (Galatasaray, S\u00fcper Lig), Sofyan Amrabat (Real Betis, LaLiga), Nayef Aguerd (Real Sociedad, LaLiga) and Abdessamad Ezzalzouli (Real Betis, LaLiga) are among the Atlas Lions covered every matchday in their respective leagues.',
+          text: 'DimaScore tracks Moroccan players performing in foreign leagues in detail. Achraf Hakimi (PSG, Ligue 1 & UCL), Brahim Diaz (Bayern Munich, Bundesliga & UCL), Noussair Mazraoui (Manchester United, Premier League), Youssef En-Nesyri (Fenerbah\u00e7e, S\u00fcper Lig), Hakim Ziyech (Galatasaray, S\u00fcper Lig), Sofyan Amrabat (Real Betis, LaLiga), Nayef Aguerd (Real Sociedad, LaLiga) and Abdessamad Ezzalzouli (Real Betis, LaLiga) are among the Atlas Lions covered every matchday in their respective leagues.',
         },
       ],
     },
@@ -184,7 +184,7 @@ const HOMEPAGE_EN: AboutContent = {
     {
       question: 'When does WAFCON 2026 start in Morocco?',
       answer:
-        'WAFCON 2026 takes place in Morocco from 25 July to 16 August 2026, with 16 teams (expanded format). WAFCON 2024, won by Nigeria (3-2 in the final against Morocco), is also available on Atlas Kings.',
+        'WAFCON 2026 takes place in Morocco from 25 July to 16 August 2026, with 16 teams (expanded format). WAFCON 2024, won by Nigeria (3-2 in the final against Morocco), is also available on DimaScore.',
     },
     {
       question: 'Who are the top scorers in Botola Pro?',
@@ -192,14 +192,14 @@ const HOMEPAGE_EN: AboutContent = {
         'At the mid-point of the 2025\u201326 season: Diasty (Wydad AC, 14 goals), Kasami (Raja CA, 12), M\u2019Hand (AS FAR, 9), El Idrissi (Maghreb F\u00e8s, 9), Naciri (OCS Settat, 8). Full rankings are available on the Botola Pro page.',
     },
     {
-      question: 'Is Atlas Kings free?',
+      question: 'Is DimaScore free?',
       answer:
-        'Yes, Atlas Kings is entirely free. The site is funded through its editorial model and does not run advertising, in line with our editorial approach and Morocco\u2019s Law 09-08 on personal data protection. No sign-up is required to view standings, scores or statistics.',
+        'Yes, DimaScore is entirely free. The site is funded through its editorial model and does not run advertising, in line with our editorial approach and Morocco\u2019s Law 09-08 on personal data protection. No sign-up is required to view standings, scores or statistics.',
     },
     {
-      question: 'Does Atlas Kings cover women\u2019s football?',
+      question: 'Does DimaScore cover women\u2019s football?',
       answer:
-        'Yes. Atlas Kings covers the Morocco women\u2019s national team (Atlas Lionesses), the Botola Pro F\u00e9minine (founded 2017), WAFCON 2024 (results) and WAFCON 2026 (upcoming in Morocco), the FIFA Women\u2019s World Cup, the UEFA Women\u2019s Champions League, and top European women\u2019s leagues.',
+        'Yes. DimaScore covers the Morocco women\u2019s national team (Atlas Lionesses), the Botola Pro F\u00e9minine (founded 2017), WAFCON 2024 (results) and WAFCON 2026 (upcoming in Morocco), the FIFA Women\u2019s World Cup, the UEFA Women\u2019s Champions League, and top European women\u2019s leagues.',
     },
   ],
 };
@@ -209,7 +209,7 @@ const HOMEPAGE_EN: AboutContent = {
 const HOMEPAGE_AR: AboutContent = {
   cards: [
     {
-      id: 'about-atlas-kings',
+      id: 'about-dimascore',
       heading: '\u062d\u0648\u0644 \u0623\u0637\u0644\u0633 \u0643\u064a\u0646\u063a\u0632',
       blocks: [
         {

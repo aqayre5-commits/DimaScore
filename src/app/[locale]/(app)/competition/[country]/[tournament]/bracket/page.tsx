@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const tournamentName = t('wc2026FullName');
   const bracketTitle = t('bracketPageTitle');
   const description = t('bracketPageIntro');
-  const title = `${bracketTitle} — ${tournamentName} | Atlas Kings`;
+  const title = `${bracketTitle} — ${tournamentName} | DimaScore`;
 
   const languages: Record<string, string> = {};
   languages['fr'] = `${baseUrl}/fr/competition/fifa/coupe-du-monde-2026/bracket`;

@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Atlas Kings",
+    "name": "DimaScore",
     "tagline": "Moroccan football and beyond"
   },
   "nav": {
@@ -47,7 +47,7 @@
     "botolaPro": "Botola Pro",
     "botola2": "Botola Pro 2",
     "coupeDuTrone": "Coupe du Trone",
-    "worldCup2026": "World Cup 2026",
+    "worldCup2026": "World Cup",
     "wcQualAfrica": "WC Qual. Africa",
     "wcQualEurope": "WC Qual. Europe",
     "wcQualConcacaf": "WC Qual. CONCACAF",
@@ -60,7 +60,7 @@
     "afcon": "AFCON 2027",
     "afconQualifiers": "AFCON Qualifiers",
     "wafcon2024": "WAFCON 2024",
-    "wafcon2026": "WAFCON 2026",
+    "wafcon2026": "WAFCON",
     "cafChampionsLeague": "CAF Champions League",
     "cafConfederationCup": "CAF Confederation Cup",
     "premierLeague": "Premier League",
@@ -99,7 +99,7 @@
     "privacyPolicy": "Privacy policy",
     "contact": "Contact",
     "loi0908": "This site complies with Law 09-08 on the protection of personal data.",
-    "copyright": "© {year} Atlas Kings. All rights reserved.",
+    "copyright": "© {year} DimaScore. All rights reserved.",
     "competitions": "Competitions",
     "resources": "Resources",
     "about": "About",
@@ -134,7 +134,7 @@
   },
   "homepage": {
     "h1": "Moroccan and world football live",
-    "intro": "Atlas Kings covers Botola Pro, the Morocco national team, World Cup 2026 qualifiers, AFCON, WAFCON, and Europe's top leagues. Live scores, standings, and statistics updated to the minute.",
+    "intro": "DimaScore covers Botola Pro, the Morocco national team, World Cup 2026 qualifiers, AFCON, WAFCON, and Europe's top leagues. Live scores, standings, and statistics updated to the minute.",
     "emptyState": "Matches coming soon",
     "featuredVideos": "Featured videos",
     "featured": "Featured",
@@ -564,7 +564,7 @@
     "botolaPro": "Botola Pro",
     "botola2": "Botola 2",
     "coupeDuTrone": "Coupe du Trône",
-    "worldCup2026": "World Cup 2026",
+    "worldCup2026": "World Cup",
     "wcQualAfrica": "WC Qual. Africa",
     "wcQualEurope": "WC Qual. Europe",
     "wcQualConcacaf": "WC Qual. CONCACAF",
@@ -575,7 +575,7 @@
     "afcon": "AFCON 2027",
     "afconQualifiers": "AFCON Qualifiers",
     "wafcon2024": "WAFCON 2024",
-    "wafcon2026": "WAFCON 2026",
+    "wafcon2026": "WAFCON",
     "cafChampionsLeague": "CAF Champions League",
     "cafConfederationCup": "CAF Confederation Cup",
     "premierLeague": "Premier League",
@@ -677,7 +677,7 @@
     "body": "Body",
     "caption": "Caption",
     "micro": "Micro",
-    "sampleText": "Atlas Kings — Moroccan Football",
+    "sampleText": "DimaScore — Moroccan Football",
     "sampleNumber": "0123456789"
   }
 }

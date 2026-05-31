@@ -26,16 +26,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const lastSegment = rawSlug.map(decodeURIComponent).pop() ?? '';
   const coachId = extractIdFromSlug(lastSegment);
 
-  if (!coachId) return { title: 'Coach | Atlas Kings' };
+  if (!coachId) return { title: 'Coach | DimaScore' };
 
   const coach = await getCoachById(db, coachId);
-  if (!coach) return { title: 'Coach | Atlas Kings' };
+  if (!coach) return { title: 'Coach | DimaScore' };
 
   const displayName =
     coach.firstname && coach.lastname ? `${coach.firstname} ${coach.lastname}` : coach.name;
   const t = await getTranslations({ locale, namespace: 'coachPage' });
 
-  const title = `${displayName} — ${t('manager')} | Atlas Kings`;
+  const title = `${displayName} — ${t('manager')} | DimaScore`;
   const description = `${displayName} — ${t('careerHistory')}.`;
   const slugPath = rawSlug.map(decodeURIComponent).join('/');
   const canonical = `${BASE_URL}/${locale}/entraineur/${slugPath}`;
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url: canonical,
-      siteName: 'Atlas Kings',
+      siteName: 'DimaScore',
       locale: locale === 'ar' ? 'ar_MA' : locale === 'fr' ? 'fr_MA' : 'en_US',
       type: 'profile',
     },

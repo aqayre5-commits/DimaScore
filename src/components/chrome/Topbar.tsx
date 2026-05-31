@@ -84,11 +84,12 @@ export function Topbar() {
         </div>
 
         {/* Logo */}
-        <Link href={`/${locale}`} className="me-3 text-lg font-bold text-text-primary">
-          Atlas Kings
+        <Link href={`/${locale}`} className="me-3 text-lg font-bold">
+          <span className="text-text-primary">Dima</span>
+          <span className="text-accent-azure">Score</span>
         </Link>
 
-        {/* Desktop nav — 8 direct competition links + More */}
+        {/* Desktop nav — 11 direct competition links + More */}
         <div className="hidden items-center gap-0 lg:flex">
           {topNavEntries.map((entry) => {
             const href = buildCompetitionHref(entry, locale);

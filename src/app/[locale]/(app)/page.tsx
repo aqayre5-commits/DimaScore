@@ -49,12 +49,12 @@ const baseUrl = BASE_URL;
 const HOME_META: Record<Locale, { title: string; description: string }> = {
   fr: {
     title:
-      "Football aujourd'hui \u2014 scores en direct, Botola Pro, WC 2026, Atlas Lions | Atlas Kings",
+      "Football aujourd'hui \u2014 scores en direct, Botola Pro, WC 2026, Atlas Lions | DimaScore",
     description:
       'Suivez le football marocain et mondial en direct : scores Botola Pro, matchs Atlas Lions, qualifications Coupe du Monde 2026, AFCON, WAFCON, classements et statistiques mises \u00e0 jour en temps r\u00e9el.',
   },
   en: {
-    title: 'Football today \u2014 live scores, Botola Pro, WC 2026, Atlas Lions | Atlas Kings',
+    title: 'Football today \u2014 live scores, Botola Pro, WC 2026, Atlas Lions | DimaScore',
     description:
       'Follow Moroccan and world football live: Botola Pro scores, Atlas Lions fixtures, World Cup 2026 qualifiers, AFCON, WAFCON, standings and statistics updated in real time.',
   },
@@ -87,7 +87,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: meta.title,
       description: meta.description,
       url: pageUrl,
-      siteName: 'Atlas Kings',
+      siteName: 'DimaScore',
       locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
       type: 'website',
     },

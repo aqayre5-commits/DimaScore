@@ -42,7 +42,10 @@ export default function AdminLoginPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm space-y-4 rounded-lg border border-border-subtle bg-bg-surface p-6"
       >
-        <h1 className="text-lg font-semibold">Atlas Kings Admin</h1>
+        <h1 className="text-lg font-semibold">
+          <span className="text-text-primary">Dima</span>
+          <span className="text-accent-azure">Score</span> Admin
+        </h1>
 
         {error && (
           <p className="rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-400">{error}</p>

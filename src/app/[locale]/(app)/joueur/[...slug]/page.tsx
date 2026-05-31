@@ -50,11 +50,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const player = await getPlayerBySlug(db, playerSlug);
 
   if (!player) {
-    return { title: 'Player | Atlas Kings' };
+    return { title: 'Player | DimaScore' };
   }
 
   const name = player.name[typedLocale] ?? player.name['en'] ?? playerSlug;
-  const title = `${name} | Atlas Kings`;
+  const title = `${name} | DimaScore`;
   const description = `${name} — season stats, career, transfers and more.`;
   const pageUrl = `${baseUrl}/${locale}/joueur/${rawSlug.join('/')}`;
 
@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url: pageUrl,
-      siteName: 'Atlas Kings',
+      siteName: 'DimaScore',
       locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
       type: 'website',
     },

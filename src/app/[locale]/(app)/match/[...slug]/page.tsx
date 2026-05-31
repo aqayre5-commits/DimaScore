@@ -55,10 +55,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locale, slug: rawSlug } = await params;
   const slug = rawSlug.map(decodeURIComponent);
   const fixtureId = parseFixtureId(slug);
-  if (!fixtureId) return { title: 'Match | Atlas Kings' };
+  if (!fixtureId) return { title: 'Match | DimaScore' };
 
   const match = await getMatchDetail(db, fixtureId);
-  if (!match) return { title: 'Match | Atlas Kings' };
+  if (!match) return { title: 'Match | DimaScore' };
 
   const home = getTeamDisplayName(match.homeTeam, locale);
   const away = getTeamDisplayName(match.awayTeam, locale);
@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     locale,
   );
 
-  const title = `${home} vs ${away} | ${compName} | Atlas Kings`;
+  const title = `${home} vs ${away} | ${compName} | DimaScore`;
   const description = `${home} vs ${away} — ${compName}${match.round ? `, ${match.round}` : ''}`;
   const canonical = `${BASE_URL}/${locale}/match/${fixtureId}`;
 
@@ -82,7 +82,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       url: canonical,
-      siteName: 'Atlas Kings',
+      siteName: 'DimaScore',
       locale: locale === 'ar' ? 'ar_MA' : locale === 'fr' ? 'fr_MA' : 'en_US',
       type: 'website',
     },

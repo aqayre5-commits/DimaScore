@@ -10,14 +10,14 @@ export function OrganizationJsonLd({ baseUrl }: OrganizationJsonLdProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Atlas Kings',
+    name: 'DimaScore',
     url: baseUrl,
-    logo: `${baseUrl}/atlas-kings-logo.svg`,
+    logo: `${baseUrl}/dimascore-logo.svg`,
     sameAs: [
-      'https://x.com/atlaskings',
-      'https://www.instagram.com/atlaskings',
-      'https://www.youtube.com/@atlaskings',
-      'https://www.tiktok.com/@atlaskings',
+      'https://x.com/dimascore',
+      'https://www.instagram.com/dimascore',
+      'https://www.youtube.com/@dimascore',
+      'https://www.tiktok.com/@dimascore',
     ],
   };
 

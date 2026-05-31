@@ -44,7 +44,7 @@ export async function generateMetadata({
   languages['x-default'] = `${baseUrl}/${defaultLocale}`;
 
   return {
-    title: 'Atlas Kings',
+    title: 'DimaScore',
     description:
       locale === 'ar'
         ? 'كرة القدم المغربية وما بعدها'
