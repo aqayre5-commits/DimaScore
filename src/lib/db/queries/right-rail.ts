@@ -640,79 +640,71 @@ export async function getRightRailTopScorers(
   // Priority order: Botola Pro (200) > WC (1) > AFCON (6) > UCL (2) > PL (39)
   const priorityComps = [200, 1, 6, 2, 39];
 
-  // Single query: top scorers for all priority comps with current seasons, ranked by priority
-  const rows = await db.execute(
-    sql`WITH priority_comps AS (
-          SELECT unnest(${priorityComps}::int[]) AS comp_id,
-                 generate_series(1, ${priorityComps.length}) AS priority
-        ),
-        current AS (
-          SELECT s.competition_id, s.year
-          FROM seasons s
-          WHERE s.is_current = true
-            AND s.competition_id = ANY(${priorityComps}::int[])
-        ),
-        ranked AS (
-          SELECT
-            pss.competition_id,
+  // Get current seasons
+  const currentSeasons = await db
+    .select({
+      competitionId: schema.seasons.competitionId,
+      year: schema.seasons.year,
+    })
+    .from(schema.seasons)
+    .where(eq(schema.seasons.isCurrent, true));
+
+  const seasonMap = new Map(currentSeasons.map((s) => [s.competitionId, s.year]));
+
+  for (const compId of priorityComps) {
+    const year = seasonMap.get(compId);
+    if (!year) continue;
+
+    const rows = await db.execute(
+      sql`SELECT
             pss.player_id,
             COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
             p.slug AS player_slug,
             p.photo_url,
             COALESCE(t.name->>'en', 'Unknown') AS team_name,
             t.logo_url AS team_logo_url,
-            (pss.stats->>'goals')::int AS goals,
-            pc.priority,
-            ROW_NUMBER() OVER (PARTITION BY pss.competition_id ORDER BY (pss.stats->>'goals')::int DESC) AS rn
+            (pss.stats->>'goals')::int AS goals
           FROM player_season_stats pss
-          JOIN current c ON c.competition_id = pss.competition_id AND c.year = pss.season_year
-          JOIN priority_comps pc ON pc.comp_id = pss.competition_id
           JOIN players p ON p.id = pss.player_id
           LEFT JOIN teams t ON t.id = pss.team_id
-          WHERE (pss.stats->>'goals')::int > 0
-        )
-        SELECT competition_id, player_id, player_name, player_slug, photo_url,
-               team_name, team_logo_url, goals, priority
-        FROM ranked
-        WHERE rn <= ${limit}
-        ORDER BY priority, goals DESC`,
-  );
+          WHERE pss.competition_id = ${compId}
+            AND pss.season_year = ${year}
+            AND (pss.stats->>'goals')::int > 0
+          ORDER BY goals DESC
+          LIMIT ${limit}`,
+    );
 
-  if (rows.rows.length === 0) return { competitionName: {}, scorers: [] };
+    if (rows.rows.length === 0) continue;
 
-  type Row = {
-    competition_id: string;
-    player_id: string;
-    player_name: string;
-    player_slug: string;
-    photo_url: string | null;
-    team_name: string;
-    team_logo_url: string | null;
-    goals: string;
-    priority: string;
-  };
+    const compInfo = await db
+      .select({ name: schema.competitions.name })
+      .from(schema.competitions)
+      .where(eq(schema.competitions.id, compId))
+      .limit(1);
 
-  // Pick the first (highest-priority) competition that has results
-  const firstCompId = Number((rows.rows[0] as Row).competition_id);
-  const compRows = (rows.rows as Row[]).filter((r) => Number(r.competition_id) === firstCompId);
+    return {
+      competitionName: compInfo[0]?.name ?? {},
+      scorers: (
+        rows.rows as {
+          player_id: string;
+          player_name: string;
+          player_slug: string;
+          photo_url: string | null;
+          team_name: string;
+          team_logo_url: string | null;
+          goals: string;
+        }[]
+      ).map((r) => ({
+        playerId: Number(r.player_id),
+        playerName: r.player_name,
+        playerSlug: r.player_slug,
+        photoUrl: r.photo_url,
+        teamName: r.team_name,
+        teamLogoUrl: r.team_logo_url,
+        goals: Number(r.goals),
+      })),
+    };
+  }
 
-  // Get competition name
-  const compInfo = await db
-    .select({ name: schema.competitions.name })
-    .from(schema.competitions)
-    .where(eq(schema.competitions.id, firstCompId))
-    .limit(1);
-
-  return {
-    competitionName: compInfo[0]?.name ?? {},
-    scorers: compRows.map((r) => ({
-      playerId: Number(r.player_id),
-      playerName: r.player_name,
-      playerSlug: r.player_slug,
-      photoUrl: r.photo_url,
-      teamName: r.team_name,
-      teamLogoUrl: r.team_logo_url,
-      goals: Number(r.goals),
-    })),
-  };
+  return { competitionName: {}, scorers: [] };
 }
