@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Pause, Play } from 'lucide-react';
 import { codeToFlag } from '@/lib/flags';
@@ -59,7 +60,7 @@ function TeamCell({
   const logo = flag ? (
     <span className="text-base leading-none">{flag}</span>
   ) : team.logoUrl ? (
-    <img src={team.logoUrl} alt="" className="size-4 object-contain" />
+    <Image src={team.logoUrl} alt="" width={16} height={16} className="size-4 object-contain" />
   ) : null;
 
   const name = <span className="text-sm font-medium text-text-primary">{code}</span>;

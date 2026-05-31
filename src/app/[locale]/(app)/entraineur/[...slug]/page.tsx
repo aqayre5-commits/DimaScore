@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { type Locale } from '@/lib/i18n/config';
+import { locales, type Locale } from '@/lib/i18n/config';
+import { BASE_URL } from '@/lib/constants/site';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { CoachPageHeader } from '@/components/coach/CoachPageHeader';
 import { CoachCareerTable } from '@/components/coach/CoachCareerTable';
@@ -34,9 +35,33 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     coach.firstname && coach.lastname ? `${coach.firstname} ${coach.lastname}` : coach.name;
   const t = await getTranslations({ locale, namespace: 'coachPage' });
 
+  const title = `${displayName} — ${t('manager')} | Atlas Kings`;
+  const description = `${displayName} — ${t('careerHistory')}.`;
+  const slugPath = rawSlug.map(decodeURIComponent).join('/');
+  const canonical = `${BASE_URL}/${locale}/entraineur/${slugPath}`;
+
   return {
-    title: `${displayName} — ${t('manager')} | Atlas Kings`,
-    description: `${displayName} — ${t('careerHistory')}.`,
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: Object.fromEntries(
+        locales.map((l) => [l, `${BASE_URL}/${l}/entraineur/${slugPath}`]),
+      ),
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: 'Atlas Kings',
+      locale: locale === 'ar' ? 'ar_MA' : locale === 'fr' ? 'fr_MA' : 'en_US',
+      type: 'profile',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
   };
 }
 

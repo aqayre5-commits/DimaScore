@@ -32,7 +32,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ ok: true, processed: results.length, results });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    console.error('Cron fixture-details failed:', error);
+    return NextResponse.json({ ok: false, error: 'Internal server error' }, { status: 500 });
   }
 }

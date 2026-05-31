@@ -28,12 +28,13 @@ import {
   getTeamPrimaryCompetition,
 } from '@/lib/db/queries/team';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
+import { BASE_URL } from '@/lib/constants/site';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const baseUrl = BASE_URL;
 
 // ── Tab hash fragments per locale ──
 

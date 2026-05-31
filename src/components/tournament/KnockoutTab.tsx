@@ -1,11 +1,15 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { WC_2026_BRACKETS_BY_LOCALE } from '@/lib/constants/wc2026-bracket-builder';
-import { KnockoutBracket } from './KnockoutBracket';
 import type { Locale } from '@/lib/i18n/config';
 import type { BracketMatch, KnockoutPhase } from './BracketMatchCell';
+
+const KnockoutBracket = dynamic(() => import('./KnockoutBracket').then((m) => m.KnockoutBracket), {
+  ssr: false,
+});
 
 interface KnockoutTabProps {
   locale: Locale;

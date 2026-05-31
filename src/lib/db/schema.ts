@@ -88,7 +88,9 @@ export const seasons = pgTable(
 export const leagueCoverage = pgTable(
   'league_coverage',
   {
-    leagueId: bigint('league_id', { mode: 'number' }).notNull(),
+    leagueId: bigint('league_id', { mode: 'number' })
+      .notNull()
+      .references(() => competitions.id),
     season: integer('season').notNull(),
     events: boolean('events'),
     lineups: boolean('lineups'),
@@ -171,17 +173,21 @@ export const players = pgTable(
   ],
 );
 
-export const coaches = pgTable('coaches', {
-  id: bigint('id', { mode: 'number' }).primaryKey(),
-  name: text('name').notNull(),
-  firstname: text('firstname'),
-  lastname: text('lastname'),
-  birthDate: date('birth_date'),
-  nationalityCode: text('nationality_code'),
-  photoUrl: text('photo_url'),
-  currentTeamId: bigint('current_team_id', { mode: 'number' }).references(() => teams.id),
-  career: jsonb('career'),
-});
+export const coaches = pgTable(
+  'coaches',
+  {
+    id: bigint('id', { mode: 'number' }).primaryKey(),
+    name: text('name').notNull(),
+    firstname: text('firstname'),
+    lastname: text('lastname'),
+    birthDate: date('birth_date'),
+    nationalityCode: text('nationality_code'),
+    photoUrl: text('photo_url'),
+    currentTeamId: bigint('current_team_id', { mode: 'number' }).references(() => teams.id),
+    career: jsonb('career'),
+  },
+  (t) => [index('coaches_current_team_id_idx').on(t.currentTeamId)],
+);
 
 // ─── Fixtures + live ───
 
@@ -373,15 +379,19 @@ export const teamSeasonStats = pgTable(
   (t) => [primaryKey({ columns: [t.teamId, t.competitionId, t.seasonYear] })],
 );
 
-export const transfers = pgTable('transfers', {
-  id: bigserial('id', { mode: 'number' }).primaryKey(),
-  playerId: bigint('player_id', { mode: 'number' }).references(() => players.id),
-  date: date('date'),
-  type: text('type'),
-  fromTeamId: bigint('from_team_id', { mode: 'number' }).references(() => teams.id),
-  toTeamId: bigint('to_team_id', { mode: 'number' }).references(() => teams.id),
-  fee: text('fee'),
-});
+export const transfers = pgTable(
+  'transfers',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    playerId: bigint('player_id', { mode: 'number' }).references(() => players.id),
+    date: date('date'),
+    type: text('type'),
+    fromTeamId: bigint('from_team_id', { mode: 'number' }).references(() => teams.id),
+    toTeamId: bigint('to_team_id', { mode: 'number' }).references(() => teams.id),
+    fee: text('fee'),
+  },
+  (t) => [index('transfers_player_id_idx').on(t.playerId)],
+);
 
 export const playerTrophies = pgTable(
   'player_trophies',
@@ -398,15 +408,22 @@ export const playerTrophies = pgTable(
   (t) => [index('player_trophies_player_id_idx').on(t.playerId)],
 );
 
-export const injuries = pgTable('injuries', {
-  id: bigserial('id', { mode: 'number' }).primaryKey(),
-  playerId: bigint('player_id', { mode: 'number' }).references(() => players.id),
-  teamId: bigint('team_id', { mode: 'number' }).references(() => teams.id),
-  fixtureId: bigint('fixture_id', { mode: 'number' }).references(() => fixtures.id),
-  type: text('type'),
-  reason: text('reason'),
-  date: date('date'),
-});
+export const injuries = pgTable(
+  'injuries',
+  {
+    id: bigserial('id', { mode: 'number' }).primaryKey(),
+    playerId: bigint('player_id', { mode: 'number' }).references(() => players.id),
+    teamId: bigint('team_id', { mode: 'number' }).references(() => teams.id),
+    fixtureId: bigint('fixture_id', { mode: 'number' }).references(() => fixtures.id),
+    type: text('type'),
+    reason: text('reason'),
+    date: date('date'),
+  },
+  (t) => [
+    index('injuries_fixture_id_idx').on(t.fixtureId),
+    index('injuries_player_id_idx').on(t.playerId),
+  ],
+);
 
 // ─── Predictions ───
 

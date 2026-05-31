@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { TeamSeasonStatsResult } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
@@ -218,7 +219,13 @@ export function TeamStatistics({ data, locale }: TeamStatisticsProps) {
       <div className="rounded-xl border border-border-subtle bg-bg-surface overflow-hidden">
         <div className="flex items-center gap-2.5 px-4 py-3">
           {activeComp?.logoUrl && (
-            <img src={activeComp.logoUrl} alt="" className="size-5 object-contain" loading="lazy" />
+            <Image
+              src={activeComp.logoUrl}
+              alt=""
+              width={20}
+              height={20}
+              className="size-5 object-contain"
+            />
           )}
           <select
             value={activeCompId}

@@ -6,10 +6,15 @@ import type { ApiResponse } from './types';
 const BASE_URL = 'https://v3.football.api-sports.io';
 
 function createClient() {
+  const apiKey = process.env.API_FOOTBALL_KEY;
+  if (!apiKey) {
+    throw new Error('API_FOOTBALL_KEY environment variable is required');
+  }
+
   const instance = axios.create({
     baseURL: BASE_URL,
     headers: {
-      'x-apisports-key': process.env.API_FOOTBALL_KEY ?? '',
+      'x-apisports-key': apiKey,
     },
     timeout: 15_000,
   });
@@ -37,12 +42,35 @@ export function getClient() {
   return client;
 }
 
+const RETRY_DELAYS = [1000, 2000, 4000];
+
+function isRetryable(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false;
+  const status = error.response?.status;
+  if (status && status >= 500) return true;
+  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') return true;
+  return false;
+}
+
 export async function apiGet<T>(
   endpoint: string,
   params?: Record<string, string | number | boolean>,
 ): Promise<ApiResponse<T>> {
-  const response = await getClient().get<ApiResponse<T>>(endpoint, { params });
-  return response.data;
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++) {
+    try {
+      const response = await getClient().get<ApiResponse<T>>(endpoint, { params });
+      return response.data;
+    } catch (error) {
+      lastError = error;
+      if (attempt < RETRY_DELAYS.length && isRetryable(error)) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS[attempt]));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw lastError;
 }
 
 export { BASE_URL };

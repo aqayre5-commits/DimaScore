@@ -30,3 +30,23 @@ export function formatMatchDate(
 ): string {
   return new Intl.DateTimeFormat(INTL_LOCALE[locale], options).format(new Date(date));
 }
+
+/**
+ * Format a short date (e.g., "14 Jun", "14 juin").
+ */
+export function formatShortDate(dateStr: string, locale: Locale): string {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
+    day: 'numeric',
+    month: 'short',
+  }).format(d);
+}
+
+/**
+ * Format a season year for display (e.g., 2025 → "2025/26").
+ */
+export function formatSeason(year: number): string {
+  const next = (year + 1) % 100;
+  return `${year}/${next.toString().padStart(2, '0')}`;
+}

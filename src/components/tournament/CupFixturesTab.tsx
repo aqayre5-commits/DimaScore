@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
@@ -247,7 +248,13 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
 function TeamBadge({ team }: { team: FixtureWithTeams['homeTeam'] }) {
   if (team?.logoUrl) {
     return (
-      <img src={team.logoUrl} alt="" className="size-5 shrink-0 object-contain" loading="lazy" />
+      <Image
+        src={team.logoUrl}
+        alt=""
+        width={20}
+        height={20}
+        className="size-5 shrink-0 object-contain"
+      />
     );
   }
   return <span className="inline-block size-5 shrink-0 rounded bg-bg-surface-2" />;

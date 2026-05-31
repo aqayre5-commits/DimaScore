@@ -1,6 +1,7 @@
 import { eq, and, desc, ilike, sql, arrayContains } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
+import { escapeLikePattern } from '@/lib/utils/sql';
 
 // ── Types ──
 
@@ -62,7 +63,7 @@ export async function getMediaVideos(
     conditions.push(eq(schema.mediaVideos.isFeatured, isFeatured));
   }
   if (search) {
-    conditions.push(ilike(schema.mediaVideos.title, `%${search}%`));
+    conditions.push(ilike(schema.mediaVideos.title, `%${escapeLikePattern(search)}%`));
   }
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;

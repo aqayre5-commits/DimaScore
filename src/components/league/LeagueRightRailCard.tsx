@@ -171,7 +171,13 @@ function CompactMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale: 
       {/* Home */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
         {homeTeam?.logoUrl ? (
-          <img src={homeTeam.logoUrl} alt="" className="size-4 shrink-0 object-contain" />
+          <Image
+            src={homeTeam.logoUrl}
+            alt=""
+            width={16}
+            height={16}
+            className="size-4 shrink-0 object-contain"
+          />
         ) : (
           <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />
         )}
@@ -197,7 +203,13 @@ function CompactMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale: 
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
         <span className="truncate text-xs font-medium text-text-primary">{awayCode}</span>
         {awayTeam?.logoUrl ? (
-          <img src={awayTeam.logoUrl} alt="" className="size-4 shrink-0 object-contain" />
+          <Image
+            src={awayTeam.logoUrl}
+            alt=""
+            width={16}
+            height={16}
+            className="size-4 shrink-0 object-contain"
+          />
         ) : (
           <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />
         )}

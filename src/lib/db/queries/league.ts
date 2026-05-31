@@ -308,13 +308,17 @@ export async function getLeagueFeaturedMatches(
 /**
  * All fixtures for a league season, ordered by kickoff.
  * Used by LeagueFixturesCard which handles client-side round filtering.
+ * Pass `limit` to cap results (default 500 as safety bound).
  */
 export async function getLeagueFixtures(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number,
   seasonYear: number,
+  opts: { limit?: number; offset?: number } = {},
 ): Promise<FixtureWithTeams[]> {
-  const rows = await db
+  const { limit = 500, offset = 0 } = opts;
+
+  let query = db
     .select()
     .from(schema.fixtures)
     .where(
@@ -323,8 +327,15 @@ export async function getLeagueFixtures(
         eq(schema.fixtures.seasonYear, seasonYear),
       ),
     )
-    .orderBy(asc(schema.fixtures.roundNumber), asc(schema.fixtures.kickoffAt));
+    .orderBy(asc(schema.fixtures.roundNumber), asc(schema.fixtures.kickoffAt))
+    .limit(limit)
+    .$dynamic();
 
+  if (offset > 0) {
+    query = query.offset(offset);
+  }
+
+  const rows = await query;
   return hydrateFixtures(db, rows);
 }
 

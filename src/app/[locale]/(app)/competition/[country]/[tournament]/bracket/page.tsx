@@ -9,12 +9,13 @@ import { db } from '@/lib/db/client';
 import { getKnockoutFixtures } from '@/lib/db/queries';
 import { getCurrentSeasonYear } from '@/lib/db/queries/league';
 import { buildDynamicBracket } from '@/lib/constants/dynamic-bracket-builder';
+import { BASE_URL } from '@/lib/constants/site';
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const baseUrl = BASE_URL;
 
 const WC_2026_SLUGS = ['coupe-du-monde-2026', 'world-cup-2026', 'كأس-العالم-2026'];
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import {
@@ -147,7 +148,13 @@ function CompLink({
       )}
     >
       {logoUrl ? (
-        <img src={logoUrl} alt="" className="size-5 shrink-0 object-contain" loading="lazy" />
+        <Image
+          src={logoUrl}
+          alt=""
+          width={20}
+          height={20}
+          className="size-5 shrink-0 object-contain"
+        />
       ) : (
         <div className="flex size-5 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">
           {label.slice(0, 2)}

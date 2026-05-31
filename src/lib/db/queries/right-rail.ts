@@ -3,6 +3,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { HomeFixture } from './homepage';
 import type { StandingRow } from '../queries';
+import { TEAM_IDS } from '@/lib/constants/canonical-ids';
 
 // ── Status code sets ──
 
@@ -309,117 +310,106 @@ export async function getLiveGroupStandings(
   const todayEnd = new Date(todayStart);
   todayEnd.setUTCDate(todayEnd.getUTCDate() + 1);
 
-  // Find competitions that have group standings AND fixtures today
-  const compsWithGroupsToday = await db.execute(
-    sql`SELECT DISTINCT f.competition_id, f.season_year
-        FROM fixtures f
-        JOIN standings s ON s.competition_id = f.competition_id
-          AND s.season_year = f.season_year
-          AND s.group_label LIKE 'Group%'
-        WHERE f.kickoff_at >= ${todayStart}
-          AND f.kickoff_at < ${todayEnd}`,
+  // Single query: all standings for groups that have fixtures today
+  const allRows = await db.execute(
+    sql`SELECT s.competition_id, s.season_year, s.group_label, s.team_id,
+               s.rank, s.points, s.played, s.won, s.drawn, s.lost,
+               s.goals_for, s.goals_against, s.goal_diff, s.form, s.description,
+               c.name AS comp_name, c.slug AS comp_slug, c.logo_url AS comp_logo_url
+        FROM standings s
+        JOIN competitions c ON c.id = s.competition_id
+        WHERE s.group_label LIKE 'Group%'
+          AND (s.competition_id, s.season_year) IN (
+            SELECT DISTINCT f.competition_id, f.season_year
+            FROM fixtures f
+            JOIN standings s2 ON s2.competition_id = f.competition_id
+              AND s2.season_year = f.season_year
+              AND s2.group_label LIKE 'Group%'
+              AND (f.home_team_id = s2.team_id OR f.away_team_id = s2.team_id)
+            WHERE f.kickoff_at >= ${todayStart}
+              AND f.kickoff_at < ${todayEnd}
+          )
+          AND s.group_label IN (
+            SELECT DISTINCT s3.group_label
+            FROM standings s3
+            JOIN fixtures f2 ON f2.competition_id = s3.competition_id
+              AND f2.season_year = s3.season_year
+              AND (f2.home_team_id = s3.team_id OR f2.away_team_id = s3.team_id)
+            WHERE s3.competition_id = s.competition_id
+              AND s3.season_year = s.season_year
+              AND s3.group_label LIKE 'Group%'
+              AND f2.kickoff_at >= ${todayStart}
+              AND f2.kickoff_at < ${todayEnd}
+          )
+        ORDER BY s.competition_id, s.group_label, s.rank`,
   );
 
-  if (compsWithGroupsToday.rows.length === 0) return [];
+  if (allRows.rows.length === 0) return [];
 
-  const blocks: GroupStandingsBlock[] = [];
-
-  for (const comp of compsWithGroupsToday.rows as {
+  type RawRow = {
     competition_id: string;
     season_year: string;
-  }[]) {
-    const compId = Number(comp.competition_id);
-    const seasonYear = Number(comp.season_year);
+    group_label: string;
+    team_id: string | null;
+    rank: string;
+    points: string;
+    played: string;
+    won: string;
+    drawn: string;
+    lost: string;
+    goals_for: string;
+    goals_against: string;
+    goal_diff: string;
+    form: string | null;
+    description: string | null;
+    comp_name: Record<string, string>;
+    comp_slug: string;
+    comp_logo_url: string | null;
+  };
 
-    // Get competition info
-    const compInfo = await db
-      .select({
-        id: schema.competitions.id,
-        name: schema.competitions.name,
-        slug: schema.competitions.slug,
-        logoUrl: schema.competitions.logoUrl,
-      })
-      .from(schema.competitions)
-      .where(eq(schema.competitions.id, compId))
-      .limit(1);
+  // Collect all team IDs for single hydration
+  const teamIds = new Set<number>();
+  for (const r of allRows.rows as RawRow[]) {
+    if (r.team_id != null) teamIds.add(Number(r.team_id));
+  }
+  const teamsMap = await hydrateTeams(db, teamIds);
 
-    if (compInfo.length === 0) continue;
+  // Group rows into blocks
+  const blocks: GroupStandingsBlock[] = [];
+  let currentKey = '';
+  let currentBlock: GroupStandingsBlock | null = null;
 
-    // Find groups that have fixtures today
-    const groupsToday = await db.execute(
-      sql`SELECT DISTINCT s.group_label
-          FROM standings s
-          JOIN fixtures f ON f.competition_id = s.competition_id
-            AND f.season_year = s.season_year
-            AND (f.home_team_id = s.team_id OR f.away_team_id = s.team_id)
-          WHERE s.competition_id = ${compId}
-            AND s.season_year = ${seasonYear}
-            AND s.group_label LIKE 'Group%'
-            AND f.kickoff_at >= ${todayStart}
-            AND f.kickoff_at < ${todayEnd}
-          ORDER BY s.group_label`,
-    );
-
-    for (const grp of groupsToday.rows as { group_label: string }[]) {
-      const standingRows = await db
-        .select({
-          groupLabel: schema.standings.groupLabel,
-          teamId: schema.standings.teamId,
-          rank: schema.standings.rank,
-          points: schema.standings.points,
-          played: schema.standings.played,
-          won: schema.standings.won,
-          drawn: schema.standings.drawn,
-          lost: schema.standings.lost,
-          goalsFor: schema.standings.goalsFor,
-          goalsAgainst: schema.standings.goalsAgainst,
-          goalDiff: schema.standings.goalDiff,
-          form: schema.standings.form,
-          description: schema.standings.description,
-        })
-        .from(schema.standings)
-        .where(
-          and(
-            eq(schema.standings.competitionId, compId),
-            eq(schema.standings.seasonYear, seasonYear),
-            eq(schema.standings.groupLabel, grp.group_label),
-          ),
-        )
-        .orderBy(asc(schema.standings.rank));
-
-      // Hydrate teams
-      const teamIds = new Set<number>();
-      for (const r of standingRows) {
-        if (r.teamId != null) teamIds.add(r.teamId);
-      }
-      const teamsMap = await hydrateTeams(db, teamIds);
-
-      const rows: StandingRow[] = standingRows.map((r) => ({
-        groupLabel: r.groupLabel.replace(/^Group\s*/, ''),
-        teamId: r.teamId,
-        rank: r.rank,
-        points: r.points,
-        played: r.played,
-        won: r.won,
-        drawn: r.drawn,
-        lost: r.lost,
-        goalsFor: r.goalsFor,
-        goalsAgainst: r.goalsAgainst,
-        goalDiff: r.goalDiff,
-        form: r.form,
-        description: r.description,
-        team: r.teamId ? (teamsMap.get(r.teamId) ?? null) : null,
-      }));
-
-      blocks.push({
-        competitionId: compId,
-        competitionName: compInfo[0].name,
-        competitionSlug: compInfo[0].slug,
-        competitionLogoUrl: compInfo[0].logoUrl,
-        groupLabel: grp.group_label.replace(/^Group\s*/, ''),
-        rows,
-      });
+  for (const r of allRows.rows as RawRow[]) {
+    const key = `${r.competition_id}-${r.group_label}`;
+    if (key !== currentKey) {
+      currentKey = key;
+      currentBlock = {
+        competitionId: Number(r.competition_id),
+        competitionName: r.comp_name,
+        competitionSlug: r.comp_slug,
+        competitionLogoUrl: r.comp_logo_url,
+        groupLabel: r.group_label.replace(/^Group\s*/, ''),
+        rows: [],
+      };
+      blocks.push(currentBlock);
     }
+    const teamId = r.team_id ? Number(r.team_id) : null;
+    currentBlock!.rows.push({
+      groupLabel: r.group_label.replace(/^Group\s*/, ''),
+      teamId,
+      rank: Number(r.rank),
+      points: Number(r.points),
+      played: Number(r.played),
+      won: Number(r.won),
+      drawn: Number(r.drawn),
+      lost: Number(r.lost),
+      goalsFor: Number(r.goals_for),
+      goalsAgainst: Number(r.goals_against),
+      goalDiff: Number(r.goal_diff),
+      form: r.form,
+      description: r.description,
+      team: teamId ? (teamsMap.get(teamId) ?? null) : null,
+    });
   }
 
   return blocks;
@@ -432,7 +422,7 @@ export async function getLiveGroupStandings(
 //   3. Morocco NT is playing (men id=31, women id=14461)
 //   4. Any AFCON (6) or WAFCON (922) match
 
-const MOROCCO_TEAM_IDS = [31, 14461];
+const MOROCCO_TEAM_IDS = [TEAM_IDS.MOROCCO_MEN, TEAM_IDS.MOROCCO_WOMEN];
 const ALWAYS_TOP_COMP_IDS = [1, 6, 922]; // WC, AFCON, WAFCON
 
 const KNOCKOUT_ROUND_FILTER = sql`(
@@ -650,71 +640,79 @@ export async function getRightRailTopScorers(
   // Priority order: Botola Pro (200) > WC (1) > AFCON (6) > UCL (2) > PL (39)
   const priorityComps = [200, 1, 6, 2, 39];
 
-  // Get current seasons
-  const currentSeasons = await db
-    .select({
-      competitionId: schema.seasons.competitionId,
-      year: schema.seasons.year,
-    })
-    .from(schema.seasons)
-    .where(eq(schema.seasons.isCurrent, true));
-
-  const seasonMap = new Map(currentSeasons.map((s) => [s.competitionId, s.year]));
-
-  for (const compId of priorityComps) {
-    const year = seasonMap.get(compId);
-    if (!year) continue;
-
-    const rows = await db.execute(
-      sql`SELECT
+  // Single query: top scorers for all priority comps with current seasons, ranked by priority
+  const rows = await db.execute(
+    sql`WITH priority_comps AS (
+          SELECT unnest(${priorityComps}::int[]) AS comp_id,
+                 generate_series(1, ${priorityComps.length}) AS priority
+        ),
+        current AS (
+          SELECT s.competition_id, s.year
+          FROM seasons s
+          WHERE s.is_current = true
+            AND s.competition_id = ANY(${priorityComps}::int[])
+        ),
+        ranked AS (
+          SELECT
+            pss.competition_id,
             pss.player_id,
             COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
             p.slug AS player_slug,
             p.photo_url,
             COALESCE(t.name->>'en', 'Unknown') AS team_name,
             t.logo_url AS team_logo_url,
-            (pss.stats->>'goals')::int AS goals
+            (pss.stats->>'goals')::int AS goals,
+            pc.priority,
+            ROW_NUMBER() OVER (PARTITION BY pss.competition_id ORDER BY (pss.stats->>'goals')::int DESC) AS rn
           FROM player_season_stats pss
+          JOIN current c ON c.competition_id = pss.competition_id AND c.year = pss.season_year
+          JOIN priority_comps pc ON pc.comp_id = pss.competition_id
           JOIN players p ON p.id = pss.player_id
           LEFT JOIN teams t ON t.id = pss.team_id
-          WHERE pss.competition_id = ${compId}
-            AND pss.season_year = ${year}
-            AND (pss.stats->>'goals')::int > 0
-          ORDER BY goals DESC
-          LIMIT ${limit}`,
-    );
+          WHERE (pss.stats->>'goals')::int > 0
+        )
+        SELECT competition_id, player_id, player_name, player_slug, photo_url,
+               team_name, team_logo_url, goals, priority
+        FROM ranked
+        WHERE rn <= ${limit}
+        ORDER BY priority, goals DESC`,
+  );
 
-    if (rows.rows.length === 0) continue;
+  if (rows.rows.length === 0) return { competitionName: {}, scorers: [] };
 
-    const compInfo = await db
-      .select({ name: schema.competitions.name })
-      .from(schema.competitions)
-      .where(eq(schema.competitions.id, compId))
-      .limit(1);
+  type Row = {
+    competition_id: string;
+    player_id: string;
+    player_name: string;
+    player_slug: string;
+    photo_url: string | null;
+    team_name: string;
+    team_logo_url: string | null;
+    goals: string;
+    priority: string;
+  };
 
-    return {
-      competitionName: compInfo[0]?.name ?? {},
-      scorers: (
-        rows.rows as {
-          player_id: string;
-          player_name: string;
-          player_slug: string;
-          photo_url: string | null;
-          team_name: string;
-          team_logo_url: string | null;
-          goals: string;
-        }[]
-      ).map((r) => ({
-        playerId: Number(r.player_id),
-        playerName: r.player_name,
-        playerSlug: r.player_slug,
-        photoUrl: r.photo_url,
-        teamName: r.team_name,
-        teamLogoUrl: r.team_logo_url,
-        goals: Number(r.goals),
-      })),
-    };
-  }
+  // Pick the first (highest-priority) competition that has results
+  const firstCompId = Number((rows.rows[0] as Row).competition_id);
+  const compRows = (rows.rows as Row[]).filter((r) => Number(r.competition_id) === firstCompId);
 
-  return { competitionName: {}, scorers: [] };
+  // Get competition name
+  const compInfo = await db
+    .select({ name: schema.competitions.name })
+    .from(schema.competitions)
+    .where(eq(schema.competitions.id, firstCompId))
+    .limit(1);
+
+  return {
+    competitionName: compInfo[0]?.name ?? {},
+    scorers: compRows.map((r) => ({
+      playerId: Number(r.player_id),
+      playerName: r.player_name,
+      playerSlug: r.player_slug,
+      photoUrl: r.photo_url,
+      teamName: r.team_name,
+      teamLogoUrl: r.team_logo_url,
+      goals: Number(r.goals),
+    })),
+  };
 }

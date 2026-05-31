@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
 import { teams } from '@/lib/db/schema';
 import { ilike, sql } from 'drizzle-orm';
+import { escapeLikePattern } from '@/lib/utils/sql';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -13,7 +14,9 @@ export async function GET(request: Request) {
       name: teams.name,
     })
     .from(teams)
-    .where(q.trim() ? ilike(sql`${teams.name}->>'en'`, `%${q.trim()}%`) : undefined)
+    .where(
+      q.trim() ? ilike(sql`${teams.name}->>'en'`, `%${escapeLikePattern(q.trim())}%`) : undefined,
+    )
     .orderBy(sql`${teams.name}->>'en'`)
     .limit(30);
 

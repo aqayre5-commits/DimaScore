@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import {
@@ -65,9 +65,25 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
     return () => window.removeEventListener('hashchange', onHashChange);
   }, [tabs]);
 
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
   function handleTabClick(tab: TabDefinition) {
     setActiveKey(tab.key);
     window.history.replaceState(null, '', `#${tab.hash}`);
+  }
+
+  function handleKeyDown(e: KeyboardEvent, index: number) {
+    let nextIndex: number | null = null;
+    if (e.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') nextIndex = 0;
+    else if (e.key === 'End') nextIndex = tabs.length - 1;
+
+    if (nextIndex != null) {
+      e.preventDefault();
+      handleTabClick(tabs[nextIndex]);
+      tabRefs.current[nextIndex]?.focus();
+    }
   }
 
   const activeTab = tabs.find((tab) => tab.key === activeKey) ?? tabs[0];
@@ -80,15 +96,20 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
         role="tablist"
       >
         <div className="flex">
-          {tabs.map((tab) => {
+          {tabs.map((tab, index) => {
             const isActive = tab.key === activeKey;
             return (
               <button
                 key={tab.key}
+                ref={(el) => {
+                  tabRefs.current[index] = el;
+                }}
                 role="tab"
+                tabIndex={isActive ? 0 : -1}
                 aria-selected={isActive}
                 aria-controls={`tabpanel-${tab.key}`}
                 onClick={() => handleTabClick(tab)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
                 className={cn(
                   'relative shrink-0 flex-1 px-4 py-3 text-center text-[13px] font-semibold tracking-wide transition-colors',
                   isActive

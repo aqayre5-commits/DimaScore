@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Users, CalendarDays, LayoutGrid } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
+import { formatSeason } from '@/lib/utils/date';
 import type { CompetitionRecord } from '@/lib/db/queries/league';
 
 /** Curated high-res logos override the low-res API-Football PNGs. */
@@ -51,11 +52,6 @@ interface LeaguePageHeaderProps {
   teamsCount?: number;
   matchesCount?: number;
   totalRounds?: number;
-}
-
-function formatSeason(year: number): string {
-  const next = (year + 1) % 100;
-  return `${year}/${next.toString().padStart(2, '0')}`;
 }
 
 export function LeaguePageHeader({

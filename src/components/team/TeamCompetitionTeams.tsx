@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import type { CompetitionTeamTile } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
@@ -53,7 +54,13 @@ export function TeamCompetitionTeams({
               }`}
             >
               {team.logoUrl ? (
-                <img src={team.logoUrl} alt="" className="size-10 object-contain" loading="lazy" />
+                <Image
+                  src={team.logoUrl}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="size-10 object-contain"
+                />
               ) : (
                 <div className="flex size-10 items-center justify-center rounded-full bg-bg-surface-2 text-[11px] font-bold text-text-tertiary">
                   {(name[0] ?? '?').toUpperCase()}

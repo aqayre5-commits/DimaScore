@@ -5,7 +5,7 @@ import { getAdminSession } from '@/lib/auth/admin';
 
 const intlMiddleware = createMiddleware(routing);
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Admin routes: gate behind session cookie (except /admin/login)

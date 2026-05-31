@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
@@ -70,7 +71,13 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
           {/* Home */}
           <div className="flex flex-col items-center justify-center gap-1.5 text-center">
             {homeTeam?.logoUrl ? (
-              <img src={homeTeam.logoUrl} alt="" className="size-10 object-contain" />
+              <Image
+                src={homeTeam.logoUrl}
+                alt=""
+                width={40}
+                height={40}
+                className="size-10 object-contain"
+              />
             ) : (
               <div className="flex size-10 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
                 {homeCode}
@@ -111,7 +118,13 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
           {/* Away */}
           <div className="flex flex-col items-center justify-center gap-1.5 text-center">
             {awayTeam?.logoUrl ? (
-              <img src={awayTeam.logoUrl} alt="" className="size-10 object-contain" />
+              <Image
+                src={awayTeam.logoUrl}
+                alt=""
+                width={40}
+                height={40}
+                className="size-10 object-contain"
+              />
             ) : (
               <div className="flex size-10 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
                 {awayCode}

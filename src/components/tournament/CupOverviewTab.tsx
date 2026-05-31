@@ -67,7 +67,13 @@ export function CupOverviewTab({
                   <td className="py-2">
                     <div className="flex items-center gap-2">
                       {row.team?.logoUrl && (
-                        <img src={row.team.logoUrl} alt="" className="size-4 object-contain" />
+                        <Image
+                          src={row.team.logoUrl}
+                          alt=""
+                          width={16}
+                          height={16}
+                          className="size-4 object-contain"
+                        />
                       )}
                       <span className="truncate font-medium text-text-primary">
                         {row.team?.name?.en ?? row.team?.code ?? '—'}

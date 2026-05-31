@@ -5,7 +5,35 @@ import {
   destroyAdminSessionCookie,
 } from '@/lib/auth/admin';
 
+const LOGIN_WINDOW_MS = 60_000; // 1 minute
+const MAX_ATTEMPTS = 5;
+const attempts = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = attempts.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    attempts.set(ip, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
+    return false;
+  }
+
+  entry.count++;
+  return entry.count > MAX_ATTEMPTS;
+}
+
 export async function POST(request: Request) {
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: 'Too many login attempts. Try again later.' },
+      { status: 429 },
+    );
+  }
   let body: { email?: string; password?: string };
   try {
     body = await request.json();

@@ -8,7 +8,7 @@ import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
 import { VERIFIED_COMPETITIONS } from '@/lib/constants/competitions';
 import { computeDeltas, type FixtureRow } from './diff';
-import { trackCall, resetTick } from './quota';
+import { trackCall, resetTick, isQuotaExhausted } from './quota';
 
 const TRACKED_COMPETITION_IDS = new Set(VERIFIED_COMPETITIONS.map((c) => c.id));
 
@@ -20,6 +20,11 @@ export interface PollResult {
 }
 
 export async function pollLiveFixtures(): Promise<PollResult> {
+  if (isQuotaExhausted()) {
+    console.warn('[poller] Quota nearly exhausted, skipping poll');
+    return { liveCount: 0, trackedCount: 0, updatedCount: 0, apiCalls: 0 };
+  }
+
   const provider = getDataProvider();
 
   const allLive = await provider.getLiveFixtures();
@@ -96,8 +101,12 @@ export async function pollLiveFixtures(): Promise<PollResult> {
       extraMinute: null,
     };
 
-    await pusher.trigger(CHANNELS.LIVE_SCORES, EVENTS.SCORE_UPDATE, payload);
-    await pusher.trigger(CHANNELS.fixture(delta.fixtureId), EVENTS.SCORE_UPDATE, payload);
+    try {
+      await pusher.trigger(CHANNELS.LIVE_SCORES, EVENTS.SCORE_UPDATE, payload);
+      await pusher.trigger(CHANNELS.fixture(delta.fixtureId), EVENTS.SCORE_UPDATE, payload);
+    } catch (pusherErr) {
+      console.error(`  [pusher] Failed to trigger for fixture=${delta.fixtureId}:`, pusherErr);
+    }
 
     console.log(
       `  [delta] fixture=${delta.fixtureId} changes=[${delta.changes.join(',')}] score=${fixture.goals.home}-${fixture.goals.away} status=${fixture.status.short} min=${fixture.status.elapsed}`,

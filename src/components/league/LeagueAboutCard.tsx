@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import type { CompetitionRecord } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
+import { formatSeason } from '@/lib/utils/date';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import { getLeagueAbout } from '@/lib/constants/league-about-content';
 
@@ -19,11 +20,6 @@ interface LeagueAboutCardProps {
   competition: CompetitionRecord;
   seasonYear: number;
   locale: Locale;
-}
-
-function formatSeason(year: number): string {
-  const next = (year + 1) % 100;
-  return `${year}/${next.toString().padStart(2, '0')}`;
 }
 
 export function LeagueAboutCard({ competition, seasonYear, locale }: LeagueAboutCardProps) {

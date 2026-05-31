@@ -1,6 +1,12 @@
+import type { Metadata } from 'next';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+
+export const metadata: Metadata = {
+  title: 'Style Guide (Dev)',
+  robots: { index: false, follow: false },
+};
 
 const paletteTokens = [
   { var: '--bg-canvas', hex: '#101112', role: 'App background' },

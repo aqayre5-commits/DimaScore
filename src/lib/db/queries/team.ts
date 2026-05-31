@@ -388,30 +388,38 @@ export async function getTeamAllStandings(
     .map((id) => compsMap.get(id))
     .filter((c): c is CompetitionSnapshot => c != null);
 
-  // Fetch standings for each competition/season pair
+  // Fetch all standings in one query using OR conditions for each pair
+  const pairs = compSeasons.filter((c) => c.competitionId != null);
+  if (pairs.length === 0) return { competitions, seasons, standingsByCompSeason: {} };
+
+  const allRows = await db
+    .select()
+    .from(schema.standings)
+    .where(
+      sql`(${schema.standings.competitionId}, ${schema.standings.seasonYear}) IN (${sql.join(
+        pairs.map((p) => sql`(${p.competitionId}, ${p.seasonYear})`),
+        sql`, `,
+      )})`,
+    )
+    .orderBy(
+      asc(schema.standings.competitionId),
+      asc(schema.standings.seasonYear),
+      asc(schema.standings.groupLabel),
+      asc(schema.standings.rank),
+    );
+
+  // Hydrate all teams in one batch
+  const allTeamIds = [
+    ...new Set(allRows.map((r) => r.teamId).filter((id): id is number => id != null)),
+  ];
+  const tMap = await getTeamsMap(db, allTeamIds);
+
+  // Group by comp-season key
   const standingsByCompSeason: Record<string, StandingRow[]> = {};
-
-  for (const { competitionId, seasonYear } of compSeasons) {
-    if (competitionId == null) continue;
-    const key = `${competitionId}-${seasonYear}`;
-
-    const rows = await db
-      .select()
-      .from(schema.standings)
-      .where(
-        and(
-          eq(schema.standings.competitionId, competitionId),
-          eq(schema.standings.seasonYear, seasonYear),
-        ),
-      )
-      .orderBy(asc(schema.standings.groupLabel), asc(schema.standings.rank));
-
-    const teamIds = [
-      ...new Set(rows.map((r) => r.teamId).filter((id): id is number => id != null)),
-    ];
-    const tMap = await getTeamsMap(db, teamIds);
-
-    standingsByCompSeason[key] = rows.map((r) => ({
+  for (const r of allRows) {
+    const key = `${r.competitionId}-${r.seasonYear}`;
+    if (!standingsByCompSeason[key]) standingsByCompSeason[key] = [];
+    standingsByCompSeason[key].push({
       groupLabel: r.groupLabel.replace(/^Group\s+/i, ''),
       teamId: r.teamId,
       rank: r.rank,
@@ -426,7 +434,7 @@ export async function getTeamAllStandings(
       form: r.form,
       description: r.description,
       team: r.teamId ? (tMap.get(r.teamId) ?? null) : null,
-    }));
+    });
   }
 
   return { competitions, seasons, standingsByCompSeason };

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
@@ -99,7 +100,13 @@ function NextFixtureRow({
     >
       <div className="flex items-center gap-2.5">
         {teamLogo && (
-          <img src={teamLogo} alt="" className="size-8 shrink-0 object-contain" loading="lazy" />
+          <Image
+            src={teamLogo}
+            alt=""
+            width={32}
+            height={32}
+            className="size-8 shrink-0 object-contain"
+          />
         )}
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-text-primary">{matchup}</p>

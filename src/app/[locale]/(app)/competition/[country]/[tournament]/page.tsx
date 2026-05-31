@@ -86,13 +86,14 @@ import { LeagueFixturesTab } from '@/components/league/LeagueFixturesTab';
 import { LeaguePlayersTab } from '@/components/league/LeaguePlayersTab';
 import { LeagueTeamsTab } from '@/components/league/LeagueTeamsTab';
 import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-content';
+import { BASE_URL } from '@/lib/constants/site';
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
   searchParams: Promise<{ season?: string }>;
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const baseUrl = BASE_URL;
 
 // Cup content is now in src/lib/constants/cup-content.ts, keyed by competitionId.
 

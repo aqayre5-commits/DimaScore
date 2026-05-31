@@ -11,17 +11,23 @@ export async function GET(request: NextRequest) {
 
   const filters: MediaVideoFilters = {};
 
-  const competitionId = params.get('competitionId');
-  if (competitionId) filters.competitionId = Number(competitionId);
+  const parseIntParam = (v: string | null): number | undefined => {
+    if (v == null) return undefined;
+    const n = parseInt(v, 10);
+    return Number.isNaN(n) ? undefined : n;
+  };
 
-  const teamId = params.get('teamId');
-  if (teamId) filters.teamId = Number(teamId);
+  const competitionId = parseIntParam(params.get('competitionId'));
+  if (competitionId != null) filters.competitionId = competitionId;
 
-  const fixtureId = params.get('fixtureId');
-  if (fixtureId) filters.fixtureId = Number(fixtureId);
+  const teamId = parseIntParam(params.get('teamId'));
+  if (teamId != null) filters.teamId = teamId;
 
-  const playerId = params.get('playerId');
-  if (playerId) filters.playerId = Number(playerId);
+  const fixtureId = parseIntParam(params.get('fixtureId'));
+  if (fixtureId != null) filters.fixtureId = fixtureId;
+
+  const playerId = parseIntParam(params.get('playerId'));
+  if (playerId != null) filters.playerId = playerId;
 
   const category = params.get('category');
   if (category && VALID_CATEGORIES.has(category as never)) {
@@ -38,11 +44,11 @@ export async function GET(request: NextRequest) {
   const search = params.get('search');
   if (search) filters.search = search;
 
-  const limit = params.get('limit');
-  if (limit) filters.limit = Number(limit);
+  const rawLimit = parseIntParam(params.get('limit'));
+  if (rawLimit != null) filters.limit = Math.min(Math.max(rawLimit, 1), 50);
 
-  const offset = params.get('offset');
-  if (offset) filters.offset = Number(offset);
+  const rawOffset = parseIntParam(params.get('offset'));
+  if (rawOffset != null) filters.offset = Math.max(rawOffset, 0);
 
   const result = await getMediaVideos(db, filters);
   return NextResponse.json(result);

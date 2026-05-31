@@ -35,7 +35,8 @@ import { MatchSectionNav } from '@/components/match/MatchSectionNav';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 
 import { getMediaVideos } from '@/lib/db/queries/media';
-import type { Locale } from '@/lib/i18n/config';
+import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
+import { BASE_URL } from '@/lib/constants/site';
 
 const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
 
@@ -66,9 +67,30 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     locale,
   );
 
+  const title = `${home} vs ${away} | ${compName} | Atlas Kings`;
+  const description = `${home} vs ${away} — ${compName}${match.round ? `, ${match.round}` : ''}`;
+  const canonical = `${BASE_URL}/${locale}/match/${fixtureId}`;
+
   return {
-    title: `${home} vs ${away} | ${compName} | Atlas Kings`,
-    description: `${home} vs ${away} — ${compName}${match.round ? `, ${match.round}` : ''}`,
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: Object.fromEntries(locales.map((l) => [l, `${BASE_URL}/${l}/match/${fixtureId}`])),
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: 'Atlas Kings',
+      locale: locale === 'ar' ? 'ar_MA' : locale === 'fr' ? 'fr_MA' : 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description,
+    },
   };
 }
 

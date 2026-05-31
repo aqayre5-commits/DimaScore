@@ -20,6 +20,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResults | null>(null);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -63,14 +64,17 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
+        setSearchError(false);
         const res = await fetch(`/api/v1/search?q=${encodeURIComponent(q)}&limit=5`);
         if (res.ok) {
           const data: SearchResults = await res.json();
           setResults(data);
           setActiveIndex(-1);
+        } else {
+          setSearchError(true);
         }
       } catch {
-        // silently fail
+        setSearchError(true);
       } finally {
         setLoading(false);
       }
@@ -163,6 +167,11 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         </div>
 
         {/* Results */}
+        {searchError && !loading && (
+          <div className="px-4 py-6 text-center">
+            <p className="text-sm text-text-secondary">Search unavailable. Please try again.</p>
+          </div>
+        )}
         {loading && (
           <div className="px-4 py-6 text-center">
             <p className="text-sm text-text-tertiary">{t('searching')}</p>

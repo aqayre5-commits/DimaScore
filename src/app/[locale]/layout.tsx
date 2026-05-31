@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/lib/i18n/routing';
 import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
 import type { Locale } from '@/lib/i18n/config';
+import { BASE_URL } from '@/lib/constants/site';
 import '../globals.css';
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -27,7 +28,7 @@ const fraunces = Fraunces({
   display: 'swap',
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const baseUrl = BASE_URL;
 
 export async function generateMetadata({
   params,
@@ -63,7 +64,7 @@ const themeScript = `
       if (t === 'light') {
         document.documentElement.dataset.theme = 'light';
       }
-    } catch (e) {}
+    } catch (e) { /* localStorage unavailable in SSR/privacy mode */ }
   })();
 `;
 

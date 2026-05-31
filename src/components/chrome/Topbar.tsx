@@ -73,7 +73,10 @@ export function Topbar() {
   const topNavEntries = getTopNavEntries();
 
   return (
-    <nav className="sticky top-10 z-40 border-b border-border-subtle bg-bg-surface">
+    <nav
+      aria-label="Main navigation"
+      className="sticky top-10 z-40 border-b border-border-subtle bg-bg-surface"
+    >
       <div className="mx-auto flex h-12 max-w-[1280px] items-center gap-0.5 px-4">
         {/* Mobile hamburger */}
         <div className="md:hidden">

@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedTopPlayer } from '@/lib/data/types';
@@ -87,7 +88,9 @@ export async function syncTopAssists(
           schema.playerSeasonStats.competitionId,
           schema.playerSeasonStats.seasonYear,
         ],
-        set: { stats: row.stats },
+        set: {
+          stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
+        },
       });
     updated++;
   }

@@ -92,15 +92,12 @@ export async function syncFixtureDetails(
   let statisticsCount = 0;
   let playerStatsCount = 0;
 
-  // Events: delete existing + insert fresh
+  // Events: delete existing + batch insert fresh
   if (events.length > 0) {
+    const eventRows = events.map((e) => mapEvent(fixtureId, e));
     await db.delete(schema.fixtureEvents).where(eq(schema.fixtureEvents.fixtureId, fixtureId));
-
-    for (const e of events) {
-      const row = mapEvent(fixtureId, e);
-      await db.insert(schema.fixtureEvents).values(row);
-      eventsCount++;
-    }
+    await db.insert(schema.fixtureEvents).values(eventRows);
+    eventsCount = eventRows.length;
   }
 
   // Lineups: upsert per team

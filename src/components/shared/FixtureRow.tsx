@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
@@ -125,7 +126,13 @@ export function FixtureRow({
 function TeamBadge({ team, flag }: { team: FixtureTeam | null; flag: string | null }) {
   if (team?.logoUrl) {
     return (
-      <img src={team.logoUrl} alt="" className="size-5 shrink-0 object-contain" loading="lazy" />
+      <Image
+        src={team.logoUrl}
+        alt=""
+        width={20}
+        height={20}
+        className="size-5 shrink-0 object-contain"
+      />
     );
   }
   if (flag) {

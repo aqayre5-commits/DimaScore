@@ -4,8 +4,9 @@
  */
 
 import type { Locale } from '@/lib/i18n/config';
+import { BASE_URL } from '@/lib/constants/site';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const baseUrl = BASE_URL;
 
 export interface CupContent {
   meta: Record<Locale, { title: string; description: string }>;

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
+import { BASE_URL } from '@/lib/constants/site';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
@@ -41,7 +42,7 @@ interface PageProps {
   params: Promise<{ locale: string }>;
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const baseUrl = BASE_URL;
 
 // ── Per-locale metadata ──
 

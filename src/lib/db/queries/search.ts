@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
+import { escapeLikePattern } from '@/lib/utils/sql';
 
 // ── Types ──
 
@@ -53,7 +54,7 @@ export async function searchAll(
   const trimmed = query.trim();
   if (trimmed.length < 2) return { teams: [], players: [], competitions: [] };
 
-  const pattern = `%${trimmed}%`;
+  const pattern = `%${escapeLikePattern(trimmed)}%`;
   const clampedLimit = Math.min(Math.max(limit, 1), 20);
 
   const [teams, players, competitions] = await Promise.all([

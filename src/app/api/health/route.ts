@@ -7,7 +7,10 @@ export async function GET() {
     const status = await provider.getStatus();
     return NextResponse.json({ status: 'ok', account: status });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ status: 'error', message }, { status: 502 });
+    console.error('Health check failed:', error);
+    return NextResponse.json(
+      { status: 'error', message: 'Internal server error' },
+      { status: 502 },
+    );
   }
 }
