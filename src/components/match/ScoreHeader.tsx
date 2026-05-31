@@ -6,6 +6,7 @@ import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i
 import { LiveScoreDisplay } from '@/components/match/LiveScoreDisplay';
 import type { MatchDetail } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 export interface GoalScorer {
   playerName: string;
@@ -81,11 +82,12 @@ export function ScoreHeader({
               >
                 {homeFlag && <span className="text-4xl leading-none">{homeFlag}</span>}
                 {!homeFlag && match.homeTeam?.logoUrl && (
-                  <img
+                  <Image
                     src={match.homeTeam.logoUrl}
                     alt=""
                     className="size-14 object-contain"
-                    loading="lazy"
+                    width={56}
+                    height={56}
                   />
                 )}
                 <span className="text-base font-semibold text-text-primary hover:text-accent hover:underline">
@@ -96,11 +98,12 @@ export function ScoreHeader({
               <>
                 {homeFlag && <span className="text-4xl leading-none">{homeFlag}</span>}
                 {!homeFlag && match.homeTeam?.logoUrl && (
-                  <img
+                  <Image
                     src={match.homeTeam.logoUrl}
                     alt=""
                     className="size-14 object-contain"
-                    loading="lazy"
+                    width={56}
+                    height={56}
                   />
                 )}
                 <span className="text-base font-semibold text-text-primary">{homeName}</span>
@@ -135,11 +138,12 @@ export function ScoreHeader({
               >
                 {awayFlag && <span className="text-4xl leading-none">{awayFlag}</span>}
                 {!awayFlag && match.awayTeam?.logoUrl && (
-                  <img
+                  <Image
                     src={match.awayTeam.logoUrl}
                     alt=""
                     className="size-14 object-contain"
-                    loading="lazy"
+                    width={56}
+                    height={56}
                   />
                 )}
                 <span className="text-base font-semibold text-text-primary hover:text-accent hover:underline">
@@ -150,11 +154,12 @@ export function ScoreHeader({
               <>
                 {awayFlag && <span className="text-4xl leading-none">{awayFlag}</span>}
                 {!awayFlag && match.awayTeam?.logoUrl && (
-                  <img
+                  <Image
                     src={match.awayTeam.logoUrl}
                     alt=""
                     className="size-14 object-contain"
-                    loading="lazy"
+                    width={56}
+                    height={56}
                   />
                 )}
                 <span className="text-base font-semibold text-text-primary">{awayName}</span>

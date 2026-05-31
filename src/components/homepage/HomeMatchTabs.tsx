@@ -8,6 +8,7 @@ import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface Props {
   live: HomeFixture[];
@@ -57,11 +58,12 @@ function MatchRow({ fixture, locale }: { fixture: HomeFixture; locale: string })
       <div className="flex min-w-0 flex-1 items-center gap-1.5 justify-end">
         <span className="truncate text-sm text-text-primary">{homeName}</span>
         {fixture.homeTeam?.logoUrl ? (
-          <img
+          <Image
             src={fixture.homeTeam.logoUrl}
             alt=""
             className="size-4 shrink-0 object-contain"
-            loading="lazy"
+            width={16}
+            height={16}
           />
         ) : (
           <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
@@ -84,11 +86,12 @@ function MatchRow({ fixture, locale }: { fixture: HomeFixture; locale: string })
       {/* Away team */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
         {fixture.awayTeam?.logoUrl ? (
-          <img
+          <Image
             src={fixture.awayTeam.logoUrl}
             alt=""
             className="size-4 shrink-0 object-contain"
-            loading="lazy"
+            width={16}
+            height={16}
           />
         ) : (
           <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
@@ -239,11 +242,12 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
                     className="flex items-center gap-2 bg-bg-surface-2 px-4 py-1.5"
                   >
                     {f.competition.logoUrl ? (
-                      <img
+                      <Image
                         src={f.competition.logoUrl}
                         alt=""
                         className="size-4 shrink-0 object-contain"
-                        loading="lazy"
+                        width={16}
+                        height={16}
                       />
                     ) : (
                       <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-3 text-[7px] font-bold text-text-tertiary">

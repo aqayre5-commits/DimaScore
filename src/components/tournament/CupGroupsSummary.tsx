@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface CupGroupsSummaryProps {
   standings: StandingRow[];
@@ -54,11 +55,12 @@ export function CupGroupsSummary({ standings, locale }: CupGroupsSummaryProps) {
                       {row.rank}
                     </span>
                     {row.team?.logoUrl ? (
-                      <img
+                      <Image
                         src={row.team.logoUrl}
                         alt=""
                         className="size-3.5 object-contain"
-                        loading="lazy"
+                        width={12}
+                        height={12}
                       />
                     ) : (
                       <div className="size-3.5 rounded bg-bg-surface-2" />

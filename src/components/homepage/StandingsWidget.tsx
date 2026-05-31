@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { StandingRow } from '@/lib/db/queries';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface StandingsWidgetProps {
   heading: string;
@@ -51,11 +52,12 @@ export function StandingsWidget({
                 <td className="py-1.5">
                   <div className="flex items-center gap-1.5">
                     {row.team?.logoUrl ? (
-                      <img
+                      <Image
                         src={row.team.logoUrl}
                         alt=""
                         className="h-4 w-4 shrink-0 object-contain"
-                        loading="lazy"
+                        width={16}
+                        height={16}
                       />
                     ) : (
                       <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">

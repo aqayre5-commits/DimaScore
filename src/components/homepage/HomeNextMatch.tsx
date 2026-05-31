@@ -6,6 +6,7 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatKickoff } from '@/lib/utils/date';
 import type { RightRailFixture, GoalEvent } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface Props {
   match: RightRailFixture;
@@ -45,11 +46,12 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
         {/* Competition + round */}
         <div className="flex items-center gap-1.5 text-[11px] text-text-tertiary">
           {match.competition.logoUrl && (
-            <img
+            <Image
               src={match.competition.logoUrl}
               alt=""
               className="size-3.5 object-contain"
-              loading="lazy"
+              width={12}
+              height={12}
             />
           )}
           <span className="truncate">{compName}</span>
@@ -68,11 +70,12 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
           {/* Home */}
           <div className="flex flex-1 flex-col items-center gap-1.5 min-w-0">
             {match.homeTeam?.logoUrl ? (
-              <img
+              <Image
                 src={match.homeTeam.logoUrl}
                 alt=""
                 className="size-9 object-contain"
-                loading="lazy"
+                width={36}
+                height={36}
               />
             ) : (
               <div className="flex size-9 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
@@ -98,11 +101,12 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
           {/* Away */}
           <div className="flex flex-1 flex-col items-center gap-1.5 min-w-0">
             {match.awayTeam?.logoUrl ? (
-              <img
+              <Image
                 src={match.awayTeam.logoUrl}
                 alt=""
                 className="size-9 object-contain"
-                loading="lazy"
+                width={36}
+                height={36}
               />
             ) : (
               <div className="flex size-9 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">

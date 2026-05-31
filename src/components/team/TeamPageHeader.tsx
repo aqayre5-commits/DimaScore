@@ -5,6 +5,7 @@ import type { TeamDetail, FormResult } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 import { codeToFlag } from '@/lib/flags';
 import { slugify } from '@/lib/ingestion/slug';
+import Image from 'next/image';
 
 interface TeamPageHeaderProps {
   team: TeamDetail;
@@ -32,11 +33,13 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
       <div className="flex h-full items-stretch gap-5 p-2">
         {/* Team logo — fills vertical space */}
         {team.logoUrl ? (
-          <img
+          <Image
             src={team.logoUrl}
             alt={name}
             className="hidden h-full max-h-[140px] w-auto shrink-0 object-contain object-center md:block"
-            loading="eager"
+            width={140}
+            height={140}
+            priority
           />
         ) : flag ? (
           <span className="hidden text-6xl md:flex md:items-center">{flag}</span>
@@ -47,11 +50,13 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
         )}
         {/* Mobile-only smaller logo */}
         {team.logoUrl ? (
-          <img
+          <Image
             src={team.logoUrl}
             alt={name}
             className="h-[72px] w-auto shrink-0 self-center object-contain md:hidden"
-            loading="eager"
+            width={72}
+            height={72}
+            priority
           />
         ) : flag ? (
           <span className="flex items-center text-4xl md:hidden">{flag}</span>

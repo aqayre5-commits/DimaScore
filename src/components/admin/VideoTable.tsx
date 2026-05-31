@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { MediaVideo } from '@/lib/db/queries/media';
+import Image from 'next/image';
 
 interface VideoTableProps {
   videos: MediaVideo[];
@@ -66,10 +67,12 @@ export function VideoTable({ videos, total, page, pageSize }: VideoTableProps) {
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2.5">
                       {v.thumbnailUrl && (
-                        <img
+                        <Image
                           src={v.thumbnailUrl}
                           alt=""
                           className="h-9 w-16 shrink-0 rounded object-cover"
+                          width={64}
+                          height={36}
                         />
                       )}
                       <div className="min-w-0">

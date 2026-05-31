@@ -6,6 +6,7 @@ import { getMatchState, isLive as isLiveStatus } from '@/lib/match-status';
 import { formatShortDate, formatMatchTime } from '@/lib/utils/date';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface TeamMatchesListProps {
   fixtures: FixtureWithCompetition[];
@@ -193,13 +194,12 @@ function CompDivider({
   return (
     <div className="flex items-center gap-1.5 py-1.5 text-[10px] text-text-tertiary">
       {comp.logoUrl && (
-        <img
+        <Image
           src={comp.logoUrl}
           alt=""
           width={14}
           height={14}
           className="size-3.5 object-contain opacity-70"
-          loading="lazy"
         />
       )}
       <span className="truncate font-medium">{name}</span>
@@ -242,13 +242,12 @@ function MatchRow({
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex items-center gap-1.5">
           {f.homeTeam?.logoUrl && (
-            <img
+            <Image
               src={f.homeTeam.logoUrl}
               alt=""
               width={14}
               height={14}
               className="size-3.5 shrink-0 object-contain"
-              loading="lazy"
             />
           )}
           <span
@@ -266,13 +265,12 @@ function MatchRow({
         </div>
         <div className="flex items-center gap-1.5">
           {f.awayTeam?.logoUrl && (
-            <img
+            <Image
               src={f.awayTeam.logoUrl}
               alt=""
               width={14}
               height={14}
               className="size-3.5 shrink-0 object-contain"
-              loading="lazy"
             />
           )}
           <span

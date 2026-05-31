@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SearchResults } from '@/lib/db/queries/search';
+import Image from 'next/image';
 
 interface SearchModalProps {
   open: boolean;
@@ -199,11 +200,12 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       onClick={() => navigate(`/${locale}/equipe/${team.slug}`)}
                     >
                       {team.logoUrl ? (
-                        <img
+                        <Image
                           src={team.logoUrl}
                           alt=""
                           className="size-6 object-contain"
-                          loading="lazy"
+                          width={24}
+                          height={24}
                         />
                       ) : (
                         <div className="size-6 rounded bg-bg-surface-2" />
@@ -238,11 +240,12 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       onClick={() => navigate(`/${locale}/joueur/${player.slug}`)}
                     >
                       {player.photoUrl ? (
-                        <img
+                        <Image
                           src={player.photoUrl}
                           alt=""
                           className="size-6 rounded-full object-cover"
-                          loading="lazy"
+                          width={24}
+                          height={24}
                         />
                       ) : (
                         <div className="size-6 rounded-full bg-bg-surface-2" />
@@ -270,11 +273,12 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       }
                     >
                       {comp.logoUrl ? (
-                        <img
+                        <Image
                           src={comp.logoUrl}
                           alt=""
                           className="size-6 object-contain"
-                          loading="lazy"
+                          width={24}
+                          height={24}
                         />
                       ) : (
                         <div className="size-6 rounded bg-bg-surface-2" />

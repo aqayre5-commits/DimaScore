@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { formatMonthYear } from '@/lib/utils/date';
 import type { CareerEntry } from '@/lib/db/queries/coach';
+import Image from 'next/image';
 
 interface CoachCareerTableProps {
   career: CareerEntry[];
@@ -49,11 +50,12 @@ export function CoachCareerTable({ career }: CoachCareerTableProps) {
                 <td className="px-4 py-2.5">
                   <div className="flex items-center gap-2.5">
                     {entry.team.logo ? (
-                      <img
+                      <Image
                         src={entry.team.logo}
                         alt=""
                         className="size-5 shrink-0 object-contain"
-                        loading="lazy"
+                        width={20}
+                        height={20}
                       />
                     ) : (
                       <div className="flex size-5 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">

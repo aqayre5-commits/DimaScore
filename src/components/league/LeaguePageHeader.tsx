@@ -6,6 +6,7 @@ import { Users, CalendarDays, LayoutGrid } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
 import { formatSeason } from '@/lib/utils/date';
 import type { CompetitionRecord } from '@/lib/db/queries/league';
+import Image from 'next/image';
 
 /** Curated high-res logos override the low-res API-Football PNGs. */
 const CURATED_LOGOS: Record<number, string> = {
@@ -112,17 +113,21 @@ export function LeaguePageHeader({
           {/* Logo */}
           {logoSrc ? (
             <>
-              <img
+              <Image
                 src={logoSrc}
                 alt=""
                 className={`hidden h-full max-h-[160px] max-w-[200px] w-auto shrink-0 object-contain object-bottom md:block${needsInvert ? ' logo-invert' : ''}`}
-                loading="eager"
+                width={96}
+                height={96}
+                priority
               />
-              <img
+              <Image
                 src={logoSrc}
                 alt=""
                 className={`h-[80px] w-auto shrink-0 self-end object-contain md:hidden${needsInvert ? ' logo-invert' : ''}`}
-                loading="eager"
+                width={96}
+                height={96}
+                priority
               />
             </>
           ) : (

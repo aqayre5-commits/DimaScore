@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import type { PlayerTransfer } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface PlayerTransfersProps {
   transfers: PlayerTransfer[];
@@ -49,13 +50,12 @@ export function PlayerTransfers({ transfers, locale }: PlayerTransfersProps) {
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <div className="flex items-center gap-1.5">
                 {transfer.fromTeam?.logoUrl && (
-                  <img
+                  <Image
                     src={transfer.fromTeam.logoUrl}
                     alt=""
                     width={16}
                     height={16}
                     className="size-4 object-contain"
-                    loading="lazy"
                   />
                 )}
                 <span className="text-sm text-text-secondary">
@@ -67,13 +67,12 @@ export function PlayerTransfers({ transfers, locale }: PlayerTransfersProps) {
 
               <div className="flex items-center gap-1.5">
                 {transfer.toTeam?.logoUrl && (
-                  <img
+                  <Image
                     src={transfer.toTeam.logoUrl}
                     alt=""
                     width={16}
                     height={16}
                     className="size-4 object-contain"
-                    loading="lazy"
                   />
                 )}
                 <span className="text-sm font-medium text-text-primary">

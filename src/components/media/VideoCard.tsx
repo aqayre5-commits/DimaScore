@@ -1,4 +1,5 @@
 import type { MediaVideo } from '@/lib/db/queries/media';
+import Image from 'next/image';
 
 interface VideoCardProps {
   video: MediaVideo;
@@ -25,11 +26,12 @@ export function VideoCard({ video, onClick }: VideoCardProps) {
     >
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden">
-        <img
+        <Image
           src={thumbnail}
           alt=""
-          loading="lazy"
           className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+          width={200}
+          height={200}
         />
         {/* Play overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors group-hover:bg-black/35">

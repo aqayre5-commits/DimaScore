@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { MoroccanPerformance } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface Props {
   performances: MoroccanPerformance[];
@@ -43,11 +44,12 @@ export function HomeLionsAbroad({ performances, locale, labels }: Props) {
             >
               {/* Player photo */}
               {p.photoUrl ? (
-                <img
+                <Image
                   src={p.photoUrl}
                   alt=""
                   className="size-8 shrink-0 rounded-full object-cover"
-                  loading="lazy"
+                  width={32}
+                  height={32}
                 />
               ) : (
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">

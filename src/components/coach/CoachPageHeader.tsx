@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import type { CoachDetail } from '@/lib/db/queries/coach';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface CoachPageHeaderProps {
   coach: CoachDetail;
@@ -40,13 +41,13 @@ export function CoachPageHeader({ coach, locale }: CoachPageHeaderProps) {
         {/* Photo */}
         <div className="size-[100px] shrink-0 overflow-hidden rounded-full border-[3px] border-border-subtle bg-bg-surface-2">
           {coach.photoUrl ? (
-            <img
+            <Image
               src={coach.photoUrl}
               alt={displayName}
               width={100}
               height={100}
               className="size-full object-cover"
-              loading="eager"
+              priority
             />
           ) : (
             <div className="flex size-full items-center justify-center text-3xl text-text-tertiary">
@@ -80,11 +81,12 @@ export function CoachPageHeader({ coach, locale }: CoachPageHeaderProps) {
           {coach.currentTeam && (
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-bg-surface-2 px-2.5 py-1 text-[13px] font-medium text-text-primary">
               {coach.currentTeam.logoUrl && (
-                <img
+                <Image
                   src={coach.currentTeam.logoUrl}
                   alt=""
                   className="size-4 object-contain"
-                  loading="lazy"
+                  width={16}
+                  height={16}
                 />
               )}
               <Link href={`/${locale}/equipe/${coach.currentTeam.id}`} className="hover:underline">

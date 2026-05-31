@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PasteUrlForm, type OembedResult } from '@/components/admin/PasteUrlForm';
 import { VideoTagger } from '@/components/admin/VideoTagger';
+import Image from 'next/image';
 
 const CATEGORIES = [
   'highlights',
@@ -94,10 +95,12 @@ export function AddVideoForm({ competitions, initialTeams }: AddVideoFormProps) 
 
         {oembed && (
           <div className="mt-4 flex gap-3 rounded-md bg-bg-raised p-3">
-            <img
+            <Image
               src={oembed.thumbnail_url}
               alt=""
               className="h-16 w-28 shrink-0 rounded object-cover"
+              width={112}
+              height={64}
             />
             <div className="min-w-0">
               <p className="text-sm font-medium text-text-primary">{oembed.title}</p>

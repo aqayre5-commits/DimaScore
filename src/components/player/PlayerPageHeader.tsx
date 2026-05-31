@@ -5,6 +5,7 @@ import { RatingSparkline } from '@/components/shared/FormSparkline';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface PlayerPageHeaderProps {
   player: PlayerDetail;
@@ -103,11 +104,13 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
           <>
             {/* Desktop: full-height photo with gradient fade */}
             <div className="relative hidden w-[180px] shrink-0 md:block">
-              <img
+              <Image
                 src={player.photoUrl}
                 alt={name}
                 className="h-full w-full object-cover object-top"
-                loading="eager"
+                width={200}
+                height={200}
+                priority
               />
               {/* Gradient fade right edge */}
               <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-r from-transparent to-bg-surface" />
@@ -116,11 +119,13 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
             </div>
             {/* Mobile: circular photo */}
             <div className="flex shrink-0 items-center px-3 py-3 md:hidden">
-              <img
+              <Image
                 src={player.photoUrl}
                 alt={name}
                 className="size-[72px] shrink-0 rounded-full object-cover"
-                loading="eager"
+                width={72}
+                height={72}
+                priority
               />
             </div>
           </>
@@ -167,13 +172,13 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
                 className="mt-2.5 inline-flex items-center gap-2 text-[14px] font-medium text-text-primary transition-colors hover:text-accent-azure"
               >
                 {player.currentTeam?.logoUrl && (
-                  <img
+                  <Image
                     src={player.currentTeam.logoUrl}
                     alt=""
                     width={22}
                     height={22}
                     className="size-[22px] object-contain"
-                    loading="eager"
+                    priority
                   />
                 )}
                 <span>{clubName}</span>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { TopPlayerRow, TopCardRow, LeagueCoverageRecord } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface LeagueStatsTabProps {
   coverage: LeagueCoverageRecord | null;
@@ -107,11 +108,12 @@ function PlayerTable({
                 <td className="px-2 py-2">
                   <div className="flex items-center gap-2">
                     {p.playerPhoto ? (
-                      <img
+                      <Image
                         src={p.playerPhoto}
                         alt=""
                         className="size-6 rounded-full object-cover"
-                        loading="lazy"
+                        width={24}
+                        height={24}
                       />
                     ) : (
                       <div className="flex size-6 items-center justify-center rounded-full bg-bg-surface-2">
@@ -131,11 +133,12 @@ function PlayerTable({
                 <td className="px-2 py-2">
                   <div className="flex items-center gap-1.5">
                     {p.teamLogo && (
-                      <img
+                      <Image
                         src={p.teamLogo}
                         alt=""
                         className="size-4 object-contain"
-                        loading="lazy"
+                        width={16}
+                        height={16}
                       />
                     )}
                     <span className="truncate text-xs text-text-secondary">{p.teamName}</span>
@@ -197,11 +200,12 @@ function CardsTable({
                 <td className="px-2 py-2">
                   <div className="flex items-center gap-2">
                     {p.playerPhoto ? (
-                      <img
+                      <Image
                         src={p.playerPhoto}
                         alt=""
                         className="size-6 rounded-full object-cover"
-                        loading="lazy"
+                        width={24}
+                        height={24}
                       />
                     ) : (
                       <div className="flex size-6 items-center justify-center rounded-full bg-bg-surface-2">
@@ -221,11 +225,12 @@ function CardsTable({
                 <td className="px-2 py-2">
                   <div className="flex items-center gap-1.5">
                     {p.teamLogo && (
-                      <img
+                      <Image
                         src={p.teamLogo}
                         alt=""
                         className="size-4 object-contain"
-                        loading="lazy"
+                        width={16}
+                        height={16}
                       />
                     )}
                     <span className="truncate text-xs text-text-secondary">{p.teamName}</span>

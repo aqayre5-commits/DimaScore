@@ -6,6 +6,7 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatFeaturedDate } from '@/lib/utils/date';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface Props {
   matches: HomeFixture[];
@@ -177,10 +178,12 @@ function CarouselSlide({
         <div className="flex w-[160px] flex-col items-center">
           <div className="flex h-[96px] items-center justify-center">
             {match.homeTeam?.logoUrl ? (
-              <img
+              <Image
                 src={match.homeTeam.logoUrl}
                 alt=""
                 className="h-[96px] w-[96px] object-contain"
+                width={96}
+                height={96}
               />
             ) : (
               <div className="flex size-20 items-center justify-center rounded-full bg-bg-surface-2 text-xl font-bold text-text-tertiary">
@@ -205,10 +208,12 @@ function CarouselSlide({
         <div className="flex w-[160px] flex-col items-center">
           <div className="flex h-[96px] items-center justify-center">
             {match.awayTeam?.logoUrl ? (
-              <img
+              <Image
                 src={match.awayTeam.logoUrl}
                 alt=""
                 className="h-[96px] w-[96px] object-contain"
+                width={96}
+                height={96}
               />
             ) : (
               <div className="flex size-20 items-center justify-center rounded-full bg-bg-surface-2 text-xl font-bold text-text-tertiary">

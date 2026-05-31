@@ -3,6 +3,7 @@ import { codeToFlag } from '@/lib/flags';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface PlayerInfoCardProps {
   player: PlayerDetail;
@@ -111,13 +112,12 @@ export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
       value: (
         <span className="flex items-center gap-1.5">
           {player.currentTeam?.logoUrl && (
-            <img
+            <Image
               src={player.currentTeam.logoUrl}
               alt=""
               width={18}
               height={18}
               className="size-[18px] object-contain"
-              loading="lazy"
             />
           )}
           <span>{clubName}</span>

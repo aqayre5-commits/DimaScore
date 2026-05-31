@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
 import type { LeagueCoverageRecord, TopPlayerRow, TopCardRow } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface LeagueRightRailProps {
   competitionName: string;
@@ -39,11 +40,12 @@ function TopPlayersList({
           <div key={p.playerId} className="flex items-center gap-3 px-4 py-2">
             <span className="w-5 text-xs tabular-nums text-text-tertiary">{i + 1}</span>
             {p.playerPhoto ? (
-              <img
+              <Image
                 src={p.playerPhoto}
                 alt=""
                 className="size-7 rounded-full object-cover"
-                loading="lazy"
+                width={28}
+                height={28}
               />
             ) : (
               <div className="flex size-7 items-center justify-center rounded-full bg-bg-surface-2">
@@ -91,11 +93,12 @@ function TopCardsList({
           <div key={p.playerId} className="flex items-center gap-3 px-4 py-2">
             <span className="w-5 text-xs tabular-nums text-text-tertiary">{i + 1}</span>
             {p.playerPhoto ? (
-              <img
+              <Image
                 src={p.playerPhoto}
                 alt=""
                 className="size-7 rounded-full object-cover"
-                loading="lazy"
+                width={28}
+                height={28}
               />
             ) : (
               <div className="flex size-7 items-center justify-center rounded-full bg-bg-surface-2">
@@ -184,11 +187,12 @@ function MiniStandingsWidget({
                 <td className="py-1.5">
                   <div className="flex items-center gap-1.5">
                     {row.team?.logoUrl ? (
-                      <img
+                      <Image
                         src={row.team.logoUrl}
                         alt=""
                         className="size-4 object-contain"
-                        loading="lazy"
+                        width={16}
+                        height={16}
                       />
                     ) : (
                       <div className="size-4 rounded bg-bg-surface-2" />

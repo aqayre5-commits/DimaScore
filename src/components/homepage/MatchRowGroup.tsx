@@ -8,6 +8,7 @@ import { MatchRow } from './MatchRow';
 import type { CompetitionGroup } from '@/lib/db/queries/fixtures-by-day';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
+import Image from 'next/image';
 
 interface MatchRowGroupProps {
   group: CompetitionGroup;
@@ -33,11 +34,12 @@ export function MatchRowGroup({ group, locale, defaultExpanded }: MatchRowGroupP
           className="flex min-w-0 items-center gap-2 transition-colors hover:text-accent-green"
         >
           {competition.logoUrl ? (
-            <img
+            <Image
               src={competition.logoUrl}
               alt=""
               className="h-5 w-5 shrink-0 object-contain"
-              loading="lazy"
+              width={20}
+              height={20}
             />
           ) : (
             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">

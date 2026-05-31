@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import type { SquadPlayer } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface TeamSquadTableProps {
   players: SquadPlayer[];
@@ -86,13 +87,12 @@ export function TeamSquadTable({ players, locale }: TeamSquadTableProps) {
                     className="flex flex-col items-center gap-1 rounded-lg px-1 py-2.5 transition-colors hover:bg-accent-green/[0.06]"
                   >
                     {player.photoUrl ? (
-                      <img
+                      <Image
                         src={player.photoUrl}
                         alt=""
                         width={48}
                         height={48}
                         className="size-12 rounded-full border-2 border-border-subtle object-cover"
-                        loading="lazy"
                       />
                     ) : (
                       <div className="flex size-12 items-center justify-center rounded-full border-2 border-border-subtle bg-bg-surface-2 text-sm text-text-tertiary">

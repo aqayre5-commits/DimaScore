@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/lib/i18n/config';
 import type { BracketMatch, KnockoutPhase } from './BracketMatchCell';
+import Image from 'next/image';
 
 // ── UCL-specific round labels ───────────────────────────────────────────────
 
@@ -138,11 +139,12 @@ function UCLMatchCard({ match }: { match: BracketMatch }) {
         )}
       >
         {match.homeLogoUrl ? (
-          <img
+          <Image
             src={match.homeLogoUrl}
             alt=""
             className="size-4 shrink-0 object-contain"
-            loading="lazy"
+            width={16}
+            height={16}
           />
         ) : (
           <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />
@@ -188,11 +190,12 @@ function UCLMatchCard({ match }: { match: BracketMatch }) {
 
       <div className={cn('flex items-center gap-1.5 px-2 py-1.5', awayWon && 'bg-accent-azure/5')}>
         {match.awayLogoUrl ? (
-          <img
+          <Image
             src={match.awayLogoUrl}
             alt=""
             className="size-4 shrink-0 object-contain"
-            loading="lazy"
+            width={16}
+            height={16}
           />
         ) : (
           <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />

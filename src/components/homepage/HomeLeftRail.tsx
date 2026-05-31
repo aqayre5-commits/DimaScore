@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface LeftRailCompetition {
   id: number;
@@ -55,11 +56,12 @@ export function HomeLeftRail({ sections, counts, locale, labels }: Props) {
                     className="flex items-center gap-3 px-4 py-2 transition-colors hover:bg-bg-surface-2"
                   >
                     {c.logoUrl ? (
-                      <img
+                      <Image
                         src={c.logoUrl}
                         alt=""
                         className="size-5 shrink-0 object-contain"
-                        loading="lazy"
+                        width={20}
+                        height={20}
                       />
                     ) : (
                       <div className="flex size-5 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">

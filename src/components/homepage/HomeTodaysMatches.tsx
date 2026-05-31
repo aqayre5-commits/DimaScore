@@ -5,6 +5,7 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime, formatDateLabel } from '@/lib/utils/date';
 import type { TopMatchDateGroup } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface Props {
   groups: TopMatchDateGroup[];
@@ -77,11 +78,12 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                   <div className="flex flex-1 min-w-0 flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
                       {f.homeTeam?.logoUrl ? (
-                        <img
+                        <Image
                           src={f.homeTeam.logoUrl}
                           alt=""
                           className="size-3.5 shrink-0 object-contain"
-                          loading="lazy"
+                          width={12}
+                          height={12}
                         />
                       ) : (
                         <span className="inline-block size-3.5 shrink-0 rounded bg-bg-surface-2" />
@@ -90,11 +92,12 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                     </div>
                     <div className="flex items-center gap-1.5">
                       {f.awayTeam?.logoUrl ? (
-                        <img
+                        <Image
                           src={f.awayTeam.logoUrl}
                           alt=""
                           className="size-3.5 shrink-0 object-contain"
-                          loading="lazy"
+                          width={12}
+                          height={12}
                         />
                       ) : (
                         <span className="inline-block size-3.5 shrink-0 rounded bg-bg-surface-2" />

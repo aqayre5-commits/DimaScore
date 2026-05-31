@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import type { InjuryRow } from '@/lib/db/queries/injuries';
+import Image from 'next/image';
 
 interface InjuriesTabProps {
   injuries: InjuryRow[];
@@ -39,11 +40,12 @@ export function InjuriesTab({ injuries }: InjuriesTabProps) {
               <td className="px-3 py-2">
                 <div className="flex items-center gap-2">
                   {row.playerPhoto ? (
-                    <img
+                    <Image
                       src={row.playerPhoto}
                       alt=""
                       className="size-6 rounded-full object-cover"
-                      loading="lazy"
+                      width={24}
+                      height={24}
                     />
                   ) : (
                     <div className="size-6 rounded-full bg-bg-surface-2" />
@@ -54,11 +56,12 @@ export function InjuriesTab({ injuries }: InjuriesTabProps) {
               <td className="px-3 py-2">
                 <div className="flex items-center gap-2">
                   {row.teamLogo ? (
-                    <img
+                    <Image
                       src={row.teamLogo}
                       alt=""
                       className="size-4 object-contain"
-                      loading="lazy"
+                      width={16}
+                      height={16}
                     />
                   ) : (
                     <div className="size-4 rounded bg-bg-surface-2" />

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { TopScorerEntry } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface Props {
   competitionName: Record<string, string>;
@@ -37,11 +38,12 @@ export function HomeTopScorers({ competitionName, scorers, locale, labels }: Pro
           >
             <span className="w-4 shrink-0 text-xs tabular-nums text-text-tertiary">{i + 1}</span>
             {s.photoUrl ? (
-              <img
+              <Image
                 src={s.photoUrl}
                 alt=""
                 className="size-6 shrink-0 rounded-full object-cover"
-                loading="lazy"
+                width={24}
+                height={24}
               />
             ) : (
               <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-[10px] font-bold text-text-tertiary">
@@ -52,11 +54,12 @@ export function HomeTopScorers({ competitionName, scorers, locale, labels }: Pro
               <p className="truncate text-xs font-medium text-text-primary">{s.playerName}</p>
               <div className="flex items-center gap-1">
                 {s.teamLogoUrl && (
-                  <img
+                  <Image
                     src={s.teamLogoUrl}
                     alt=""
                     className="size-3 object-contain"
-                    loading="lazy"
+                    width={12}
+                    height={12}
                   />
                 )}
                 <span className="truncate text-[10px] text-text-tertiary">{s.teamName}</span>

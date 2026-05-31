@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { TrendingPlayer } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
+import Image from 'next/image';
 
 interface Props {
   players: TrendingPlayer[];
@@ -34,11 +35,12 @@ export function HomeTrendingPlayers({ players, locale, labels }: Props) {
               className="flex w-[112px] shrink-0 flex-col items-center gap-1.5 rounded-xl border border-border-subtle bg-bg-surface-2 px-2.5 py-3"
             >
               {p.photoUrl ? (
-                <img
+                <Image
                   src={p.photoUrl}
                   alt={p.playerName}
                   className="size-12 rounded-full object-cover ring-2 ring-border-subtle"
-                  loading="lazy"
+                  width={48}
+                  height={48}
                 />
               ) : (
                 <div className="flex size-12 items-center justify-center rounded-full bg-bg-surface-3 text-base font-bold text-text-tertiary ring-2 ring-border-subtle">
