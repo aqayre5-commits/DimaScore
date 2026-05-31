@@ -39,26 +39,28 @@ export async function syncTopScorers(
 
   let updated = 0;
 
-  for (const p of players) {
-    const row = mapTopPlayerToInsert(p, params.leagueId, params.season);
-    if (!row) continue;
+  await db.transaction(async (tx) => {
+    for (const p of players) {
+      const row = mapTopPlayerToInsert(p, params.leagueId, params.season);
+      if (!row) continue;
 
-    await db
-      .insert(schema.playerSeasonStats)
-      .values(row)
-      .onConflictDoUpdate({
-        target: [
-          schema.playerSeasonStats.playerId,
-          schema.playerSeasonStats.teamId,
-          schema.playerSeasonStats.competitionId,
-          schema.playerSeasonStats.seasonYear,
-        ],
-        set: {
-          stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
-        },
-      });
-    updated++;
-  }
+      await tx
+        .insert(schema.playerSeasonStats)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [
+            schema.playerSeasonStats.playerId,
+            schema.playerSeasonStats.teamId,
+            schema.playerSeasonStats.competitionId,
+            schema.playerSeasonStats.seasonYear,
+          ],
+          set: {
+            stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
+          },
+        });
+      updated++;
+    }
+  });
 
   return { inserted: 0, updated };
 }
@@ -75,27 +77,29 @@ export async function syncTopAssists(
 
   let updated = 0;
 
-  for (const p of players) {
-    const row = mapTopPlayerToInsert(p, params.leagueId, params.season);
-    if (!row) continue;
+  await db.transaction(async (tx) => {
+    for (const p of players) {
+      const row = mapTopPlayerToInsert(p, params.leagueId, params.season);
+      if (!row) continue;
 
-    // Merge with existing stats if player already has a row (e.g., from topScorers)
-    await db
-      .insert(schema.playerSeasonStats)
-      .values(row)
-      .onConflictDoUpdate({
-        target: [
-          schema.playerSeasonStats.playerId,
-          schema.playerSeasonStats.teamId,
-          schema.playerSeasonStats.competitionId,
-          schema.playerSeasonStats.seasonYear,
-        ],
-        set: {
-          stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
-        },
-      });
-    updated++;
-  }
+      // Merge with existing stats if player already has a row (e.g., from topScorers)
+      await tx
+        .insert(schema.playerSeasonStats)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [
+            schema.playerSeasonStats.playerId,
+            schema.playerSeasonStats.teamId,
+            schema.playerSeasonStats.competitionId,
+            schema.playerSeasonStats.seasonYear,
+          ],
+          set: {
+            stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
+          },
+        });
+      updated++;
+    }
+  });
 
   return { inserted: 0, updated };
 }

@@ -65,6 +65,7 @@ export function FixtureRow({
   return (
     <Link
       href={`/${locale}/match/${fixtureId}`}
+      aria-label={`${homeName} vs ${awayName}`}
       className="flex items-center gap-2 rounded-md py-2 text-base transition-colors hover:bg-bg-surface-2"
     >
       {/* Time / status column */}

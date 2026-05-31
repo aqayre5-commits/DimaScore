@@ -2,17 +2,7 @@ import { eq, and, asc, desc, inArray, gte, lt, or } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
-
-type TeamSnapshot = {
-  id: number;
-  slug: string;
-  name: Record<string, string>;
-  shortName: Record<string, string>;
-  code: string | null;
-  countryCode: string | null;
-  logoUrl: string | null;
-  isNational: boolean | null;
-};
+import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 
 export interface TopMatch {
   id: number;
@@ -113,26 +103,7 @@ export async function getTopMatches(
     if (r.awayTeamId != null) teamIds.add(r.awayTeamId);
   }
 
-  const teamsMap = new Map<number, TeamSnapshot>();
-  if (teamIds.size > 0) {
-    const teams = await db
-      .select({
-        id: schema.teams.id,
-        slug: schema.teams.slug,
-        name: schema.teams.name,
-        shortName: schema.teams.shortName,
-        code: schema.teams.code,
-        countryCode: schema.teams.countryCode,
-        logoUrl: schema.teams.logoUrl,
-        isNational: schema.teams.isNational,
-      })
-      .from(schema.teams)
-      .where(inArray(schema.teams.id, [...teamIds]));
-
-    for (const t of teams) {
-      teamsMap.set(t.id, t);
-    }
-  }
+  const teamsMap = await hydrateTeams(db, teamIds);
 
   return sorted.map((r) => ({
     id: r.id,

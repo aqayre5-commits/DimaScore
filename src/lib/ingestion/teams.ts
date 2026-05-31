@@ -48,49 +48,52 @@ export async function syncTeams(
 ): Promise<SyncStats> {
   const countryLookup = await buildCountryLookup(db);
   const teams = await provider.getTeams({ league: params.leagueId, season: params.season });
+  const inserted = 0;
   let updated = 0;
 
-  for (const t of teams) {
-    // Upsert venue first (side-effect) — skip if venue id is null
-    if (t.venue?.id) {
-      const venueRow = mapVenueToInsert(t.venue, countryLookup);
-      await db
-        .insert(schema.venues)
-        .values(venueRow)
+  await db.transaction(async (tx) => {
+    for (const t of teams) {
+      // Upsert venue first (side-effect) — skip if venue id is null
+      if (t.venue?.id) {
+        const venueRow = mapVenueToInsert(t.venue, countryLookup);
+        await tx
+          .insert(schema.venues)
+          .values(venueRow)
+          .onConflictDoUpdate({
+            target: schema.venues.id,
+            set: {
+              name: venueRow.name,
+              city: venueRow.city,
+              countryCode: venueRow.countryCode,
+              capacity: venueRow.capacity,
+              imageUrl: venueRow.imageUrl,
+            },
+          });
+      }
+
+      // Upsert team
+      const teamRow = mapTeamToInsert(t, params.isWomen, countryLookup);
+      await tx
+        .insert(schema.teams)
+        .values(teamRow)
         .onConflictDoUpdate({
-          target: schema.venues.id,
+          target: schema.teams.id,
           set: {
-            name: venueRow.name,
-            city: venueRow.city,
-            countryCode: venueRow.countryCode,
-            capacity: venueRow.capacity,
-            imageUrl: venueRow.imageUrl,
+            slug: teamRow.slug,
+            name: teamRow.name,
+            shortName: teamRow.shortName,
+            code: teamRow.code,
+            countryCode: teamRow.countryCode,
+            founded: teamRow.founded,
+            logoUrl: teamRow.logoUrl,
+            venueId: teamRow.venueId,
+            isNational: teamRow.isNational,
+            isWomen: teamRow.isWomen,
           },
         });
+      updated++;
     }
-
-    // Upsert team
-    const teamRow = mapTeamToInsert(t, params.isWomen, countryLookup);
-    await db
-      .insert(schema.teams)
-      .values(teamRow)
-      .onConflictDoUpdate({
-        target: schema.teams.id,
-        set: {
-          slug: teamRow.slug,
-          name: teamRow.name,
-          shortName: teamRow.shortName,
-          code: teamRow.code,
-          countryCode: teamRow.countryCode,
-          founded: teamRow.founded,
-          logoUrl: teamRow.logoUrl,
-          venueId: teamRow.venueId,
-          isNational: teamRow.isNational,
-          isWomen: teamRow.isWomen,
-        },
-      });
-    updated++;
-  }
+  });
 
   return { inserted, updated };
 }

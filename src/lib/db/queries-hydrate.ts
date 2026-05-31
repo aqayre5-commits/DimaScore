@@ -7,7 +7,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 import type { FixtureWithTeams } from './queries';
 
-type TeamSnapshot = {
+export type TeamSnapshot = {
   id: number;
   slug: string;
   name: Record<string, string>;
@@ -18,7 +18,7 @@ type TeamSnapshot = {
   isNational: boolean | null;
 };
 
-type VenueSnapshot = {
+export type VenueSnapshot = {
   id: number;
   name: string | null;
   city: string | null;
@@ -67,7 +67,7 @@ export async function hydrateFixtures(
   }));
 }
 
-async function getTeamsMap(
+export async function getTeamsMap(
   db: NeonHttpDatabase<typeof schema>,
   teamIds: number[],
 ): Promise<Map<number, TeamSnapshot>> {
@@ -92,7 +92,7 @@ async function getTeamsMap(
   return map;
 }
 
-async function getVenuesMap(
+export async function getVenuesMap(
   db: NeonHttpDatabase<typeof schema>,
   venueIds: number[],
 ): Promise<Map<number, VenueSnapshot>> {
@@ -110,4 +110,12 @@ async function getVenuesMap(
   const map = new Map<number, VenueSnapshot>();
   for (const v of venues) map.set(v.id, v);
   return map;
+}
+
+/** Convenience wrapper accepting a Set (used by right-rail, homepage). */
+export async function hydrateTeams(
+  db: NeonHttpDatabase<typeof schema>,
+  teamIds: Set<number>,
+): Promise<Map<number, TeamSnapshot>> {
+  return getTeamsMap(db, [...teamIds]);
 }

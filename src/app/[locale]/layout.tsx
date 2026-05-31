@@ -44,6 +44,7 @@ export async function generateMetadata({
   languages['x-default'] = `${baseUrl}/${defaultLocale}`;
 
   return {
+    metadataBase: new URL(baseUrl),
     title: 'DimaScore',
     description:
       locale === 'ar'

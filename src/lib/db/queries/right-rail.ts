@@ -4,24 +4,12 @@ import * as schema from '../schema';
 import type { HomeFixture } from './homepage';
 import type { StandingRow } from '../queries';
 import { TEAM_IDS } from '@/lib/constants/canonical-ids';
+import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 
 // ── Status code sets ──
 
 const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
 const FINISHED_CODES = ['FT', 'AET', 'PEN', 'WO', 'AWD'];
-
-// ── Types ──
-
-type TeamSnapshot = {
-  id: number;
-  slug: string;
-  name: Record<string, string>;
-  shortName: Record<string, string>;
-  code: string | null;
-  countryCode: string | null;
-  logoUrl: string | null;
-  isNational: boolean | null;
-};
 
 export interface RightRailFixture {
   id: number;
@@ -93,29 +81,6 @@ export interface TopScorerEntry {
 }
 
 // ── Helpers ──
-
-async function hydrateTeams(
-  db: NeonHttpDatabase<typeof schema>,
-  teamIds: Set<number>,
-): Promise<Map<number, TeamSnapshot>> {
-  const map = new Map<number, TeamSnapshot>();
-  if (teamIds.size === 0) return map;
-  const teams = await db
-    .select({
-      id: schema.teams.id,
-      slug: schema.teams.slug,
-      name: schema.teams.name,
-      shortName: schema.teams.shortName,
-      code: schema.teams.code,
-      countryCode: schema.teams.countryCode,
-      logoUrl: schema.teams.logoUrl,
-      isNational: schema.teams.isNational,
-    })
-    .from(schema.teams)
-    .where(inArray(schema.teams.id, [...teamIds]));
-  for (const t of teams) map.set(t.id, t);
-  return map;
-}
 
 function mapToRightRailFixture(
   r: {

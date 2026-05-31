@@ -3,19 +3,7 @@ import { eq, and, asc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
-
-// ── Shared types ──
-
-type TeamSnapshot = {
-  id: number;
-  slug: string;
-  name: Record<string, string>;
-  shortName: Record<string, string>;
-  code: string | null;
-  countryCode: string | null;
-  logoUrl: string | null;
-  isNational: boolean | null;
-};
+import type { TeamSnapshot } from '../queries-hydrate';
 
 // ── Match detail ──
 

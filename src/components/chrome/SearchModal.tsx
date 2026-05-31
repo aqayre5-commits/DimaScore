@@ -142,7 +142,8 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      {}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
 
       {/* Modal */}
       <div className="relative z-10 w-full max-w-lg rounded-xl border border-border-subtle bg-bg-canvas shadow-2xl">
@@ -161,6 +162,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
           <button
             type="button"
             onClick={onClose}
+            aria-label="Close search"
             className="shrink-0 text-text-tertiary hover:text-text-secondary"
           >
             <X className="size-5" />

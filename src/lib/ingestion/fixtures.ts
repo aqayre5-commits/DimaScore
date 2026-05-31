@@ -45,56 +45,59 @@ export async function syncFixtures(
     league: params.leagueId,
     season: params.season,
   });
+  const inserted = 0;
   let updated = 0;
 
-  for (const f of fixtures) {
-    // Upsert venue as side-effect (match venue)
-    if (f.venue.id) {
-      await db
-        .insert(schema.venues)
-        .values({
-          id: f.venue.id,
-          name: f.venue.name,
-          city: f.venue.city,
-        })
-        .onConflictDoUpdate({
-          target: schema.venues.id,
-          set: { name: f.venue.name, city: f.venue.city },
-        });
-    }
+  await db.transaction(async (tx) => {
+    for (const f of fixtures) {
+      // Upsert venue as side-effect (match venue)
+      if (f.venue.id) {
+        await tx
+          .insert(schema.venues)
+          .values({
+            id: f.venue.id,
+            name: f.venue.name,
+            city: f.venue.city,
+          })
+          .onConflictDoUpdate({
+            target: schema.venues.id,
+            set: { name: f.venue.name, city: f.venue.city },
+          });
+      }
 
-    const row = mapFixtureToInsert(f);
-    await db
-      .insert(schema.fixtures)
-      .values(row)
-      .onConflictDoUpdate({
-        target: schema.fixtures.id,
-        set: {
-          competitionId: row.competitionId,
-          seasonYear: row.seasonYear,
-          round: row.round,
-          roundNumber: row.roundNumber,
-          kickoffAt: row.kickoffAt,
-          statusCode: row.statusCode,
-          minute: row.minute,
-          homeTeamId: row.homeTeamId,
-          awayTeamId: row.awayTeamId,
-          homeScore: row.homeScore,
-          awayScore: row.awayScore,
-          homeScoreHt: row.homeScoreHt,
-          awayScoreHt: row.awayScoreHt,
-          homeScoreFt: row.homeScoreFt,
-          awayScoreFt: row.awayScoreFt,
-          homeScoreEt: row.homeScoreEt,
-          awayScoreEt: row.awayScoreEt,
-          homeScorePen: row.homeScorePen,
-          awayScorePen: row.awayScorePen,
-          venueId: row.venueId,
-          referee: row.referee,
-        },
-      });
-    updated++;
-  }
+      const row = mapFixtureToInsert(f);
+      await tx
+        .insert(schema.fixtures)
+        .values(row)
+        .onConflictDoUpdate({
+          target: schema.fixtures.id,
+          set: {
+            competitionId: row.competitionId,
+            seasonYear: row.seasonYear,
+            round: row.round,
+            roundNumber: row.roundNumber,
+            kickoffAt: row.kickoffAt,
+            statusCode: row.statusCode,
+            minute: row.minute,
+            homeTeamId: row.homeTeamId,
+            awayTeamId: row.awayTeamId,
+            homeScore: row.homeScore,
+            awayScore: row.awayScore,
+            homeScoreHt: row.homeScoreHt,
+            awayScoreHt: row.awayScoreHt,
+            homeScoreFt: row.homeScoreFt,
+            awayScoreFt: row.awayScoreFt,
+            homeScoreEt: row.homeScoreEt,
+            awayScoreEt: row.awayScoreEt,
+            homeScorePen: row.homeScorePen,
+            awayScorePen: row.awayScorePen,
+            venueId: row.venueId,
+            referee: row.referee,
+          },
+        });
+      updated++;
+    }
+  });
 
   return { inserted, updated };
 }

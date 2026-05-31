@@ -67,7 +67,12 @@ export function getLocalizedCompetitionName(
 ): string {
   const override = COMP_NAMES[competition.id];
   if (override && locale in override) {
-    return override[locale as keyof typeof override];
+    return (
+      override[locale as keyof typeof override] ??
+      competition.name[locale] ??
+      competition.name['en'] ??
+      competition.slug
+    );
   }
   return competition.name[locale] ?? competition.name['en'] ?? competition.slug;
 }

@@ -3,19 +3,7 @@ import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { ALL_ENTRIES } from '@/lib/constants/competitions-mega-menu';
-
-// ── Types ──
-
-type TeamSnapshot = {
-  id: number;
-  slug: string;
-  name: Record<string, string>;
-  shortName: Record<string, string>;
-  code: string | null;
-  countryCode: string | null;
-  logoUrl: string | null;
-  isNational: boolean | null;
-};
+import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 
 export interface HomeFixture {
   id: number;
@@ -77,29 +65,6 @@ function normalizeRound(round: string | null): string | null {
 }
 
 // ── Helpers ──
-
-async function hydrateTeams(
-  db: NeonHttpDatabase<typeof schema>,
-  teamIds: Set<number>,
-): Promise<Map<number, TeamSnapshot>> {
-  const map = new Map<number, TeamSnapshot>();
-  if (teamIds.size === 0) return map;
-  const teams = await db
-    .select({
-      id: schema.teams.id,
-      slug: schema.teams.slug,
-      name: schema.teams.name,
-      shortName: schema.teams.shortName,
-      code: schema.teams.code,
-      countryCode: schema.teams.countryCode,
-      logoUrl: schema.teams.logoUrl,
-      isNational: schema.teams.isNational,
-    })
-    .from(schema.teams)
-    .where(inArray(schema.teams.id, [...teamIds]));
-  for (const t of teams) map.set(t.id, t);
-  return map;
-}
 
 function mapFixtureRow(
   r: {

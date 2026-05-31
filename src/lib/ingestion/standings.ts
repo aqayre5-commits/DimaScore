@@ -41,38 +41,41 @@ export async function syncStandings(
     league: params.leagueId,
     season: params.season,
   });
+  const inserted = 0;
   let updated = 0;
 
-  for (const group of groups) {
-    for (const entry of group) {
-      const row = mapStandingToInsert(entry, params.leagueId, params.season);
-      await db
-        .insert(schema.standings)
-        .values(row)
-        .onConflictDoUpdate({
-          target: [
-            schema.standings.competitionId,
-            schema.standings.seasonYear,
-            schema.standings.groupLabel,
-            schema.standings.teamId,
-          ],
-          set: {
-            rank: row.rank,
-            points: row.points,
-            played: row.played,
-            won: row.won,
-            drawn: row.drawn,
-            lost: row.lost,
-            goalsFor: row.goalsFor,
-            goalsAgainst: row.goalsAgainst,
-            goalDiff: row.goalDiff,
-            form: row.form,
-            description: row.description,
-          },
-        });
-      updated++;
+  await db.transaction(async (tx) => {
+    for (const group of groups) {
+      for (const entry of group) {
+        const row = mapStandingToInsert(entry, params.leagueId, params.season);
+        await tx
+          .insert(schema.standings)
+          .values(row)
+          .onConflictDoUpdate({
+            target: [
+              schema.standings.competitionId,
+              schema.standings.seasonYear,
+              schema.standings.groupLabel,
+              schema.standings.teamId,
+            ],
+            set: {
+              rank: row.rank,
+              points: row.points,
+              played: row.played,
+              won: row.won,
+              drawn: row.drawn,
+              lost: row.lost,
+              goalsFor: row.goalsFor,
+              goalsAgainst: row.goalsAgainst,
+              goalDiff: row.goalDiff,
+              form: row.form,
+              description: row.description,
+            },
+          });
+        updated++;
+      }
     }
-  }
+  });
 
   return { inserted, updated };
 }

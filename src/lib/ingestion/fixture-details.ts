@@ -92,75 +92,75 @@ export async function syncFixtureDetails(
   let statisticsCount = 0;
   let playerStatsCount = 0;
 
-  // Events: delete existing + batch insert fresh (atomic)
-  if (events.length > 0) {
-    const eventRows = events.map((e) => mapEvent(fixtureId, e));
-    await db.transaction(async (tx) => {
+  await db.transaction(async (tx) => {
+    // Events: delete existing + batch insert fresh
+    if (events.length > 0) {
+      const eventRows = events.map((e) => mapEvent(fixtureId, e));
       await tx.delete(schema.fixtureEvents).where(eq(schema.fixtureEvents.fixtureId, fixtureId));
       await tx.insert(schema.fixtureEvents).values(eventRows);
-    });
-    eventsCount = eventRows.length;
-  }
+      eventsCount = eventRows.length;
+    }
 
-  // Lineups: upsert per team
-  for (const l of lineups) {
-    const row = mapLineup(fixtureId, l);
-    await db
-      .insert(schema.fixtureLineups)
-      .values(row)
-      .onConflictDoUpdate({
-        target: [schema.fixtureLineups.fixtureId, schema.fixtureLineups.teamId],
-        set: {
-          coachId: row.coachId,
-          formation: row.formation,
-          starters: row.starters,
-          substitutes: row.substitutes,
-        },
-      });
-    lineupsCount++;
-  }
-
-  // Statistics: upsert per team
-  for (const s of statistics) {
-    const row = mapStatistics(fixtureId, s);
-    await db
-      .insert(schema.fixtureStatistics)
-      .values(row)
-      .onConflictDoUpdate({
-        target: [schema.fixtureStatistics.fixtureId, schema.fixtureStatistics.teamId],
-        set: { stats: row.stats },
-      });
-    statisticsCount++;
-  }
-
-  // Player stats: upsert per player
-  for (const team of players) {
-    if (!team.players) continue;
-    for (const p of team.players) {
-      const row = mapPlayerStats(fixtureId, team.team.id, p);
-      await db
-        .insert(schema.fixturePlayerStats)
+    // Lineups: upsert per team
+    for (const l of lineups) {
+      const row = mapLineup(fixtureId, l);
+      await tx
+        .insert(schema.fixtureLineups)
         .values(row)
         .onConflictDoUpdate({
-          target: [schema.fixturePlayerStats.fixtureId, schema.fixturePlayerStats.playerId],
+          target: [schema.fixtureLineups.fixtureId, schema.fixtureLineups.teamId],
           set: {
-            teamId: row.teamId,
-            minutesPlayed: row.minutesPlayed,
-            rating: row.rating,
-            captain: row.captain,
-            position: row.position,
-            stats: row.stats,
+            coachId: row.coachId,
+            formation: row.formation,
+            starters: row.starters,
+            substitutes: row.substitutes,
           },
         });
-      playerStatsCount++;
+      lineupsCount++;
     }
-  }
 
-  // Mark fixture as synced so it won't be re-processed
-  await db
-    .update(schema.fixtures)
-    .set({ detailsSyncedAt: new Date() })
-    .where(eq(schema.fixtures.id, fixtureId));
+    // Statistics: upsert per team
+    for (const s of statistics) {
+      const row = mapStatistics(fixtureId, s);
+      await tx
+        .insert(schema.fixtureStatistics)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [schema.fixtureStatistics.fixtureId, schema.fixtureStatistics.teamId],
+          set: { stats: row.stats },
+        });
+      statisticsCount++;
+    }
+
+    // Player stats: upsert per player
+    for (const team of players) {
+      if (!team.players) continue;
+      for (const p of team.players) {
+        const row = mapPlayerStats(fixtureId, team.team.id, p);
+        await tx
+          .insert(schema.fixturePlayerStats)
+          .values(row)
+          .onConflictDoUpdate({
+            target: [schema.fixturePlayerStats.fixtureId, schema.fixturePlayerStats.playerId],
+            set: {
+              teamId: row.teamId,
+              minutesPlayed: row.minutesPlayed,
+              rating: row.rating,
+              captain: row.captain,
+              position: row.position,
+              stats: row.stats,
+            },
+          });
+        playerStatsCount++;
+      }
+    }
+
+    // Mark fixture as synced so it won't be re-processed
+    await tx
+      .update(schema.fixtures)
+      .set({ detailsSyncedAt: new Date() })
+      .where(eq(schema.fixtures.id, fixtureId));
+  });
 
   return {
     events: eventsCount,

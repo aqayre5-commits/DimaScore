@@ -90,6 +90,7 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
     <Link
       href={`/${locale}/match/${fixture.id}`}
       dir={dir}
+      aria-label={`${getCompactTeamLabel(fixture.homeTeam, locale)} vs ${getCompactTeamLabel(fixture.awayTeam, locale)}`}
       className="flex shrink-0 items-center gap-2 px-4 py-1 transition-colors hover:bg-white/5"
     >
       {/* Home team */}

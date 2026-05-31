@@ -77,21 +77,23 @@ export async function syncCountries(
   let inserted = 0;
   let updated = 0;
 
-  for (const c of countries) {
-    if (!c.code) continue; // skip countries without a code
-    const row = mapCountryToInsert(c);
-    const result = await db
-      .insert(schema.countries)
-      .values(row)
-      .onConflictDoUpdate({
-        target: schema.countries.code,
-        set: { name: row.name, flagUrl: row.flagUrl },
-      });
-    // neon-http returns NeonQueryResultHKT; count rows affected
-    const affected = (result as unknown as { rowCount: number }).rowCount ?? 1;
-    if (affected > 0) updated++;
-    else inserted++;
-  }
+  await db.transaction(async (tx) => {
+    for (const c of countries) {
+      if (!c.code) continue; // skip countries without a code
+      const row = mapCountryToInsert(c);
+      const result = await tx
+        .insert(schema.countries)
+        .values(row)
+        .onConflictDoUpdate({
+          target: schema.countries.code,
+          set: { name: row.name, flagUrl: row.flagUrl },
+        });
+      // neon-http returns NeonQueryResultHKT; count rows affected
+      const affected = (result as unknown as { rowCount: number }).rowCount ?? 1;
+      if (affected > 0) updated++;
+      else inserted++;
+    }
+  });
 
   return { inserted, updated };
 }
@@ -105,74 +107,79 @@ export async function syncCompetitionsWithSeasons(
   const seasonStats: SyncStats = { inserted: 0, updated: 0 };
   const coverageStats: SyncStats = { inserted: 0, updated: 0 };
 
+  // Fetch all league data first (API calls outside transaction)
+  const leagueData: { league: NormalizedLeague; meta: CompetitionMeta }[] = [];
   for (const meta of metas) {
     const leagues = await provider.getLeagues({ id: meta.id });
     if (leagues.length === 0) continue;
-
-    const league = leagues[0];
-
-    // Upsert competition
-    const compRow = mapCompetitionToInsert(league, meta);
-    await db
-      .insert(schema.competitions)
-      .values(compRow)
-      .onConflictDoUpdate({
-        target: schema.competitions.id,
-        set: {
-          slug: compRow.slug,
-          name: compRow.name,
-          countryCode: compRow.countryCode,
-          type: compRow.type,
-          tier: compRow.tier,
-          isWomen: compRow.isWomen,
-          logoUrl: compRow.logoUrl,
-          isFeatured: compRow.isFeatured,
-          isMoroccoFocus: compRow.isMoroccoFocus,
-          displayPriority: compRow.displayPriority,
-        },
-      });
-    compStats.updated++;
-
-    // Upsert seasons + coverage for each season
-    for (const s of league.seasons) {
-      const seasonRow = mapSeasonToInsert(league.id, s);
-      await db
-        .insert(schema.seasons)
-        .values(seasonRow)
-        .onConflictDoUpdate({
-          target: [schema.seasons.competitionId, schema.seasons.year],
-          set: {
-            startDate: seasonRow.startDate,
-            endDate: seasonRow.endDate,
-            isCurrent: seasonRow.isCurrent,
-          },
-        });
-      seasonStats.updated++;
-
-      const covRow = mapCoverageToInsert(league.id, s.year, s.coverage);
-      await db
-        .insert(schema.leagueCoverage)
-        .values(covRow)
-        .onConflictDoUpdate({
-          target: [schema.leagueCoverage.leagueId, schema.leagueCoverage.season],
-          set: {
-            events: covRow.events,
-            lineups: covRow.lineups,
-            statisticsFixtures: covRow.statisticsFixtures,
-            statisticsPlayers: covRow.statisticsPlayers,
-            standings: covRow.standings,
-            players: covRow.players,
-            topScorers: covRow.topScorers,
-            topAssists: covRow.topAssists,
-            topCards: covRow.topCards,
-            injuries: covRow.injuries,
-            predictions: covRow.predictions,
-            odds: covRow.odds,
-          },
-        });
-      coverageStats.updated++;
-    }
+    leagueData.push({ league: leagues[0], meta });
   }
+
+  await db.transaction(async (tx) => {
+    for (const { league, meta } of leagueData) {
+      // Upsert competition
+      const compRow = mapCompetitionToInsert(league, meta);
+      await tx
+        .insert(schema.competitions)
+        .values(compRow)
+        .onConflictDoUpdate({
+          target: schema.competitions.id,
+          set: {
+            slug: compRow.slug,
+            name: compRow.name,
+            countryCode: compRow.countryCode,
+            type: compRow.type,
+            tier: compRow.tier,
+            isWomen: compRow.isWomen,
+            logoUrl: compRow.logoUrl,
+            isFeatured: compRow.isFeatured,
+            isMoroccoFocus: compRow.isMoroccoFocus,
+            displayPriority: compRow.displayPriority,
+          },
+        });
+      compStats.updated++;
+
+      // Upsert seasons + coverage for each season
+      for (const s of league.seasons) {
+        const seasonRow = mapSeasonToInsert(league.id, s);
+        await tx
+          .insert(schema.seasons)
+          .values(seasonRow)
+          .onConflictDoUpdate({
+            target: [schema.seasons.competitionId, schema.seasons.year],
+            set: {
+              startDate: seasonRow.startDate,
+              endDate: seasonRow.endDate,
+              isCurrent: seasonRow.isCurrent,
+            },
+          });
+        seasonStats.updated++;
+
+        const covRow = mapCoverageToInsert(league.id, s.year, s.coverage);
+        await tx
+          .insert(schema.leagueCoverage)
+          .values(covRow)
+          .onConflictDoUpdate({
+            target: [schema.leagueCoverage.leagueId, schema.leagueCoverage.season],
+            set: {
+              events: covRow.events,
+              lineups: covRow.lineups,
+              statisticsFixtures: covRow.statisticsFixtures,
+              statisticsPlayers: covRow.statisticsPlayers,
+              standings: covRow.standings,
+              players: covRow.players,
+              topScorers: covRow.topScorers,
+              topAssists: covRow.topAssists,
+              topCards: covRow.topCards,
+              injuries: covRow.injuries,
+              predictions: covRow.predictions,
+              odds: covRow.odds,
+            },
+          });
+        coverageStats.updated++;
+      }
+    }
+  });
 
   return { competitions: compStats, seasons: seasonStats, coverage: coverageStats };
 }

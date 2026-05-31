@@ -52,6 +52,13 @@ import type {
   RawCountry,
 } from './types';
 import * as endpoints from './endpoints';
+import {
+  filterValid,
+  isValidFixtureEntry,
+  isValidStandingsEntry,
+  isValidTeamEntry,
+  isValidLeagueEntry,
+} from './validators';
 
 // --- Normalizers ---
 
@@ -374,7 +381,8 @@ export class ApiFootballAdapter implements DataProvider {
     season?: number;
   }): Promise<NormalizedLeague[]> {
     const res = await endpoints.fetchLeagues(params);
-    return res.response.map(normalizeLeague);
+    const valid = filterValid(res.response, isValidLeagueEntry, 'leagues');
+    return valid.map(normalizeLeague);
   }
 
   async getLeagueSeasons(): Promise<number[]> {
@@ -394,7 +402,8 @@ export class ApiFootballAdapter implements DataProvider {
     country?: string;
   }): Promise<NormalizedTeam[]> {
     const res = await endpoints.fetchTeams(params);
-    return res.response.map(normalizeTeam);
+    const valid = filterValid(res.response, isValidTeamEntry, 'teams');
+    return valid.map(normalizeTeam);
   }
 
   async getTeamStatistics(params: {
@@ -440,12 +449,14 @@ export class ApiFootballAdapter implements DataProvider {
     const res = await endpoints.fetchFixtures(
       apiParams as Parameters<typeof endpoints.fetchFixtures>[0],
     );
-    return res.response.map(normalizeFixture);
+    const valid = filterValid(res.response, isValidFixtureEntry, 'fixtures');
+    return valid.map(normalizeFixture);
   }
 
   async getLiveFixtures(params?: { league?: string }): Promise<NormalizedFixture[]> {
     const res = await endpoints.fetchLiveFixtures(params);
-    return res.response.map(normalizeFixture);
+    const valid = filterValid(res.response, isValidFixtureEntry, 'live-fixtures');
+    return valid.map(normalizeFixture);
   }
 
   async getFixtureRounds(params: { league: number; season: number }): Promise<string[]> {
@@ -455,7 +466,8 @@ export class ApiFootballAdapter implements DataProvider {
 
   async getHeadToHead(params: { h2h: string; last?: number }): Promise<NormalizedFixture[]> {
     const res = await endpoints.fetchHeadToHead(params);
-    return res.response.map(normalizeFixture);
+    const valid = filterValid(res.response, isValidFixtureEntry, 'h2h');
+    return valid.map(normalizeFixture);
   }
 
   async getFixtureEvents(params: { fixture: number }): Promise<NormalizedFixtureEvent[]> {
@@ -480,8 +492,9 @@ export class ApiFootballAdapter implements DataProvider {
 
   async getStandings(params: { league: number; season: number }): Promise<NormalizedStandings> {
     const res = await endpoints.fetchStandings(params);
-    if (res.response.length === 0) return [];
-    return res.response[0].league.standings.map((group) => group.map(normalizeStandingRow));
+    const valid = filterValid(res.response, isValidStandingsEntry, 'standings');
+    if (valid.length === 0) return [];
+    return valid[0].league.standings.map((group) => group.map(normalizeStandingRow));
   }
 
   async getPlayers(params: {

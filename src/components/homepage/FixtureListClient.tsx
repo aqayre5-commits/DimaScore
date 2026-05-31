@@ -39,6 +39,10 @@ export function FixtureListClient({ sections, locale, todayStr, labels }: Fixtur
     [locale],
   );
   const numFormatter = useMemo(() => new Intl.DateTimeFormat(locale, { day: 'numeric' }), [locale]);
+  const fullDateFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }),
+    [locale],
+  );
 
   const currentSection = sections.find((s) => s.date === selectedDate);
 
@@ -59,6 +63,8 @@ export function FixtureListClient({ sections, locale, todayStr, labels }: Fixtur
               key={dateStr}
               type="button"
               onClick={() => setSelectedDate(dateStr)}
+              aria-label={fullDateFormatter.format(date)}
+              aria-pressed={isSelected}
               className={cn(
                 'flex w-[calc(100%/7)] shrink-0 flex-col items-center justify-center rounded-lg min-h-[56px] py-1.5 text-xs transition-colors',
                 isSelected

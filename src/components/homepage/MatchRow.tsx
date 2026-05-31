@@ -33,6 +33,7 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
   return (
     <Link
       href={`/${locale}/match/${fixture.id}`}
+      aria-label={`${homeLabel} vs ${awayLabel}`}
       className="flex items-center gap-2 border-b border-border-subtle px-3 py-2 text-base transition-colors hover:bg-bg-surface-2"
     >
       {/* Time / status */}
