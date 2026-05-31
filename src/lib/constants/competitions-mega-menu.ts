@@ -130,7 +130,7 @@ const ALL_ENTRIES: MegaMenuEntry[] = [
     competitionId: 6,
     labelKey: 'afcon',
     countryKey: 'caf',
-    slugs: { fr: 'can-2027', en: 'afcon-2027', ar: 'كأس-أمم-إفريقيا-2027' },
+    slugs: { fr: 'can-2025', en: 'afcon-2025', ar: 'كأس-أمم-إفريقيا-2025' },
     isCurrentlyVisible: true,
   },
   {

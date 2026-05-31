@@ -7,7 +7,7 @@
  * Usage: getLocalizedCompetitionName(competition, locale)
  */
 
-const COMP_NAMES: Record<number, { fr: string; ar: string }> = {
+const COMP_NAMES: Record<number, { en?: string; fr: string; ar: string }> = {
   // ── World Cup & qualifiers ──
   1: { fr: 'Coupe du Monde', ar: 'كأس العالم' },
   29: { fr: 'Qualif. CM Afrique', ar: 'تصفيات كأس العالم أفريقيا' },
@@ -21,7 +21,7 @@ const COMP_NAMES: Record<number, { fr: string; ar: string }> = {
   // ── Morocco ──
   200: { fr: 'Botola Pro', ar: 'البطولة الاحترافية' },
   201: { fr: 'Botola Pro 2', ar: 'البطولة الاحترافية 2' },
-  822: { fr: 'Coupe du Trône', ar: 'كأس العرش' },
+  822: { en: 'Coupe du Trône', fr: 'Coupe du Trône', ar: 'كأس العرش' },
 
   // ── Africa ──
   6: { fr: 'CAN', ar: 'كأس أمم إفريقيا' },

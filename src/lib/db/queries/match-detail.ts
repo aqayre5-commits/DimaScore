@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { eq, and, asc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
@@ -55,10 +56,11 @@ export interface MatchDetail {
   seasonYear: number;
 }
 
-export async function getMatchDetail(
+export const getMatchDetail = cache(async function getMatchDetail(
   db: NeonHttpDatabase<typeof schema>,
   fixtureId: number,
 ): Promise<MatchDetail | null> {
+  // Single query: fixture + competition + venue (LEFT JOIN)
   const rows = await db
     .select({
       id: schema.fixtures.id,
@@ -80,16 +82,21 @@ export async function getMatchDetail(
       awayScoreEt: schema.fixtures.awayScoreEt,
       homeScorePen: schema.fixtures.homeScorePen,
       awayScorePen: schema.fixtures.awayScorePen,
-      venueId: schema.fixtures.venueId,
       seasonYear: schema.fixtures.seasonYear,
       compId: schema.competitions.id,
       compSlug: schema.competitions.slug,
       compName: schema.competitions.name,
       compCountryCode: schema.competitions.countryCode,
       compLogoUrl: schema.competitions.logoUrl,
+      venueId: schema.venues.id,
+      venueName: schema.venues.name,
+      venueCity: schema.venues.city,
+      venueCapacity: schema.venues.capacity,
+      venueImageUrl: schema.venues.imageUrl,
     })
     .from(schema.fixtures)
     .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+    .leftJoin(schema.venues, eq(schema.fixtures.venueId, schema.venues.id))
     .where(eq(schema.fixtures.id, fixtureId))
     .limit(1);
 
@@ -123,23 +130,15 @@ export async function getMatchDetail(
     }
   }
 
-  // Hydrate venue
-  let venue: MatchDetail['venue'] = null;
-  if (row.venueId != null) {
-    const venueRows = await db
-      .select({
-        id: schema.venues.id,
-        name: schema.venues.name,
-        city: schema.venues.city,
-        capacity: schema.venues.capacity,
-        imageUrl: schema.venues.imageUrl,
-      })
-      .from(schema.venues)
-      .where(eq(schema.venues.id, row.venueId))
-      .limit(1);
-
-    if (venueRows.length > 0) venue = venueRows[0];
-  }
+  const venue: MatchDetail['venue'] = row.venueId
+    ? {
+        id: row.venueId,
+        name: row.venueName,
+        city: row.venueCity,
+        capacity: row.venueCapacity,
+        imageUrl: row.venueImageUrl,
+      }
+    : null;
 
   return {
     id: row.id,
@@ -171,7 +170,7 @@ export async function getMatchDetail(
     venue,
     seasonYear: row.seasonYear,
   };
-}
+});
 
 // ── Match events ──
 
@@ -558,38 +557,23 @@ export async function getNextFixtures(
   awayTeamId: number,
   excludeFixtureId: number,
 ): Promise<NextFixture[]> {
-  const rows = await db.execute(sql`
-    WITH ranked AS (
-      SELECT
-        f.id,
-        f.kickoff_at,
-        f.home_team_id,
-        f.away_team_id,
-        c.name AS comp_name,
-        c.logo_url AS comp_logo,
-        ROW_NUMBER() OVER (
-          PARTITION BY CASE
-            WHEN f.home_team_id = ${homeTeamId} OR f.away_team_id = ${homeTeamId} THEN ${homeTeamId}
-            ELSE ${awayTeamId}
-          END
-          ORDER BY f.kickoff_at ASC
-        ) AS rn
+  // Two simple queries in parallel instead of one expensive window function
+  const nextForTeam = (teamId: number) =>
+    db.execute(sql`
+      SELECT f.id, f.kickoff_at, f.home_team_id, f.away_team_id,
+             c.name AS comp_name, c.logo_url AS comp_logo
       FROM fixtures f
       INNER JOIN competitions c ON c.id = f.competition_id
       WHERE f.status_code = 'NS'
         AND f.kickoff_at > NOW()
         AND f.id != ${excludeFixtureId}
-        AND (
-          f.home_team_id IN (${homeTeamId}, ${awayTeamId})
-          OR f.away_team_id IN (${homeTeamId}, ${awayTeamId})
-        )
-    )
-    SELECT * FROM ranked WHERE rn = 1
-  `);
+        AND (f.home_team_id = ${teamId} OR f.away_team_id = ${teamId})
+      ORDER BY f.kickoff_at ASC
+      LIMIT 1
+    `);
 
-  if (rows.rows.length === 0) return [];
+  const [homeRes, awayRes] = await Promise.all([nextForTeam(homeTeamId), nextForTeam(awayTeamId)]);
 
-  // Collect all team IDs we need to hydrate
   type RawRow = {
     id: number;
     kickoff_at: string;
@@ -597,13 +581,18 @@ export async function getNextFixtures(
     away_team_id: number;
     comp_name: Record<string, string>;
     comp_logo: string | null;
-    rn: number;
   };
-  const raw = rows.rows as RawRow[];
+  const raw: { row: RawRow; ourTeamId: number }[] = [];
+  if (homeRes.rows.length > 0) raw.push({ row: homeRes.rows[0] as RawRow, ourTeamId: homeTeamId });
+  if (awayRes.rows.length > 0) raw.push({ row: awayRes.rows[0] as RawRow, ourTeamId: awayTeamId });
+
+  if (raw.length === 0) return [];
+
+  // Hydrate opponent teams
   const teamIds = new Set<number>();
-  for (const r of raw) {
-    teamIds.add(r.home_team_id);
-    teamIds.add(r.away_team_id);
+  for (const { row } of raw) {
+    teamIds.add(row.home_team_id);
+    teamIds.add(row.away_team_id);
   }
 
   const teamsMap = new Map<number, { name: Record<string, string>; logoUrl: string | null }>();
@@ -615,16 +604,11 @@ export async function getNextFixtures(
     for (const t of teams) teamsMap.set(t.id, { name: t.name, logoUrl: t.logoUrl });
   }
 
-  const results: NextFixture[] = [];
-  for (const r of raw) {
-    // Determine which "our" team this fixture belongs to
-    const isForHome = r.home_team_id === homeTeamId || r.away_team_id === homeTeamId;
-    const ourTeamId = isForHome ? homeTeamId : awayTeamId;
+  return raw.map(({ row: r, ourTeamId }) => {
     const isOurTeamHome = r.home_team_id === ourTeamId;
     const opponentId = isOurTeamHome ? r.away_team_id : r.home_team_id;
     const opponent = teamsMap.get(opponentId);
-
-    results.push({
+    return {
       id: r.id,
       kickoffAt: new Date(r.kickoff_at),
       teamId: ourTeamId,
@@ -633,8 +617,6 @@ export async function getNextFixtures(
       competitionName: r.comp_name,
       competitionLogoUrl: r.comp_logo,
       isHome: isOurTeamHome,
-    });
-  }
-
-  return results;
+    };
+  });
 }

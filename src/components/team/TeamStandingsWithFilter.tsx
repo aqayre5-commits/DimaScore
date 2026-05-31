@@ -13,6 +13,7 @@ interface TeamStandingsWithFilterProps {
   standingsByCompSeason: Record<string, StandingRow[]>;
   highlightTeamId: number;
   locale: Locale;
+  defaultCompetitionId?: number;
 }
 
 export function TeamStandingsWithFilter({
@@ -21,9 +22,14 @@ export function TeamStandingsWithFilter({
   standingsByCompSeason,
   highlightTeamId,
   locale,
+  defaultCompetitionId,
 }: TeamStandingsWithFilterProps) {
   const t = useTranslations('teamPage');
-  const [activeCompId, setActiveCompId] = useState<number>(competitions[0]?.id ?? 0);
+  const initialCompId =
+    defaultCompetitionId && competitions.some((c) => c.id === defaultCompetitionId)
+      ? defaultCompetitionId
+      : (competitions[0]?.id ?? 0);
+  const [activeCompId, setActiveCompId] = useState<number>(initialCompId);
   const [activeSeason, setActiveSeason] = useState<number>(seasons[0] ?? 0);
 
   if (competitions.length === 0) {

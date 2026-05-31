@@ -46,7 +46,7 @@ const HOMEPAGE_FR: AboutContent = {
       blocks: [
         {
           type: 'prose',
-          text: 'La Coupe du Monde FIFA 2026 r\u00e9unit 48 \u00e9quipes aux \u00c9tats-Unis, au Canada et au Mexique \u2014 la premi\u00e8re \u00e9dition dans ce format \u00e9largi. Phase de groupes\u202f: 12 groupes de 4 \u00e9quipes, les 2 premiers de chaque groupe et les 8 meilleurs troisi\u00e8mes se qualifient pour les 32es de finale. La comp\u00e9tition se d\u00e9roule du 11 juin au 19 juillet 2026. Le Maroc est dans le Groupe C avec l\u2019Argentine, l\u2019Arabie saoudite et l\u2019\u00c9gypte.',
+          text: 'La Coupe du Monde FIFA 2026 r\u00e9unit 48 \u00e9quipes aux \u00c9tats-Unis, au Canada et au Mexique \u2014 la premi\u00e8re \u00e9dition dans ce format \u00e9largi. Phase de groupes\u202f: 12 groupes de 4 \u00e9quipes, les 2 premiers de chaque groupe et les 8 meilleurs troisi\u00e8mes se qualifient pour les 32es de finale. La comp\u00e9tition se d\u00e9roule du 11 juin au 19 juillet 2026. Le Maroc est dans le Groupe C avec le Br\u00e9sil, Ha\u00efti et l\u2019\u00c9cosse.',
         },
       ],
     },
@@ -145,7 +145,7 @@ const HOMEPAGE_EN: AboutContent = {
       blocks: [
         {
           type: 'prose',
-          text: 'The 2026 FIFA World Cup brings 48 teams to the United States, Canada and Mexico \u2014 the first edition in this expanded format. Group stage: 12 groups of 4 teams; the top 2 from each group and the 8 best third-placed teams advance to the Round of 32. The tournament runs from June 11 to July 19, 2026. Morocco is in Group C alongside Argentina, Saudi Arabia and Egypt.',
+          text: 'The 2026 FIFA World Cup brings 48 teams to the United States, Canada and Mexico \u2014 the first edition in this expanded format. Group stage: 12 groups of 4 teams; the top 2 from each group and the 8 best third-placed teams advance to the Round of 32. The tournament runs from June 11 to July 19, 2026. Morocco is in Group C alongside Brazil, Haiti and Scotland.',
         },
       ],
     },
@@ -246,7 +246,7 @@ const HOMEPAGE_AR: AboutContent = {
       blocks: [
         {
           type: 'prose',
-          text: '\u062a\u062c\u0645\u0639 \u0643\u0623\u0633 \u0627\u0644\u0639\u0627\u0644\u0645 \u0641\u064a\u0641\u0627 2026 48 \u0645\u0646\u062a\u062e\u0628\u064b\u0627 \u0641\u064a \u0627\u0644\u0648\u0644\u0627\u064a\u0627\u062a \u0627\u0644\u0645\u062a\u062d\u062f\u0629 \u0648\u0643\u0646\u062f\u0627 \u0648\u0627\u0644\u0645\u0643\u0633\u064a\u0643 \u2014 \u0623\u0648\u0644 \u0646\u0633\u062e\u0629 \u0628\u0647\u0630\u0627 \u0627\u0644\u0634\u0643\u0644 \u0627\u0644\u0645\u0648\u0633\u0639. \u0645\u0631\u062d\u0644\u0629 \u0627\u0644\u0645\u062c\u0645\u0648\u0639\u0627\u062a: 12 \u0645\u062c\u0645\u0648\u0639\u0629 \u0645\u0646 4 \u0641\u0631\u0642\u060c \u064a\u062a\u0623\u0647\u0644 \u0627\u0644\u0623\u0648\u0644\u0627\u0646 \u0645\u0646 \u0643\u0644 \u0645\u062c\u0645\u0648\u0639\u0629 \u0648\u0623\u0641\u0636\u0644 8 \u0641\u0631\u0642 \u062b\u0627\u0644\u062b\u0629 \u0644\u062f\u0648\u0631 \u0627\u0644\u064032. \u062a\u0642\u0627\u0645 \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0645\u0646 11 \u064a\u0648\u0646\u064a\u0648 \u0625\u0644\u0649 19 \u064a\u0648\u0644\u064a\u0648 2026. \u0627\u0644\u0645\u063a\u0631\u0628 \u0641\u064a \u0627\u0644\u0645\u062c\u0645\u0648\u0639\u0629 C \u0645\u0639 \u0627\u0644\u0623\u0631\u062c\u0646\u062a\u064a\u0646 \u0648\u0627\u0644\u0633\u0639\u0648\u062f\u064a\u0629 \u0648\u0645\u0635\u0631.',
+          text: '\u062a\u062c\u0645\u0639 \u0643\u0623\u0633 \u0627\u0644\u0639\u0627\u0644\u0645 \u0641\u064a\u0641\u0627 2026 48 \u0645\u0646\u062a\u062e\u0628\u064b\u0627 \u0641\u064a \u0627\u0644\u0648\u0644\u0627\u064a\u0627\u062a \u0627\u0644\u0645\u062a\u062d\u062f\u0629 \u0648\u0643\u0646\u062f\u0627 \u0648\u0627\u0644\u0645\u0643\u0633\u064a\u0643 \u2014 \u0623\u0648\u0644 \u0646\u0633\u062e\u0629 \u0628\u0647\u0630\u0627 \u0627\u0644\u0634\u0643\u0644 \u0627\u0644\u0645\u0648\u0633\u0639. \u0645\u0631\u062d\u0644\u0629 \u0627\u0644\u0645\u062c\u0645\u0648\u0639\u0627\u062a: 12 \u0645\u062c\u0645\u0648\u0639\u0629 \u0645\u0646 4 \u0641\u0631\u0642\u060c \u064a\u062a\u0623\u0647\u0644 \u0627\u0644\u0623\u0648\u0644\u0627\u0646 \u0645\u0646 \u0643\u0644 \u0645\u062c\u0645\u0648\u0639\u0629 \u0648\u0623\u0641\u0636\u0644 8 \u0641\u0631\u0642 \u062b\u0627\u0644\u062b\u0629 \u0644\u062f\u0648\u0631 \u0627\u0644\u064032. \u062a\u0642\u0627\u0645 \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0645\u0646 11 \u064a\u0648\u0646\u064a\u0648 \u0625\u0644\u0649 19 \u064a\u0648\u0644\u064a\u0648 2026. \u0627\u0644\u0645\u063a\u0631\u0628 \u0641\u064a \u0627\u0644\u0645\u062c\u0645\u0648\u0639\u0629 C \u0645\u0639 \u0627\u0644\u0628\u0631\u0627\u0632\u064a\u0644 \u0648\u0647\u0627\u064a\u062a\u064a \u0648\u0627\u0633\u0643\u062a\u0644\u0646\u062f\u0627.',
         },
       ],
     },

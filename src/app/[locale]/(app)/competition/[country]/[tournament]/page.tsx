@@ -862,6 +862,7 @@ async function renderLeaguePage(
             teamsCount={new Set(standings.map((s) => s.teamId).filter(Boolean)).size}
             matchesCount={fixtures.length}
             totalRounds={rounds.length}
+            currentRound={currentRound}
           />
         }
         leftRail={

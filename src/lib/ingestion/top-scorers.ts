@@ -53,7 +53,9 @@ export async function syncTopScorers(
           schema.playerSeasonStats.competitionId,
           schema.playerSeasonStats.seasonYear,
         ],
-        set: { stats: row.stats },
+        set: {
+          stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
+        },
       });
     updated++;
   }

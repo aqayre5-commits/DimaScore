@@ -163,6 +163,7 @@ export default async function TeamPage({ params }: PageProps) {
           standingsByCompSeason={allStandings.standingsByCompSeason}
           highlightTeamId={team.id}
           locale={typedLocale}
+          defaultCompetitionId={primaryComp?.id}
         />
       ),
     },

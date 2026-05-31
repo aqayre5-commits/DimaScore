@@ -52,6 +52,7 @@ interface LeaguePageHeaderProps {
   teamsCount?: number;
   matchesCount?: number;
   totalRounds?: number;
+  currentRound?: number | null;
 }
 
 export function LeaguePageHeader({
@@ -64,6 +65,7 @@ export function LeaguePageHeader({
   teamsCount,
   matchesCount,
   totalRounds,
+  currentRound,
 }: LeaguePageHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -90,7 +92,16 @@ export function LeaguePageHeader({
       ? [{ icon: CalendarDays, value: matchesCount, label: t('matchesCount') }]
       : []),
     ...(totalRounds && totalRounds > 0
-      ? [{ icon: LayoutGrid, value: totalRounds, label: t('roundsCount') }]
+      ? [
+          {
+            icon: LayoutGrid,
+            value:
+              currentRound && currentRound < totalRounds
+                ? `${currentRound}/${totalRounds}`
+                : totalRounds,
+            label: t('roundsCount'),
+          },
+        ]
       : []),
   ];
 

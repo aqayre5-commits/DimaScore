@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql, inArray } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { escapeLikePattern } from '@/lib/utils/sql';
@@ -141,7 +141,7 @@ export async function searchAll(
         logoUrl: schema.teams.logoUrl,
       })
       .from(schema.teams)
-      .where(sql`${schema.teams.id} = ANY(${teamIds})`);
+      .where(inArray(schema.teams.id, teamIds));
 
     for (const t of teamRows) teamMap.set(t.id, { name: t.name, logoUrl: t.logoUrl });
   }
