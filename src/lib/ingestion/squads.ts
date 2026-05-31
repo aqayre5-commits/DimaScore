@@ -35,27 +35,25 @@ export async function syncSquad(
   const inserted = 0;
   let updated = 0;
 
-  await db.transaction(async (tx) => {
-    for (const p of players) {
-      const row = mapSquadPlayerToInsert(p, params.teamId, params.isWomen);
-      await tx
-        .insert(schema.players)
-        .values(row)
-        .onConflictDoUpdate({
-          target: schema.players.id,
-          set: {
-            slug: row.slug,
-            name: row.name,
-            photoUrl: row.photoUrl,
-            currentTeamId: row.currentTeamId,
-            position: row.position,
-            shirtNumber: row.shirtNumber,
-            isWomen: row.isWomen,
-          },
-        });
-      updated++;
-    }
-  });
+  for (const p of players) {
+    const row = mapSquadPlayerToInsert(p, params.teamId, params.isWomen);
+    await db
+      .insert(schema.players)
+      .values(row)
+      .onConflictDoUpdate({
+        target: schema.players.id,
+        set: {
+          slug: row.slug,
+          name: row.name,
+          photoUrl: row.photoUrl,
+          currentTeamId: row.currentTeamId,
+          position: row.position,
+          shirtNumber: row.shirtNumber,
+          isWomen: row.isWomen,
+        },
+      });
+    updated++;
+  }
 
   return { inserted, updated };
 }
