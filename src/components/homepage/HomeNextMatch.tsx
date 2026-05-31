@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Play } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { formatKickoff } from '@/lib/utils/date';
 import type { RightRailFixture, GoalEvent } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -15,21 +16,6 @@ interface Props {
     liveNow: string;
     viewMatch: string;
   };
-}
-
-function formatKickoff(date: Date, locale: string): string {
-  return (
-    date.toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'fr' ? 'fr-FR' : 'en-GB', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    }) +
-    ' · ' +
-    date.toLocaleTimeString(locale === 'ar' ? 'ar-MA' : locale === 'fr' ? 'fr-FR' : 'en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  );
 }
 
 const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];

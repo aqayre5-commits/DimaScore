@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { getMatchState, isLive as isLiveStatus } from '@/lib/match-status';
+import { formatShortDate, formatMatchTime } from '@/lib/utils/date';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -29,14 +30,6 @@ function resolveTeamName(
     team.code ??
     '\u2014'
   );
-}
-
-function formatMatchDate(date: Date): string {
-  return `${date.getDate()}/${date.getMonth() + 1}`;
-}
-
-function formatMatchTime(date: Date): string {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
 type Tab = 'upcoming' | 'results';
@@ -242,7 +235,7 @@ function MatchRow({
     >
       {/* Date */}
       <div className="w-10 shrink-0 text-center text-[10px] leading-tight text-text-tertiary tabular-nums">
-        {formatMatchDate(f.kickoffAt)}
+        {formatShortDate(f.kickoffAt.toISOString(), locale)}
       </div>
 
       {/* Teams */}
@@ -312,7 +305,9 @@ function MatchRow({
         ) : isDone ? (
           <span className="text-text-tertiary">FT</span>
         ) : (
-          <span className="text-text-secondary tabular-nums">{formatMatchTime(f.kickoffAt)}</span>
+          <span className="text-text-secondary tabular-nums">
+            {formatMatchTime(f.kickoffAt, locale)}
+          </span>
         )}
       </div>
     </a>

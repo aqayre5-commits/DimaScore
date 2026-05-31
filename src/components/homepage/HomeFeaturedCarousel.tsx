@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { formatFeaturedDate } from '@/lib/utils/date';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -16,12 +17,6 @@ interface Props {
     expectedAttendance: string;
   };
 }
-
-const INTL_LOCALE: Record<Locale, string> = {
-  ar: 'ar-MA',
-  fr: 'fr-FR',
-  en: 'en-GB',
-};
 
 function useCountdown(kickoffAt: Date) {
   const [now, setNow] = useState(() => new Date());
@@ -38,20 +33,6 @@ function useCountdown(kickoffAt: Date) {
     hours: Math.floor((totalMin % 1440) / 60),
     minutes: totalMin % 60,
   };
-}
-
-function formatFeaturedDate(date: Date, locale: Locale): string {
-  const intlLocale = INTL_LOCALE[locale];
-  const weekday = new Intl.DateTimeFormat(intlLocale, { weekday: 'short' }).format(new Date(date));
-  const day = new Intl.DateTimeFormat(intlLocale, { day: 'numeric' }).format(new Date(date));
-  const month = new Intl.DateTimeFormat(intlLocale, { month: 'long' }).format(new Date(date));
-  const time = new Intl.DateTimeFormat(intlLocale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).format(new Date(date));
-
-  return `${weekday} ${day} ${month} · ${time}`.toUpperCase();
 }
 
 export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {

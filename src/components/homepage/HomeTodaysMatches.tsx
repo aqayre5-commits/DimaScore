@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { formatMatchTime, formatDateLabel } from '@/lib/utils/date';
 import type { TopMatchDateGroup } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -16,25 +17,6 @@ interface Props {
 }
 
 const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
-
-function formatTime(date: Date, locale: string): string {
-  return date.toLocaleTimeString(locale === 'ar' ? 'ar-MA' : locale === 'fr' ? 'fr-FR' : 'en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function formatDateLabel(dateKey: string, locale: string, todayLabel: string): string {
-  const todayKey = new Date().toISOString().slice(0, 10);
-  if (dateKey === todayKey) return todayLabel;
-
-  const d = new Date(dateKey + 'T12:00:00Z');
-  return d.toLocaleDateString(locale === 'ar' ? 'ar-MA' : locale === 'fr' ? 'fr-FR' : 'en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
-}
 
 export function HomeTopMatches({ groups, locale, labels }: Props) {
   if (groups.length === 0) return null;
@@ -85,7 +67,9 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                         {f.statusCode === 'HT' ? 'HT' : `${f.minute ?? ''}'`}
                       </span>
                     ) : (
-                      <span className="text-text-secondary">{formatTime(f.kickoffAt, locale)}</span>
+                      <span className="text-text-secondary">
+                        {formatMatchTime(f.kickoffAt, locale)}
+                      </span>
                     )}
                   </div>
 

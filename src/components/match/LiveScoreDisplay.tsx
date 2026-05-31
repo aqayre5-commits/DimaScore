@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useLiveMatch } from '@/components/match/MatchLiveUpdater';
+import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import type { Locale } from '@/lib/i18n/config';
 
 const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
@@ -26,18 +27,6 @@ const INTERRUPTED_LABEL_KEY: Record<string, string> = {
   AWD: 'awarded',
   WO: 'walkover',
 };
-
-function formatTime(date: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(date);
-}
-
-function formatDate(date: Date, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-}
 
 interface LiveScoreDisplayProps {
   statusCode: string;
@@ -90,9 +79,11 @@ export function LiveScoreDisplay({
         <>
           <p className="text-2xl font-bold tabular-nums text-text-tertiary">&ndash;</p>
           <p className="text-sm font-semibold tabular-nums text-text-primary">
-            {formatTime(kickoff, locale)}
+            {formatMatchTime(kickoff, locale)}
           </p>
-          <p className="text-xs text-text-secondary">{formatDate(kickoff, locale)}</p>
+          <p className="text-xs text-text-secondary">
+            {formatMatchDate(kickoff, locale, { day: 'numeric', month: 'short', year: 'numeric' })}
+          </p>
         </>
       )}
 

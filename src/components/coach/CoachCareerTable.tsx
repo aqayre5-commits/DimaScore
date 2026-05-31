@@ -1,14 +1,9 @@
 import { useTranslations } from 'next-intl';
+import { formatMonthYear } from '@/lib/utils/date';
 import type { CareerEntry } from '@/lib/db/queries/coach';
 
 interface CoachCareerTableProps {
   career: CareerEntry[];
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 }
 
 export function CoachCareerTable({ career }: CoachCareerTableProps) {
@@ -68,9 +63,9 @@ export function CoachCareerTable({ career }: CoachCareerTableProps) {
                     <span className="font-medium text-text-primary">{entry.team.name}</span>
                   </div>
                 </td>
-                <td className="px-4 py-2.5 text-text-secondary">{formatDate(entry.start)}</td>
+                <td className="px-4 py-2.5 text-text-secondary">{formatMonthYear(entry.start)}</td>
                 <td className="px-4 py-2.5 text-text-secondary">
-                  {entry.end ? formatDate(entry.end) : t('present')}
+                  {entry.end ? formatMonthYear(entry.end) : t('present')}
                 </td>
               </tr>
             ))}
