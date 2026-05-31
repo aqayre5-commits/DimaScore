@@ -3,6 +3,8 @@ import createMiddleware from 'next-intl/middleware';
 import { routing } from '@/lib/i18n/routing';
 import { getAdminSession } from '@/lib/auth/admin';
 
+export const runtime = 'nodejs';
+
 const intlMiddleware = createMiddleware(routing);
 
 export function middleware(request: NextRequest) {
