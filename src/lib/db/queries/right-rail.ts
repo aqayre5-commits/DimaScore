@@ -640,61 +640,67 @@ export async function getRightRailTopScorers(
   // Priority order: Botola Pro (200) > WC (1) > AFCON (6) > UCL (2) > PL (39)
   const priorityComps = [200, 1, 6, 2, 39];
 
-  // Get current seasons
-  const currentSeasons = await db
-    .select({
-      competitionId: schema.seasons.competitionId,
-      year: schema.seasons.year,
-    })
-    .from(schema.seasons)
-    .where(eq(schema.seasons.isCurrent, true));
+  // Single query: fetch top scorers across all priority competitions at once
+  const rows = await db.execute(
+    sql`SELECT
+          pss.competition_id,
+          pss.player_id,
+          COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
+          p.slug AS player_slug,
+          p.photo_url,
+          COALESCE(t.name->>'en', 'Unknown') AS team_name,
+          t.logo_url AS team_logo_url,
+          (pss.stats->>'goals')::int AS goals,
+          c.name AS comp_name,
+          ROW_NUMBER() OVER (PARTITION BY pss.competition_id ORDER BY (pss.stats->>'goals')::int DESC) AS rn
+        FROM player_season_stats pss
+        JOIN seasons s ON s.competition_id = pss.competition_id
+          AND s.year = pss.season_year
+          AND s.is_current = true
+        JOIN players p ON p.id = pss.player_id
+        LEFT JOIN teams t ON t.id = pss.team_id
+        JOIN competitions c ON c.id = pss.competition_id
+        WHERE pss.competition_id IN (${sql.join(
+          priorityComps.map((id) => sql`${id}`),
+          sql`, `,
+        )})
+          AND (pss.stats->>'goals')::int > 0
+        ORDER BY pss.competition_id, goals DESC`,
+  );
 
-  const seasonMap = new Map(currentSeasons.map((s) => [s.competitionId, s.year]));
+  if (rows.rows.length === 0) return { competitionName: {}, scorers: [] };
+
+  type RawRow = {
+    competition_id: string;
+    player_id: string;
+    player_name: string;
+    player_slug: string;
+    photo_url: string | null;
+    team_name: string;
+    team_logo_url: string | null;
+    goals: string;
+    comp_name: Record<string, string>;
+    rn: string;
+  };
+
+  // Group by competition, pick first priority comp that has results
+  const byComp = new Map<number, { compName: Record<string, string>; scorers: RawRow[] }>();
+  for (const r of rows.rows as RawRow[]) {
+    if (Number(r.rn) > limit) continue;
+    const compId = Number(r.competition_id);
+    if (!byComp.has(compId)) {
+      byComp.set(compId, { compName: r.comp_name, scorers: [] });
+    }
+    byComp.get(compId)!.scorers.push(r);
+  }
 
   for (const compId of priorityComps) {
-    const year = seasonMap.get(compId);
-    if (!year) continue;
-
-    const rows = await db.execute(
-      sql`SELECT
-            pss.player_id,
-            COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
-            p.slug AS player_slug,
-            p.photo_url,
-            COALESCE(t.name->>'en', 'Unknown') AS team_name,
-            t.logo_url AS team_logo_url,
-            (pss.stats->>'goals')::int AS goals
-          FROM player_season_stats pss
-          JOIN players p ON p.id = pss.player_id
-          LEFT JOIN teams t ON t.id = pss.team_id
-          WHERE pss.competition_id = ${compId}
-            AND pss.season_year = ${year}
-            AND (pss.stats->>'goals')::int > 0
-          ORDER BY goals DESC
-          LIMIT ${limit}`,
-    );
-
-    if (rows.rows.length === 0) continue;
-
-    const compInfo = await db
-      .select({ name: schema.competitions.name })
-      .from(schema.competitions)
-      .where(eq(schema.competitions.id, compId))
-      .limit(1);
+    const entry = byComp.get(compId);
+    if (!entry || entry.scorers.length === 0) continue;
 
     return {
-      competitionName: compInfo[0]?.name ?? {},
-      scorers: (
-        rows.rows as {
-          player_id: string;
-          player_name: string;
-          player_slug: string;
-          photo_url: string | null;
-          team_name: string;
-          team_logo_url: string | null;
-          goals: string;
-        }[]
-      ).map((r) => ({
+      competitionName: entry.compName,
+      scorers: entry.scorers.map((r) => ({
         playerId: Number(r.player_id),
         playerName: r.player_name,
         playerSlug: r.player_slug,
