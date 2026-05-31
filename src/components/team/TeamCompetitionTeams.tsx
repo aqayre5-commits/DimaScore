@@ -49,7 +49,7 @@ export function TeamCompetitionTeams({
               key={team.id}
               href={`/${locale}/equipe/${team.slug}`}
               className={`flex flex-col items-center gap-1.5 bg-bg-surface px-2 py-3.5 transition-colors hover:bg-bg-surface-2 ${
-                isHighlighted ? 'ring-2 ring-inset ring-accent-green/60 bg-accent-green/[0.06]' : ''
+                isHighlighted ? 'ring-2 ring-inset ring-accent-azure/60 bg-accent-azure/[0.06]' : ''
               }`}
             >
               {team.logoUrl ? (

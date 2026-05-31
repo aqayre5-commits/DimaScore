@@ -538,3 +538,103 @@ export async function getMatchCoverage(
     predictions: r.predictions ?? false,
   };
 }
+
+// ── Next fixtures for teams ──
+
+export interface NextFixture {
+  id: number;
+  kickoffAt: Date;
+  teamId: number;
+  opponentName: Record<string, string>;
+  opponentLogoUrl: string | null;
+  competitionName: Record<string, string>;
+  competitionLogoUrl: string | null;
+  isHome: boolean;
+}
+
+export async function getNextFixtures(
+  db: NeonHttpDatabase<typeof schema>,
+  homeTeamId: number,
+  awayTeamId: number,
+  excludeFixtureId: number,
+): Promise<NextFixture[]> {
+  const rows = await db.execute(sql`
+    WITH ranked AS (
+      SELECT
+        f.id,
+        f.kickoff_at,
+        f.home_team_id,
+        f.away_team_id,
+        c.name AS comp_name,
+        c.logo_url AS comp_logo,
+        ROW_NUMBER() OVER (
+          PARTITION BY CASE
+            WHEN f.home_team_id = ${homeTeamId} OR f.away_team_id = ${homeTeamId} THEN ${homeTeamId}
+            ELSE ${awayTeamId}
+          END
+          ORDER BY f.kickoff_at ASC
+        ) AS rn
+      FROM fixtures f
+      INNER JOIN competitions c ON c.id = f.competition_id
+      WHERE f.status_code = 'NS'
+        AND f.kickoff_at > NOW()
+        AND f.id != ${excludeFixtureId}
+        AND (
+          f.home_team_id IN (${homeTeamId}, ${awayTeamId})
+          OR f.away_team_id IN (${homeTeamId}, ${awayTeamId})
+        )
+    )
+    SELECT * FROM ranked WHERE rn = 1
+  `);
+
+  if (rows.rows.length === 0) return [];
+
+  // Collect all team IDs we need to hydrate
+  type RawRow = {
+    id: number;
+    kickoff_at: string;
+    home_team_id: number;
+    away_team_id: number;
+    comp_name: Record<string, string>;
+    comp_logo: string | null;
+    rn: number;
+  };
+  const raw = rows.rows as RawRow[];
+  const teamIds = new Set<number>();
+  for (const r of raw) {
+    teamIds.add(r.home_team_id);
+    teamIds.add(r.away_team_id);
+  }
+
+  const teamsMap = new Map<number, { name: Record<string, string>; logoUrl: string | null }>();
+  if (teamIds.size > 0) {
+    const teams = await db
+      .select({ id: schema.teams.id, name: schema.teams.name, logoUrl: schema.teams.logoUrl })
+      .from(schema.teams)
+      .where(inArray(schema.teams.id, [...teamIds]));
+    for (const t of teams) teamsMap.set(t.id, { name: t.name, logoUrl: t.logoUrl });
+  }
+
+  const results: NextFixture[] = [];
+  for (const r of raw) {
+    // Determine which "our" team this fixture belongs to
+    const isForHome = r.home_team_id === homeTeamId || r.away_team_id === homeTeamId;
+    const ourTeamId = isForHome ? homeTeamId : awayTeamId;
+    const isOurTeamHome = r.home_team_id === ourTeamId;
+    const opponentId = isOurTeamHome ? r.away_team_id : r.home_team_id;
+    const opponent = teamsMap.get(opponentId);
+
+    results.push({
+      id: r.id,
+      kickoffAt: new Date(r.kickoff_at),
+      teamId: ourTeamId,
+      opponentName: opponent?.name ?? { en: 'TBD' },
+      opponentLogoUrl: opponent?.logoUrl ?? null,
+      competitionName: r.comp_name,
+      competitionLogoUrl: r.comp_logo,
+      isHome: isOurTeamHome,
+    });
+  }
+
+  return results;
+}

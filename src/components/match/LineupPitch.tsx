@@ -1,6 +1,8 @@
 import { useTranslations } from 'next-intl';
-import type { MatchLineup, LineupPlayer } from '@/lib/db/queries/match-detail';
+import type { MatchLineup, LineupPlayer, MatchEvent } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
+
+type BadgeType = 'goal' | 'ownGoal' | 'yellowCard' | 'redCard' | 'secondYellow' | 'subOut';
 
 interface LineupPitchProps {
   homeLineup: MatchLineup;
@@ -9,6 +11,52 @@ interface LineupPitchProps {
   awayTeamName: string;
   locale: Locale;
   pitchOnly?: boolean;
+  events?: MatchEvent[];
+}
+
+/** Build a map of playerId → badge types from match events. */
+function buildBadgeMap(events: MatchEvent[]): Map<number, BadgeType[]> {
+  const map = new Map<number, BadgeType[]>();
+
+  function add(playerId: number, badge: BadgeType) {
+    const existing = map.get(playerId) ?? [];
+    // Dedupe same badge type
+    if (!existing.includes(badge)) existing.push(badge);
+    map.set(playerId, existing);
+  }
+
+  for (const e of events) {
+    const type = e.type?.toLowerCase() ?? '';
+    const detail = (e.detail ?? '').toLowerCase();
+    const pid = e.player?.id;
+
+    if (type === 'goal' && pid != null) {
+      if (detail.includes('missed')) continue;
+      if (detail.includes('own goal')) {
+        add(pid, 'ownGoal');
+      } else {
+        add(pid, 'goal');
+      }
+    }
+
+    if (type === 'card' && pid != null) {
+      if (detail.includes('second yellow')) {
+        add(pid, 'secondYellow');
+      } else if (detail.includes('red')) {
+        add(pid, 'redCard');
+      } else {
+        add(pid, 'yellowCard');
+      }
+    }
+
+    if (type === 'subst') {
+      // assist field = player going OUT
+      const outId = e.assist?.id;
+      if (outId != null) add(outId, 'subOut');
+    }
+  }
+
+  return map;
 }
 
 // SVG viewBox matches rendered width (~624px) so 1 SVG unit ≈ 1 screen pixel
@@ -154,6 +202,7 @@ export function LineupPitch({
   awayTeamName,
   locale,
   pitchOnly = false,
+  events = [],
 }: LineupPitchProps) {
   const t = useTranslations('matchDetail');
 
@@ -161,6 +210,7 @@ export function LineupPitch({
 
   const homePositions = computePositions(homeLineup.starters, homeLineup.formation, false);
   const awayPositions = computePositions(awayLineup.starters, awayLineup.formation, true);
+  const badgeMap = events.length > 0 ? buildBadgeMap(events) : new Map<number, BadgeType[]>();
 
   return (
     <div>
@@ -180,12 +230,26 @@ export function LineupPitch({
 
           {/* Home team (left half) */}
           {homePositions.map(({ player, x, y }) => (
-            <PlayerDot key={player.id} x={x} y={y} player={player} variant="home" />
+            <PlayerDot
+              key={player.id}
+              x={x}
+              y={y}
+              player={player}
+              variant="home"
+              badges={badgeMap.get(player.id)}
+            />
           ))}
 
           {/* Away team (right half, offset by HALF_W) */}
           {awayPositions.map(({ player, x, y }) => (
-            <PlayerDot key={player.id} x={x + HALF_W} y={y} player={player} variant="away" />
+            <PlayerDot
+              key={player.id}
+              x={x + HALF_W}
+              y={y}
+              player={player}
+              variant="away"
+              badges={badgeMap.get(player.id)}
+            />
           ))}
         </svg>
       </div>
@@ -266,11 +330,13 @@ function PlayerDot({
   y,
   player,
   variant,
+  badges,
 }: {
   x: number;
   y: number;
   player: LineupPlayer;
   variant: 'home' | 'away';
+  badges?: BadgeType[];
 }) {
   const isHome = variant === 'home';
   const clipId = `clip-${player.id}`;
@@ -331,6 +397,8 @@ function PlayerDot({
           </text>
         </>
       )}
+      {/* Event badges */}
+      {badges && badges.length > 0 && <EventBadges x={x} y={y} badges={badges} />}
       <text
         x={x}
         y={y + PLAYER_R + 13}
@@ -343,6 +411,133 @@ function PlayerDot({
       </text>
     </g>
   );
+}
+
+const BADGE_R = 7;
+
+function EventBadges({ x, y, badges }: { x: number; y: number; badges: BadgeType[] }) {
+  // Position badges at bottom-right of the player circle, stacking leftward
+  return (
+    <>
+      {badges.map((badge, i) => {
+        const bx = x + PLAYER_R - 4 - i * (BADGE_R * 2 + 2);
+        const by = y + PLAYER_R - 4;
+        return <SingleBadge key={badge} cx={bx} cy={by} badge={badge} />;
+      })}
+    </>
+  );
+}
+
+function SingleBadge({ cx, cy, badge }: { cx: number; cy: number; badge: BadgeType }) {
+  switch (badge) {
+    // Football: white ball with black pentagon + seam lines
+    case 'goal':
+      return (
+        <g transform={`translate(${cx},${cy})`}>
+          <circle r={BADGE_R} fill="#1a1a1a" stroke="white" strokeWidth="1.5" />
+          <circle r={5} fill="white" stroke="#555" strokeWidth="0.3" />
+          <path d="M0,-1.8 L1.71,-0.56 L1.06,1.46 L-1.06,1.46 L-1.71,-0.56Z" fill="#222" />
+          <line x1={0} y1={-1.8} x2={0} y2={-4.7} stroke="#333" strokeWidth="0.6" />
+          <line x1={1.71} y1={-0.56} x2={4.5} y2={-1.45} stroke="#333" strokeWidth="0.6" />
+          <line x1={1.06} y1={1.46} x2={2.8} y2={3.8} stroke="#333" strokeWidth="0.6" />
+          <line x1={-1.06} y1={1.46} x2={-2.8} y2={3.8} stroke="#333" strokeWidth="0.6" />
+          <line x1={-1.71} y1={-0.56} x2={-4.5} y2={-1.45} stroke="#333" strokeWidth="0.6" />
+        </g>
+      );
+    // Own goal football: white ball with red pentagon + red seam lines
+    case 'ownGoal':
+      return (
+        <g transform={`translate(${cx},${cy})`}>
+          <circle r={BADGE_R} fill="#1a1a1a" stroke="white" strokeWidth="1.5" />
+          <circle r={5} fill="white" stroke="#888" strokeWidth="0.3" />
+          <path d="M0,-1.8 L1.71,-0.56 L1.06,1.46 L-1.06,1.46 L-1.71,-0.56Z" fill="#dc2626" />
+          <line x1={0} y1={-1.8} x2={0} y2={-4.7} stroke="#dc2626" strokeWidth="0.6" />
+          <line x1={1.71} y1={-0.56} x2={4.5} y2={-1.45} stroke="#dc2626" strokeWidth="0.6" />
+          <line x1={1.06} y1={1.46} x2={2.8} y2={3.8} stroke="#dc2626" strokeWidth="0.6" />
+          <line x1={-1.06} y1={1.46} x2={-2.8} y2={3.8} stroke="#dc2626" strokeWidth="0.6" />
+          <line x1={-1.71} y1={-0.56} x2={-4.5} y2={-1.45} stroke="#dc2626" strokeWidth="0.6" />
+        </g>
+      );
+    // Yellow card: realistic card shape, slight tilt
+    case 'yellowCard':
+      return (
+        <g transform={`translate(${cx},${cy})`}>
+          <circle r={BADGE_R} fill="#1a1a1a" stroke="white" strokeWidth="1.5" />
+          <g transform="rotate(-8)">
+            <rect
+              x={-3}
+              y={-4.5}
+              width={6}
+              height={9}
+              rx={0.6}
+              fill="#fbbf24"
+              stroke="#a16207"
+              strokeWidth="0.5"
+            />
+          </g>
+        </g>
+      );
+    // Red card: realistic card shape, slight tilt
+    case 'redCard':
+      return (
+        <g transform={`translate(${cx},${cy})`}>
+          <circle r={BADGE_R} fill="#1a1a1a" stroke="white" strokeWidth="1.5" />
+          <g transform="rotate(-8)">
+            <rect
+              x={-3}
+              y={-4.5}
+              width={6}
+              height={9}
+              rx={0.6}
+              fill="#dc2626"
+              stroke="#7f1d1d"
+              strokeWidth="0.5"
+            />
+          </g>
+        </g>
+      );
+    // Second yellow: two yellow cards overlapping
+    case 'secondYellow':
+      return (
+        <g transform={`translate(${cx},${cy})`}>
+          <circle r={BADGE_R} fill="#1a1a1a" stroke="white" strokeWidth="1.5" />
+          <g transform="rotate(-15)">
+            <rect
+              x={-3.5}
+              y={-4}
+              width={5.5}
+              height={8}
+              rx={0.5}
+              fill="#fbbf24"
+              stroke="#a16207"
+              strokeWidth="0.4"
+            />
+          </g>
+          <g transform="rotate(8)">
+            <rect
+              x={-2}
+              y={-4}
+              width={5.5}
+              height={8}
+              rx={0.5}
+              fill="#fbbf24"
+              stroke="#a16207"
+              strokeWidth="0.4"
+            />
+          </g>
+        </g>
+      );
+    // Substituted out: red downward arrow
+    case 'subOut':
+      return (
+        <g transform={`translate(${cx},${cy})`}>
+          <circle r={BADGE_R} fill="#1a1a1a" stroke="white" strokeWidth="1.5" />
+          <path d="M0,4 L-3,-1 L-1.2,-1 L-1.2,-4 L1.2,-4 L1.2,-1 L3,-1Z" fill="#ef4444" />
+        </g>
+      );
+    default:
+      return null;
+  }
 }
 
 function SubList({

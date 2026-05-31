@@ -92,7 +92,7 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
     >
       {/* Badge */}
       <div className="absolute start-4 top-4 z-10">
-        <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-green/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-accent-green">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-azure/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-accent-azure">
           ★ {labels.featuredMatch}
         </span>
       </div>
@@ -145,7 +145,7 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
                 onClick={() => goTo(i)}
                 className={`rounded-full transition-all ${
                   i === idx
-                    ? 'h-2 w-5 bg-accent-green'
+                    ? 'h-2 w-5 bg-accent-azure'
                     : 'size-2 bg-border-subtle hover:bg-text-tertiary'
                 }`}
                 aria-label={`Slide ${i + 1}`}
@@ -214,7 +214,7 @@ function CarouselSlide({
 
         {/* Center: VS + date */}
         <div className="flex shrink-0 flex-col items-center gap-2 px-2">
-          <span className="text-3xl font-black tracking-tight text-accent-green">VS</span>
+          <span className="text-3xl font-black tracking-tight text-accent-azure">VS</span>
           <p className="text-xs font-medium tracking-wide text-text-tertiary">
             {formatFeaturedDate(match.kickoffAt, locale)}
           </p>

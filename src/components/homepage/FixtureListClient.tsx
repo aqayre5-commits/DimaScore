@@ -62,7 +62,7 @@ export function FixtureListClient({ sections, locale, todayStr, labels }: Fixtur
               className={cn(
                 'flex w-[calc(100%/7)] shrink-0 flex-col items-center justify-center rounded-lg min-h-[56px] py-1.5 text-xs transition-colors',
                 isSelected
-                  ? 'bg-accent-green text-bg-canvas font-semibold'
+                  ? 'bg-accent-azure text-white font-semibold'
                   : hasMatches
                     ? 'text-text-secondary hover:bg-bg-surface-2'
                     : 'text-text-tertiary/50',

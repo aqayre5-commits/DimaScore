@@ -175,13 +175,13 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
               }}
               className={`relative px-3 py-3 text-sm font-medium transition-colors ${
                 activeTab === td.key
-                  ? 'text-accent-green'
+                  ? 'text-accent-azure'
                   : 'text-text-tertiary hover:text-text-secondary'
               }`}
             >
               {td.label} ({td.count})
               {activeTab === td.key && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent-green" />
+                <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent-azure" />
               )}
             </button>
           ))}
@@ -275,7 +275,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
         <div className="border-t border-border-subtle px-4 py-2.5 text-center">
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="text-sm font-medium text-accent-green transition-colors hover:text-accent-green-bright"
+            className="text-sm font-medium text-accent-azure transition-colors hover:text-accent-azure/80"
           >
             {expanded ? labels.showLess : labels.viewFullSchedule} {expanded ? '\u2191' : '\u2192'}
           </button>

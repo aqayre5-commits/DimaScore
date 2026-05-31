@@ -641,7 +641,17 @@
     "losses": "L",
     "noH2H": "No previous meetings",
     "predictionComingSoon": "Available closer to kick-off",
-    "mediaComingSoon": "Match highlights coming soon"
+    "mediaComingSoon": "Match highlights coming soon",
+    "matchInfo": "Match Info",
+    "competition": "Competition",
+    "date": "Date",
+    "kickOff": "Kick-off",
+    "stadium": "Stadium",
+    "capacity": "Capacity",
+    "round": "Round",
+    "nextMatch": "Next Match",
+    "matchEvents": "Match Events",
+    "seeAllEvents": "See all events"
   },
   "editorialHero": {
     "label": "Editorial highlight",

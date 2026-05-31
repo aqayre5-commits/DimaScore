@@ -10,6 +10,7 @@ import {
   getMatchStatistics,
   getMatchPlayerStats,
   getHeadToHead,
+  getNextFixtures,
 } from '@/lib/db/queries/match-detail';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import {
@@ -19,8 +20,11 @@ import {
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
-import { ScoreHeader } from '@/components/match/ScoreHeader';
+import { ScoreHeader, type GoalScorer } from '@/components/match/ScoreHeader';
 import { EventTimeline } from '@/components/match/EventTimeline';
+import { MatchInfoCard } from '@/components/match/MatchInfoCard';
+import { NextMatchCard } from '@/components/match/NextMatchCard';
+import { MatchEventsCard } from '@/components/match/MatchEventsCard';
 import { LineupPitch } from '@/components/match/LineupPitch';
 import { StatsBars } from '@/components/match/StatsBars';
 import { PlayerRatingsPanel } from '@/components/match/PlayerRatingBadge';
@@ -84,6 +88,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
   // Parallel data fetch
   const [
     t,
+    tBc,
     coverage,
     events,
     lineups,
@@ -91,8 +96,10 @@ export default async function MatchDetailPage({ params }: PageProps) {
     playerStats,
     h2hFixtures,
     { videos: matchVideos },
+    nextFixtures,
   ] = await Promise.all([
     getTranslations({ locale, namespace: 'matchDetail' }),
+    getTranslations({ locale, namespace: 'breadcrumb' }),
     getMatchCoverage(db, match.competition.id, match.seasonYear),
     getMatchEvents(db, fixtureId),
     getMatchLineups(db, fixtureId),
@@ -102,6 +109,9 @@ export default async function MatchDetailPage({ params }: PageProps) {
       ? getHeadToHead(db, homeTeamId, awayTeamId, fixtureId)
       : Promise.resolve([]),
     getMediaVideos(db, { fixtureId, limit: 9 }),
+    homeTeamId > 0 && awayTeamId > 0
+      ? getNextFixtures(db, homeTeamId, awayTeamId, fixtureId)
+      : Promise.resolve([]),
   ]);
 
   const compName = getLocalizedCompetitionName(
@@ -118,7 +128,9 @@ export default async function MatchDetailPage({ params }: PageProps) {
     : null;
 
   const breadcrumbs: BreadcrumbSegment[] = [
+    { label: tBc('football'), href: `/${locale}` },
     { label: compName, href: competitionHref ?? undefined },
+    ...(match.round ? [{ label: match.round }] : []),
     { label: `${home} vs ${away}` },
   ];
 
@@ -140,6 +152,26 @@ export default async function MatchDetailPage({ params }: PageProps) {
   if (hasStats) navSections.push({ id: 'sec-statistics', label: t('stats') });
   if (hasRatings) navSections.push({ id: 'sec-players', label: t('playerRatings') });
 
+  // Extract goal scorers for ScoreHeader display
+  const goalScorers: GoalScorer[] = events
+    .filter((e) => {
+      const type = e.type?.toLowerCase() ?? '';
+      const detail = (e.detail ?? '').toLowerCase();
+      return type === 'goal' && !detail.includes('missed');
+    })
+    .map((e) => {
+      const name = e.player?.name?.[typedLocale] ?? e.player?.name?.['en'] ?? '';
+      const detail = (e.detail ?? '').toLowerCase();
+      return {
+        playerName: name,
+        minute: e.minute,
+        extraMinute: e.extraMinute,
+        isOwnGoal: detail.includes('own goal'),
+        isPenalty: detail.includes('penalty'),
+        teamId: e.teamId,
+      };
+    });
+
   const isLive = LIVE_CODES.has(match.statusCode);
 
   const pageContent = (
@@ -149,78 +181,100 @@ export default async function MatchDetailPage({ params }: PageProps) {
       </div>
 
       <InnerPageShell
-        pageHeader={
-          <ScoreHeader match={match} locale={typedLocale} competitionHref={competitionHref} />
-        }
-        leftRail={<div className="space-y-4">{coverage?.predictions && <PredictionCard />}</div>}
-        center={
-          <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-            {/* ── Lineups (pitch + coaches, no substitutes list) ── */}
-            {hasLineups && homeLineup && awayLineup && (
-              <section id="sec-lineups" className="scroll-mt-14">
-                <LineupPitch
-                  homeLineup={homeLineup}
-                  awayLineup={awayLineup}
-                  homeTeamName={home}
-                  awayTeamName={away}
-                  locale={typedLocale}
-                  pitchOnly
-                />
-              </section>
-            )}
-
-            {/* ── Sticky section nav ── */}
-            {navSections.length > 0 && <MatchSectionNav sections={navSections} />}
-
-            {/* ── Events ── */}
+        leftRail={
+          <div className="space-y-4">
+            <NextMatchCard
+              fixtures={nextFixtures}
+              homeTeamId={homeTeamId}
+              awayTeamId={awayTeamId}
+              homeTeam={match.homeTeam}
+              awayTeam={match.awayTeam}
+              locale={typedLocale}
+            />
             {hasEvents && (
-              <section id="sec-events" className="scroll-mt-14">
-                <SectionHeader label={t('events')} />
-                <EventTimeline events={events} homeTeamId={homeTeamId} locale={typedLocale} />
-              </section>
+              <MatchEventsCard events={events} homeTeamId={homeTeamId} locale={typedLocale} />
             )}
+            {coverage?.predictions && <PredictionCard />}
+          </div>
+        }
+        center={
+          <div className="space-y-4">
+            <ScoreHeader
+              match={match}
+              locale={typedLocale}
+              competitionHref={competitionHref}
+              goalScorers={goalScorers}
+            />
+            <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+              {/* ── Lineups (pitch + coaches, no substitutes list) ── */}
+              {hasLineups && homeLineup && awayLineup && (
+                <section id="sec-lineups" className="scroll-mt-14">
+                  <LineupPitch
+                    homeLineup={homeLineup}
+                    awayLineup={awayLineup}
+                    homeTeamName={home}
+                    awayTeamName={away}
+                    locale={typedLocale}
+                    pitchOnly
+                    events={events}
+                  />
+                </section>
+              )}
 
-            {/* ── Statistics ── */}
-            {hasStats && homeStatData && awayStatData && (
-              <section id="sec-statistics" className="scroll-mt-14">
-                <SectionHeader label={t('stats')} />
-                <StatsBars homeStats={homeStatData} awayStats={awayStatData} />
-              </section>
-            )}
+              {/* ── Sticky section nav ── */}
+              {navSections.length > 0 && <MatchSectionNav sections={navSections} />}
 
-            {/* ── Player Statistics ── */}
-            {hasRatings && (
-              <section id="sec-players" className="scroll-mt-14">
-                <SectionHeader label={t('playerRatings')} />
-                <PlayerRatingsPanel
-                  playerStats={playerStats}
-                  homeTeamId={homeTeamId}
-                  awayTeamId={awayTeamId}
-                  homeTeamName={home}
-                  awayTeamName={away}
-                  locale={typedLocale}
-                />
-              </section>
-            )}
+              {/* ── Events ── */}
+              {hasEvents && (
+                <section id="sec-events" className="scroll-mt-14">
+                  <SectionHeader label={t('events')} />
+                  <EventTimeline events={events} homeTeamId={homeTeamId} locale={typedLocale} />
+                </section>
+              )}
 
-            {/* ── Media ── */}
-            {matchVideos.length > 0 && (
-              <section>
-                <SectionHeader label={t('media')} />
-                <MatchMediaSection videos={matchVideos} />
-              </section>
-            )}
+              {/* ── Statistics ── */}
+              {hasStats && homeStatData && awayStatData && (
+                <section id="sec-statistics" className="scroll-mt-14">
+                  <SectionHeader label={t('stats')} />
+                  <StatsBars homeStats={homeStatData} awayStats={awayStatData} />
+                </section>
+              )}
 
-            {/* Fallback if no sections at all */}
-            {!hasEvents && !hasLineups && !hasStats && !hasRatings && (
-              <div className="px-4 py-10 text-center">
-                <p className="text-sm text-text-tertiary">{t('predictionComingSoon')}</p>
-              </div>
-            )}
+              {/* ── Player Statistics ── */}
+              {hasRatings && (
+                <section id="sec-players" className="scroll-mt-14">
+                  <SectionHeader label={t('playerRatings')} />
+                  <PlayerRatingsPanel
+                    playerStats={playerStats}
+                    homeTeamId={homeTeamId}
+                    awayTeamId={awayTeamId}
+                    homeTeamName={home}
+                    awayTeamName={away}
+                    locale={typedLocale}
+                  />
+                </section>
+              )}
+
+              {/* ── Media ── */}
+              {matchVideos.length > 0 && (
+                <section>
+                  <SectionHeader label={t('media')} />
+                  <MatchMediaSection videos={matchVideos} />
+                </section>
+              )}
+
+              {/* Fallback if no sections at all */}
+              {!hasEvents && !hasLineups && !hasStats && !hasRatings && (
+                <div className="px-4 py-10 text-center">
+                  <p className="text-sm text-text-tertiary">{t('predictionComingSoon')}</p>
+                </div>
+              )}
+            </div>
           </div>
         }
         rightRail={
           <div className="space-y-4">
+            <MatchInfoCard match={match} locale={typedLocale} competitionHref={competitionHref} />
             <H2HPanel
               fixtures={h2hFixtures}
               homeTeamId={homeTeamId}

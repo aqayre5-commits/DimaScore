@@ -45,7 +45,7 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
           className={cn(
             'rounded-full px-3 py-1 text-xs font-medium transition-colors',
             selectedGroup === null
-              ? 'bg-accent-azure/15 text-accent-azure ring-1 ring-accent-azure/30'
+              ? 'bg-accent-azure text-white'
               : 'text-text-tertiary hover:text-accent-azure/70',
           )}
         >
@@ -58,7 +58,7 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
             className={cn(
               'rounded-full px-3 py-1 text-xs font-medium transition-colors',
               selectedGroup === label
-                ? 'bg-accent-azure/15 text-accent-azure ring-1 ring-accent-azure/30'
+                ? 'bg-accent-azure text-white'
                 : label === moroccoGroup?.label
                   ? 'text-accent-azure/70 hover:text-accent-azure'
                   : 'text-text-tertiary hover:text-accent-azure/70',

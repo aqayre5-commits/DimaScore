@@ -79,7 +79,7 @@ export function TeamStandingsSection({
                       className={cn(
                         'transition-colors',
                         isHighlighted
-                          ? 'bg-accent-green/[0.08] font-semibold'
+                          ? 'bg-accent-azure/[0.08] font-semibold'
                           : 'hover:bg-bg-surface-2',
                       )}
                     >
@@ -101,7 +101,7 @@ export function TeamStandingsSection({
                           <span
                             className={cn(
                               'truncate text-text-primary',
-                              isHighlighted && 'text-accent-green font-semibold',
+                              isHighlighted && 'text-accent-azure font-semibold',
                             )}
                           >
                             {resolveTeamName(row.team, locale)}

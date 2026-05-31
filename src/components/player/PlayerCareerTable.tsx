@@ -62,7 +62,7 @@ export function PlayerCareerTable({ stats, locale }: PlayerCareerTableProps) {
                 key={`${stat.seasonYear}-${stat.competitionId}-${stat.teamId}`}
                 className={cn(
                   'transition-colors',
-                  isCurrent ? 'bg-accent-green/[0.06]' : 'hover:bg-bg-surface-2',
+                  isCurrent ? 'bg-accent-azure/[0.06]' : 'hover:bg-bg-surface-2',
                 )}
               >
                 <td className="px-3 py-2 tabular-nums text-text-secondary">

@@ -7,13 +7,28 @@ import { LiveScoreDisplay } from '@/components/match/LiveScoreDisplay';
 import type { MatchDetail } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
 
+export interface GoalScorer {
+  playerName: string;
+  minute: number;
+  extraMinute: number | null;
+  isOwnGoal: boolean;
+  isPenalty: boolean;
+  teamId: number | null;
+}
+
 interface ScoreHeaderProps {
   match: MatchDetail;
   locale: Locale;
   competitionHref?: string | null;
+  goalScorers?: GoalScorer[];
 }
 
-export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps) {
+export function ScoreHeader({
+  match,
+  locale,
+  competitionHref,
+  goalScorers = [],
+}: ScoreHeaderProps) {
   const t = useTranslations('matchDetail');
 
   const homeName = getTeamDisplayName(match.homeTeam, locale);
@@ -22,6 +37,11 @@ export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps
     { id: match.competition.id, name: match.competition.name, slug: match.competition.slug },
     locale,
   );
+
+  const homeTeamId = match.homeTeam?.id ?? -1;
+  const awayTeamId = match.awayTeam?.id ?? -1;
+  const homeGoals = goalScorers.filter((g) => g.teamId === homeTeamId);
+  const awayGoals = goalScorers.filter((g) => g.teamId === awayTeamId);
 
   const homeFlag =
     match.homeTeam?.isNational && match.homeTeam.countryCode
@@ -33,7 +53,7 @@ export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps
       : null;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15">
       {/* Competition + round */}
       <div className="border-b border-border-subtle px-4 py-2.5 text-center">
         <p className="text-xs font-medium text-text-secondary">
@@ -86,6 +106,7 @@ export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps
                 <span className="text-base font-semibold text-text-primary">{homeName}</span>
               </>
             )}
+            {homeGoals.length > 0 && <GoalScorerList goals={homeGoals} />}
           </div>
 
           {/* Score / status center — client component for live updates */}
@@ -139,23 +160,36 @@ export function ScoreHeader({ match, locale, competitionHref }: ScoreHeaderProps
                 <span className="text-base font-semibold text-text-primary">{awayName}</span>
               </>
             )}
+            {awayGoals.length > 0 && <GoalScorerList goals={awayGoals} />}
           </div>
         </div>
 
-        {/* Venue + referee */}
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-text-tertiary">
+        {/* Info strip */}
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-text-tertiary">
           {match.venue && (match.venue.name || match.venue.city) && (
-            <span>
-              {t('venue')}: {[match.venue.name, match.venue.city].filter(Boolean).join(', ')}
-            </span>
+            <span>{[match.venue.name, match.venue.city].filter(Boolean).join(', ')}</span>
           )}
-          {match.referee && (
-            <span>
-              {t('referee')}: {match.referee}
-            </span>
-          )}
+          {match.venue && match.referee && <span className="text-border-subtle">&middot;</span>}
+          {match.referee && <span>{match.referee}</span>}
         </div>
       </div>
+    </div>
+  );
+}
+
+function GoalScorerList({ goals }: { goals: GoalScorer[] }) {
+  return (
+    <div className="mt-0.5 flex flex-col items-center gap-0.5">
+      {goals.map((g, i) => {
+        const min = g.extraMinute ? `${g.minute}+${g.extraMinute}'` : `${g.minute}'`;
+        const suffix = g.isOwnGoal ? ' (OG)' : g.isPenalty ? ' (P)' : '';
+        return (
+          <span key={i} className="text-[11px] leading-tight text-text-secondary">
+            {g.playerName} {min}
+            {suffix}
+          </span>
+        );
+      })}
     </div>
   );
 }

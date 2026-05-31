@@ -642,7 +642,17 @@
     "losses": "D",
     "noH2H": "Aucune confrontation précédente",
     "predictionComingSoon": "Disponible à l'approche du coup d'envoi",
-    "mediaComingSoon": "Résumé du match bientôt disponible"
+    "mediaComingSoon": "Résumé du match bientôt disponible",
+    "matchInfo": "Infos match",
+    "competition": "Compétition",
+    "date": "Date",
+    "kickOff": "Coup d'envoi",
+    "stadium": "Stade",
+    "capacity": "Capacité",
+    "round": "Journée",
+    "nextMatch": "Prochain match",
+    "matchEvents": "Événements du match",
+    "seeAllEvents": "Voir tous les événements"
   },
   "editorialHero": {
     "label": "Mise en avant \u00e9ditoriale",

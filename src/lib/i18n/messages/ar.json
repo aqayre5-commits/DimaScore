@@ -642,7 +642,17 @@
     "losses": "خ",
     "noH2H": "لا مواجهات سابقة",
     "predictionComingSoon": "متاح قبل الانطلاق",
-    "mediaComingSoon": "ملخص المباراة قريبًا"
+    "mediaComingSoon": "ملخص المباراة قريبًا",
+    "matchInfo": "معلومات المباراة",
+    "competition": "المسابقة",
+    "date": "التاريخ",
+    "kickOff": "وقت الانطلاق",
+    "stadium": "الملعب",
+    "capacity": "السعة",
+    "round": "الجولة",
+    "nextMatch": "المباراة القادمة",
+    "matchEvents": "أحداث المباراة",
+    "seeAllEvents": "عرض جميع الأحداث"
   },
   "editorialHero": {
     "label": "\u0627\u0644\u0645\u0642\u062a\u0637\u0641 \u0627\u0644\u062a\u062d\u0631\u064a\u0631\u064a",
