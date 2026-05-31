@@ -14,10 +14,10 @@ const FINISHED_CODES = new Set(['FT', 'AET', 'PEN']);
 export default async function OGImage({
   params,
 }: {
-  params: Promise<{ locale: string; slug: string[] }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { locale, slug } = await params;
-  const fixtureId = Number(slug[0]);
+  const { locale, id: rawId } = await params;
+  const fixtureId = Number(rawId);
 
   if (!fixtureId || !Number.isFinite(fixtureId)) {
     return fallback();

@@ -41,20 +41,17 @@ import { BASE_URL } from '@/lib/constants/site';
 const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
 
 interface PageProps {
-  params: Promise<{ locale: string; slug: string[] }>;
+  params: Promise<{ locale: string; id: string }>;
 }
 
-function parseFixtureId(slug: string[]): number | null {
-  const raw = slug[0];
-  if (!raw) return null;
+function parseFixtureId(raw: string): number | null {
   const id = Number(raw);
   return Number.isFinite(id) && id > 0 ? id : null;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale, slug: rawSlug } = await params;
-  const slug = rawSlug.map(decodeURIComponent);
-  const fixtureId = parseFixtureId(slug);
+  const { locale, id: rawId } = await params;
+  const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) return { title: 'Match | DimaScore' };
 
   const match = await getMatchDetail(db, fixtureId);
@@ -95,9 +92,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function MatchDetailPage({ params }: PageProps) {
-  const { locale, slug: rawSlug } = await params;
-  const slug = rawSlug.map(decodeURIComponent);
-  const fixtureId = parseFixtureId(slug);
+  const { locale, id: rawId } = await params;
+  const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) notFound();
 
   const match = await getMatchDetail(db, fixtureId);
