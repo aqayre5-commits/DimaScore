@@ -92,11 +92,13 @@ export async function syncFixtureDetails(
   let statisticsCount = 0;
   let playerStatsCount = 0;
 
-  // Events: delete existing + batch insert fresh
+  // Events: delete existing + batch insert fresh (atomic)
   if (events.length > 0) {
     const eventRows = events.map((e) => mapEvent(fixtureId, e));
-    await db.delete(schema.fixtureEvents).where(eq(schema.fixtureEvents.fixtureId, fixtureId));
-    await db.insert(schema.fixtureEvents).values(eventRows);
+    await db.transaction(async (tx) => {
+      await tx.delete(schema.fixtureEvents).where(eq(schema.fixtureEvents.fixtureId, fixtureId));
+      await tx.insert(schema.fixtureEvents).values(eventRows);
+    });
     eventsCount = eventRows.length;
   }
 
