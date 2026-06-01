@@ -29,6 +29,10 @@ const fraunces = Fraunces({
   display: 'swap',
 });
 
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
 const baseUrl = BASE_URL;
 
 export async function generateMetadata({
