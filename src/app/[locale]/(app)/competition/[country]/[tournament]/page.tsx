@@ -21,7 +21,6 @@ import { BASE_URL } from '@/lib/constants/site';
 import { CompetitionContent } from './competition-content';
 
 export const revalidate = 60;
-export const experimental_ppr = true;
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;

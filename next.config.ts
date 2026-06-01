@@ -27,9 +27,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  experimental: {
-    ppr: 'incremental',
-  },
   images: {
     remotePatterns: [
       { hostname: 'media.api-sports.io' },
