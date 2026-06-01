@@ -27,7 +27,15 @@ interface Props {
   };
 }
 
-function MatchRow({ fixture, locale }: { fixture: HomeFixture; locale: string }) {
+function MatchRow({
+  fixture,
+  locale,
+  enablePrefetch,
+}: {
+  fixture: HomeFixture;
+  locale: string;
+  enablePrefetch?: boolean;
+}) {
   const state = getMatchState(fixture.statusCode, fixture.kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
@@ -37,6 +45,7 @@ function MatchRow({ fixture, locale }: { fixture: HomeFixture; locale: string })
   return (
     <Link
       href={`/${locale}/match/${fixture.id}`}
+      prefetch={enablePrefetch ? undefined : false}
       className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-bg-surface-2"
     >
       {/* Time / Minute */}
@@ -222,6 +231,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
           (() => {
             const elements: React.ReactNode[] = [];
             let lastGroupKey = '';
+            let matchIdx = 0;
             for (const f of displayed) {
               const dateStr = f.kickoffAt.toLocaleDateString(locale, {
                 weekday: 'short',
@@ -257,9 +267,10 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
               }
               elements.push(
                 <div key={f.id} className="border-b border-border-subtle last:border-b-0">
-                  <MatchRow fixture={f} locale={locale} />
+                  <MatchRow fixture={f} locale={locale} enablePrefetch={matchIdx < 3} />
                 </div>,
               );
+              matchIdx++;
             }
             return elements;
           })()

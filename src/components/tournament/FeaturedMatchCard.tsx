@@ -50,7 +50,6 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       <Link
         href={`/${locale}/match/${fixture.id}`}
-        prefetch={false}
         className="flex h-full flex-col transition-colors hover:bg-accent-azure/5"
       >
         {/* Live banner */}

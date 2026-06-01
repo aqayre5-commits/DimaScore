@@ -72,7 +72,6 @@ export function MobileDrawer() {
             <Link
               key={`${entry.competitionId}-${entry.labelKey}`}
               href={buildCompetitionHref(entry, locale)}
-              prefetch={false}
               onClick={() => setOpen(false)}
               className="block rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
             >

@@ -99,7 +99,6 @@ export function Topbar() {
               <Link
                 key={`${entry.competitionId}-${entry.labelKey}`}
                 href={href}
-                prefetch={false}
                 className={cn(
                   'rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
                   isActive ? 'text-accent-azure' : 'text-text-secondary hover:text-accent-azure',
