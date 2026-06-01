@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { TopPlayerRow, TopCardRow, LeagueCoverageRecord } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface LeagueStatsTabProps {
   coverage: LeagueCoverageRecord | null;
@@ -133,13 +134,7 @@ function PlayerTable({
                 <td className="px-2 py-2">
                   <div className="flex items-center gap-1.5">
                     {p.teamLogo && (
-                      <Image
-                        src={p.teamLogo}
-                        alt=""
-                        className="size-4 object-contain"
-                        width={16}
-                        height={16}
-                      />
+                      <TeamLogo src={p.teamLogo} size={16} className="size-4 object-contain" />
                     )}
                     <span className="truncate text-xs text-text-secondary">{p.teamName}</span>
                   </div>
@@ -225,13 +220,7 @@ function CardsTable({
                 <td className="px-2 py-2">
                   <div className="flex items-center gap-1.5">
                     {p.teamLogo && (
-                      <Image
-                        src={p.teamLogo}
-                        alt=""
-                        className="size-4 object-contain"
-                        width={16}
-                        height={16}
-                      />
+                      <TeamLogo src={p.teamLogo} size={16} className="size-4 object-contain" />
                     )}
                     <span className="truncate text-xs text-text-secondary">{p.teamName}</span>
                   </div>

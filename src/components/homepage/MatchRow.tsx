@@ -4,7 +4,7 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface MatchRowProps {
   fixture: DayFixture;
@@ -69,12 +69,10 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
           {homeLabel}
         </span>
         {fixture.homeTeam?.logoUrl ? (
-          <Image
+          <TeamLogo
             src={fixture.homeTeam.logoUrl}
-            alt=""
+            size={16}
             className="h-4 w-4 shrink-0 object-contain"
-            width={16}
-            height={16}
           />
         ) : (
           <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
@@ -99,12 +97,10 @@ export function MatchRow({ fixture, locale }: MatchRowProps) {
       {/* Away team */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
         {fixture.awayTeam?.logoUrl ? (
-          <Image
+          <TeamLogo
             src={fixture.awayTeam.logoUrl}
-            alt=""
+            size={16}
             className="h-4 w-4 shrink-0 object-contain"
-            width={16}
-            height={16}
           />
         ) : (
           <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">

@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { TeamLogo } from '@/components/shared/Logo';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { formatMatchTime } from '@/lib/utils/date';
@@ -127,15 +127,7 @@ export function FixtureRow({
 
 function TeamBadge({ team, flag }: { team: FixtureTeam | null; flag: string | null }) {
   if (team?.logoUrl) {
-    return (
-      <Image
-        src={team.logoUrl}
-        alt=""
-        width={20}
-        height={20}
-        className="size-5 shrink-0 object-contain"
-      />
-    );
+    return <TeamLogo src={team.logoUrl} size={20} className="size-5 shrink-0 object-contain" />;
   }
   if (flag) {
     return <span className="shrink-0 text-sm leading-none">{flag}</span>;

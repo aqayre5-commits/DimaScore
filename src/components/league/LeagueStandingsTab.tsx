@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface LeagueStandingsTabProps {
   standings: StandingRow[];
@@ -126,12 +126,10 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-2">
                       {row.team?.logoUrl ? (
-                        <Image
+                        <TeamLogo
                           src={row.team.logoUrl}
-                          alt=""
+                          size={20}
                           className="size-5 object-contain"
-                          width={20}
-                          height={20}
                         />
                       ) : (
                         <div className="size-5 rounded bg-bg-surface-2" />

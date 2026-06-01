@@ -7,7 +7,7 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import type { GroupStandingsBlock } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
+import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
 
 interface Props {
   groups: GroupStandingsBlock[];
@@ -44,12 +44,10 @@ export function HomeLiveGroupStandings({ groups, locale, labels }: Props) {
       <div className="flex items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-1.5 min-w-0">
           {group.competitionLogoUrl && (
-            <Image
+            <CompetitionLogo
               src={group.competitionLogoUrl}
-              alt=""
+              size={16}
               className="size-4 shrink-0 object-contain"
-              width={16}
-              height={16}
             />
           )}
           <h2 className="truncate text-xs font-semibold text-text-primary">
@@ -99,12 +97,10 @@ export function HomeLiveGroupStandings({ groups, locale, labels }: Props) {
                   <td className="py-1.5 pl-2">
                     <div className="flex items-center gap-1.5">
                       {row.team?.logoUrl ? (
-                        <Image
+                        <TeamLogo
                           src={row.team.logoUrl}
-                          alt=""
+                          size={16}
                           className="size-4 shrink-0 object-contain"
-                          width={16}
-                          height={16}
                         />
                       ) : (
                         <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />
