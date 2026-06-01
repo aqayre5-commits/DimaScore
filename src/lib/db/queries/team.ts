@@ -186,7 +186,40 @@ export async function getTeamSquad(
   db: NeonHttpDatabase<typeof schema>,
   teamId: number,
 ): Promise<SquadPlayer[]> {
-  const rows = await db
+  // Use squad_members junction table (supports players in multiple squads)
+  // Fall back to currentTeamId if no squad_members rows exist
+  const memberRows = await db
+    .select({
+      id: schema.players.id,
+      slug: schema.players.slug,
+      name: schema.players.name,
+      firstname: schema.players.firstname,
+      lastname: schema.players.lastname,
+      position: schema.players.position,
+      shirtNumber: schema.players.shirtNumber,
+      photoUrl: schema.players.photoUrl,
+      birthDate: schema.players.birthDate,
+      nationalityCode: schema.players.nationalityCode,
+      injured: schema.players.injured,
+    })
+    .from(schema.squadMembers)
+    .innerJoin(schema.players, eq(schema.squadMembers.playerId, schema.players.id))
+    .where(eq(schema.squadMembers.teamId, teamId))
+    .orderBy(
+      sql`CASE ${schema.players.position}
+        WHEN 'Goalkeeper' THEN 1
+        WHEN 'Defender' THEN 2
+        WHEN 'Midfielder' THEN 3
+        WHEN 'Attacker' THEN 4
+        ELSE 5
+      END`,
+      asc(schema.players.shirtNumber),
+    );
+
+  if (memberRows.length > 0) return memberRows;
+
+  // Fallback for teams not yet synced to squad_members
+  return db
     .select({
       id: schema.players.id,
       slug: schema.players.slug,
@@ -212,8 +245,6 @@ export async function getTeamSquad(
       END`,
       asc(schema.players.shirtNumber),
     );
-
-  return rows;
 }
 
 // ── Q4: Team standings (find team's primary competition, fetch standings) ──

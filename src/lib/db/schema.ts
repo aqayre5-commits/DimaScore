@@ -173,6 +173,22 @@ export const players = pgTable(
   ],
 );
 
+export const squadMembers = pgTable(
+  'squad_members',
+  {
+    teamId: bigint('team_id', { mode: 'number' })
+      .notNull()
+      .references(() => teams.id),
+    playerId: bigint('player_id', { mode: 'number' })
+      .notNull()
+      .references(() => players.id),
+  },
+  (t) => [
+    primaryKey({ columns: [t.teamId, t.playerId] }),
+    index('squad_members_team_id_idx').on(t.teamId),
+  ],
+);
+
 export const coaches = pgTable(
   'coaches',
   {

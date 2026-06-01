@@ -1,3 +1,4 @@
+import { eq } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedSquadPlayer } from '@/lib/data/types';
@@ -53,6 +54,14 @@ export async function syncSquad(
         },
       });
     updated++;
+  }
+
+  // Populate squad_members junction table (delete + re-insert for this team)
+  await db.delete(schema.squadMembers).where(eq(schema.squadMembers.teamId, params.teamId));
+  if (players.length > 0) {
+    await db
+      .insert(schema.squadMembers)
+      .values(players.map((p) => ({ teamId: params.teamId, playerId: p.id })));
   }
 
   return { inserted, updated };
