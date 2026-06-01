@@ -2,16 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { db } from '@/lib/db/client';
-import {
-  getMatchDetail,
-  getMatchCoverage,
-  getMatchEvents,
-  getMatchLineups,
-  getMatchStatistics,
-  getMatchPlayerStats,
-  getHeadToHead,
-  getNextFixtures,
-} from '@/lib/db/queries/match-detail';
+import { getMatchDetail, getMatchCoverage } from '@/lib/db/queries/match-detail';
 import { getMatchState } from '@/lib/match-status';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import {
@@ -21,21 +12,11 @@ import {
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
-import { ScoreHeader, type GoalScorer } from '@/components/match/ScoreHeader';
-import { EventTimeline } from '@/components/match/EventTimeline';
-import { MatchInfoCard } from '@/components/match/MatchInfoCard';
-import { NextMatchCard } from '@/components/match/NextMatchCard';
-import { MatchEventsCard } from '@/components/match/MatchEventsCard';
-import { LineupPitch } from '@/components/match/LineupPitch';
-import { StatsBars } from '@/components/match/StatsBars';
-import { PlayerRatingsPanel } from '@/components/match/PlayerRatingBadge';
-import { H2HPanel } from '@/components/match/H2HPanel';
-import { PredictionCard } from '@/components/match/PredictionCard';
-import { MatchMediaSection } from '@/components/match/MatchMediaSection';
-import { MatchSectionNav } from '@/components/match/MatchSectionNav';
+import { ScoreHeader } from '@/components/match/ScoreHeader';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
+import { MatchClientCenter } from '@/components/match/MatchClientCenter';
+import { MatchClientLeftRail, MatchClientRightRail } from '@/components/match/MatchClientSidebar';
 
-import { getMediaVideos } from '@/lib/db/queries/media';
 import { timedQuery } from '@/lib/db/timing';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
@@ -101,61 +82,29 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) notFound();
 
-  const match = await timedQuery('getMatchDetail', () => getMatchDetail(db, fixtureId));
+  // Only 2 server queries — match detail + coverage (~50ms total)
+  // Section data (events, lineups, stats, sidebar) fetched client-side via Route Handlers
+  const [match, tBc] = await Promise.all([
+    timedQuery('getMatchDetail', () => getMatchDetail(db, fixtureId)),
+    getTranslations({ locale, namespace: 'breadcrumb' }),
+  ]);
   if (!match) notFound();
 
   const typedLocale = locale as Locale;
+  const coverage = await timedQuery('getMatchCoverage', () =>
+    getMatchCoverage(db, match.competition.id, match.seasonYear),
+  );
+
   const homeTeamId = match.homeTeam?.id ?? -1;
   const awayTeamId = match.awayTeam?.id ?? -1;
   const matchState = getMatchState(match.statusCode, match.kickoffAt);
   const isUpcoming = matchState === 'upcoming';
-
-  // Parallel data fetch — skip match-data queries for upcoming matches
-  const [
-    t,
-    tBc,
-    coverage,
-    events,
-    lineups,
-    teamStats,
-    playerStats,
-    h2hFixtures,
-    { videos: matchVideos },
-    nextFixtures,
-  ] = await Promise.all([
-    getTranslations({ locale, namespace: 'matchDetail' }),
-    getTranslations({ locale, namespace: 'breadcrumb' }),
-    timedQuery('getMatchCoverage', () =>
-      getMatchCoverage(db, match.competition.id, match.seasonYear),
-    ),
-    isUpcoming
-      ? Promise.resolve([])
-      : timedQuery('getMatchEvents', () => getMatchEvents(db, fixtureId)),
-    isUpcoming
-      ? Promise.resolve([])
-      : timedQuery('getMatchLineups', () => getMatchLineups(db, fixtureId)),
-    isUpcoming
-      ? Promise.resolve([])
-      : timedQuery('getMatchStatistics', () => getMatchStatistics(db, fixtureId)),
-    isUpcoming
-      ? Promise.resolve([])
-      : timedQuery('getMatchPlayerStats', () => getMatchPlayerStats(db, fixtureId)),
-    homeTeamId > 0 && awayTeamId > 0
-      ? timedQuery('getHeadToHead', () => getHeadToHead(db, homeTeamId, awayTeamId, fixtureId))
-      : Promise.resolve([]),
-    isUpcoming
-      ? Promise.resolve({ videos: [] })
-      : timedQuery('getMediaVideos', () => getMediaVideos(db, { fixtureId, limit: 9 })),
-    homeTeamId > 0 && awayTeamId > 0
-      ? timedQuery('getNextFixtures', () => getNextFixtures(db, homeTeamId, awayTeamId, fixtureId))
-      : Promise.resolve([]),
-  ]);
+  const isLive = LIVE_CODES.has(match.statusCode);
 
   const compName = getLocalizedCompetitionName(
     { id: match.competition.id, name: match.competition.name, slug: match.competition.slug },
     typedLocale,
   );
-
   const home = getTeamDisplayName(match.homeTeam, typedLocale);
   const away = getTeamDisplayName(match.awayTeam, typedLocale);
 
@@ -171,45 +120,13 @@ export default async function MatchDetailPage({ params }: PageProps) {
     { label: `${home} vs ${away}` },
   ];
 
-  // Resolve which sections have data
-  const hasEvents = (coverage?.events ?? false) && events.length > 0;
-  const hasLineups = (coverage?.lineups ?? false) && lineups.length === 2;
-  const hasStats = (coverage?.statisticsFixtures ?? false) && teamStats.length === 2;
-  const hasRatings = (coverage?.statisticsPlayers ?? false) && playerStats.length > 0;
+  const matchId = String(fixtureId);
 
-  const homeLineup = lineups.find((l) => l.teamId === homeTeamId);
-  const awayLineup = lineups.find((l) => l.teamId === awayTeamId);
-  const homeStatData = teamStats.find((s) => s.teamId === homeTeamId);
-  const awayStatData = teamStats.find((s) => s.teamId === awayTeamId);
-
-  // Build sticky nav sections — only include sections that have data
-  const navSections: Array<{ id: string; label: string }> = [];
-  if (hasLineups) navSections.push({ id: 'sec-lineups', label: t('lineups') });
-  if (hasEvents) navSections.push({ id: 'sec-events', label: t('events') });
-  if (hasStats) navSections.push({ id: 'sec-statistics', label: t('stats') });
-  if (hasRatings) navSections.push({ id: 'sec-players', label: t('playerRatings') });
-
-  // Extract goal scorers for ScoreHeader display
-  const goalScorers: GoalScorer[] = events
-    .filter((e) => {
-      const type = e.type?.toLowerCase() ?? '';
-      const detail = (e.detail ?? '').toLowerCase();
-      return type === 'goal' && !detail.includes('missed');
-    })
-    .map((e) => {
-      const name = e.player?.name?.[typedLocale] ?? e.player?.name?.['en'] ?? '';
-      const detail = (e.detail ?? '').toLowerCase();
-      return {
-        playerName: name,
-        minute: e.minute,
-        extraMinute: e.extraMinute,
-        isOwnGoal: detail.includes('own goal'),
-        isPenalty: detail.includes('penalty'),
-        teamId: e.teamId,
-      };
-    });
-
-  const isLive = LIVE_CODES.has(match.statusCode);
+  // Serialize match for client components (Date → ISO string)
+  const serializedMatch = {
+    ...match,
+    kickoffAt: match.kickoffAt.toISOString(),
+  };
 
   const pageContent = (
     <>
@@ -219,107 +136,42 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
       <InnerPageShell
         leftRail={
-          <div className="space-y-4">
-            <NextMatchCard
-              fixtures={nextFixtures}
-              homeTeamId={homeTeamId}
-              awayTeamId={awayTeamId}
-              homeTeam={match.homeTeam}
-              awayTeam={match.awayTeam}
-              locale={typedLocale}
-            />
-            {hasEvents && (
-              <MatchEventsCard events={events} homeTeamId={homeTeamId} locale={typedLocale} />
-            )}
-            {coverage?.predictions && <PredictionCard />}
-          </div>
+          <MatchClientLeftRail
+            matchId={matchId}
+            locale={typedLocale}
+            match={serializedMatch}
+            coverage={coverage}
+            homeTeamId={homeTeamId}
+            awayTeamId={awayTeamId}
+            isUpcoming={isUpcoming}
+          />
         }
         center={
           <div className="space-y-4">
-            <ScoreHeader
-              match={match}
+            <ScoreHeader match={match} locale={typedLocale} competitionHref={competitionHref} />
+            <MatchClientCenter
+              matchId={matchId}
               locale={typedLocale}
-              competitionHref={competitionHref}
-              goalScorers={goalScorers}
+              coverage={coverage}
+              homeTeamId={homeTeamId}
+              awayTeamId={awayTeamId}
+              homeName={home}
+              awayName={away}
+              isUpcoming={isUpcoming}
             />
-            <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-              {/* ── Lineups (pitch + coaches, no substitutes list) ── */}
-              {hasLineups && homeLineup && awayLineup && (
-                <section id="sec-lineups" className="scroll-mt-14">
-                  <LineupPitch
-                    homeLineup={homeLineup}
-                    awayLineup={awayLineup}
-                    homeTeamName={home}
-                    awayTeamName={away}
-                    locale={typedLocale}
-                    pitchOnly
-                    events={events}
-                  />
-                </section>
-              )}
-
-              {/* ── Sticky section nav ── */}
-              {navSections.length > 0 && <MatchSectionNav sections={navSections} />}
-
-              {/* ── Events ── */}
-              {hasEvents && (
-                <section id="sec-events" className="scroll-mt-14">
-                  <SectionHeader label={t('events')} />
-                  <EventTimeline events={events} homeTeamId={homeTeamId} locale={typedLocale} />
-                </section>
-              )}
-
-              {/* ── Statistics ── */}
-              {hasStats && homeStatData && awayStatData && (
-                <section id="sec-statistics" className="scroll-mt-14">
-                  <SectionHeader label={t('stats')} />
-                  <StatsBars homeStats={homeStatData} awayStats={awayStatData} />
-                </section>
-              )}
-
-              {/* ── Player Statistics ── */}
-              {hasRatings && (
-                <section id="sec-players" className="scroll-mt-14">
-                  <SectionHeader label={t('playerRatings')} />
-                  <PlayerRatingsPanel
-                    playerStats={playerStats}
-                    homeTeamId={homeTeamId}
-                    awayTeamId={awayTeamId}
-                    homeTeamName={home}
-                    awayTeamName={away}
-                    locale={typedLocale}
-                  />
-                </section>
-              )}
-
-              {/* ── Media ── */}
-              {matchVideos.length > 0 && (
-                <section>
-                  <SectionHeader label={t('media')} />
-                  <MatchMediaSection videos={matchVideos} />
-                </section>
-              )}
-
-              {/* Fallback if no sections at all */}
-              {!hasEvents && !hasLineups && !hasStats && !hasRatings && (
-                <div className="px-4 py-10 text-center">
-                  <p className="text-sm text-text-tertiary">{t('predictionComingSoon')}</p>
-                </div>
-              )}
-            </div>
           </div>
         }
         rightRail={
-          <div className="space-y-4">
-            <MatchInfoCard match={match} locale={typedLocale} competitionHref={competitionHref} />
-            <H2HPanel
-              fixtures={h2hFixtures}
-              homeTeamId={homeTeamId}
-              homeTeamName={home}
-              awayTeamName={away}
-              locale={typedLocale}
-            />
-          </div>
+          <MatchClientRightRail
+            matchId={matchId}
+            locale={typedLocale}
+            match={serializedMatch}
+            competitionHref={competitionHref}
+            homeTeamId={homeTeamId}
+            awayTeamId={awayTeamId}
+            homeName={home}
+            awayName={away}
+          />
         }
       />
     </>
@@ -341,12 +193,4 @@ export default async function MatchDetailPage({ params }: PageProps) {
   }
 
   return pageContent;
-}
-
-function SectionHeader({ label }: { label: string }) {
-  return (
-    <div className="border-t border-border-subtle bg-bg-surface-2 px-4 py-2.5">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-accent-green">{label}</h3>
-    </div>
-  );
 }
