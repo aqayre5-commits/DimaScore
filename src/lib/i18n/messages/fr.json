@@ -652,7 +652,8 @@
     "round": "Journée",
     "nextMatch": "Prochain match",
     "matchEvents": "Événements du match",
-    "seeAllEvents": "Voir tous les événements"
+    "seeAllEvents": "Voir tous les événements",
+    "viewFullMatch": "Voir le match complet"
   },
   "editorialHero": {
     "label": "Mise en avant \u00e9ditoriale",

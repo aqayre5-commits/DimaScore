@@ -652,7 +652,8 @@
     "round": "Round",
     "nextMatch": "Next Match",
     "matchEvents": "Match Events",
-    "seeAllEvents": "See all events"
+    "seeAllEvents": "See all events",
+    "viewFullMatch": "View full match"
   },
   "editorialHero": {
     "label": "Editorial highlight",

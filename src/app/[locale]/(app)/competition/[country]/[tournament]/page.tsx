@@ -21,6 +21,8 @@ import { renderCupPage } from './render-cup-page';
 import { renderLeaguePage } from './render-league-page';
 import { renderGenericCupPage } from './render-generic-cup-page';
 
+export const revalidate = 60;
+
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
   searchParams: Promise<{ season?: string }>;

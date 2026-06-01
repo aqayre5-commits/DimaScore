@@ -30,6 +30,8 @@ import {
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import { BASE_URL } from '@/lib/constants/site';
 
+export const revalidate = 120;
+
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
 }

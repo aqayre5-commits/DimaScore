@@ -38,6 +38,8 @@ import { getMediaVideos } from '@/lib/db/queries/media';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 
+export const revalidate = 30;
+
 const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
 
 interface PageProps {

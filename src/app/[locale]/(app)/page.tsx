@@ -38,6 +38,8 @@ import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import type { StandingRow } from '@/lib/db/queries';
 
+export const revalidate = 60;
+
 interface PageProps {
   params: Promise<{ locale: string }>;
 }

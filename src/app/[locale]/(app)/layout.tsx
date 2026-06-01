@@ -7,9 +7,11 @@ import type { Locale } from '@/lib/i18n/config';
 
 export default async function AppLayout({
   children,
+  matchPanel,
   params,
 }: {
   children: React.ReactNode;
+  matchPanel: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
   const { locale: rawLocale } = await params;
@@ -30,6 +32,7 @@ export default async function AppLayout({
       <main id="main" className="flex-1 min-w-0">
         {children}
       </main>
+      {matchPanel}
       <Footer />
       <MobileBottomTabBar />
     </>
