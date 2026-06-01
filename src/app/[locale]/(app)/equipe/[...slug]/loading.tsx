@@ -1,21 +1,23 @@
 export default function TeamLoading() {
   return (
-    <div className="mx-auto w-full max-w-[1280px] animate-pulse px-4 py-6">
-      {/* Breadcrumb skeleton */}
-      <div className="mb-4 h-4 w-48 rounded bg-bg-surface-2" />
-      {/* Header skeleton */}
-      <div className="mb-6 h-36 rounded-xl bg-bg-surface-2" />
-      {/* Tabs skeleton */}
-      <div className="mb-4 flex gap-2">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-9 w-24 rounded-lg bg-bg-surface-2" />
-        ))}
-      </div>
-      {/* Content skeleton */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr_280px]">
-        <div className="hidden h-80 rounded-xl bg-bg-surface-2 lg:block" />
-        <div className="h-80 rounded-xl bg-bg-surface-2" />
-        <div className="hidden h-64 rounded-xl bg-bg-surface-2 lg:block" />
+    <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
+      <div className="mb-2 h-4 w-56 animate-pulse rounded bg-bg-surface-2" />
+      <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:items-start xl:gap-6">
+        <div className="order-0 xl:col-span-2 xl:col-start-1 xl:row-start-1">
+          <div className="h-32 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-3 hidden xl:col-start-3 xl:row-start-1 xl:block">
+          <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-2 xl:col-start-1 xl:row-start-2">
+          <div className="h-96 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-1 xl:col-start-2 xl:row-start-2">
+          <div className="h-64 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-3 hidden xl:col-start-3 xl:row-start-2 xl:block">
+          <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
       </div>
     </div>
   );

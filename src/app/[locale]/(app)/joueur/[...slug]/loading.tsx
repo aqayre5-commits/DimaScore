@@ -1,20 +1,22 @@
 export default function PlayerLoading() {
   return (
-    <div className="mx-auto w-full max-w-7xl animate-pulse px-4 py-8">
-      {/* Player header skeleton */}
-      <div className="bg-surface-2 mb-6 h-36 rounded-xl" />
-      {/* Tabs skeleton */}
-      <div className="mb-6 flex gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-surface-2 h-9 w-24 rounded-lg" />
-        ))}
-      </div>
-      {/* Player content skeleton */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
-        <div className="bg-surface-2 h-96 rounded-lg" />
-        <div className="space-y-4">
-          <div className="bg-surface-2 h-48 rounded-lg" />
-          <div className="bg-surface-2 h-32 rounded-lg" />
+    <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
+      <div className="mb-2 h-4 w-56 animate-pulse rounded bg-bg-surface-2" />
+      <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:items-start xl:gap-6">
+        <div className="order-0 xl:col-span-2 xl:col-start-1 xl:row-start-1">
+          <div className="h-32 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-3 hidden xl:col-start-3 xl:row-start-1 xl:block">
+          <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-2 xl:col-start-1 xl:row-start-2">
+          <div className="h-64 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-1 xl:col-start-2 xl:row-start-2">
+          <div className="h-64 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-3 hidden xl:col-start-3 xl:row-start-2 xl:block">
+          <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
         </div>
       </div>
     </div>

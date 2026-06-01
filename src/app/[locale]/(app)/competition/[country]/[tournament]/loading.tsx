@@ -1,21 +1,13 @@
 export default function CompetitionLoading() {
   return (
-    <div className="mx-auto w-full max-w-[1280px] animate-pulse px-4 py-6">
-      {/* Breadcrumb skeleton */}
-      <div className="mb-4 h-4 w-48 rounded bg-bg-surface-2" />
-      {/* Header skeleton */}
-      <div className="mb-6 h-40 rounded-xl bg-bg-surface-2" />
-      {/* Tabs skeleton */}
-      <div className="mb-4 flex gap-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-9 w-24 rounded-lg bg-bg-surface-2" />
-        ))}
-      </div>
-      {/* Content skeleton */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr_280px]">
-        <div className="hidden h-96 rounded-xl bg-bg-surface-2 lg:block" />
-        <div className="h-96 rounded-xl bg-bg-surface-2" />
-        <div className="hidden h-64 rounded-xl bg-bg-surface-2 lg:block" />
+    <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
+      <div className="space-y-4">
+        <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
+        <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:gap-6">
+          <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 xl:block" />
+          <div className="h-96 animate-pulse rounded-xl bg-bg-surface-2" />
+          <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 xl:block" />
+        </div>
       </div>
     </div>
   );

@@ -1,20 +1,19 @@
 export default function MatchLoading() {
   return (
-    <div className="mx-auto w-full max-w-7xl animate-pulse px-4 py-8">
-      {/* Match header skeleton */}
-      <div className="bg-surface-2 mb-6 h-52 rounded-xl" />
-      {/* Tabs skeleton */}
-      <div className="mb-6 flex gap-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="bg-surface-2 h-9 w-20 rounded-lg" />
-        ))}
-      </div>
-      {/* Match content skeleton */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="bg-surface-2 h-96 rounded-lg" />
-        <div className="space-y-4">
-          <div className="bg-surface-2 h-48 rounded-lg" />
-          <div className="bg-surface-2 h-48 rounded-lg" />
+    <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
+      <div className="mb-2 h-4 w-48 animate-pulse rounded bg-bg-surface-2" />
+      <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:gap-6">
+        <div className="order-2 hidden space-y-4 xl:order-none xl:block">
+          <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
+          <div className="h-32 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-1 space-y-4 xl:order-none">
+          <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
+          <div className="h-96 animate-pulse rounded-xl bg-bg-surface-2" />
+        </div>
+        <div className="order-3 hidden space-y-4 xl:order-none xl:block">
+          <div className="h-64 animate-pulse rounded-xl bg-bg-surface-2" />
+          <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
         </div>
       </div>
     </div>
