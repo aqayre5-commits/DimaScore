@@ -120,7 +120,7 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
   );
 }
 
-/** Renders one copy of the ticker cells (used twice for seamless loop). */
+/** Renders one copy of the ticker cells — interactive version with Links. */
 function TickerCells({ fixtures, locale }: TickerStripProps) {
   return (
     <>
@@ -130,6 +130,44 @@ function TickerCells({ fixtures, locale }: TickerStripProps) {
           <TickerItemContent fixture={fixture} locale={locale} />
         </span>
       ))}
+    </>
+  );
+}
+
+/** Inert duplicate for seamless marquee — no Links, no hydration overhead. */
+function TickerCellsInert({ fixtures, locale }: TickerStripProps) {
+  return (
+    <>
+      {fixtures.map((fixture, i) => {
+        const live = isLiveStatus(fixture.statusCode as FixtureStatus);
+        const dir = locale === 'ar' ? 'rtl' : undefined;
+        return (
+          <span key={fixture.id} className="flex shrink-0 items-center">
+            {i > 0 && <span className="mx-1 h-4 w-px shrink-0 bg-border-strong" />}
+            <span dir={dir} className="flex shrink-0 items-center gap-2 px-4 py-1">
+              <TeamCell team={fixture.homeTeam} locale={locale} />
+              {live ? (
+                <span className="flex items-center gap-1.5 rounded px-2 py-0.5">
+                  <span className="live-pulse size-1.5 rounded-full bg-red-500" />
+                  <span className="text-sm font-semibold tabular-nums text-text-primary">
+                    {fixture.homeScore ?? 0}&ndash;{fixture.awayScore ?? 0}
+                  </span>
+                  {fixture.minute != null && (
+                    <span className="text-xs tabular-nums text-text-secondary">
+                      {fixture.minute}&apos;
+                    </span>
+                  )}
+                </span>
+              ) : (
+                <span className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary">
+                  {formatMatchTime(fixture.kickoffAt, locale)}
+                </span>
+              )}
+              <TeamCell team={fixture.awayTeam} locale={locale} reverse />
+            </span>
+          </span>
+        );
+      })}
     </>
   );
 }
@@ -234,9 +272,9 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
         <span ref={copyRef} className="flex shrink-0 items-center">
           <TickerCells fixtures={renderable} locale={locale} />
         </span>
-        {/* Duplicate copy — seamless continuation */}
+        {/* Duplicate copy — inert, no Links, aria-hidden */}
         <span className="ticker-duplicate flex shrink-0 items-center" aria-hidden="true">
-          <TickerCells fixtures={renderable} locale={locale} />
+          <TickerCellsInert fixtures={renderable} locale={locale} />
         </span>
       </div>
 
