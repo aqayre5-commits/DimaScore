@@ -3,6 +3,7 @@ import type { DayFixture } from '@/lib/db/queries/fixtures-by-day';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
+import { usePrefetchMatch } from '@/hooks/usePrefetchMatch';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
 
@@ -13,6 +14,7 @@ interface MatchRowProps {
 }
 
 export function MatchRow({ fixture, locale, enablePrefetch }: MatchRowProps) {
+  const prefetch = usePrefetchMatch(String(fixture.id));
   const state = getMatchState(fixture.statusCode, fixture.kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
@@ -35,6 +37,7 @@ export function MatchRow({ fixture, locale, enablePrefetch }: MatchRowProps) {
     <Link
       href={`/${locale}/match/${fixture.id}`}
       prefetch={enablePrefetch ? undefined : false}
+      onMouseEnter={prefetch.onMouseEnter}
       aria-label={`${homeLabel} vs ${awayLabel}`}
       className="flex items-center gap-2 border-b border-border-subtle px-3 py-2 text-base transition-colors hover:bg-bg-surface-2"
     >

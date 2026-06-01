@@ -13,6 +13,7 @@ import { formatMatchTime } from '@/lib/utils/date';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
+import { usePrefetchMatch } from '@/hooks/usePrefetchMatch';
 import type { Locale } from '@/lib/i18n/config';
 import type { FixtureStatus } from '@/lib/data/types';
 
@@ -84,12 +85,14 @@ function TeamCell({
 
 function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale: Locale }) {
   const live = isLiveStatus(fixture.statusCode as FixtureStatus);
+  const prefetch = usePrefetchMatch(String(fixture.id));
   const dir = locale === 'ar' ? 'rtl' : undefined;
 
   return (
     <Link
       href={`/${locale}/match/${fixture.id}`}
       prefetch={false}
+      onMouseEnter={prefetch.onMouseEnter}
       dir={dir}
       aria-label={`${getCompactTeamLabel(fixture.homeTeam, locale)} vs ${getCompactTeamLabel(fixture.awayTeam, locale)}`}
       className="flex shrink-0 items-center gap-2 px-4 py-1 transition-colors hover:bg-white/5"

@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
+import { usePrefetchMatch } from '@/hooks/usePrefetchMatch';
 import type { Locale } from '@/lib/i18n/config';
 
 interface FixtureTeam {
@@ -45,6 +46,7 @@ export function FixtureRow({
   locale,
 }: FixtureRowProps) {
   const t = useTranslations('matchDetail');
+  const prefetch = usePrefetchMatch(String(fixtureId));
   const state = getMatchState(statusCode, kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
@@ -66,6 +68,7 @@ export function FixtureRow({
     <Link
       href={`/${locale}/match/${fixtureId}`}
       prefetch={false}
+      onMouseEnter={prefetch.onMouseEnter}
       aria-label={`${homeName} vs ${awayName}`}
       className="flex items-center gap-2 rounded-md py-2 text-base transition-colors hover:bg-bg-surface-2"
     >

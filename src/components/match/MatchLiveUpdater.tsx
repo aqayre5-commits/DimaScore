@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
@@ -68,6 +69,7 @@ export function MatchLiveUpdater({
   });
 
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queryClient = useQueryClient();
 
   const handleUpdate = useCallback(
     (payload: ScoreUpdatePayload) => {
@@ -76,6 +78,11 @@ export function MatchLiveUpdater({
       setState((prev) => {
         const scoreChanged =
           prev.homeScore !== payload.homeScore || prev.awayScore !== payload.awayScore;
+
+        // Invalidate all match sub-queries (events, stats, lineups, sidebar) on score change
+        if (scoreChanged) {
+          queryClient.invalidateQueries({ queryKey: ['match', String(fixtureId)] });
+        }
 
         return {
           homeScore: payload.homeScore,
@@ -87,7 +94,7 @@ export function MatchLiveUpdater({
         };
       });
     },
-    [fixtureId],
+    [fixtureId, queryClient],
   );
 
   // Clear flash after animation duration
