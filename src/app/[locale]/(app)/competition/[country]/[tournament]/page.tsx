@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
@@ -17,9 +18,7 @@ import { competitions } from '@/lib/db/schema';
 import { inArray } from 'drizzle-orm';
 import { getCompetitionById, getCurrentSeasonYear } from '@/lib/db/queries/league';
 import { BASE_URL } from '@/lib/constants/site';
-import { renderCupPage } from './render-cup-page';
-import { renderLeaguePage } from './render-league-page';
-import { renderGenericCupPage } from './render-generic-cup-page';
+import { CompetitionContent } from './competition-content';
 
 export const revalidate = 60;
 
@@ -132,11 +131,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CompetitionPage({ params, searchParams }: PageProps) {
   const { locale, country: rawCountry, tournament: rawTournament } = await params;
   setRequestLocale(locale);
-  const { season: seasonParam } = await searchParams;
+  // NOTE: searchParams is NOT awaited here — keeps the default path static/ISR-cacheable.
+  // It is passed as an unawaited Promise to CompetitionContent (inside Suspense).
   const tournament = decodeURIComponent(rawTournament);
   const typedLocale = locale as Locale;
-  const t = await getTranslations({ locale, namespace: 'breadcrumb' });
-  const tP = await getTranslations({ locale, namespace: 'placeholder' });
 
   // Gate: only render full page for competitions with metadata.
   // Slug-aware: if slug matches a specific edition's cup content, use that edition's metadata.
@@ -152,39 +150,20 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
     }
   }
 
-  // Fetch left rail logos once (shared across all render paths)
-  const competitionLogos = await getLeftRailLogos();
+  // Determine render path without awaiting searchParams
+  let renderPath: 'cup' | 'league' | 'generic-cup' | 'coming-soon' = 'coming-soon';
+  if (metadata?.type === 'cup') {
+    renderPath = 'cup';
+  } else if (entry) {
+    const competition = await getCompetitionById(db, entry.competitionId);
+    if (competition?.type === 'League') renderPath = 'league';
+    else if (competition?.type === 'Cup') renderPath = 'generic-cup';
+  }
 
-  // League or generic cup branch: competition exists in DB but no hardcoded cup metadata
-  if (!metadata || metadata.type !== 'cup') {
-    if (entry) {
-      const competition = await getCompetitionById(db, entry.competitionId);
-      if (competition && competition.type === 'League') {
-        return renderLeaguePage(
-          competition,
-          entry,
-          typedLocale,
-          locale,
-          rawCountry,
-          rawTournament,
-          seasonParam,
-          competitionLogos,
-        );
-      }
-      if (competition && competition.type === 'Cup') {
-        return renderGenericCupPage(
-          competition,
-          entry,
-          typedLocale,
-          locale,
-          rawCountry,
-          seasonParam,
-          competitionLogos,
-        );
-      }
-    }
-
-    // Fallback: coming soon
+  // Coming-soon fallback — fully static, no searchParams needed
+  if (renderPath === 'coming-soon' || !entry) {
+    const t = await getTranslations({ locale, namespace: 'breadcrumb' });
+    const tP = await getTranslations({ locale, namespace: 'placeholder' });
     const displayName = tournament.replace(/-/g, ' ');
     const breadcrumbs: BreadcrumbSegment[] = [
       { label: t('football'), href: `/${locale}` },
@@ -205,14 +184,37 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
     );
   }
 
-  // ── Cup full render — delegated to render-cup-page ──
-  return renderCupPage(
-    metadata,
-    typedLocale,
-    locale,
-    rawCountry,
-    rawTournament,
-    seasonParam,
-    competitionLogos,
+  // Fetch left rail logos (shared across all render paths, season-independent)
+  const competitionLogos = await getLeftRailLogos();
+
+  // Season-dependent content — searchParams is awaited inside CompetitionContent,
+  // isolated in a Suspense boundary so the outer page stays static.
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
+          <div className="space-y-4">
+            <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr_300px]">
+              <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 lg:block" />
+              <div className="h-96 animate-pulse rounded-xl bg-bg-surface-2" />
+              <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 lg:block" />
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <CompetitionContent
+        searchParams={searchParams}
+        renderPath={renderPath}
+        locale={typedLocale}
+        rawLocale={locale}
+        rawCountry={rawCountry}
+        rawTournament={rawTournament}
+        entry={entry}
+        metadata={metadata?.type === 'cup' ? metadata : undefined}
+        competitionLogos={competitionLogos}
+      />
+    </Suspense>
   );
 }
