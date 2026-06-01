@@ -21,6 +21,7 @@ import { BASE_URL } from '@/lib/constants/site';
 import { CompetitionContent } from './competition-content';
 
 export const revalidate = 60;
+export const experimental_ppr = true;
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
@@ -195,10 +196,10 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
         <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
           <div className="space-y-4">
             <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr_300px]">
-              <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 lg:block" />
+            <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:gap-6">
+              <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 xl:block" />
               <div className="h-96 animate-pulse rounded-xl bg-bg-surface-2" />
-              <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 lg:block" />
+              <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 xl:block" />
             </div>
           </div>
         </div>
