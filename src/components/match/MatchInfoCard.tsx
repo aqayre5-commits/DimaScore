@@ -56,7 +56,11 @@ export function MatchInfoCard({ match, locale, competitionHref }: MatchInfoCardP
           compName
         );
         return competitionHref ? (
-          <Link href={competitionHref} className="text-accent-azure hover:underline">
+          <Link
+            href={competitionHref}
+            prefetch={false}
+            className="text-accent-azure hover:underline"
+          >
             {label}
           </Link>
         ) : (

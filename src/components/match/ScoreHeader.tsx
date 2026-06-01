@@ -59,7 +59,11 @@ export function ScoreHeader({
       <div className="border-b border-border-subtle px-4 py-2.5 text-center">
         <p className="text-xs font-medium text-text-secondary">
           {competitionHref ? (
-            <Link href={competitionHref} className="hover:text-accent hover:underline">
+            <Link
+              href={competitionHref}
+              prefetch={false}
+              className="hover:text-accent hover:underline"
+            >
               {compName}
             </Link>
           ) : (
@@ -78,6 +82,7 @@ export function ScoreHeader({
             {match.homeTeam?.slug ? (
               <Link
                 href={`/${locale}/equipe/${match.homeTeam.slug}`}
+                prefetch={false}
                 className="flex flex-col items-center gap-2 hover:opacity-80"
               >
                 {homeFlag && <span className="text-4xl leading-none">{homeFlag}</span>}
@@ -134,6 +139,7 @@ export function ScoreHeader({
             {match.awayTeam?.slug ? (
               <Link
                 href={`/${locale}/equipe/${match.awayTeam.slug}`}
+                prefetch={false}
                 className="flex flex-col items-center gap-2 hover:opacity-80"
               >
                 {awayFlag && <span className="text-4xl leading-none">{awayFlag}</span>}

@@ -96,6 +96,7 @@ function NextFixtureRow({
   return (
     <Link
       href={`/${locale}/match/${fixture.id}`}
+      prefetch={false}
       className="block px-4 py-3 transition-colors hover:bg-bg-surface-2"
     >
       <div className="flex items-center gap-2.5">
