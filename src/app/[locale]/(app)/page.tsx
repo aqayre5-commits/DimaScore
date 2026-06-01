@@ -22,9 +22,7 @@ import {
   getCompetitionsByIds,
 } from '@/lib/db/queries/homepage';
 import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
-import { timedQuery } from '@/lib/db/timing';
-
-export const revalidate = 60;
+import { cacheLife } from 'next/cache';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -167,20 +165,29 @@ const LEFT_RAIL_LOGO_OVERRIDES: Record<number, string> = {
   1: '/logos/world-cup-2026.png',
 };
 
+// ── Cached data ──
+
+async function getCachedHomepageData() {
+  'use cache';
+  cacheLife('minutes');
+  const [featured, matchesByCategory, matchCounts, leftRailComps] = await Promise.all([
+    getFeaturedMatches(db),
+    getHomeMatchesByCategory(db),
+    getHomeMatchCounts(db),
+    getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
+  ]);
+  return { featured, matchesByCategory, matchCounts, leftRailComps };
+}
+
 // ── Page ──
 
 export default async function HomePage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
-  const t = await getTranslations({ locale, namespace: 'homepage' });
-
-  // Above-fold data fetch only — right rail + trending stream via Suspense
-  const [featured, matchesByCategory, matchCounts, leftRailComps] = await Promise.all([
-    timedQuery('getFeaturedMatches', () => getFeaturedMatches(db)),
-    timedQuery('getHomeMatchesByCategory', () => getHomeMatchesByCategory(db)),
-    timedQuery('getHomeMatchCounts', () => getHomeMatchCounts(db)),
-    timedQuery('getCompetitionsByIds', () => getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS)),
+  const [{ featured, matchesByCategory, matchCounts, leftRailComps }, t] = await Promise.all([
+    getCachedHomepageData(),
+    getTranslations({ locale, namespace: 'homepage' }),
   ]);
 
   // Enrich featured matches: WC venues + team form

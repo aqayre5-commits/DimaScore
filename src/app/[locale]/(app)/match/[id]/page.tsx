@@ -17,11 +17,9 @@ import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 import { MatchClientCenter } from '@/components/match/MatchClientCenter';
 import { MatchClientLeftRail, MatchClientRightRail } from '@/components/match/MatchClientSidebar';
 
-import { timedQuery } from '@/lib/db/timing';
+import { cacheLife } from 'next/cache';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
-
-export const revalidate = 30;
 
 const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
 
@@ -34,13 +32,23 @@ function parseFixtureId(raw: string): number | null {
   return Number.isFinite(id) && id > 0 ? id : null;
 }
 
+async function getCachedMatchData(fixtureId: number) {
+  'use cache';
+  cacheLife('match');
+  const match = await getMatchDetail(db, fixtureId);
+  if (!match) return null;
+  const coverage = await getMatchCoverage(db, match.competition.id, match.seasonYear);
+  return { match, coverage };
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, id: rawId } = await params;
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) return { title: 'Match | DimaScore' };
 
-  const match = await getMatchDetail(db, fixtureId);
-  if (!match) return { title: 'Match | DimaScore' };
+  const data = await getCachedMatchData(fixtureId);
+  if (!data) return { title: 'Match | DimaScore' };
+  const { match } = data;
 
   const home = getTeamDisplayName(match.homeTeam, locale);
   const away = getTeamDisplayName(match.awayTeam, locale);
@@ -82,18 +90,14 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) notFound();
 
-  // Only 2 server queries — match detail + coverage (~50ms total)
-  // Section data (events, lineups, stats, sidebar) fetched client-side via Route Handlers
-  const [match, tBc] = await Promise.all([
-    timedQuery('getMatchDetail', () => getMatchDetail(db, fixtureId)),
+  const [data, tBc] = await Promise.all([
+    getCachedMatchData(fixtureId),
     getTranslations({ locale, namespace: 'breadcrumb' }),
   ]);
-  if (!match) notFound();
+  if (!data) notFound();
+  const { match, coverage } = data;
 
   const typedLocale = locale as Locale;
-  const coverage = await timedQuery('getMatchCoverage', () =>
-    getMatchCoverage(db, match.competition.id, match.seasonYear),
-  );
 
   const homeTeamId = match.homeTeam?.id ?? -1;
   const awayTeamId = match.awayTeam?.id ?? -1;

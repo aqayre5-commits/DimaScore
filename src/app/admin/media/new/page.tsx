@@ -1,14 +1,9 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { db } from '@/lib/db/client';
 import { competitions, teams } from '@/lib/db/schema';
 import { sql } from 'drizzle-orm';
 import { AddVideoForm } from '@/components/admin/AddVideoForm';
-import { getAdminSession } from '@/lib/auth/admin';
 
 export default async function AdminMediaNewPage() {
-  const cookieStore = await cookies();
-  if (!getAdminSession(cookieStore)) redirect('/admin/login');
   const [compRows, teamRows] = await Promise.all([
     db
       .select({ id: competitions.id, name: competitions.name })

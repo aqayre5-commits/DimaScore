@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { useTranslations } from 'next-intl';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -46,8 +46,10 @@ const localeLinks = [
   { locale: 'ar', label: 'العربية' },
 ];
 
-export default function StyleGuidePage() {
-  const t = useTranslations('styleGuide');
+export default async function StyleGuidePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'styleGuide' });
 
   return (
     <main className="min-h-screen bg-bg-canvas p-8">

@@ -27,6 +27,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
+  cacheLife: {
+    match: { revalidate: 30, expire: 3600 },
+  },
   images: {
     remotePatterns: [
       { hostname: 'media.api-sports.io' },

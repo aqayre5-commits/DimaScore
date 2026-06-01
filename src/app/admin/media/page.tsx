@@ -1,10 +1,7 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { db } from '@/lib/db/client';
 import { getMediaVideos } from '@/lib/db/queries/media';
 import { VideoTable } from '@/components/admin/VideoTable';
-import { getAdminSession } from '@/lib/auth/admin';
 
 const PAGE_SIZE = 20;
 
@@ -13,9 +10,6 @@ export default async function AdminMediaPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const cookieStore = await cookies();
-  if (!getAdminSession(cookieStore)) redirect('/admin/login');
-
   const params = await searchParams;
   const page = Math.max(1, parseInt((params.page as string) ?? '1', 10) || 1);
   const showArchived = params.archived === 'true';

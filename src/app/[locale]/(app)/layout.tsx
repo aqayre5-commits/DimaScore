@@ -27,12 +27,22 @@ export default async function AppLayout({
       <Suspense fallback={<div className="sticky top-0 z-50 h-10 bg-bg-surface-3" />}>
         <AdaptiveTopStrip locale={locale} />
       </Suspense>
-      <Topbar />
+      <Suspense
+        fallback={
+          <div className="sticky top-10 z-40 h-12 border-b border-border-subtle bg-bg-surface" />
+        }
+      >
+        <Topbar />
+      </Suspense>
       <main id="main" className="flex-1 min-w-0">
         {children}
       </main>
-      <Footer />
-      <MobileBottomTabBar />
+      <Suspense>
+        <Footer />
+      </Suspense>
+      <Suspense>
+        <MobileBottomTabBar />
+      </Suspense>
     </QueryProvider>
   );
 }

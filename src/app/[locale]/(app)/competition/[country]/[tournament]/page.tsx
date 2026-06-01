@@ -18,9 +18,8 @@ import { competitions } from '@/lib/db/schema';
 import { inArray } from 'drizzle-orm';
 import { getCompetitionById, getCurrentSeasonYear } from '@/lib/db/queries/league';
 import { BASE_URL } from '@/lib/constants/site';
+import { cacheLife } from 'next/cache';
 import { CompetitionContent } from './competition-content';
-
-export const revalidate = 60;
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
@@ -42,11 +41,19 @@ function resolveEntry(tournament: string, locale: Locale): MegaMenuEntry | undef
 const LEFT_RAIL_COMP_IDS = [200, 201, 822, 1, 922, 6, 39, 140, 78, 135, 61, 2, 3, 848];
 
 async function getLeftRailLogos(): Promise<Record<number, string | null>> {
+  'use cache';
+  cacheLife('minutes');
   const rows = await db
     .select({ id: competitions.id, logoUrl: competitions.logoUrl })
     .from(competitions)
     .where(inArray(competitions.id, LEFT_RAIL_COMP_IDS));
   return Object.fromEntries(rows.map((r) => [r.id, r.logoUrl]));
+}
+
+async function getCachedCompetitionType(compId: number) {
+  'use cache';
+  cacheLife('minutes');
+  return getCompetitionById(db, compId);
 }
 
 // ── Metadata ──
@@ -155,7 +162,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
   if (metadata?.type === 'cup') {
     renderPath = 'cup';
   } else if (entry) {
-    const competition = await getCompetitionById(db, entry.competitionId);
+    const competition = await getCachedCompetitionType(entry.competitionId);
     if (competition?.type === 'League') renderPath = 'league';
     else if (competition?.type === 'Cup') renderPath = 'generic-cup';
   }

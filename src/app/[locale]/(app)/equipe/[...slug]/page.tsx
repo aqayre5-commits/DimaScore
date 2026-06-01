@@ -29,8 +29,7 @@ import {
 } from '@/lib/db/queries/team';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import { BASE_URL } from '@/lib/constants/site';
-
-export const revalidate = 120;
+import { cacheLife } from 'next/cache';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -46,13 +45,52 @@ const TAB_HASHES: Record<Locale, { standings: string; statistics: string; player
   ar: { standings: 'الترتيب', statistics: 'الإحصائيات', players: 'التشكيلة' },
 };
 
+// ── Cached data ──
+
+async function getCachedTeamData(teamSlug: string) {
+  'use cache';
+  cacheLife('minutes');
+  const team = await getTeamBySlug(db, teamSlug);
+  if (!team) return null;
+
+  const [
+    fixtures,
+    squad,
+    allStandings,
+    teamSeasonStats,
+    competitionTeams,
+    formResults,
+    primaryComp,
+  ] = await Promise.all([
+    getTeamFixturesWithCompetition(db, team.id, 200),
+    getTeamSquad(db, team.id),
+    getTeamAllStandings(db, team.id),
+    getTeamSeasonStats(db, team.id),
+    getTeamsInSameCompetition(db, team.id),
+    getTeamFormResults(db, team.id),
+    getTeamPrimaryCompetition(db, team.id),
+  ]);
+
+  return {
+    team,
+    fixtures,
+    squad,
+    allStandings,
+    teamSeasonStats,
+    competitionTeams,
+    formResults,
+    primaryComp,
+  };
+}
+
 // ── Metadata ──
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, slug: rawSlug } = await params;
   const typedLocale = locale as Locale;
   const teamSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
-  const team = await getTeamBySlug(db, teamSlug);
+  const data = await getCachedTeamData(teamSlug);
+  const team = data?.team;
 
   if (!team) {
     return { title: 'Team | DimaScore' };
@@ -94,14 +132,13 @@ export default async function TeamPage({ params }: PageProps) {
   const typedLocale = locale as Locale;
   const teamSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
 
-  const team = await getTeamBySlug(db, teamSlug);
-  if (!team) notFound();
-
-  const tBc = await getTranslations({ locale, namespace: 'breadcrumb' });
-  const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
-
-  // Parallel data fetching
-  const [
+  const [data, tBc] = await Promise.all([
+    getCachedTeamData(teamSlug),
+    getTranslations({ locale, namespace: 'breadcrumb' }),
+  ]);
+  if (!data) notFound();
+  const {
+    team,
     fixtures,
     squad,
     allStandings,
@@ -109,15 +146,8 @@ export default async function TeamPage({ params }: PageProps) {
     competitionTeams,
     formResults,
     primaryComp,
-  ] = await Promise.all([
-    getTeamFixturesWithCompetition(db, team.id, 200),
-    getTeamSquad(db, team.id),
-    getTeamAllStandings(db, team.id),
-    getTeamSeasonStats(db, team.id),
-    getTeamsInSameCompetition(db, team.id),
-    getTeamFormResults(db, team.id),
-    getTeamPrimaryCompetition(db, team.id),
-  ]);
+  } = data;
+  const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
 
   // Featured match priority: live > next upcoming > most recent completed
   const liveMatch = fixtures.find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
