@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
@@ -35,6 +36,40 @@ import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 
+async function getCachedGenericCupData(competitionId: number, seasonYear: number) {
+  'use cache';
+  cacheLife('minutes');
+  const [
+    standings,
+    knockoutFixtures,
+    allFixtures,
+    coverage,
+    cupInjuries,
+    topScorers,
+    topAssists,
+    genericFeaturedMatches,
+  ] = await Promise.all([
+    getStandings(db, competitionId, seasonYear),
+    getKnockoutFixtures(db, competitionId, seasonYear),
+    getLeagueFixtures(db, competitionId, seasonYear),
+    getLeagueCoverage(db, competitionId, seasonYear),
+    getInjuriesForCompetition(db, competitionId, seasonYear),
+    getTopScorersForLeague(db, competitionId, seasonYear, 5),
+    getTopAssistsForLeague(db, competitionId, seasonYear, 5),
+    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
+  ]);
+  return {
+    standings,
+    knockoutFixtures,
+    allFixtures,
+    coverage,
+    cupInjuries,
+    topScorers,
+    topAssists,
+    genericFeaturedMatches,
+  };
+}
+
 export async function renderGenericCupPage(
   competition: NonNullable<Awaited<ReturnType<typeof getCompetitionById>>>,
   _entry: MegaMenuEntry,
@@ -70,7 +105,7 @@ export async function renderGenericCupPage(
     );
   }
 
-  const [
+  const {
     standings,
     knockoutFixtures,
     allFixtures,
@@ -79,16 +114,7 @@ export async function renderGenericCupPage(
     topScorers,
     topAssists,
     genericFeaturedMatches,
-  ] = await Promise.all([
-    getStandings(db, competition.id, seasonYear),
-    getKnockoutFixtures(db, competition.id, seasonYear),
-    getLeagueFixtures(db, competition.id, seasonYear),
-    getLeagueCoverage(db, competition.id, seasonYear),
-    getInjuriesForCompetition(db, competition.id, seasonYear),
-    getTopScorersForLeague(db, competition.id, seasonYear, 5),
-    getTopAssistsForLeague(db, competition.id, seasonYear, 5),
-    getLeagueFeaturedMatches(db, competition.id, seasonYear, 2),
-  ]);
+  } = await getCachedGenericCupData(competition.id, seasonYear);
 
   const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
   const countryName = getLeagueCountryName(competition.countryCode, locale);

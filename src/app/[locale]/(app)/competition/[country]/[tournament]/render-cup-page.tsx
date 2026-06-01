@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
@@ -46,6 +47,41 @@ import {
 } from '@/lib/db/queries/league';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
+
+async function getCachedCupData(competitionId: number, seasonYear: number) {
+  'use cache';
+  cacheLife('minutes');
+  const [
+    moroccoTeamId,
+    standings,
+    round1Fixtures,
+    knockoutFixtures,
+    cupFeaturedMatches,
+    allCupFixtures,
+    availableSeasons,
+  ] = await Promise.all([
+    getMoroccoTeamId(db),
+    getStandings(db, competitionId, seasonYear),
+    getFixturesByRound(db, competitionId, seasonYear, 1),
+    getKnockoutFixtures(db, competitionId, seasonYear),
+    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
+    getLeagueFixtures(db, competitionId, seasonYear),
+    getAvailableSeasons(db, competitionId),
+  ]);
+  const featuredMatch = moroccoTeamId
+    ? await getFeaturedMatch(db, competitionId, seasonYear, moroccoTeamId)
+    : null;
+  return {
+    moroccoTeamId,
+    standings,
+    round1Fixtures,
+    knockoutFixtures,
+    cupFeaturedMatches,
+    allCupFixtures,
+    availableSeasons,
+    featuredMatch,
+  };
+}
 
 // ── Status sets ──
 
@@ -205,27 +241,15 @@ export async function renderCupPage(
     getCupContentForSeason(competitionId, seasonYear) ??
     (requestedYear ? undefined : getCupContent(competitionId));
 
-  const [
-    moroccoTeamId,
+  const {
     standings,
     round1Fixtures,
     knockoutFixtures,
     cupFeaturedMatches,
     allCupFixtures,
     availableSeasons,
-  ] = await Promise.all([
-    getMoroccoTeamId(db),
-    getStandings(db, competitionId, seasonYear),
-    getFixturesByRound(db, competitionId, seasonYear, 1),
-    getKnockoutFixtures(db, competitionId, seasonYear),
-    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
-    getLeagueFixtures(db, competitionId, seasonYear),
-    getAvailableSeasons(db, competitionId),
-  ]);
-
-  const featuredMatch = moroccoTeamId
-    ? await getFeaturedMatch(db, competitionId, seasonYear, moroccoTeamId)
-    : null;
+    featuredMatch,
+  } = await getCachedCupData(competitionId, seasonYear);
 
   const tournamentPhase = computeTournamentPhase(metadata, allCupFixtures);
   const fallbackName =

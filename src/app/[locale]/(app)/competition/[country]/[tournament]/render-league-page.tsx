@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
@@ -36,6 +37,46 @@ import { LeagueFixturesTab } from '@/components/league/LeagueFixturesTab';
 import { LeaguePlayersTab } from '@/components/league/LeaguePlayersTab';
 import { LeagueTeamsTab } from '@/components/league/LeagueTeamsTab';
 import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-content';
+
+async function getCachedLeagueData(competitionId: number, seasonYear: number) {
+  'use cache';
+  cacheLife('minutes');
+  const [
+    coverage,
+    standings,
+    rounds,
+    currentRound,
+    featuredMatches,
+    fixtures,
+    topScorers,
+    topAssists,
+    topCards,
+    injuries,
+  ] = await Promise.all([
+    getLeagueCoverage(db, competitionId, seasonYear),
+    getStandings(db, competitionId, seasonYear),
+    getLeagueRounds(db, competitionId, seasonYear),
+    getCurrentRound(db, competitionId, seasonYear),
+    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
+    getLeagueFixtures(db, competitionId, seasonYear),
+    getTopScorersForLeague(db, competitionId, seasonYear),
+    getTopAssistsForLeague(db, competitionId, seasonYear),
+    getTopCardsForLeague(db, competitionId, seasonYear),
+    getInjuriesForCompetition(db, competitionId, seasonYear),
+  ]);
+  return {
+    coverage,
+    standings,
+    rounds,
+    currentRound,
+    featuredMatches,
+    fixtures,
+    topScorers,
+    topAssists,
+    topCards,
+    injuries,
+  };
+}
 
 const LEAGUE_TAB_HASHES: Record<
   Locale,
@@ -102,8 +143,8 @@ export async function renderLeaguePage(
     );
   }
 
-  // Parallel data fetch
-  const [
+  // Cached parallel data fetch
+  const {
     coverage,
     standings,
     rounds,
@@ -114,18 +155,7 @@ export async function renderLeaguePage(
     topAssists,
     topCards,
     injuries,
-  ] = await Promise.all([
-    getLeagueCoverage(db, competition.id, seasonYear),
-    getStandings(db, competition.id, seasonYear),
-    getLeagueRounds(db, competition.id, seasonYear),
-    getCurrentRound(db, competition.id, seasonYear),
-    getLeagueFeaturedMatches(db, competition.id, seasonYear, 2),
-    getLeagueFixtures(db, competition.id, seasonYear),
-    getTopScorersForLeague(db, competition.id, seasonYear),
-    getTopAssistsForLeague(db, competition.id, seasonYear),
-    getTopCardsForLeague(db, competition.id, seasonYear),
-    getInjuriesForCompetition(db, competition.id, seasonYear),
-  ]);
+  } = await getCachedLeagueData(competition.id, seasonYear);
 
   const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
   const countryName = getLeagueCountryName(competition.countryCode, locale);
