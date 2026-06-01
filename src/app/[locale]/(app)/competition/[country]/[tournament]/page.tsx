@@ -20,6 +20,7 @@ import { getCompetitionById, getCurrentSeasonYear } from '@/lib/db/queries/leagu
 import { BASE_URL } from '@/lib/constants/site';
 import { cacheLife } from 'next/cache';
 import { CompetitionContent } from './competition-content';
+import { CompetitionSkeleton } from './CompetitionSkeleton';
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
@@ -197,20 +198,7 @@ export default async function CompetitionPage({ params, searchParams }: PageProp
   // Season-dependent content — searchParams is awaited inside CompetitionContent,
   // isolated in a Suspense boundary so the outer page stays static.
   return (
-    <Suspense
-      fallback={
-        <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
-          <div className="space-y-4">
-            <div className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
-            <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:gap-6">
-              <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 xl:block" />
-              <div className="h-96 animate-pulse rounded-xl bg-bg-surface-2" />
-              <div className="hidden h-96 animate-pulse rounded-xl bg-bg-surface-2 xl:block" />
-            </div>
-          </div>
-        </div>
-      }
-    >
+    <Suspense fallback={<CompetitionSkeleton />}>
       <CompetitionContent
         searchParams={searchParams}
         renderPath={renderPath}
