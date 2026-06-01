@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import {
@@ -131,6 +131,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CompetitionPage({ params, searchParams }: PageProps) {
   const { locale, country: rawCountry, tournament: rawTournament } = await params;
+  setRequestLocale(locale);
   const { season: seasonParam } = await searchParams;
   const tournament = decodeURIComponent(rawTournament);
   const typedLocale = locale as Locale;

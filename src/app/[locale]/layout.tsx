@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, Fraunces } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
+import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/lib/i18n/routing';
 import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
@@ -81,6 +82,8 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
+
+  setRequestLocale(locale);
 
   const typedLocale = locale as Locale;
   const dir = isRtl(typedLocale) ? 'rtl' : 'ltr';

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
@@ -90,6 +90,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function TeamPage({ params }: PageProps) {
   const { locale, slug: rawSlug } = await params;
+  setRequestLocale(locale);
   const typedLocale = locale as Locale;
   const teamSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
 

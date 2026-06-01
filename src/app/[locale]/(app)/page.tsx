@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
@@ -185,6 +185,7 @@ const LEFT_RAIL_LOGO_OVERRIDES: Record<number, string> = {
 
 export default async function HomePage({ params }: PageProps) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const typedLocale = locale as Locale;
   const t = await getTranslations({ locale, namespace: 'homepage' });
 

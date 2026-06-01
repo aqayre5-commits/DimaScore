@@ -19,7 +19,7 @@ export default function MatchPanelLayout({ children }: { children: React.ReactNo
     <Sheet open onOpenChange={handleClose}>
       <SheetContent
         side={locale === 'ar' ? 'left' : 'right'}
-        className="w-full overflow-y-auto p-0 sm:max-w-[550px]"
+        className="w-full overflow-y-auto p-0"
       >
         <SheetTitle className="sr-only">Match details</SheetTitle>
         {children}

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { db } from '@/lib/db/client';
 import {
   getMatchDetail,
@@ -95,6 +95,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function MatchDetailPage({ params }: PageProps) {
   const { locale, id: rawId } = await params;
+  setRequestLocale(locale);
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) notFound();
 

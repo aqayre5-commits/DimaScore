@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { db } from '@/lib/db/client';
 import { getTickerFixtures } from '@/lib/db/queries';
 import { TickerStrip } from './TickerStrip';
@@ -14,6 +14,7 @@ interface AdaptiveTopStripProps {
  * Phase 7+ follow-up: TickerStrip subscribes to Pusher for live score pushes.
  */
 export async function AdaptiveTopStrip({ locale }: AdaptiveTopStripProps) {
+  setRequestLocale(locale);
   const result = await getTickerFixtures(db);
 
   if (result.mode === 'empty') {

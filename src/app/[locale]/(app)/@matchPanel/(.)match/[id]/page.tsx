@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ArrowRight } from 'lucide-react';
 import { db } from '@/lib/db/client';
 import {
@@ -30,6 +30,7 @@ function parseFixtureId(raw: string): number | null {
 
 export default async function MatchPanelPage({ params }: PageProps) {
   const { locale, id: rawId } = await params;
+  setRequestLocale(locale);
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) notFound();
 
