@@ -12,6 +12,7 @@ import {
   getHeadToHead,
   getNextFixtures,
 } from '@/lib/db/queries/match-detail';
+import { getMatchState } from '@/lib/match-status';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import {
   findEntryByCompetitionId,
@@ -105,8 +106,10 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const typedLocale = locale as Locale;
   const homeTeamId = match.homeTeam?.id ?? -1;
   const awayTeamId = match.awayTeam?.id ?? -1;
+  const matchState = getMatchState(match.statusCode, match.kickoffAt);
+  const isUpcoming = matchState === 'upcoming';
 
-  // Parallel data fetch
+  // Parallel data fetch — skip match-data queries for upcoming matches
   const [
     t,
     tBc,
@@ -122,14 +125,14 @@ export default async function MatchDetailPage({ params }: PageProps) {
     getTranslations({ locale, namespace: 'matchDetail' }),
     getTranslations({ locale, namespace: 'breadcrumb' }),
     getMatchCoverage(db, match.competition.id, match.seasonYear),
-    getMatchEvents(db, fixtureId),
-    getMatchLineups(db, fixtureId),
-    getMatchStatistics(db, fixtureId),
-    getMatchPlayerStats(db, fixtureId),
+    isUpcoming ? Promise.resolve([]) : getMatchEvents(db, fixtureId),
+    isUpcoming ? Promise.resolve([]) : getMatchLineups(db, fixtureId),
+    isUpcoming ? Promise.resolve([]) : getMatchStatistics(db, fixtureId),
+    isUpcoming ? Promise.resolve([]) : getMatchPlayerStats(db, fixtureId),
     homeTeamId > 0 && awayTeamId > 0
       ? getHeadToHead(db, homeTeamId, awayTeamId, fixtureId)
       : Promise.resolve([]),
-    getMediaVideos(db, { fixtureId, limit: 9 }),
+    isUpcoming ? Promise.resolve({ videos: [] }) : getMediaVideos(db, { fixtureId, limit: 9 }),
     homeTeamId > 0 && awayTeamId > 0
       ? getNextFixtures(db, homeTeamId, awayTeamId, fixtureId)
       : Promise.resolve([]),
