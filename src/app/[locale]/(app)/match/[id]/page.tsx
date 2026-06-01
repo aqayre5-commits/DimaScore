@@ -36,6 +36,7 @@ import { MatchSectionNav } from '@/components/match/MatchSectionNav';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 
 import { getMediaVideos } from '@/lib/db/queries/media';
+import { timedQuery } from '@/lib/db/timing';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 
@@ -100,7 +101,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) notFound();
 
-  const match = await getMatchDetail(db, fixtureId);
+  const match = await timedQuery('getMatchDetail', () => getMatchDetail(db, fixtureId));
   if (!match) notFound();
 
   const typedLocale = locale as Locale;
@@ -124,17 +125,29 @@ export default async function MatchDetailPage({ params }: PageProps) {
   ] = await Promise.all([
     getTranslations({ locale, namespace: 'matchDetail' }),
     getTranslations({ locale, namespace: 'breadcrumb' }),
-    getMatchCoverage(db, match.competition.id, match.seasonYear),
-    isUpcoming ? Promise.resolve([]) : getMatchEvents(db, fixtureId),
-    isUpcoming ? Promise.resolve([]) : getMatchLineups(db, fixtureId),
-    isUpcoming ? Promise.resolve([]) : getMatchStatistics(db, fixtureId),
-    isUpcoming ? Promise.resolve([]) : getMatchPlayerStats(db, fixtureId),
+    timedQuery('getMatchCoverage', () =>
+      getMatchCoverage(db, match.competition.id, match.seasonYear),
+    ),
+    isUpcoming
+      ? Promise.resolve([])
+      : timedQuery('getMatchEvents', () => getMatchEvents(db, fixtureId)),
+    isUpcoming
+      ? Promise.resolve([])
+      : timedQuery('getMatchLineups', () => getMatchLineups(db, fixtureId)),
+    isUpcoming
+      ? Promise.resolve([])
+      : timedQuery('getMatchStatistics', () => getMatchStatistics(db, fixtureId)),
+    isUpcoming
+      ? Promise.resolve([])
+      : timedQuery('getMatchPlayerStats', () => getMatchPlayerStats(db, fixtureId)),
     homeTeamId > 0 && awayTeamId > 0
-      ? getHeadToHead(db, homeTeamId, awayTeamId, fixtureId)
+      ? timedQuery('getHeadToHead', () => getHeadToHead(db, homeTeamId, awayTeamId, fixtureId))
       : Promise.resolve([]),
-    isUpcoming ? Promise.resolve({ videos: [] }) : getMediaVideos(db, { fixtureId, limit: 9 }),
+    isUpcoming
+      ? Promise.resolve({ videos: [] })
+      : timedQuery('getMediaVideos', () => getMediaVideos(db, { fixtureId, limit: 9 })),
     homeTeamId > 0 && awayTeamId > 0
-      ? getNextFixtures(db, homeTeamId, awayTeamId, fixtureId)
+      ? timedQuery('getNextFixtures', () => getNextFixtures(db, homeTeamId, awayTeamId, fixtureId))
       : Promise.resolve([]),
   ]);
 

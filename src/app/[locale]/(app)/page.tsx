@@ -22,6 +22,7 @@ import {
   getCompetitionsByIds,
 } from '@/lib/db/queries/homepage';
 import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
+import { timedQuery } from '@/lib/db/timing';
 
 export const revalidate = 60;
 
@@ -176,10 +177,10 @@ export default async function HomePage({ params }: PageProps) {
 
   // Above-fold data fetch only — right rail + trending stream via Suspense
   const [featured, matchesByCategory, matchCounts, leftRailComps] = await Promise.all([
-    getFeaturedMatches(db),
-    getHomeMatchesByCategory(db),
-    getHomeMatchCounts(db),
-    getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
+    timedQuery('getFeaturedMatches', () => getFeaturedMatches(db)),
+    timedQuery('getHomeMatchesByCategory', () => getHomeMatchesByCategory(db)),
+    timedQuery('getHomeMatchCounts', () => getHomeMatchCounts(db)),
+    timedQuery('getCompetitionsByIds', () => getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS)),
   ]);
 
   // Enrich featured matches: WC venues + team form

@@ -15,6 +15,7 @@ import { HomeLionsAbroad } from './HomeLionsAbroad';
 import { HomeStandingsMini } from './HomeStandingsMini';
 import { HomeTopScorers } from './HomeTopScorers';
 import type { StandingRow } from '@/lib/db/queries';
+import { timedQuery } from '@/lib/db/timing';
 import type { Locale } from '@/lib/i18n/config';
 
 const HOMEPAGE_LEAGUES = [
@@ -69,7 +70,7 @@ interface Props {
 export async function HomeRightRailStreamed({ locale }: Props) {
   const t = await getTranslations({ locale, namespace: 'homepage' });
 
-  const currentSeasons = await getCurrentSeasons(db);
+  const currentSeasons = await timedQuery('getCurrentSeasons', () => getCurrentSeasons(db));
   const seasonMap = new Map(currentSeasons.map((s) => [s.competitionId, s.year]));
 
   const [
@@ -80,16 +81,16 @@ export async function HomeRightRailStreamed({ locale }: Props) {
     topScorersData,
     standingsResults,
   ] = await Promise.all([
-    getNextFeaturedMatch(db),
-    getLiveGroupStandings(db),
-    getTopMatchesThisWeek(db),
-    getMoroccanPlayerPerformances(db),
-    getRightRailTopScorers(db),
+    timedQuery('getNextFeaturedMatch', () => getNextFeaturedMatch(db)),
+    timedQuery('getLiveGroupStandings', () => getLiveGroupStandings(db)),
+    timedQuery('getTopMatchesThisWeek', () => getTopMatchesThisWeek(db)),
+    timedQuery('getMoroccanPlayerPerformances', () => getMoroccanPlayerPerformances(db)),
+    timedQuery('getRightRailTopScorers', () => getRightRailTopScorers(db)),
     Promise.all(
       HOMEPAGE_LEAGUES.map((l) => {
         const year = seasonMap.get(l.compId);
         if (!year) return Promise.resolve([] as StandingRow[]);
-        return getStandings(db, l.compId, year);
+        return timedQuery(`getStandings(${l.compId})`, () => getStandings(db, l.compId, year));
       }),
     ),
   ]);
