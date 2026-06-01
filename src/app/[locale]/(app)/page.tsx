@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
@@ -8,35 +9,19 @@ import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { HomeFeaturedCarousel } from '@/components/homepage/HomeFeaturedCarousel';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
-import { HomeTrendingPlayers } from '@/components/homepage/HomeTrendingPlayers';
 import { HomeLeftRail } from '@/components/homepage/HomeLeftRail';
-import { HomeNextMatch } from '@/components/homepage/HomeNextMatch';
-import { HomeLiveGroupStandings } from '@/components/homepage/HomeLiveGroupStandings';
-import { HomeTopMatches } from '@/components/homepage/HomeTodaysMatches';
-import { HomeLionsAbroad } from '@/components/homepage/HomeLionsAbroad';
-import { HomeStandingsMini } from '@/components/homepage/HomeStandingsMini';
-import { HomeTopScorers } from '@/components/homepage/HomeTopScorers';
+import { HomeRightRailStreamed } from '@/components/homepage/HomeRightRailStreamed';
+import { HomeTrendingPlayersStreamed } from '@/components/homepage/HomeTrendingPlayersStreamed';
 import { AboutCard } from '@/components/tournament/AboutCard';
 import { getHomepageAboutContent } from '@/lib/constants/homepage-about-content';
 import { db } from '@/lib/db/client';
-import { getStandings, getCurrentSeasons } from '@/lib/db/queries';
 import {
   getFeaturedMatches,
   getHomeMatchesByCategory,
   getHomeMatchCounts,
-  getTrendingPlayers,
   getCompetitionsByIds,
 } from '@/lib/db/queries/homepage';
-import {
-  getNextFeaturedMatch,
-  getLiveGroupStandings,
-  getTopMatchesThisWeek,
-  getMoroccanPlayerPerformances,
-  getRightRailTopScorers,
-} from '@/lib/db/queries/right-rail';
 import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
-import { getCountrySlug } from '@/lib/constants/country-slugs';
-import type { StandingRow } from '@/lib/db/queries';
 
 export const revalidate = 60;
 
@@ -189,42 +174,12 @@ export default async function HomePage({ params }: PageProps) {
   const typedLocale = locale as Locale;
   const t = await getTranslations({ locale, namespace: 'homepage' });
 
-  // Parallel data fetch
-  const currentSeasons = await getCurrentSeasons(db);
-  const seasonMap = new Map(currentSeasons.map((s) => [s.competitionId, s.year]));
-
-  const [
-    featured,
-    matchesByCategory,
-    matchCounts,
-    trendingPlayers,
-    leftRailComps,
-    standingsResults,
-    // Right rail data
-    nextFeatured,
-    liveGroupStandings,
-    topMatches,
-    moroccanPerformances,
-    topScorersData,
-  ] = await Promise.all([
+  // Above-fold data fetch only — right rail + trending stream via Suspense
+  const [featured, matchesByCategory, matchCounts, leftRailComps] = await Promise.all([
     getFeaturedMatches(db),
     getHomeMatchesByCategory(db),
     getHomeMatchCounts(db),
-    getTrendingPlayers(db, 6),
     getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
-    Promise.all(
-      HOMEPAGE_LEAGUES.map((l) => {
-        const year = seasonMap.get(l.compId);
-        if (!year) return Promise.resolve([] as StandingRow[]);
-        return getStandings(db, l.compId, year);
-      }),
-    ),
-    // Right rail queries
-    getNextFeaturedMatch(db),
-    getLiveGroupStandings(db),
-    getTopMatchesThisWeek(db),
-    getMoroccanPlayerPerformances(db),
-    getRightRailTopScorers(db),
   ]);
 
   // Enrich featured matches: WC venues + team form
@@ -244,15 +199,6 @@ export default async function HomePage({ params }: PageProps) {
       }
     }
   }
-
-  // Standings mini data — keep first league (Botola Pro) for right rail mini table
-  const standingsLeagues = HOMEPAGE_LEAGUES.map((l, i) => ({
-    compId: l.compId,
-    compName: l.label[typedLocale] ?? l.label['en'],
-    countryKey: l.countryKey,
-    slug: l.slugs,
-    rows: standingsResults[i],
-  })).filter((l) => l.rows.length > 0);
 
   // Build left rail sections
   const compMap = new Map(leftRailComps.map((c) => [c.id, c]));
@@ -274,7 +220,6 @@ export default async function HomePage({ params }: PageProps) {
       .filter((c): c is NonNullable<typeof c> => c != null),
   })).filter((s) => s.items.length > 0);
 
-  // Labels
   const leftRailLabels = {
     viewAllCompetitions: t('viewAllCompetitions'),
     liveNow: t('liveNow'),
@@ -293,17 +238,6 @@ export default async function HomePage({ params }: PageProps) {
     viewFullSchedule: t('viewFullSchedule'),
     showLess: t('showLess'),
     noMatches: t('noMatches'),
-  };
-
-  const standingsLabels = {
-    viewFullStandings: t('viewFullStandings'),
-    team: t('team'),
-    played: t('played'),
-    won: t('won'),
-    drawn: t('drawn'),
-    lost: t('lost'),
-    goalDiff: t('goalDiff'),
-    points: t('points'),
   };
 
   return (
@@ -336,106 +270,23 @@ export default async function HomePage({ params }: PageProps) {
               locale={typedLocale}
               labels={matchTabLabels}
             />
-            <HomeTrendingPlayers
-              players={trendingPlayers}
-              locale={typedLocale}
-              labels={{
-                trendingPlayers: t('trendingPlayers'),
-                viewAll: t('viewAll'),
-                goals: t('goals'),
-              }}
-            />
+            <Suspense>
+              <HomeTrendingPlayersStreamed locale={typedLocale} />
+            </Suspense>
           </div>
         }
         rightRail={
-          <div className="space-y-4">
-            {/* Widget 1: Featured/Live match */}
-            {nextFeatured && (
-              <HomeNextMatch
-                match={nextFeatured.match}
-                goals={nextFeatured.goals}
-                locale={typedLocale}
-                labels={{
-                  nextMatch: t('nextMatch'),
-                  liveNow: t('liveNow'),
-                  viewMatch: t('viewMatch'),
-                }}
-              />
-            )}
-
-            {/* Widget 2: Live group standings carousel */}
-            {liveGroupStandings.length > 0 && (
-              <HomeLiveGroupStandings
-                groups={liveGroupStandings}
-                locale={typedLocale}
-                labels={{
-                  liveGroupStandings: t('liveGroupStandings'),
-                  matchesToday: t('matchesToday'),
-                  viewFullGroup: t('viewFullGroup'),
-                  team: t('team'),
-                  played: t('played'),
-                  won: t('won'),
-                  drawn: t('drawn'),
-                  lost: t('lost'),
-                  goalDiff: t('goalDiff'),
-                  points: t('points'),
-                }}
-              />
-            )}
-
-            {/* Widget 3: Top matches this week */}
-            {topMatches.length > 0 && (
-              <HomeTopMatches
-                groups={topMatches}
-                locale={typedLocale}
-                labels={{
-                  topMatches: t('topMatches'),
-                  seeAll: t('seeAll'),
-                  today: t('today'),
-                }}
-              />
-            )}
-
-            {/* Widget 4: Lions Abroad */}
-            {moroccanPerformances.length > 0 && (
-              <HomeLionsAbroad
-                performances={moroccanPerformances}
-                locale={typedLocale}
-                labels={{
-                  lionsAbroad: t('lionsAbroad'),
-                  last48h: t('last48h'),
-                  goal: t('goal'),
-                  assist: t('assist'),
-                  cleanSheet: t('cleanSheet'),
-                  viewAll: t('viewAll'),
-                }}
-              />
-            )}
-
-            {/* Widget 5: Mini league table (Botola Pro) */}
-            {standingsLeagues[0] && (
-              <HomeStandingsMini
-                compName={standingsLeagues[0].compName}
-                countryKey={standingsLeagues[0].countryKey}
-                slug={standingsLeagues[0].slug}
-                rows={standingsLeagues[0].rows}
-                locale={typedLocale}
-                labels={standingsLabels}
-              />
-            )}
-
-            {/* Widget 6: Top scorers */}
-            {topScorersData.scorers.length > 0 && (
-              <HomeTopScorers
-                competitionName={topScorersData.competitionName}
-                scorers={topScorersData.scorers}
-                locale={typedLocale}
-                labels={{
-                  topScorers: t('topScorers'),
-                }}
-              />
-            )}
-          </div>
+          <Suspense
+            fallback={
+              <div className="space-y-4">
+                {Array.from({ length: 3 }, (_, i) => (
+                  <div key={i} className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
+                ))}
+              </div>
+            }
+          >
+            <HomeRightRailStreamed locale={typedLocale} />
+          </Suspense>
         }
         belowCenter={<AboutCard content={getHomepageAboutContent(typedLocale)} />}
       />
