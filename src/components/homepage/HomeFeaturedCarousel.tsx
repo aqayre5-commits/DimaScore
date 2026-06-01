@@ -19,21 +19,25 @@ interface Props {
   };
 }
 
-function useCountdown(kickoffAt: Date) {
-  const [now, setNow] = useState(() => new Date());
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
-  }, [kickoffAt]);
-
-  const ms = Math.max(0, kickoffAt.getTime() - now.getTime());
+function computeCountdown(kickoffAt: Date) {
+  const ms = Math.max(0, new Date(kickoffAt).getTime() - Date.now());
   const totalMin = Math.floor(ms / 60_000);
   return {
     days: Math.floor(totalMin / 1440),
     hours: Math.floor((totalMin % 1440) / 60),
     minutes: totalMin % 60,
   };
+}
+
+function useCountdown(kickoffAt: Date) {
+  const [remaining, setRemaining] = useState(() => computeCountdown(kickoffAt));
+
+  useEffect(() => {
+    const id = setInterval(() => setRemaining(computeCountdown(kickoffAt)), 60_000);
+    return () => clearInterval(id);
+  }, [kickoffAt]);
+
+  return remaining;
 }
 
 export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
@@ -81,7 +85,7 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
 
       {/* Slide content */}
       <div className="flex flex-col items-center px-8 pb-2 pt-14">
-        <CarouselSlide match={match} locale={locale} labels={labels} />
+        <CarouselSlide match={match} locale={locale} labels={labels} isFirst={idx === 0} />
       </div>
 
       {/* Venue info — inline with dots row */}
@@ -152,10 +156,12 @@ function CarouselSlide({
   match,
   locale,
   labels,
+  isFirst,
 }: {
   match: HomeFixture;
   locale: Locale;
   labels: Props['labels'];
+  isFirst: boolean;
 }) {
   const homeName = getTeamDisplayName(match.homeTeam, locale);
   const awayName = getTeamDisplayName(match.awayTeam, locale);
@@ -184,6 +190,7 @@ function CarouselSlide({
                 className="h-[96px] w-[96px] object-contain"
                 width={96}
                 height={96}
+                {...(isFirst ? { priority: true } : {})}
               />
             ) : (
               <div className="flex size-20 items-center justify-center rounded-full bg-bg-surface-2 text-xl font-bold text-text-tertiary">
@@ -214,6 +221,7 @@ function CarouselSlide({
                 className="h-[96px] w-[96px] object-contain"
                 width={96}
                 height={96}
+                {...(isFirst ? { priority: true } : {})}
               />
             ) : (
               <div className="flex size-20 items-center justify-center rounded-full bg-bg-surface-2 text-xl font-bold text-text-tertiary">
@@ -247,7 +255,10 @@ function CarouselSlide({
 function CountdownUnit({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center px-5 py-2.5">
-      <span className="text-2xl font-bold tabular-nums leading-none text-text-primary">
+      <span
+        className="text-2xl font-bold tabular-nums leading-none text-text-primary"
+        suppressHydrationWarning
+      >
         {String(value).padStart(2, '0')}
       </span>
       <span className="mt-1 text-[8px] font-semibold uppercase tracking-widest text-text-tertiary">

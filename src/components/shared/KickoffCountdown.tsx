@@ -54,7 +54,10 @@ export function KickoffCountdown({ kickoffAt, label, compact }: KickoffCountdown
             key={u.unit}
             className="flex w-9 flex-col items-center rounded-md bg-bg-surface-3 py-0.5"
           >
-            <span className="text-xs font-bold tabular-nums text-text-primary">
+            <span
+              className="text-xs font-bold tabular-nums text-text-primary"
+              suppressHydrationWarning
+            >
               {String(u.value).padStart(2, '0')}
             </span>
             <span className="text-[7px] font-medium text-text-tertiary">{u.unit}</span>
@@ -75,7 +78,10 @@ export function KickoffCountdown({ kickoffAt, label, compact }: KickoffCountdown
             key={u.unit}
             className="flex w-10 flex-col items-center rounded-md bg-bg-surface-3 py-1"
           >
-            <span className="text-sm font-bold tabular-nums text-text-primary">
+            <span
+              className="text-sm font-bold tabular-nums text-text-primary"
+              suppressHydrationWarning
+            >
               {String(u.value).padStart(2, '0')}
             </span>
             <span className="text-[8px] font-medium text-text-tertiary">{u.unit}</span>

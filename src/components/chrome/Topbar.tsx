@@ -48,6 +48,7 @@ function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void
                   <li key={`${entry.competitionId}-${entry.labelKey}`}>
                     <Link
                       href={buildCompetitionHref(entry, locale)}
+                      prefetch={false}
                       onClick={onClose}
                       className="block rounded px-2 py-1.5 text-sm text-text-secondary transition-colors hover:bg-accent-azure/5 hover:text-accent-azure"
                     >
@@ -98,6 +99,7 @@ export function Topbar() {
               <Link
                 key={`${entry.competitionId}-${entry.labelKey}`}
                 href={href}
+                prefetch={false}
                 className={cn(
                   'rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
                   isActive ? 'text-accent-azure' : 'text-text-secondary hover:text-accent-azure',

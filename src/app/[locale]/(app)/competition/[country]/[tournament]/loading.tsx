@@ -1,25 +1,21 @@
 export default function CompetitionLoading() {
   return (
-    <div className="mx-auto w-full max-w-7xl animate-pulse px-4 py-8">
-      {/* Competition hero skeleton */}
-      <div className="bg-surface-2 mb-6 h-40 rounded-xl" />
+    <div className="mx-auto w-full max-w-[1280px] animate-pulse px-4 py-6">
+      {/* Breadcrumb skeleton */}
+      <div className="mb-4 h-4 w-48 rounded bg-bg-surface-2" />
+      {/* Header skeleton */}
+      <div className="mb-6 h-40 rounded-xl bg-bg-surface-2" />
       {/* Tabs skeleton */}
-      <div className="mb-6 flex gap-2">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-surface-2 h-9 w-24 rounded-lg" />
+      <div className="mb-4 flex gap-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-9 w-24 rounded-lg bg-bg-surface-2" />
         ))}
       </div>
-      {/* 3-column layout skeleton */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr_280px]">
-        <div className="space-y-4">
-          <div className="bg-surface-2 h-48 rounded-lg" />
-          <div className="bg-surface-2 h-64 rounded-lg" />
-        </div>
-        <div className="bg-surface-2 h-[500px] rounded-lg" />
-        <div className="space-y-4">
-          <div className="bg-surface-2 h-48 rounded-lg" />
-          <div className="bg-surface-2 h-48 rounded-lg" />
-        </div>
+      {/* Content skeleton */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr_280px]">
+        <div className="hidden h-96 rounded-xl bg-bg-surface-2 lg:block" />
+        <div className="h-96 rounded-xl bg-bg-surface-2" />
+        <div className="hidden h-64 rounded-xl bg-bg-surface-2 lg:block" />
       </div>
     </div>
   );
