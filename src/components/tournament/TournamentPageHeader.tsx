@@ -76,10 +76,12 @@ export function TournamentPageHeader({
   function handleSeasonChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const year = e.target.value;
     const currentSeason = availableSeasons?.find((s) => s.isCurrent);
+    // Strip any trailing /YYYY season segment to get the base competition path.
+    const basePath = pathname.replace(/\/\d{4}$/, '');
     if (currentSeason && Number(year) === currentSeason.year) {
-      router.push(pathname);
+      router.push(basePath);
     } else {
-      router.push(`${pathname}?season=${year}`);
+      router.push(`${basePath}/${year}`);
     }
   }
 

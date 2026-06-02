@@ -105,6 +105,16 @@ const LEAGUE_TAB_HASHES: Record<
   },
 };
 
+async function getCachedLeagueSeasonInfo(competitionId: number) {
+  'use cache';
+  cacheLife('minutes');
+  const [availableSeasons, currentSeasonYear] = await Promise.all([
+    getAvailableSeasons(db, competitionId),
+    getCurrentSeasonYear(db, competitionId),
+  ]);
+  return { availableSeasons, currentSeasonYear };
+}
+
 export async function renderLeaguePage(
   competition: NonNullable<Awaited<ReturnType<typeof getCompetitionById>>>,
   entry: MegaMenuEntry,
@@ -118,10 +128,7 @@ export async function renderLeaguePage(
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
 
-  const [availableSeasons, currentSeasonYear] = await Promise.all([
-    getAvailableSeasons(db, competition.id),
-    getCurrentSeasonYear(db, competition.id),
-  ]);
+  const { availableSeasons, currentSeasonYear } = await getCachedLeagueSeasonInfo(competition.id);
 
   // Use season from URL param if valid, otherwise fall back to current
   const requestedYear = seasonParam ? Number(seasonParam) : null;

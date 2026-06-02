@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { cacheLife } from 'next/cache';
 import { db } from '@/lib/db/client';
 import { getMediaVideos } from '@/lib/db/queries/media';
 import { ShareButton } from '@/components/shared/ShareButton';
@@ -10,12 +11,18 @@ interface CompetitionMediaSectionProps {
   locale: Locale;
 }
 
+async function getCachedCompetitionVideos(competitionId: number) {
+  'use cache';
+  cacheLife('minutes');
+  return getMediaVideos(db, { competitionId, limit: 9 });
+}
+
 export async function CompetitionMediaSection({
   competitionId,
   locale,
 }: CompetitionMediaSectionProps) {
   const [{ videos }, t] = await Promise.all([
-    getMediaVideos(db, { competitionId, limit: 9 }),
+    getCachedCompetitionVideos(competitionId),
     getTranslations({ locale, namespace: 'tournament' }),
   ]);
 

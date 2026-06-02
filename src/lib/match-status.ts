@@ -13,11 +13,13 @@ export const FINISHED_CODES_ARRAY = ['FT', 'AET', 'PEN', 'WO', 'AWD', 'CANC', 'A
 const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
 const FINISHED_CODES = new Set<string>(FINISHED_CODES_ARRAY);
 
-export function getMatchState(statusCode: string, kickoffAt: Date): MatchState {
+export function getMatchState(statusCode: string, kickoffAt: Date, now?: Date): MatchState {
   if (LIVE_CODES.has(statusCode)) return 'live';
   if (FINISHED_CODES.has(statusCode)) return 'finished';
-  // Status not updated but kickoff already passed — treat as finished
-  if (kickoffAt <= new Date()) return 'finished';
+  // Status not updated but kickoff already passed — treat as finished.
+  // `now` is passed by static-prerenderable server callers (TTL-bounded via
+  // getCachedNow); omitted on the client, where a live `new Date()` is fine.
+  if (kickoffAt <= (now ?? new Date())) return 'finished';
   return 'upcoming';
 }
 

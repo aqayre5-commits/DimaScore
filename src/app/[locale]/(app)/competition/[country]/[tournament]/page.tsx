@@ -1,60 +1,39 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
-import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
-import {
-  getMetadataForCompetition,
-  getMetadataForCompetitionSeason,
-} from '@/lib/constants/tournament-metadata';
-import { ALL_ENTRIES, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
-import {
-  getCupContent,
-  findCupContentBySlug,
-  findEditionYearBySlug,
-} from '@/lib/constants/cup-content';
+import { findCupContentBySlug } from '@/lib/constants/cup-content';
+import { ALL_ENTRIES, TOP_NAV_COMPETITION_IDS } from '@/lib/constants/competitions-mega-menu';
+import { getCountrySlug } from '@/lib/constants/country-slugs';
 import { db } from '@/lib/db/client';
-import { competitions } from '@/lib/db/schema';
-import { inArray } from 'drizzle-orm';
 import { getCompetitionById, getCurrentSeasonYear } from '@/lib/db/queries/league';
 import { BASE_URL } from '@/lib/constants/site';
-import { cacheLife } from 'next/cache';
-import { CompetitionContent } from './competition-content';
-import { CompetitionSkeleton } from './CompetitionSkeleton';
+import { CompetitionContent, resolveEntry } from './competition-content';
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
-  searchParams: Promise<{ season?: string }>;
 }
 
 const baseUrl = BASE_URL;
 
-// ── Helpers ──
+// ── Static params ──
+// Prebuild the top competitions (default season) so navigation to them serves a
+// fully static, prefetch-with-data response — instant, skeleton-free in-app nav.
+// Non-top competitions still render on demand (dynamicParams defaults to true).
 
-function resolveEntry(tournament: string, locale: Locale): MegaMenuEntry | undefined {
-  // Try current locale first, then fall back to any locale match
-  return (
-    ALL_ENTRIES.find((entry) => entry.slugs[locale] === tournament) ??
-    ALL_ENTRIES.find((entry) => Object.values(entry.slugs).some((slug) => slug === tournament))
-  );
-}
-
-const LEFT_RAIL_COMP_IDS = [200, 201, 822, 1, 922, 6, 39, 140, 78, 135, 61, 2, 3, 848];
-
-async function getLeftRailLogos(): Promise<Record<number, string | null>> {
-  'use cache';
-  cacheLife('minutes');
-  const rows = await db
-    .select({ id: competitions.id, logoUrl: competitions.logoUrl })
-    .from(competitions)
-    .where(inArray(competitions.id, LEFT_RAIL_COMP_IDS));
-  return Object.fromEntries(rows.map((r) => [r.id, r.logoUrl]));
-}
-
-async function getCachedCompetitionType(compId: number) {
-  'use cache';
-  cacheLife('minutes');
-  return getCompetitionById(db, compId);
+export function generateStaticParams() {
+  const params: { locale: string; country: string; tournament: string }[] = [];
+  for (const id of TOP_NAV_COMPETITION_IDS) {
+    const entry = ALL_ENTRIES.find((e) => e.competitionId === id);
+    if (!entry) continue;
+    for (const locale of locales) {
+      params.push({
+        locale,
+        country: getCountrySlug(entry.countryKey, locale),
+        tournament: entry.slugs[locale],
+      });
+    }
+  }
+  return params;
 }
 
 // ── Metadata ──
@@ -134,82 +113,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-// ── Page ──
+// ── Page (default season — static for the top competitions) ──
 
-export default async function CompetitionPage({ params, searchParams }: PageProps) {
+export default async function CompetitionPage({ params }: PageProps) {
   const { locale, country: rawCountry, tournament: rawTournament } = await params;
   setRequestLocale(locale);
-  // NOTE: searchParams is NOT awaited here — keeps the default path static/ISR-cacheable.
-  // It is passed as an unawaited Promise to CompetitionContent (inside Suspense).
-  const tournament = decodeURIComponent(rawTournament);
-  const typedLocale = locale as Locale;
-
-  // Gate: only render full page for competitions with metadata.
-  // Slug-aware: if slug matches a specific edition's cup content, use that edition's metadata.
-  const entry = resolveEntry(tournament, typedLocale);
-  const slugCupContent = findCupContentBySlug(tournament);
-  let metadata = entry ? getMetadataForCompetition(entry.competitionId) : undefined;
-  // If the slug resolves to a different edition than the default, override metadata
-  if (slugCupContent && entry && metadata?.type === 'cup') {
-    const editionYear = findEditionYearBySlug(entry.competitionId, tournament);
-    if (editionYear != null && editionYear !== metadata.editionYear) {
-      const seasonMeta = getMetadataForCompetitionSeason(entry.competitionId, editionYear);
-      if (seasonMeta) metadata = seasonMeta;
-    }
-  }
-
-  // Determine render path without awaiting searchParams
-  let renderPath: 'cup' | 'league' | 'generic-cup' | 'coming-soon' = 'coming-soon';
-  if (metadata?.type === 'cup') {
-    renderPath = 'cup';
-  } else if (entry) {
-    const competition = await getCachedCompetitionType(entry.competitionId);
-    if (competition?.type === 'League') renderPath = 'league';
-    else if (competition?.type === 'Cup') renderPath = 'generic-cup';
-  }
-
-  // Coming-soon fallback — fully static, no searchParams needed
-  if (renderPath === 'coming-soon' || !entry) {
-    const t = await getTranslations({ locale, namespace: 'breadcrumb' });
-    const tP = await getTranslations({ locale, namespace: 'placeholder' });
-    const displayName = tournament.replace(/-/g, ' ');
-    const breadcrumbs: BreadcrumbSegment[] = [
-      { label: t('football'), href: `/${locale}` },
-      { label: displayName },
-    ];
-
-    return (
-      <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
-        <SeoBreadcrumb segments={breadcrumbs} />
-        <div className="mt-8 flex flex-col items-center gap-4 text-center">
-          <div className="flex size-16 items-center justify-center rounded-full bg-bg-surface-2">
-            <span className="text-2xl">🏆</span>
-          </div>
-          <h1 className="text-xl font-semibold capitalize text-text-primary">{displayName}</h1>
-          <p className="text-sm text-text-tertiary">{tP('competitionComingSoon')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Fetch left rail logos (shared across all render paths, season-independent)
-  const competitionLogos = await getLeftRailLogos();
-
-  // Season-dependent content — searchParams is awaited inside CompetitionContent,
-  // isolated in a Suspense boundary so the outer page stays static.
   return (
-    <Suspense fallback={<CompetitionSkeleton />}>
-      <CompetitionContent
-        searchParams={searchParams}
-        renderPath={renderPath}
-        locale={typedLocale}
-        rawLocale={locale}
-        rawCountry={rawCountry}
-        rawTournament={rawTournament}
-        entry={entry}
-        metadata={metadata?.type === 'cup' ? metadata : undefined}
-        competitionLogos={competitionLogos}
-      />
-    </Suspense>
+    <CompetitionContent rawLocale={locale} rawCountry={rawCountry} rawTournament={rawTournament} />
   );
 }

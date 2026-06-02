@@ -45,6 +45,14 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Legacy season query param → path segment (season moved off searchParams
+      // so the default competition page can be statically prerendered).
+      {
+        source: '/:locale/competition/:country/:tournament',
+        has: [{ type: 'query', key: 'season', value: '(?<season>\\d{4})' }],
+        destination: '/:locale/competition/:country/:tournament/:season',
+        permanent: false,
+      },
       // www.dimascore.com → dimascore.com
       {
         source: '/:path*',

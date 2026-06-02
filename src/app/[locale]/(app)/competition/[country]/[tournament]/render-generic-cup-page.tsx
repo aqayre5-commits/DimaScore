@@ -70,6 +70,16 @@ async function getCachedGenericCupData(competitionId: number, seasonYear: number
   };
 }
 
+async function getCachedGenericCupSeasonInfo(competitionId: number) {
+  'use cache';
+  cacheLife('minutes');
+  const [availableSeasons, currentSeasonYear] = await Promise.all([
+    getAvailableSeasons(db, competitionId),
+    getCurrentSeasonYear(db, competitionId),
+  ]);
+  return { availableSeasons, currentSeasonYear };
+}
+
 export async function renderGenericCupPage(
   competition: NonNullable<Awaited<ReturnType<typeof getCompetitionById>>>,
   _entry: MegaMenuEntry,
@@ -82,10 +92,9 @@ export async function renderGenericCupPage(
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
 
-  const [availableSeasons, currentSeasonYear] = await Promise.all([
-    getAvailableSeasons(db, competition.id),
-    getCurrentSeasonYear(db, competition.id),
-  ]);
+  const { availableSeasons, currentSeasonYear } = await getCachedGenericCupSeasonInfo(
+    competition.id,
+  );
 
   const requestedYear = seasonParam ? Number(seasonParam) : null;
   const seasonYear =

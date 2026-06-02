@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
+import { getCachedNow } from '@/lib/cached-now';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { TopPlayerRow } from '@/lib/db/queries/league';
@@ -28,7 +29,7 @@ function resolveTeamCode(team: FixtureWithTeams['homeTeam'], locale: Locale): st
   );
 }
 
-export function LeagueRightRailCard({
+export async function LeagueRightRailCard({
   featuredMatches,
   topScorer,
   topScorers: topScorersProp,
@@ -36,7 +37,8 @@ export function LeagueRightRailCard({
   competitionName,
   stretch,
 }: LeagueRightRailCardProps) {
-  const t = useTranslations('leaguePage');
+  const t = await getTranslations({ locale, namespace: 'leaguePage' });
+  const now = new Date(await getCachedNow());
 
   // Merge legacy single scorer with array prop
   const scorers = topScorersProp ?? (topScorer ? [topScorer] : []);
@@ -46,7 +48,7 @@ export function LeagueRightRailCard({
 
   // Separate live matches for "LIVE NOW" header
   const liveMatches = featuredMatches.filter((f) => {
-    const state = getMatchState(f.statusCode, f.kickoffAt);
+    const state = getMatchState(f.statusCode, f.kickoffAt, now);
     return state === 'live';
   });
   const featured = featuredMatches.slice(0, 2);
@@ -84,7 +86,7 @@ export function LeagueRightRailCard({
           </div>
           <div className="divide-y divide-border-subtle">
             {remaining.map((f) => (
-              <CompactMatch key={f.id} fixture={f} locale={locale} />
+              <CompactMatch key={f.id} fixture={f} locale={locale} now={now} />
             ))}
           </div>
         </div>
@@ -153,12 +155,20 @@ export function LeagueRightRailCard({
   );
 }
 
-function CompactMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale: Locale }) {
+function CompactMatch({
+  fixture,
+  locale,
+  now,
+}: {
+  fixture: FixtureWithTeams;
+  locale: Locale;
+  now: Date;
+}) {
   const { homeTeam, awayTeam, kickoffAt, statusCode, homeScore, awayScore } = fixture;
 
   const homeCode = resolveTeamCode(homeTeam, locale);
   const awayCode = resolveTeamCode(awayTeam, locale);
-  const _state = getMatchState(statusCode, kickoffAt);
+  const _state = getMatchState(statusCode, kickoffAt, now);
   const isFinished = _state === 'finished';
   const isLive = _state === 'live';
   const kickoffTime = formatMatchTime(kickoffAt, locale);

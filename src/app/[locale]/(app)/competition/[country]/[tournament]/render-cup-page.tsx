@@ -41,7 +41,7 @@ import {
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 
-async function getCachedCupData(competitionId: number, seasonYear: number) {
+async function getCachedCupData(competitionId: number, seasonYear: number, metadata: CupMetadata) {
   'use cache';
   cacheLife('minutes');
   const [standings, knockoutFixtures, cupFeaturedMatches, allCupFixtures, availableSeasons] =
@@ -52,12 +52,16 @@ async function getCachedCupData(competitionId: number, seasonYear: number) {
       getLeagueFixtures(db, competitionId, seasonYear),
       getAvailableSeasons(db, competitionId),
     ]);
+  // Computed inside the cache boundary: computeTournamentPhase reads new Date(),
+  // which is forbidden in a static prerender unless TTL-bounded by 'use cache'.
+  const tournamentPhase = computeTournamentPhase(metadata, allCupFixtures);
   return {
     standings,
     knockoutFixtures,
     cupFeaturedMatches,
     allCupFixtures,
     availableSeasons,
+    tournamentPhase,
   };
 }
 
@@ -219,10 +223,14 @@ export async function renderCupPage(
     getCupContentForSeason(competitionId, seasonYear) ??
     (requestedYear ? undefined : getCupContent(competitionId));
 
-  const { standings, knockoutFixtures, cupFeaturedMatches, allCupFixtures, availableSeasons } =
-    await getCachedCupData(competitionId, seasonYear);
-
-  const tournamentPhase = computeTournamentPhase(metadata, allCupFixtures);
+  const {
+    standings,
+    knockoutFixtures,
+    cupFeaturedMatches,
+    allCupFixtures,
+    availableSeasons,
+    tournamentPhase,
+  } = await getCachedCupData(competitionId, seasonYear, metadata);
   const fallbackName =
     { 1: 'FIFA World Cup', 6: 'AFCON', 922: 'WAFCON' }[competitionId] ?? `Cup ${competitionId}`;
   const pageTitle = cupContent?.titles[locale] ?? `${fallbackName} ${seasonYear}`;
