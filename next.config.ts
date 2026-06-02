@@ -31,6 +31,9 @@ const nextConfig: NextConfig = {
   cacheLife: {
     match: { revalidate: 30, expire: 3600 },
   },
+  experimental: {
+    viewTransition: true,
+  },
   images: {
     remotePatterns: [
       { hostname: 'media.api-sports.io' },
