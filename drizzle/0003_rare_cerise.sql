@@ -1,0 +1,1 @@
+CREATE INDEX "players_nationality_code_idx" ON "players" USING btree ("nationality_code");

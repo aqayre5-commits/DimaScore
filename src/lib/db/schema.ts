@@ -170,6 +170,7 @@ export const players = pgTable(
   (t) => [
     index('players_current_team_id_idx').on(t.currentTeamId),
     index('players_is_women_idx').on(t.isWomen),
+    index('players_nationality_code_idx').on(t.nationalityCode),
   ],
 );
 
