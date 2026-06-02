@@ -193,7 +193,7 @@ function CompactMatch({ fixture, locale }: { fixture: FixtureWithTeams; locale: 
             {homeScore}-{awayScore}
           </span>
         ) : (
-          <span className="text-xs tabular-nums text-text-secondary">
+          <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
             {isFinished ? '- : -' : kickoffTime}
           </span>
         )}
