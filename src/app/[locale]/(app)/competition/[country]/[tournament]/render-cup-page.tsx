@@ -32,14 +32,7 @@ import { getAboutContent } from '@/lib/constants/about-content';
 import { computeBestThirdPlaced } from '@/lib/standings/best-third';
 import type { TournamentPhase } from '@/components/tournament/StatusDescriptor';
 import { db } from '@/lib/db/client';
-import {
-  getFeaturedMatch,
-  getFixturesByRound,
-  getKnockoutFixtures,
-  getStandings,
-  getMoroccoTeamId,
-  type FixtureWithTeams,
-} from '@/lib/db/queries';
+import { getKnockoutFixtures, getStandings, type FixtureWithTeams } from '@/lib/db/queries';
 import {
   getLeagueFeaturedMatches,
   getLeagueFixtures,
@@ -51,35 +44,20 @@ import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 async function getCachedCupData(competitionId: number, seasonYear: number) {
   'use cache';
   cacheLife('minutes');
-  const [
-    moroccoTeamId,
-    standings,
-    round1Fixtures,
-    knockoutFixtures,
-    cupFeaturedMatches,
-    allCupFixtures,
-    availableSeasons,
-  ] = await Promise.all([
-    getMoroccoTeamId(db),
-    getStandings(db, competitionId, seasonYear),
-    getFixturesByRound(db, competitionId, seasonYear, 1),
-    getKnockoutFixtures(db, competitionId, seasonYear),
-    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
-    getLeagueFixtures(db, competitionId, seasonYear),
-    getAvailableSeasons(db, competitionId),
-  ]);
-  const featuredMatch = moroccoTeamId
-    ? await getFeaturedMatch(db, competitionId, seasonYear, moroccoTeamId)
-    : null;
+  const [standings, knockoutFixtures, cupFeaturedMatches, allCupFixtures, availableSeasons] =
+    await Promise.all([
+      getStandings(db, competitionId, seasonYear),
+      getKnockoutFixtures(db, competitionId, seasonYear),
+      getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
+      getLeagueFixtures(db, competitionId, seasonYear),
+      getAvailableSeasons(db, competitionId),
+    ]);
   return {
-    moroccoTeamId,
     standings,
-    round1Fixtures,
     knockoutFixtures,
     cupFeaturedMatches,
     allCupFixtures,
     availableSeasons,
-    featuredMatch,
   };
 }
 
@@ -241,15 +219,8 @@ export async function renderCupPage(
     getCupContentForSeason(competitionId, seasonYear) ??
     (requestedYear ? undefined : getCupContent(competitionId));
 
-  const {
-    standings,
-    round1Fixtures,
-    knockoutFixtures,
-    cupFeaturedMatches,
-    allCupFixtures,
-    availableSeasons,
-    featuredMatch,
-  } = await getCachedCupData(competitionId, seasonYear);
+  const { standings, knockoutFixtures, cupFeaturedMatches, allCupFixtures, availableSeasons } =
+    await getCachedCupData(competitionId, seasonYear);
 
   const tournamentPhase = computeTournamentPhase(metadata, allCupFixtures);
   const fallbackName =
