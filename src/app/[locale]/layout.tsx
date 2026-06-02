@@ -107,6 +107,8 @@ export default async function LocaleLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <link rel="preconnect" href="https://media.api-sports.io" />
+        <link rel="dns-prefetch" href="https://media.api-sports.io" />
       </head>
       <body className={`${fontClass} min-h-full flex flex-col bg-bg-canvas text-text-primary`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
