@@ -39,87 +39,6 @@ export interface StandingRow {
   team: TeamSnapshot | null;
 }
 
-// ── Q1: Featured match ──
-
-/**
- * Get the featured match for a competition.
- * Algorithm (WC 2026 pre-tournament): first Morocco fixture by kickoff.
- * Returns null if no fixtures found.
- *
- * NOTE: This function takes a specific team ID (moroccoTeamId) which couples
- * it to a Morocco-first selection strategy. When competition-league.md is
- * instantiated for Botola Pro, the featured match algorithm will need
- * different logic (e.g. Wydad/Raja next match, or stakes-weighted selection).
- * Generalize in Phase 6 league sub-task — see BACKLOG.
- */
-export async function getFeaturedMatch(
-  db: NeonHttpDatabase<typeof schema>,
-  competitionId: number,
-  seasonYear: number,
-  moroccoTeamId: number,
-): Promise<FixtureWithTeams | null> {
-  // Find first upcoming Morocco fixture
-  const moroccoFixtures = await db
-    .select()
-    .from(schema.fixtures)
-    .where(
-      and(
-        eq(schema.fixtures.competitionId, competitionId),
-        eq(schema.fixtures.seasonYear, seasonYear),
-        sql`(${schema.fixtures.homeTeamId} = ${moroccoTeamId} OR ${schema.fixtures.awayTeamId} = ${moroccoTeamId})`,
-      ),
-    )
-    .orderBy(asc(schema.fixtures.kickoffAt))
-    .limit(1);
-
-  if (moroccoFixtures.length === 0) {
-    // Fallback: first fixture overall
-    const firstFixture = await db
-      .select()
-      .from(schema.fixtures)
-      .where(
-        and(
-          eq(schema.fixtures.competitionId, competitionId),
-          eq(schema.fixtures.seasonYear, seasonYear),
-        ),
-      )
-      .orderBy(asc(schema.fixtures.kickoffAt))
-      .limit(1);
-
-    if (firstFixture.length === 0) return null;
-    return hydrateFixtures(db, firstFixture).then((r) => r[0] ?? null);
-  }
-
-  return hydrateFixtures(db, moroccoFixtures).then((r) => r[0] ?? null);
-}
-
-// ── Q2: Fixtures by round ──
-
-/**
- * Get all fixtures for a competition round, hydrated with team + venue data.
- * Batched: 3 queries total (fixtures + teams + venues), not N+1.
- */
-export async function getFixturesByRound(
-  db: NeonHttpDatabase<typeof schema>,
-  competitionId: number,
-  seasonYear: number,
-  roundNumber: number,
-): Promise<FixtureWithTeams[]> {
-  const rows = await db
-    .select()
-    .from(schema.fixtures)
-    .where(
-      and(
-        eq(schema.fixtures.competitionId, competitionId),
-        eq(schema.fixtures.seasonYear, seasonYear),
-        eq(schema.fixtures.roundNumber, roundNumber),
-      ),
-    )
-    .orderBy(asc(schema.fixtures.kickoffAt));
-
-  return hydrateFixtures(db, rows);
-}
-
 // ── Q2b: Knockout fixtures (whitelisted rounds only) ──
 
 const KNOCKOUT_ROUNDS = [
@@ -205,24 +124,6 @@ export async function getStandings(
     description: r.description,
     team: r.teamId ? (teamsMap.get(r.teamId) ?? null) : null,
   }));
-}
-
-// ── Q4: Morocco team lookup ──
-
-/**
- * Find Morocco's team ID for national team tournaments.
- * Returns null if not found.
- */
-export async function getMoroccoTeamId(
-  db: NeonHttpDatabase<typeof schema>,
-): Promise<number | null> {
-  const rows = await db
-    .select({ id: schema.teams.id })
-    .from(schema.teams)
-    .where(and(eq(schema.teams.code, 'MA'), eq(schema.teams.isNational, true)))
-    .limit(1);
-
-  return rows.length > 0 ? rows[0].id : null;
 }
 
 // ── Batch hydration helpers ──
