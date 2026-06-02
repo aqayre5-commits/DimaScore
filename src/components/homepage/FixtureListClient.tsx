@@ -74,8 +74,10 @@ export function FixtureListClient({ sections, locale, todayStr, labels }: Fixtur
                     : 'text-text-tertiary/50',
               )}
             >
-              <span>{dayFormatter.format(date)}</span>
-              <span className="text-sm font-medium">{numFormatter.format(date)}</span>
+              <span suppressHydrationWarning>{dayFormatter.format(date)}</span>
+              <span className="text-sm font-medium" suppressHydrationWarning>
+                {numFormatter.format(date)}
+              </span>
               {dateStr === todayStr && <span className="mt-0.5 text-xs">{t('today')}</span>}
             </button>
           );

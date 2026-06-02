@@ -60,7 +60,7 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
 
         {/* Kickoff time for upcoming */}
         {!isLive && (
-          <div className="mt-2 text-center text-xs text-text-secondary">
+          <div className="mt-2 text-center text-xs text-text-secondary" suppressHydrationWarning>
             {formatKickoff(match.kickoffAt, locale)}
           </div>
         )}

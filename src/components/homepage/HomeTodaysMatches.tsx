@@ -68,7 +68,7 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                         {f.statusCode === 'HT' ? 'HT' : `${f.minute ?? ''}'`}
                       </span>
                     ) : (
-                      <span className="text-text-secondary">
+                      <span className="text-text-secondary" suppressHydrationWarning>
                         {formatMatchTime(f.kickoffAt, locale)}
                       </span>
                     )}

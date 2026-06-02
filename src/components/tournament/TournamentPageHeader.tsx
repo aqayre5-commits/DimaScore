@@ -143,7 +143,9 @@ export function TournamentPageHeader({
                 <p className="mt-1 text-sm text-text-secondary">
                   {hostNations} · {org}
                 </p>
-                <p className="mt-0.5 text-sm text-text-tertiary">{dateRange}</p>
+                <p className="mt-0.5 text-sm text-text-tertiary" suppressHydrationWarning>
+                  {dateRange}
+                </p>
               </div>
               {availableSeasons && availableSeasons.length > 1 ? (
                 <select

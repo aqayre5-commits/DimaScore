@@ -128,7 +128,10 @@ export function LeagueFixturesCard({
         {finalGroups.map((group) => (
           <div key={group.dateKey}>
             <div className="border-b border-border-subtle bg-bg-surface-3 px-4 py-1.5">
-              <span className="text-xs font-medium uppercase text-text-tertiary">
+              <span
+                className="text-xs font-medium uppercase text-text-tertiary"
+                suppressHydrationWarning
+              >
                 {group.label}
               </span>
             </div>

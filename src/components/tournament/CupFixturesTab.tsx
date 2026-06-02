@@ -133,7 +133,10 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
           groupByDate(visible, locale).map((group) => (
             <div key={group.key}>
               <div className="border-b border-border-subtle bg-bg-surface-3 px-4 py-1.5">
-                <span className="text-xs font-semibold uppercase text-text-tertiary">
+                <span
+                  className="text-xs font-semibold uppercase text-text-tertiary"
+                  suppressHydrationWarning
+                >
                   {group.label}
                 </span>
               </div>
@@ -191,7 +194,9 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
         ) : isFinished ? (
           <span className="text-xs text-text-tertiary">FT</span>
         ) : (
-          <span className="text-xs tabular-nums text-text-secondary">{time}</span>
+          <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
+            {time}
+          </span>
         )}
       </div>
 

@@ -88,7 +88,9 @@ export function FixtureRow({
                 : t('fullTime')}
           </span>
         ) : (
-          <span className="text-xs tabular-nums text-text-secondary">{time}</span>
+          <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
+            {time}
+          </span>
         )}
       </div>
 
