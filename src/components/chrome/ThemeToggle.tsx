@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
+import { useMounted } from '@/hooks/useMounted';
 
 export function ThemeToggle() {
   const t = useTranslations('theme');
+  const mounted = useMounted();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof window === 'undefined') return 'dark';
     return (localStorage.getItem('atlas-theme') as 'dark' | 'light' | null) ?? 'dark';
@@ -26,7 +28,7 @@ export function ThemeToggle() {
     setTheme(next);
   }
 
-  const Icon = theme === 'dark' ? Sun : Moon;
+  const Icon = !mounted || theme === 'dark' ? Sun : Moon;
 
   return (
     <Button variant="ghost" size="icon" onClick={toggle} aria-label={t('toggle')}>

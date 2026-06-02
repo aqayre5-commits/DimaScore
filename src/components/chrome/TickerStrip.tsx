@@ -112,7 +112,10 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
           )}
         </span>
       ) : (
-        <span className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary">
+        <span
+          className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary"
+          suppressHydrationWarning
+        >
           {formatMatchTime(fixture.kickoffAt, locale)}
         </span>
       )}
@@ -162,7 +165,10 @@ function TickerCellsInert({ fixtures, locale }: TickerStripProps) {
                   )}
                 </span>
               ) : (
-                <span className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary">
+                <span
+                  className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary"
+                  suppressHydrationWarning
+                >
                   {formatMatchTime(fixture.kickoffAt, locale)}
                 </span>
               )}

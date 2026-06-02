@@ -206,7 +206,10 @@ function CarouselSlide({
         {/* Center: VS + date */}
         <div className="flex shrink-0 flex-col items-center gap-2 px-2">
           <span className="text-3xl font-black tracking-tight text-accent-azure">VS</span>
-          <p className="text-xs font-medium tracking-wide text-text-tertiary">
+          <p
+            className="text-xs font-medium tracking-wide text-text-tertiary"
+            suppressHydrationWarning
+          >
             {formatFeaturedDate(match.kickoffAt, locale)}
           </p>
         </div>
