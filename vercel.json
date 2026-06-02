@@ -1,4 +1,5 @@
 {
+  "regions": ["fra1"],
   "crons": [
     { "path": "/api/cron/reference-data", "schedule": "0 3 * * *" },
     { "path": "/api/cron/fixtures-schedule", "schedule": "0,30 * * * *" },
