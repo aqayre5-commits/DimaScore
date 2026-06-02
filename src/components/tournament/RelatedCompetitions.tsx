@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Locale } from '@/lib/i18n/config';
 import {
@@ -35,14 +36,14 @@ export function RelatedCompetitions({ competitionIds, locale }: RelatedCompetiti
 
       <div className="divide-y divide-border-subtle">
         {related.map((entry) => (
-          <a
+          <Link
             key={entry.competitionId}
             href={buildCompetitionHref(entry, locale)}
             className="flex items-center justify-between px-4 py-2.5 text-base text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
           >
             <span>{tMenu(entry.labelKey as never)}</span>
             <span className="text-text-tertiary">&rarr;</span>
-          </a>
+          </Link>
         ))}
       </div>
     </div>
