@@ -63,7 +63,9 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
 
         {/* Date + time header */}
         <div className="px-4 pt-2 pb-1 text-center">
-          <span className="text-xs tabular-nums text-text-tertiary">{headerDate}</span>
+          <span className="text-xs tabular-nums text-text-tertiary" suppressHydrationWarning>
+            {headerDate}
+          </span>
         </div>
 
         {/* Teams + Score/VS */}
