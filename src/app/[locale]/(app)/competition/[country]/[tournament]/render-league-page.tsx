@@ -41,6 +41,14 @@ import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-con
 async function getCachedLeagueData(competitionId: number, seasonYear: number) {
   'use cache';
   cacheLife('minutes');
+  // TEMP perf instrumentation — revert after diagnosis. Body runs only on cache MISS.
+  const t0 = Date.now();
+  const time = async <T,>(label: string, fn: () => Promise<T>): Promise<T> => {
+    const s = Date.now();
+    const r = await fn();
+    console.log(`[perf] ${label} ${Date.now() - s}ms`);
+    return r;
+  };
   const [
     coverage,
     standings,
@@ -53,17 +61,20 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number) {
     topCards,
     injuries,
   ] = await Promise.all([
-    getLeagueCoverage(db, competitionId, seasonYear),
-    getStandings(db, competitionId, seasonYear),
-    getLeagueRounds(db, competitionId, seasonYear),
-    getCurrentRound(db, competitionId, seasonYear),
-    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
-    getLeagueFixtures(db, competitionId, seasonYear),
-    getTopScorersForLeague(db, competitionId, seasonYear),
-    getTopAssistsForLeague(db, competitionId, seasonYear),
-    getTopCardsForLeague(db, competitionId, seasonYear),
-    getInjuriesForCompetition(db, competitionId, seasonYear),
+    time('coverage', () => getLeagueCoverage(db, competitionId, seasonYear)),
+    time('standings', () => getStandings(db, competitionId, seasonYear)),
+    time('rounds', () => getLeagueRounds(db, competitionId, seasonYear)),
+    time('currentRound', () => getCurrentRound(db, competitionId, seasonYear)),
+    time('featuredMatches', () => getLeagueFeaturedMatches(db, competitionId, seasonYear, 2)),
+    time('fixtures', () => getLeagueFixtures(db, competitionId, seasonYear)),
+    time('topScorers', () => getTopScorersForLeague(db, competitionId, seasonYear)),
+    time('topAssists', () => getTopAssistsForLeague(db, competitionId, seasonYear)),
+    time('topCards', () => getTopCardsForLeague(db, competitionId, seasonYear)),
+    time('injuries', () => getInjuriesForCompetition(db, competitionId, seasonYear)),
   ]);
+  console.log(
+    `[perf] getCachedLeagueData MISS comp=${competitionId} season=${seasonYear} total=${Date.now() - t0}ms`,
+  );
   return {
     coverage,
     standings,
