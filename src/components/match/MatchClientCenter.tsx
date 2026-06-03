@@ -96,7 +96,7 @@ export function MatchClientCenter({
       {/* Lineups */}
       {lineupsLoading && coverage?.lineups && !isUpcoming && <SectionSkeleton />}
       {hasLineups && homeLineup && awayLineup && (
-        <section id="sec-lineups" className="scroll-mt-14">
+        <section id="sec-lineups" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
           <LineupPitch
             homeLineup={homeLineup}
             awayLineup={awayLineup}
@@ -115,7 +115,7 @@ export function MatchClientCenter({
       {/* Events */}
       {eventsLoading && coverage?.events && !isUpcoming && <SectionSkeleton />}
       {hasEvents && events && (
-        <section id="sec-events" className="scroll-mt-14">
+        <section id="sec-events" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
           <SectionHeader label={t('events')} />
           <EventTimeline events={events} homeTeamId={homeTeamId} locale={locale} />
         </section>
@@ -124,7 +124,10 @@ export function MatchClientCenter({
       {/* Statistics */}
       {statsLoading && coverage?.statisticsFixtures && !isUpcoming && <SectionSkeleton />}
       {hasStats && homeStatData && awayStatData && (
-        <section id="sec-statistics" className="scroll-mt-14">
+        <section
+          id="sec-statistics"
+          className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]"
+        >
           <SectionHeader label={t('stats')} />
           <StatsBars homeStats={homeStatData} awayStats={awayStatData} />
         </section>
@@ -132,7 +135,7 @@ export function MatchClientCenter({
 
       {/* Player Statistics */}
       {hasRatings && (
-        <section id="sec-players" className="scroll-mt-14">
+        <section id="sec-players" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
           <SectionHeader label={t('playerRatings')} />
           <PlayerRatingsPanel
             playerStats={playerStats}

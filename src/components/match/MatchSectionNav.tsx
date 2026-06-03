@@ -11,6 +11,13 @@ interface MatchSectionNavProps {
   sections: Section[];
 }
 
+/** Fixed chrome height (AdaptiveTopStrip + Topbar), read from --app-sticky-offset. */
+function getChromeOffset(): number {
+  if (typeof document === 'undefined') return 88;
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--app-sticky-offset');
+  return parseInt(v, 10) || 88;
+}
+
 export function MatchSectionNav({ sections }: MatchSectionNavProps) {
   const [activeId, setActiveId] = useState(sections[0]?.id ?? '');
   const navRef = useRef<HTMLElement>(null);
@@ -30,7 +37,9 @@ export function MatchSectionNav({ sections }: MatchSectionNavProps) {
           }
         }
       },
-      { threshold: 0.3, rootMargin: '-80px 0px -50% 0px' },
+      // Top margin tracks the fixed chrome + sticky nav so the active tab flips
+      // when a section clears the header stack, not when it touches the viewport top.
+      { threshold: 0.3, rootMargin: '-144px 0px -50% 0px' },
     );
 
     for (const el of targets) observer.observe(el);
@@ -43,7 +52,8 @@ export function MatchSectionNav({ sections }: MatchSectionNavProps) {
     if (!el) return;
 
     const navHeight = navRef.current?.offsetHeight ?? 48;
-    const y = el.getBoundingClientRect().top + window.scrollY - navHeight - 8;
+    // Land the heading below the fixed chrome AND the sticky nav (+ small gap).
+    const y = el.getBoundingClientRect().top + window.scrollY - getChromeOffset() - navHeight - 8;
     window.scrollTo({ top: y, behavior: 'smooth' });
   }
 
@@ -51,7 +61,7 @@ export function MatchSectionNav({ sections }: MatchSectionNavProps) {
     <nav
       ref={navRef}
       aria-label="Match sections"
-      className="sticky top-0 z-30 border-t border-border-subtle bg-bg-surface/95 backdrop-blur-sm"
+      className="sticky top-[var(--app-sticky-offset)] z-30 border-t border-border-subtle bg-bg-surface/95 backdrop-blur-sm"
     >
       <div className="flex">
         {sections.map((s) => (

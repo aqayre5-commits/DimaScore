@@ -58,6 +58,9 @@
  * Dark mode is the default (data pages).
  */
 :root {
+  /* Combined height of the fixed chrome: AdaptiveTopStrip (h-10/40px) + Topbar (h-12/48px).
+     Single source of truth for sticky offsets + scroll-margins below the header stack. */
+  --app-sticky-offset: 88px;
   --background: var(--bg-canvas);
   --foreground: var(--text-primary);
   --card: var(--bg-surface);
