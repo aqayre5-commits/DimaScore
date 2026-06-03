@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTranslations } from 'next-intl/server';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
@@ -173,9 +175,20 @@ function CompactMatch({
   const isLive = _state === 'live';
   const kickoffTime = formatMatchTime(kickoffAt, locale);
 
+  const preview = previewFromFixtureRow({
+    homeTeam,
+    awayTeam,
+    homeScore,
+    awayScore,
+    statusCode,
+    kickoffAt,
+  });
+
   return (
-    <Link
+    <MatchLink
+      matchId={String(fixture.id)}
       href={`/${locale}/match/${fixture.id}`}
+      preview={preview}
       className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-accent-azure/5"
     >
       {/* Home */}
@@ -224,6 +237,6 @@ function CompactMatch({
           <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />
         )}
       </div>
-    </Link>
+    </MatchLink>
   );
 }

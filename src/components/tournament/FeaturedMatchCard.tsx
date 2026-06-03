@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { useTranslations } from 'next-intl';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
@@ -15,12 +16,12 @@ interface FeaturedMatchCardProps {
 }
 
 function resolveTeamCode(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
-  if (!team) return '\u2014';
+  if (!team) return '—';
   return (
     team.code ??
     team.shortName[locale] ??
     team.shortName['en'] ??
-    (team.name[locale] ?? team.name['en'] ?? '\u2014').slice(0, 3).toUpperCase()
+    (team.name[locale] ?? team.name['en'] ?? '—').slice(0, 3).toUpperCase()
   );
 }
 
@@ -31,7 +32,7 @@ function formatHeaderDate(date: Date, locale: Locale): string {
     month: 'short',
   });
   const time = formatMatchTime(date, locale);
-  return `${formatted.toUpperCase()} \u00B7 ${time}`;
+  return `${formatted.toUpperCase()} · ${time}`;
 }
 
 export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
@@ -46,10 +47,22 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
 
   const headerDate = formatHeaderDate(kickoffAt, locale);
 
+  const preview = previewFromFixtureRow({
+    homeTeam,
+    awayTeam,
+    homeScore,
+    awayScore,
+    statusCode,
+    kickoffAt,
+  });
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-      <Link
+      <MatchLink
+        matchId={String(fixture.id)}
         href={`/${locale}/match/${fixture.id}`}
+        preview={preview}
+        prefetchIntent
         className="flex h-full flex-col transition-colors hover:bg-accent-azure/5"
       >
         {/* Live banner */}
@@ -148,7 +161,7 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
             <p className="text-xs text-text-tertiary">{venue.name ?? venue.city}</p>
           ) : null}
         </div>
-      </Link>
+      </MatchLink>
     </div>
   );
 }

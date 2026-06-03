@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -251,9 +252,20 @@ function WCMatchRow({
   const groupLabel = homeGroup && homeGroup === awayGroup ? `Group ${homeGroup}` : null;
   const venueName = venue?.name ?? venue?.city ?? null;
 
+  const preview = previewFromFixtureRow({
+    homeTeam,
+    awayTeam,
+    homeScore,
+    awayScore,
+    statusCode,
+    kickoffAt,
+  });
+
   return (
-    <Link
+    <MatchLink
+      matchId={String(fixture.id)}
       href={`/${locale}/match/${fixture.id}`}
+      preview={preview}
       className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent-azure/5"
     >
       {/* Time / status */}
@@ -318,7 +330,7 @@ function WCMatchRow({
         </span>
         <TeamBadge team={awayTeam} flag={awayFlag} />
       </div>
-    </Link>
+    </MatchLink>
   );
 }
 
