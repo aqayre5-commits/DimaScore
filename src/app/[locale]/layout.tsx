@@ -21,12 +21,16 @@ const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   weight: ['400', '500', '600', '700'],
   subsets: ['arabic'],
   display: 'swap',
+  // Only used on the Arabic locale — don't preload it on en/fr pages.
+  preload: false,
 });
 
 const fraunces = Fraunces({
   variable: '--font-fraunces',
   subsets: ['latin'],
   display: 'swap',
+  // Display face for sparse headings — load on demand, not in the FCP window.
+  preload: false,
 });
 
 export function generateStaticParams() {
