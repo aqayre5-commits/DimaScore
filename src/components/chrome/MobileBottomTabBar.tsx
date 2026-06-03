@@ -25,7 +25,7 @@ export function MobileBottomTabBar() {
   return (
     <nav
       aria-label="Mobile navigation"
-      className="fixed inset-x-0 bottom-0 z-40 flex h-14 items-center justify-around border-t border-border-subtle bg-bg-surface md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex min-h-14 items-center justify-around border-t border-border-subtle bg-bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {tabs.map((tab) => {
         const Icon = tab.icon;
