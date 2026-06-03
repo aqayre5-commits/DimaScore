@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { TeamLogo } from '@/components/shared/Logo';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
-import { usePrefetchMatch } from '@/hooks/usePrefetchMatch';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
 
 interface FixtureTeam {
@@ -46,7 +46,6 @@ export function FixtureRow({
   locale,
 }: FixtureRowProps) {
   const t = useTranslations('matchDetail');
-  const prefetch = usePrefetchMatch(String(fixtureId));
   const state = getMatchState(statusCode, kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
@@ -64,12 +63,22 @@ export function FixtureRow({
   const homeWon = isFinished && hasScore && homeScore! > awayScore!;
   const awayWon = isFinished && hasScore && awayScore! > homeScore!;
 
+  const preview = previewFromFixtureRow({
+    homeTeam,
+    awayTeam,
+    homeScore,
+    awayScore,
+    statusCode,
+    kickoffAt,
+  });
+
   return (
-    <Link
+    <MatchLink
+      matchId={String(fixtureId)}
       href={`/${locale}/match/${fixtureId}`}
-      prefetch={false}
-      onMouseEnter={prefetch.onMouseEnter}
-      aria-label={`${homeName} vs ${awayName}`}
+      preview={preview}
+      prefetchIntent
+      ariaLabel={`${homeName} vs ${awayName}`}
       className="flex items-center gap-2 rounded-md py-2 text-base transition-colors hover:bg-bg-surface-2"
     >
       {/* Time / status column */}
@@ -126,7 +135,7 @@ export function FixtureRow({
         </span>
         <TeamBadge team={awayTeam} flag={awayFlag} />
       </div>
-    </Link>
+    </MatchLink>
   );
 }
 
@@ -142,13 +151,13 @@ function TeamBadge({ team, flag }: { team: FixtureTeam | null; flag: string | nu
 
 /** Full localized name: name[locale] → name['en'] → shortName[locale] → shortName['en'] → code → '—' */
 function resolveFullName(team: FixtureTeam | null, locale: Locale): string {
-  if (!team) return '\u2014';
+  if (!team) return '—';
   return (
     team.name[locale] ??
     team.name['en'] ??
     team.shortName[locale] ??
     team.shortName['en'] ??
     team.code ??
-    '\u2014'
+    '—'
   );
 }

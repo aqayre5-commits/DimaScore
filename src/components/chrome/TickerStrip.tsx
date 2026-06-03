@@ -2,7 +2,8 @@
 
 import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import Link from 'next/link';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromTickerFixture } from '@/lib/match-header-preview';
 import { TeamLogo } from '@/components/shared/Logo';
 import { Pause, Play } from 'lucide-react';
 import { codeToFlag } from '@/lib/flags';
@@ -13,7 +14,6 @@ import { formatMatchTime } from '@/lib/utils/date';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
-import { usePrefetchMatch } from '@/hooks/usePrefetchMatch';
 import type { Locale } from '@/lib/i18n/config';
 import type { FixtureStatus } from '@/lib/data/types';
 
@@ -85,16 +85,16 @@ function TeamCell({
 
 function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale: Locale }) {
   const live = isLiveStatus(fixture.statusCode as FixtureStatus);
-  const prefetch = usePrefetchMatch(String(fixture.id));
   const dir = locale === 'ar' ? 'rtl' : undefined;
 
   return (
-    <Link
+    <MatchLink
+      matchId={String(fixture.id)}
       href={`/${locale}/match/${fixture.id}`}
-      prefetch={false}
-      onMouseEnter={prefetch.onMouseEnter}
+      preview={previewFromTickerFixture(fixture)}
+      prefetchIntent
       dir={dir}
-      aria-label={`${getCompactTeamLabel(fixture.homeTeam, locale)} vs ${getCompactTeamLabel(fixture.awayTeam, locale)}`}
+      ariaLabel={`${getCompactTeamLabel(fixture.homeTeam, locale)} vs ${getCompactTeamLabel(fixture.awayTeam, locale)}`}
       className="flex shrink-0 items-center gap-2 px-4 py-1 transition-colors hover:bg-white/5"
     >
       {/* Home team */}
@@ -122,7 +122,7 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
 
       {/* Away team — mirrored: code then logo */}
       <TeamCell team={fixture.awayTeam} locale={locale} reverse />
-    </Link>
+    </MatchLink>
   );
 }
 

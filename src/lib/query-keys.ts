@@ -7,6 +7,8 @@ export const qk = {
   matchEvents: (id: string) => ['match', id, 'events'] as const,
   matchLineups: (id: string) => ['match', id, 'lineups'] as const,
   matchStats: (id: string) => ['match', id, 'stats'] as const,
+  /** Preview-only client cache: a partial header seeded by fixture surfaces for instant soft-nav. */
+  matchHeader: (id: string) => ['match', id, 'header'] as const,
   competition: (id: string, season: string) => ['competition', id, season] as const,
   standings: (id: string, season: string) => ['competition', id, season, 'standings'] as const,
   team: (id: string) => ['team', id] as const,

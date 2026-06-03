@@ -15,6 +15,7 @@ import {
 } from '@/lib/db/queries/match-detail';
 import { getMatchState } from '@/lib/match-status';
 import { qk } from '@/lib/query-keys';
+import { previewFromMatchDetail } from '@/lib/match-header-preview';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import {
   findEntryByCompetitionId,
@@ -166,6 +167,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
   // the client components useQuery, then dehydrate into the page — so they
   // hydrate with data already present (no client-fetch "content dump").
   const queryClient = new QueryClient();
+  // Seed the preview header so back/forward soft-nav to this match stays warm.
+  queryClient.setQueryData(qk.matchHeader(matchId), previewFromMatchDetail(match));
   if (prefetch.events) queryClient.setQueryData(qk.matchEvents(matchId), prefetch.events);
   if (prefetch.lineups) queryClient.setQueryData(qk.matchLineups(matchId), prefetch.lineups);
   if (prefetch.hasStats) {
