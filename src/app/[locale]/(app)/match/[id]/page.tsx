@@ -1,9 +1,20 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { db } from '@/lib/db/client';
-import { getMatchDetail, getMatchCoverage } from '@/lib/db/queries/match-detail';
+import {
+  getMatchDetail,
+  getMatchCoverage,
+  getMatchEvents,
+  getMatchLineups,
+  getMatchStatistics,
+  getMatchPlayerStats,
+  getHeadToHead,
+  getNextFixtures,
+} from '@/lib/db/queries/match-detail';
 import { getMatchState } from '@/lib/match-status';
+import { qk } from '@/lib/query-keys';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import {
   findEntryByCompetitionId,
@@ -38,7 +49,32 @@ async function getCachedMatchData(fixtureId: number) {
   const match = await getMatchDetail(db, fixtureId);
   if (!match) return null;
   const coverage = await getMatchCoverage(db, match.competition.id, match.seasonYear);
-  return { match, coverage };
+
+  const homeTeamId = match.homeTeam?.id ?? -1;
+  const awayTeamId = match.awayTeam?.id ?? -1;
+  const hasTeams = homeTeamId > 0 && awayTeamId > 0;
+  // new Date() is allowed here — TTL-bounded by 'use cache'.
+  const isUpcoming = getMatchState(match.statusCode, match.kickoffAt) === 'upcoming';
+  const hasStats =
+    !isUpcoming &&
+    ((coverage?.statisticsFixtures ?? false) || (coverage?.statisticsPlayers ?? false));
+
+  // Server-prefetch the tab data so the client useQuery hydrates with it (no
+  // client-fetch "content dump"). Gated identically to the client `enabled`.
+  const [events, lineups, teamStats, playerStats, h2h, nextFixtures] = await Promise.all([
+    !isUpcoming && coverage?.events ? getMatchEvents(db, fixtureId) : null,
+    !isUpcoming && coverage?.lineups ? getMatchLineups(db, fixtureId) : null,
+    hasStats ? getMatchStatistics(db, fixtureId) : null,
+    hasStats ? getMatchPlayerStats(db, fixtureId) : null,
+    hasTeams ? getHeadToHead(db, homeTeamId, awayTeamId, fixtureId) : [],
+    hasTeams ? getNextFixtures(db, homeTeamId, awayTeamId, fixtureId) : [],
+  ]);
+
+  return {
+    match,
+    coverage,
+    prefetch: { events, lineups, teamStats, playerStats, hasStats, h2h, nextFixtures },
+  };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -95,7 +131,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
     getTranslations({ locale, namespace: 'breadcrumb' }),
   ]);
   if (!data) notFound();
-  const { match, coverage } = data;
+  const { match, coverage, prefetch } = data;
 
   const typedLocale = locale as Locale;
 
@@ -125,6 +161,26 @@ export default async function MatchDetailPage({ params }: PageProps) {
   ];
 
   const matchId = String(fixtureId);
+
+  // Seed a server QueryClient with the prefetched tab data under the same keys
+  // the client components useQuery, then dehydrate into the page — so they
+  // hydrate with data already present (no client-fetch "content dump").
+  const queryClient = new QueryClient();
+  if (prefetch.events) queryClient.setQueryData(qk.matchEvents(matchId), prefetch.events);
+  if (prefetch.lineups) queryClient.setQueryData(qk.matchLineups(matchId), prefetch.lineups);
+  if (prefetch.hasStats) {
+    queryClient.setQueryData(qk.matchStats(matchId), {
+      teamStats: prefetch.teamStats ?? [],
+      playerStats: prefetch.playerStats ?? [],
+    });
+  }
+  queryClient.setQueryData([...qk.match(matchId), 'sidebar'], {
+    h2h: prefetch.h2h.map((f) => ({ ...f, kickoffAt: f.kickoffAt.toISOString() })),
+    nextFixtures: prefetch.nextFixtures.map((f) => ({
+      ...f,
+      kickoffAt: f.kickoffAt.toISOString(),
+    })),
+  });
 
   // Serialize match for client components (Date → ISO string)
   const serializedMatch = {
@@ -181,20 +237,20 @@ export default async function MatchDetailPage({ params }: PageProps) {
     </>
   );
 
-  if (isLive) {
-    return (
-      <MatchLiveUpdater
-        fixtureId={match.id}
-        initialStatus={match.statusCode}
-        initialHomeScore={match.homeScore}
-        initialAwayScore={match.awayScore}
-        initialMinute={match.minute}
-        initialExtraMinute={match.extraMinute}
-      >
-        {pageContent}
-      </MatchLiveUpdater>
-    );
-  }
+  const body = isLive ? (
+    <MatchLiveUpdater
+      fixtureId={match.id}
+      initialStatus={match.statusCode}
+      initialHomeScore={match.homeScore}
+      initialAwayScore={match.awayScore}
+      initialMinute={match.minute}
+      initialExtraMinute={match.extraMinute}
+    >
+      {pageContent}
+    </MatchLiveUpdater>
+  ) : (
+    pageContent
+  );
 
-  return pageContent;
+  return <HydrationBoundary state={dehydrate(queryClient)}>{body}</HydrationBoundary>;
 }

@@ -78,10 +78,13 @@ export function LiveScoreDisplay({
       {state === 'upcoming' && (
         <>
           <p className="text-2xl font-bold tabular-nums text-text-tertiary">&ndash;</p>
-          <p className="text-sm font-semibold tabular-nums text-text-primary">
+          <p
+            className="text-sm font-semibold tabular-nums text-text-primary"
+            suppressHydrationWarning
+          >
             {formatMatchTime(kickoff, locale)}
           </p>
-          <p className="text-xs text-text-secondary">
+          <p className="text-xs text-text-secondary" suppressHydrationWarning>
             {formatMatchDate(kickoff, locale, { day: 'numeric', month: 'short', year: 'numeric' })}
           </p>
         </>
