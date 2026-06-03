@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { db } from '@/lib/db/client';
 import { asc, and, eq, gte, lt } from 'drizzle-orm';
@@ -7,6 +6,8 @@ import * as schema from '@/lib/db/schema';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
 
 interface MatchesThisWeekProps {
@@ -91,20 +92,34 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
           );
           const dayLabel = row.kickoffAt.toLocaleDateString(locale, { weekday: 'short' });
           const timeLabel = formatMatchTime(row.kickoffAt, locale);
+          const homeName = getTeamDisplayName(home, locale);
+          const awayName = getTeamDisplayName(away, locale);
+          const preview = previewFromFixtureRow({
+            homeTeam: home,
+            awayTeam: away,
+            homeScore: null,
+            awayScore: null,
+            statusCode: 'NS',
+            kickoffAt: row.kickoffAt,
+            competition: { name: row.compName, slug: row.compSlug },
+          });
 
           return (
             <li key={row.id}>
-              <Link
+              <MatchLink
+                matchId={String(row.id)}
                 href={`/${locale}/match/${row.id}`}
+                preview={preview}
+                ariaLabel={`${homeName} vs ${awayName}`}
                 className="block rounded-lg px-3 py-2 transition-colors hover:bg-bg-surface-2"
               >
                 <p className="text-sm font-medium text-text-primary">
-                  {getTeamDisplayName(home, locale)} vs {getTeamDisplayName(away, locale)}
+                  {homeName} vs {awayName}
                 </p>
                 <p className="mt-0.5 text-xs text-text-tertiary">
                   {compName} · {dayLabel} {timeLabel}
                 </p>
-              </Link>
+              </MatchLink>
             </li>
           );
         })}

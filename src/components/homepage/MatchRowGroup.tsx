@@ -77,7 +77,12 @@ export function MatchRowGroup({ group, locale, defaultExpanded }: MatchRowGroupP
       {expanded && (
         <div>
           {fixtures.map((fixture) => (
-            <MatchRow key={fixture.id} fixture={fixture} locale={locale} />
+            <MatchRow
+              key={fixture.id}
+              fixture={fixture}
+              locale={locale}
+              competition={competition}
+            />
           ))}
         </div>
       )}

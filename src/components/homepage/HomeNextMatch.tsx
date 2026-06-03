@@ -1,6 +1,7 @@
 'use client';
 
-import Link from 'next/link';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { Play } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatKickoff } from '@/lib/utils/date';
@@ -26,6 +27,17 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
   const awayName = getTeamDisplayName(match.awayTeam, locale);
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
   const isLive = LIVE_CODES.includes(match.statusCode);
+
+  const preview = previewFromFixtureRow({
+    homeTeam: match.homeTeam,
+    awayTeam: match.awayTeam,
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
+    statusCode: match.statusCode,
+    minute: match.minute,
+    kickoffAt: match.kickoffAt,
+    competition: { name: match.competition.name, slug: match.competition.slug },
+  });
 
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
@@ -141,8 +153,11 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
         )}
 
         {/* CTA */}
-        <Link
+        <MatchLink
+          matchId={String(match.id)}
           href={`/${locale}/match/${match.id}`}
+          preview={preview}
+          prefetchIntent
           className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors ${
             isLive
               ? 'bg-accent-green text-white hover:bg-accent-green-deep'
@@ -151,7 +166,7 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
         >
           {isLive && <Play className="size-3.5 fill-current" />}
           {labels.viewMatch}
-        </Link>
+        </MatchLink>
       </div>
     </div>
   );

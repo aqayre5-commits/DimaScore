@@ -58,14 +58,20 @@ function normalizeTeam(t: PreviewTeamInput): MatchHeaderPreviewTeam | null {
   };
 }
 
-/** Shared fixture row (competition/team lists) — no competition or minute available. */
+/**
+ * Generic parts-based preview. Used by the shared fixture row (no minute/
+ * competition) and by other surfaces that pass explicit fields. `minute` and
+ * `competition` are optional; `kickoffAt` accepts a Date or an ISO string.
+ */
 export function previewFromFixtureRow(p: {
   homeTeam: PreviewTeamInput;
   awayTeam: PreviewTeamInput;
   homeScore: number | null;
   awayScore: number | null;
   statusCode: string;
-  kickoffAt: Date;
+  kickoffAt: Date | string;
+  minute?: number | null;
+  competition?: { name: Record<string, string>; slug: string } | null;
 }): MatchHeaderPreview {
   return {
     homeTeam: normalizeTeam(p.homeTeam),
@@ -73,9 +79,9 @@ export function previewFromFixtureRow(p: {
     homeScore: p.homeScore,
     awayScore: p.awayScore,
     statusCode: p.statusCode,
-    minute: null,
-    kickoffAt: p.kickoffAt.toISOString(),
-    competition: null,
+    minute: p.minute ?? null,
+    kickoffAt: typeof p.kickoffAt === 'string' ? p.kickoffAt : p.kickoffAt.toISOString(),
+    competition: p.competition ?? null,
   };
 }
 

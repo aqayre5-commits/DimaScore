@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
@@ -43,10 +44,24 @@ function MatchRow({
   const homeName = getTeamDisplayName(fixture.homeTeam, locale);
   const awayName = getTeamDisplayName(fixture.awayTeam, locale);
 
+  const preview = previewFromFixtureRow({
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    homeScore: fixture.homeScore,
+    awayScore: fixture.awayScore,
+    statusCode: fixture.statusCode,
+    minute: fixture.minute,
+    kickoffAt: fixture.kickoffAt,
+    competition: { name: fixture.competition.name, slug: fixture.competition.slug },
+  });
+
   return (
-    <Link
+    <MatchLink
+      matchId={String(fixture.id)}
       href={`/${locale}/match/${fixture.id}`}
-      prefetch={enablePrefetch ? undefined : false}
+      preview={preview}
+      prefetchIntent={enablePrefetch}
+      ariaLabel={`${homeName} vs ${awayName}`}
       className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-bg-surface-2"
     >
       {/* Time / Minute */}
@@ -114,7 +129,7 @@ function MatchRow({
           Live
         </span>
       )}
-    </Link>
+    </MatchLink>
   );
 }
 

@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime, formatDateLabel } from '@/lib/utils/date';
 import type { TopMatchDateGroup } from '@/lib/db/queries/right-rail';
@@ -53,11 +55,24 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
               const homeName = getTeamDisplayName(f.homeTeam, locale);
               const awayName = getTeamDisplayName(f.awayTeam, locale);
               const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
+              const preview = previewFromFixtureRow({
+                homeTeam: f.homeTeam,
+                awayTeam: f.awayTeam,
+                homeScore: f.homeScore,
+                awayScore: f.awayScore,
+                statusCode: f.statusCode,
+                minute: f.minute,
+                kickoffAt: f.kickoffAt,
+                competition: { name: f.competition.name, slug: f.competition.slug },
+              });
 
               return (
-                <Link
+                <MatchLink
                   key={f.id}
+                  matchId={String(f.id)}
                   href={`/${locale}/match/${f.id}`}
+                  preview={preview}
+                  ariaLabel={`${homeName} vs ${awayName}`}
                   className="flex items-center gap-2 px-4 py-2 transition-colors hover:bg-bg-surface-2"
                 >
                   {/* Status */}
@@ -125,7 +140,7 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                       </span>
                     </div>
                   )}
-                </Link>
+                </MatchLink>
               );
             })}
           </div>

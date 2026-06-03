@@ -5,6 +5,8 @@ import { getEditorialHeroData, type EditorialHeroData } from '@/lib/db/queries/e
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
+import { MatchLink } from '@/components/shared/MatchLink';
+import { previewFromFixtureRow, type MatchHeaderPreview } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
 
 interface EditorialHeroProps {
@@ -23,7 +25,10 @@ export async function EditorialHero({ locale }: EditorialHeroProps) {
     getTranslations({ locale, namespace: 'editorialHero' }),
   ]);
 
-  const { content, href } = resolveContent(data, locale, t);
+  const { content, href, matchId, preview } = resolveContent(data, locale, t);
+
+  const className =
+    'mx-auto flex h-[72px] max-w-[1280px] items-center gap-3 px-4 transition-colors hover:bg-bg-surface-2';
 
   return (
     <section
@@ -31,12 +36,15 @@ export async function EditorialHero({ locale }: EditorialHeroProps) {
       data-mode={data.mode}
       aria-label={t('label')}
     >
-      <Link
-        href={href}
-        className="mx-auto flex h-[72px] max-w-[1280px] items-center gap-3 px-4 transition-colors hover:bg-bg-surface-2"
-      >
-        {content}
-      </Link>
+      {matchId && preview ? (
+        <MatchLink matchId={matchId} href={href} preview={preview} className={className}>
+          {content}
+        </MatchLink>
+      ) : (
+        <Link href={href} className={className}>
+          {content}
+        </Link>
+      )}
     </section>
   );
 }
@@ -45,7 +53,7 @@ function resolveContent(
   data: EditorialHeroData,
   locale: Locale,
   t: Awaited<ReturnType<typeof getTranslations>>,
-): { content: React.ReactNode; href: string } {
+): { content: React.ReactNode; href: string; matchId?: string; preview?: MatchHeaderPreview } {
   switch (data.mode) {
     case 'A': {
       const { fixture } = data;
@@ -74,6 +82,8 @@ function resolveContent(
           </div>
         ),
         href: `/${locale}/match/${fixture.id}`,
+        matchId: String(fixture.id),
+        preview: heroPreview(fixture),
       };
     }
 
@@ -99,6 +109,8 @@ function resolveContent(
           </div>
         ),
         href: `/${locale}/match/${fixture.id}`,
+        matchId: String(fixture.id),
+        preview: heroPreview(fixture),
       };
     }
 
@@ -120,6 +132,8 @@ function resolveContent(
           </div>
         ),
         href: `/${locale}/match/${fixture.id}`,
+        matchId: String(fixture.id),
+        preview: heroPreview(fixture),
       };
     }
 
@@ -153,4 +167,19 @@ function resolveContent(
         href: WC_2026_PATHS[locale],
       };
   }
+}
+
+function heroPreview(
+  fixture: Extract<EditorialHeroData, { mode: 'A' }>['fixture'],
+): MatchHeaderPreview {
+  return previewFromFixtureRow({
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    homeScore: fixture.homeScore,
+    awayScore: fixture.awayScore,
+    statusCode: fixture.statusCode,
+    minute: fixture.minute,
+    kickoffAt: fixture.kickoffAt,
+    competition: { name: fixture.competitionName, slug: fixture.competitionSlug },
+  });
 }

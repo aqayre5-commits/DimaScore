@@ -11,9 +11,10 @@ interface MatchRowProps {
   fixture: DayFixture;
   locale: string;
   enablePrefetch?: boolean;
+  competition?: { name: Record<string, string>; slug: string } | null;
 }
 
-export function MatchRow({ fixture, locale, enablePrefetch }: MatchRowProps) {
+export function MatchRow({ fixture, locale, enablePrefetch, competition }: MatchRowProps) {
   const state = getMatchState(fixture.statusCode, fixture.kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
@@ -32,8 +33,7 @@ export function MatchRow({ fixture, locale, enablePrefetch }: MatchRowProps) {
     fixture.awayScore != null &&
     fixture.awayScore > fixture.homeScore;
 
-  // Competition is not available on DayFixture here — strip reserved, upgraded by the RSC page.
-  const preview = previewFromDayFixture(fixture);
+  const preview = previewFromDayFixture(fixture, competition);
 
   return (
     <MatchLink
