@@ -96,6 +96,7 @@ export function LiveScoreDisplay({
             className={`text-3xl font-bold tabular-nums text-text-primary transition-all duration-500 ${
               scoreFlash ? 'scale-125 text-accent-emerald' : ''
             }`}
+            suppressHydrationWarning
           >
             {homeScore ?? 0} &ndash; {awayScore ?? 0}
           </p>
@@ -104,7 +105,7 @@ export function LiveScoreDisplay({
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-score-live opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-score-live" />
             </span>
-            <span className="text-xs font-bold text-score-live">
+            <span className="text-xs font-bold text-score-live" suppressHydrationWarning>
               {statusCode === 'HT'
                 ? t('halfTime')
                 : minute != null
