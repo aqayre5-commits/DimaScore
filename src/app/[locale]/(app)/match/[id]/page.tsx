@@ -191,6 +191,21 @@ export default async function MatchDetailPage({ params }: PageProps) {
     kickoffAt: match.kickoffAt.toISOString(),
   };
 
+  // Rendered twice: in the right rail (desktop) and, via belowCenter, as an
+  // xl:hidden block so mobile (where the rail is hidden) still gets match info + H2H.
+  const matchSidebar = (
+    <MatchClientRightRail
+      matchId={matchId}
+      locale={typedLocale}
+      match={serializedMatch}
+      competitionHref={competitionHref}
+      homeTeamId={homeTeamId}
+      awayTeamId={awayTeamId}
+      homeName={home}
+      awayName={away}
+    />
+  );
+
   const pageContent = (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
@@ -224,18 +239,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
             />
           </div>
         }
-        rightRail={
-          <MatchClientRightRail
-            matchId={matchId}
-            locale={typedLocale}
-            match={serializedMatch}
-            competitionHref={competitionHref}
-            homeTeamId={homeTeamId}
-            awayTeamId={awayTeamId}
-            homeName={home}
-            awayName={away}
-          />
-        }
+        rightRail={matchSidebar}
+        belowCenter={<div className="xl:hidden">{matchSidebar}</div>}
       />
     </>
   );
