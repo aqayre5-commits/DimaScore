@@ -82,6 +82,19 @@
     "uaeProLeague": "UAE Pro League",
     "superLig": "Süper Lig"
   },
+  "topNav": {
+    "botolaPro": "Botola",
+    "worldCup2026": "WC26",
+    "afcon": "AFCON",
+    "championsLeague": "UCL",
+    "premierLeague": "EPL",
+    "laLiga": "LaLiga",
+    "ligue1": "Ligue 1",
+    "bundesliga": "Bundesliga",
+    "serieA": "Serie A",
+    "wafcon2026": "WAFCON",
+    "cafChampionsLeague": "CAF CL"
+  },
   "mobileTabBar": {
     "matches": "Matches",
     "search": "Search",

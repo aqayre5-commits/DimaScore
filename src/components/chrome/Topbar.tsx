@@ -68,6 +68,7 @@ function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void
 export function Topbar() {
   const t = useTranslations('topbar');
   const tMega = useTranslations('megaMenu');
+  const tTopNav = useTranslations('topNav');
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -104,7 +105,7 @@ export function Topbar() {
                   isActive ? 'text-accent-azure' : 'text-text-secondary hover:text-accent-azure',
                 )}
               >
-                {tMega(entry.labelKey)}
+                {tTopNav(entry.labelKey)}
               </Link>
             );
           })}
