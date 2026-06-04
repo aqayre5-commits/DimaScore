@@ -436,6 +436,16 @@ export async function renderCupPage(
         }
         belowCenter={
           <>
+            {/* Mobile-only: surface the right-rail featured matches (hidden xl:block rail). */}
+            {cupFeaturedMatches.length > 0 && (
+              <div className="xl:hidden">
+                <LeagueRightRailCard
+                  featuredMatches={cupFeaturedMatches}
+                  locale={locale}
+                  competitionName={pageTitle}
+                />
+              </div>
+            )}
             <TournamentInfoStrip />
             <HashScrollHighlight />
             <RelatedCompetitions

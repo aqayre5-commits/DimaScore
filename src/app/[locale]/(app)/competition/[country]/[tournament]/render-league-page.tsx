@@ -298,6 +298,16 @@ export async function renderLeaguePage(
         }
         belowCenter={
           <>
+            {/* Mobile-only: surface the right-rail featured matches (hidden xl:block rail). */}
+            {featuredMatches.length > 0 && (
+              <div className="xl:hidden">
+                <LeagueRightRailCard
+                  featuredMatches={featuredMatches}
+                  locale={locale}
+                  competitionName={competitionName}
+                />
+              </div>
+            )}
             <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
             {coverage?.injuries && <InjuriesTab injuries={injuries} />}
             <RelatedCompetitions
