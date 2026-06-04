@@ -48,7 +48,10 @@ export function SeoBreadcrumb({ segments, compactOnMobile = false }: SeoBreadcru
         {segments.map((seg, i) => (
           <li
             key={i}
-            className={`flex items-center gap-1${i > 0 && i < segments.length - 1 ? ' hidden md:flex' : ''}`}
+            className={cn(
+              'flex items-center gap-1',
+              !compactOnMobile && i > 0 && i < segments.length - 1 && 'hidden md:flex',
+            )}
           >
             {i > 0 && (
               <span aria-hidden="true" className="text-text-tertiary">

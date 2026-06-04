@@ -365,6 +365,7 @@
     "infoFeedbackValue": "Report an issue"
   },
   "teamPage": {
+    "seoSections": "Scores, Matches, Standings, Statistics & Squad",
     "squad": "Squad",
     "standings": "Standings",
     "goalkeeper": "GK",

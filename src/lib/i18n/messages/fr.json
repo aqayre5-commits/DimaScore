@@ -365,6 +365,7 @@
     "infoFeedbackValue": "Signaler un problème"
   },
   "teamPage": {
+    "seoSections": "Scores, Matchs, Classement, Statistiques et Effectif",
     "squad": "Effectif",
     "standings": "Classement",
     "goalkeeper": "GB",

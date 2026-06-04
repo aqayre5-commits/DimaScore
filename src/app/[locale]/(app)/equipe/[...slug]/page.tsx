@@ -100,8 +100,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const name = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
-  const title = `${name} | DimaScore`;
-  const description = `${name} — fixtures, squad, standings and statistics.`;
+  const tTeam = await getTranslations({ locale, namespace: 'teamPage' });
+  const sections = tTeam('seoSections');
+  const title = `${name} — ${sections} | DimaScore`;
+  const description = `${name} — ${sections}.`;
   const pageUrl = `${baseUrl}/${locale}/equipe/${rawSlug.join('/')}`;
 
   const languages: Record<string, string> = {};
@@ -169,7 +171,10 @@ export default async function TeamPage({ params }: PageProps) {
       '')
     : '';
 
-  // Breadcrumbs: Football > Country > League > Team
+  // Breadcrumbs: Football > [Country >] Competition > Team
+  // primaryComp is League-only (null for national teams). When absent, fall back
+  // to the team's default standings competition (e.g. World Cup 2026) as a
+  // text-only crumb — the snapshot carries no slug/country to build a link.
   const breadcrumbs: BreadcrumbSegment[] = [{ label: tBc('football'), href: `/${locale}` }];
   if (primaryComp) {
     const countryName = getLeagueCountryName(primaryComp.countryCode, typedLocale);
@@ -182,6 +187,12 @@ export default async function TeamPage({ params }: PageProps) {
       label: compName,
       href: `/${locale}/competition/${countrySlug}/${primaryComp.slug}`,
     });
+  } else if (allStandings.competitions[0]) {
+    const fallbackComp = allStandings.competitions[0];
+    const fallbackName = fallbackComp.name[typedLocale] ?? fallbackComp.name['en'];
+    if (fallbackName) {
+      breadcrumbs.push({ label: fallbackName });
+    }
   }
   breadcrumbs.push({ label: teamName });
 
@@ -192,7 +203,6 @@ export default async function TeamPage({ params }: PageProps) {
       key: 'matches',
       hash: hashes.matches,
       labelKey: 'matches',
-      icon: 'calendar',
       content: <TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />,
     },
     {
