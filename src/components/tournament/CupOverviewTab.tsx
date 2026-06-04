@@ -45,59 +45,68 @@ export function CupOverviewTab({
           <div className="border-b border-border-subtle px-4 py-2.5">
             <h3 className="label-caps">{t('standings')}</h3>
           </div>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-border-subtle text-text-tertiary">
-                <th className="py-2 pl-4 text-left font-medium">#</th>
-                <th className="py-2 text-left font-medium">{t('team')}</th>
-                <th className="py-2 text-center font-medium">P</th>
-                <th className="py-2 text-center font-medium">W</th>
-                <th className="py-2 text-center font-medium">D</th>
-                <th className="py-2 text-center font-medium">L</th>
-                <th className="py-2 text-center font-medium">GD</th>
-                <th className="py-2 pr-4 text-center font-medium">Pts</th>
-              </tr>
-            </thead>
-            <tbody>
-              {topStandings.map((row, idx) => (
-                <tr key={row.teamId ?? idx} className="border-b border-border-subtle last:border-0">
-                  <td className="py-2 pl-4 tabular-nums text-text-tertiary">
-                    {row.rank ?? idx + 1}
-                  </td>
-                  <td className="py-2">
-                    <div className="flex items-center gap-2">
-                      {row.team?.logoUrl && (
-                        <Image
-                          src={row.team.logoUrl}
-                          alt=""
-                          width={16}
-                          height={16}
-                          className="size-4 object-contain"
-                        />
-                      )}
-                      <span className="truncate font-medium text-text-primary">
-                        {row.team?.name?.en ?? row.team?.code ?? '—'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-2 text-center tabular-nums text-text-secondary">
-                    {row.played}
-                  </td>
-                  <td className="py-2 text-center tabular-nums text-text-secondary">{row.won}</td>
-                  <td className="py-2 text-center tabular-nums text-text-secondary">{row.drawn}</td>
-                  <td className="py-2 text-center tabular-nums text-text-secondary">{row.lost}</td>
-                  <td className="py-2 text-center tabular-nums text-text-secondary">
-                    {row.goalDiff != null && row.goalDiff > 0
-                      ? `+${row.goalDiff}`
-                      : (row.goalDiff ?? 0)}
-                  </td>
-                  <td className="py-2 pr-4 text-center tabular-nums font-semibold text-text-primary">
-                    {row.points}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border-subtle text-text-tertiary">
+                  <th className="py-2 pl-4 text-left font-medium">#</th>
+                  <th className="py-2 text-left font-medium">{t('team')}</th>
+                  <th className="py-2 text-center font-medium">P</th>
+                  <th className="py-2 text-center font-medium">W</th>
+                  <th className="py-2 text-center font-medium">D</th>
+                  <th className="py-2 text-center font-medium">L</th>
+                  <th className="py-2 text-center font-medium">GD</th>
+                  <th className="py-2 pr-4 text-center font-medium">Pts</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {topStandings.map((row, idx) => (
+                  <tr
+                    key={row.teamId ?? idx}
+                    className="border-b border-border-subtle last:border-0"
+                  >
+                    <td className="py-2 pl-4 tabular-nums text-text-tertiary">
+                      {row.rank ?? idx + 1}
+                    </td>
+                    <td className="py-2">
+                      <div className="flex items-center gap-2">
+                        {row.team?.logoUrl && (
+                          <Image
+                            src={row.team.logoUrl}
+                            alt=""
+                            width={16}
+                            height={16}
+                            className="size-4 object-contain"
+                          />
+                        )}
+                        <span className="truncate font-medium text-text-primary">
+                          {row.team?.name?.en ?? row.team?.code ?? '—'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-2 text-center tabular-nums text-text-secondary">
+                      {row.played}
+                    </td>
+                    <td className="py-2 text-center tabular-nums text-text-secondary">{row.won}</td>
+                    <td className="py-2 text-center tabular-nums text-text-secondary">
+                      {row.drawn}
+                    </td>
+                    <td className="py-2 text-center tabular-nums text-text-secondary">
+                      {row.lost}
+                    </td>
+                    <td className="py-2 text-center tabular-nums text-text-secondary">
+                      {row.goalDiff != null && row.goalDiff > 0
+                        ? `+${row.goalDiff}`
+                        : (row.goalDiff ?? 0)}
+                    </td>
+                    <td className="py-2 pr-4 text-center tabular-nums font-semibold text-text-primary">
+                      {row.points}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {standings.length > 8 && (
             <div className="border-t border-border-subtle px-4 py-2 text-center text-xs text-text-tertiary">
               +{standings.length - 8} {t('moreTeams')}

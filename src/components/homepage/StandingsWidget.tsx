@@ -36,49 +36,54 @@ export function StandingsWidget({
       </div>
 
       {top6.length > 0 ? (
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border-subtle text-text-tertiary">
-              <th className="w-8 py-1.5 text-center font-medium">{rankLabel}</th>
-              <th className="py-1.5 text-start font-medium">{teamLabel}</th>
-              <th className="w-10 py-1.5 text-center font-medium">{playedLabel}</th>
-              <th className="w-10 py-1.5 text-center font-medium">{pointsLabel}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {top6.map((row, idx) => (
-              <tr key={row.teamId ?? idx} className="border-b border-border-subtle last:border-b-0">
-                <td className="py-1.5 text-center tabular-nums text-text-tertiary">{row.rank}</td>
-                <td className="py-1.5">
-                  <div className="flex items-center gap-1.5">
-                    {row.team?.logoUrl ? (
-                      <Image
-                        src={row.team.logoUrl}
-                        alt=""
-                        className="h-4 w-4 shrink-0 object-contain"
-                        width={16}
-                        height={16}
-                      />
-                    ) : (
-                      <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-                        {row.team?.code?.slice(0, 2) ?? '??'}
-                      </span>
-                    )}
-                    <span className="truncate text-text-primary">
-                      {getTeamDisplayName(row.team, locale)}
-                    </span>
-                  </div>
-                </td>
-                <td className="py-1.5 text-center tabular-nums text-text-secondary">
-                  {row.played}
-                </td>
-                <td className="py-1.5 text-center tabular-nums font-semibold text-text-primary">
-                  {row.points}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border-subtle text-text-tertiary">
+                <th className="w-8 py-1.5 text-center font-medium">{rankLabel}</th>
+                <th className="py-1.5 text-start font-medium">{teamLabel}</th>
+                <th className="w-10 py-1.5 text-center font-medium">{playedLabel}</th>
+                <th className="w-10 py-1.5 text-center font-medium">{pointsLabel}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {top6.map((row, idx) => (
+                <tr
+                  key={row.teamId ?? idx}
+                  className="border-b border-border-subtle last:border-b-0"
+                >
+                  <td className="py-1.5 text-center tabular-nums text-text-tertiary">{row.rank}</td>
+                  <td className="py-1.5">
+                    <div className="flex items-center gap-1.5">
+                      {row.team?.logoUrl ? (
+                        <Image
+                          src={row.team.logoUrl}
+                          alt=""
+                          className="h-4 w-4 shrink-0 object-contain"
+                          width={16}
+                          height={16}
+                        />
+                      ) : (
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
+                          {row.team?.code?.slice(0, 2) ?? '??'}
+                        </span>
+                      )}
+                      <span className="truncate text-text-primary">
+                        {getTeamDisplayName(row.team, locale)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-1.5 text-center tabular-nums text-text-secondary">
+                    {row.played}
+                  </td>
+                  <td className="py-1.5 text-center tabular-nums font-semibold text-text-primary">
+                    {row.points}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       ) : (
         <div className="px-3 pb-3">
           <p className="text-xs text-text-tertiary">—</p>

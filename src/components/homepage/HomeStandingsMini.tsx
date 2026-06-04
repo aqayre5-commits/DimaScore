@@ -39,60 +39,64 @@ export function HomeStandingsMini({ compName, countryKey, slug, rows, locale, la
       </div>
 
       {/* Table */}
-      <table className="w-full text-[11px]">
-        <thead>
-          <tr className="border-y border-border-subtle text-text-tertiary">
-            <th className="w-6 py-2 text-center font-medium">#</th>
-            <th className="py-2 text-start font-medium">{labels.team}</th>
-            <th className="w-7 py-2 text-center font-medium">{labels.played}</th>
-            <th className="w-7 py-2 text-center font-medium">{labels.won}</th>
-            <th className="w-7 py-2 text-center font-medium">{labels.lost}</th>
-            <th className="w-8 py-2 text-center font-medium">{labels.goalDiff}</th>
-            <th className="w-8 py-2 pe-3 text-center font-medium">{labels.points}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {top6.map((row, idx) => {
-            const gd = (row.goalsFor ?? 0) - (row.goalsAgainst ?? 0);
-            return (
-              <tr
-                key={row.teamId ?? idx}
-                className="border-b border-border-subtle transition-colors last:border-b-0 hover:bg-bg-surface-2"
-              >
-                <td className="py-2 text-center tabular-nums text-text-tertiary">{row.rank}</td>
-                <td className="py-2">
-                  <div className="flex items-center gap-1.5">
-                    {row.team?.logoUrl ? (
-                      <TeamLogo
-                        src={row.team.logoUrl}
-                        size={16}
-                        className="size-4 shrink-0 object-contain"
-                      />
-                    ) : (
-                      <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-                        {row.team?.code?.slice(0, 2) ?? '??'}
+      <div className="overflow-x-auto">
+        <table className="w-full text-[11px]">
+          <thead>
+            <tr className="border-y border-border-subtle text-text-tertiary">
+              <th className="w-6 py-2 text-center font-medium">#</th>
+              <th className="py-2 text-start font-medium">{labels.team}</th>
+              <th className="w-7 py-2 text-center font-medium">{labels.played}</th>
+              <th className="w-7 py-2 text-center font-medium">{labels.won}</th>
+              <th className="w-7 py-2 text-center font-medium">{labels.lost}</th>
+              <th className="w-8 py-2 text-center font-medium">{labels.goalDiff}</th>
+              <th className="w-8 py-2 pe-3 text-center font-medium">{labels.points}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {top6.map((row, idx) => {
+              const gd = (row.goalsFor ?? 0) - (row.goalsAgainst ?? 0);
+              return (
+                <tr
+                  key={row.teamId ?? idx}
+                  className="border-b border-border-subtle transition-colors last:border-b-0 hover:bg-bg-surface-2"
+                >
+                  <td className="py-2 text-center tabular-nums text-text-tertiary">{row.rank}</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-1.5">
+                      {row.team?.logoUrl ? (
+                        <TeamLogo
+                          src={row.team.logoUrl}
+                          size={16}
+                          className="size-4 shrink-0 object-contain"
+                        />
+                      ) : (
+                        <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
+                          {row.team?.code?.slice(0, 2) ?? '??'}
+                        </span>
+                      )}
+                      <span className="truncate text-text-primary">
+                        {getTeamDisplayName(row.team, locale)}
                       </span>
-                    )}
-                    <span className="truncate text-text-primary">
-                      {getTeamDisplayName(row.team, locale)}
-                    </span>
-                  </div>
-                </td>
-                <td className="py-2 text-center tabular-nums text-text-secondary">{row.played}</td>
-                <td className="py-2 text-center tabular-nums text-text-secondary">{row.won}</td>
-                <td className="py-2 text-center tabular-nums text-text-secondary">{row.lost}</td>
-                <td className="py-2 text-center tabular-nums text-text-secondary">
-                  {gd > 0 ? '+' : ''}
-                  {gd}
-                </td>
-                <td className="py-2 pe-3 text-center tabular-nums font-semibold text-text-primary">
-                  {row.points}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                    </div>
+                  </td>
+                  <td className="py-2 text-center tabular-nums text-text-secondary">
+                    {row.played}
+                  </td>
+                  <td className="py-2 text-center tabular-nums text-text-secondary">{row.won}</td>
+                  <td className="py-2 text-center tabular-nums text-text-secondary">{row.lost}</td>
+                  <td className="py-2 text-center tabular-nums text-text-secondary">
+                    {gd > 0 ? '+' : ''}
+                    {gd}
+                  </td>
+                  <td className="py-2 pe-3 text-center tabular-nums font-semibold text-text-primary">
+                    {row.points}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
       {/* View full standings */}
       <div className="border-t border-border-subtle">

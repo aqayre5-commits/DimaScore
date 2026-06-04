@@ -76,7 +76,7 @@ export function HomeLiveGroupStandings({ groups, locale, labels }: Props) {
       </div>
 
       {/* Table */}
-      <div className="px-2 pb-2">
+      <div className="overflow-x-auto px-2 pb-2">
         <table className="w-full text-[11px]">
           <thead>
             <tr className="text-text-tertiary">

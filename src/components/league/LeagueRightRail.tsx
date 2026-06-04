@@ -160,71 +160,73 @@ function MiniStandingsWidget({
       <div className="border-b border-border-subtle px-4 py-2.5">
         <h3 className="label-caps">{title}</h3>
       </div>
-      <table className="w-full text-xs">
-        <thead>
-          <tr className="border-b border-border-subtle text-[10px] font-medium uppercase text-text-tertiary">
-            <th className="w-6 py-1.5 text-center">#</th>
-            <th className="py-1.5 text-start">{t('miniTeam')}</th>
-            <th className="w-6 py-1.5 text-center">{t('miniPlayed')}</th>
-            <th className="w-8 py-1.5 text-center font-semibold">{t('miniPoints')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {top5.map((row) => {
-            const teamName =
-              row.team?.shortName[locale] ??
-              row.team?.name[locale] ??
-              row.team?.name['en'] ??
-              row.team?.code ??
-              '—';
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-border-subtle text-[10px] font-medium uppercase text-text-tertiary">
+              <th className="w-6 py-1.5 text-center">#</th>
+              <th className="py-1.5 text-start">{t('miniTeam')}</th>
+              <th className="w-6 py-1.5 text-center">{t('miniPlayed')}</th>
+              <th className="w-8 py-1.5 text-center font-semibold">{t('miniPoints')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {top5.map((row) => {
+              const teamName =
+                row.team?.shortName[locale] ??
+                row.team?.name[locale] ??
+                row.team?.name['en'] ??
+                row.team?.code ??
+                '—';
 
-            return (
-              <tr
-                key={row.teamId ?? row.rank}
-                className="border-b border-border-subtle last:border-b-0"
-              >
-                <td className="py-1.5 text-center tabular-nums text-text-tertiary">{row.rank}</td>
-                <td className="py-1.5">
-                  <div className="flex items-center gap-1.5">
-                    {row.team?.logoUrl ? (
-                      <Image
-                        src={row.team.logoUrl}
-                        alt=""
-                        className="size-4 object-contain"
-                        width={16}
-                        height={16}
-                      />
-                    ) : (
-                      <div className="size-4 rounded bg-bg-surface-2" />
-                    )}
-                    {row.team?.slug ? (
-                      <Link
-                        href={`/${locale}/equipe/${row.team.slug}`}
-                        className={cn(
-                          'truncate text-xs font-medium text-text-primary hover:text-accent hover:underline',
-                          row.rank === 1 && 'font-semibold',
-                        )}
-                      >
-                        {teamName}
-                      </Link>
-                    ) : (
-                      <span className="truncate text-xs font-medium text-text-primary">
-                        {teamName}
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="py-1.5 text-center tabular-nums text-text-secondary">
-                  {row.played}
-                </td>
-                <td className="py-1.5 text-center tabular-nums font-semibold text-text-primary">
-                  {row.points}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+              return (
+                <tr
+                  key={row.teamId ?? row.rank}
+                  className="border-b border-border-subtle last:border-b-0"
+                >
+                  <td className="py-1.5 text-center tabular-nums text-text-tertiary">{row.rank}</td>
+                  <td className="py-1.5">
+                    <div className="flex items-center gap-1.5">
+                      {row.team?.logoUrl ? (
+                        <Image
+                          src={row.team.logoUrl}
+                          alt=""
+                          className="size-4 object-contain"
+                          width={16}
+                          height={16}
+                        />
+                      ) : (
+                        <div className="size-4 rounded bg-bg-surface-2" />
+                      )}
+                      {row.team?.slug ? (
+                        <Link
+                          href={`/${locale}/equipe/${row.team.slug}`}
+                          className={cn(
+                            'truncate text-xs font-medium text-text-primary hover:text-accent hover:underline',
+                            row.rank === 1 && 'font-semibold',
+                          )}
+                        >
+                          {teamName}
+                        </Link>
+                      ) : (
+                        <span className="truncate text-xs font-medium text-text-primary">
+                          {teamName}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-1.5 text-center tabular-nums text-text-secondary">
+                    {row.played}
+                  </td>
+                  <td className="py-1.5 text-center tabular-nums font-semibold text-text-primary">
+                    {row.points}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
