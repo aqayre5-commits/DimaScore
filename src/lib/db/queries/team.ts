@@ -247,6 +247,81 @@ export async function getTeamSquad(
     );
 }
 
+// ── Curated tournament squad (e.g. official World Cup 2026 roster) ──
+
+export interface TeamTournamentSquad {
+  players: SquadPlayer[];
+  competitionName: Record<string, string>;
+  seasonYear: number;
+}
+
+export async function getTeamTournamentSquad(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+): Promise<TeamTournamentSquad | null> {
+  // Most recent curated roster for this team (e.g. World Cup 2026).
+  const latest = await db
+    .select({
+      competitionId: schema.tournamentSquads.competitionId,
+      seasonYear: schema.tournamentSquads.seasonYear,
+    })
+    .from(schema.tournamentSquads)
+    .where(eq(schema.tournamentSquads.teamId, teamId))
+    .orderBy(desc(schema.tournamentSquads.seasonYear))
+    .limit(1);
+
+  if (latest.length === 0) return null;
+  const { competitionId, seasonYear } = latest[0];
+
+  const players = await db
+    .select({
+      id: schema.players.id,
+      slug: schema.players.slug,
+      name: schema.players.name,
+      firstname: schema.players.firstname,
+      lastname: schema.players.lastname,
+      position: schema.players.position,
+      shirtNumber: schema.players.shirtNumber,
+      photoUrl: schema.players.photoUrl,
+      birthDate: schema.players.birthDate,
+      nationalityCode: schema.players.nationalityCode,
+      injured: schema.players.injured,
+    })
+    .from(schema.tournamentSquads)
+    .innerJoin(schema.players, eq(schema.tournamentSquads.playerId, schema.players.id))
+    .where(
+      and(
+        eq(schema.tournamentSquads.teamId, teamId),
+        eq(schema.tournamentSquads.competitionId, competitionId),
+        eq(schema.tournamentSquads.seasonYear, seasonYear),
+      ),
+    )
+    .orderBy(
+      sql`CASE ${schema.players.position}
+        WHEN 'Goalkeeper' THEN 1
+        WHEN 'Defender' THEN 2
+        WHEN 'Midfielder' THEN 3
+        WHEN 'Attacker' THEN 4
+        ELSE 5
+      END`,
+      asc(schema.players.shirtNumber),
+    );
+
+  if (players.length === 0) return null;
+
+  const comp = await db
+    .select({ name: schema.competitions.name })
+    .from(schema.competitions)
+    .where(eq(schema.competitions.id, competitionId))
+    .limit(1);
+
+  return {
+    players,
+    competitionName: comp[0]?.name ?? { en: '' },
+    seasonYear,
+  };
+}
+
 // ── Q4: Team standings (find team's primary competition, fetch standings) ──
 
 export async function getTeamStandings(

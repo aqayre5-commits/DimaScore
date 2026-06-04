@@ -26,6 +26,7 @@ import {
   getTeamsInSameCompetition,
   getTeamFormResults,
   getTeamPrimaryCompetition,
+  getTeamTournamentSquad,
 } from '@/lib/db/queries/team';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import { BASE_URL } from '@/lib/constants/site';
@@ -59,6 +60,7 @@ async function getCachedTeamData(teamSlug: string) {
   const [
     fixtures,
     squad,
+    tournamentSquad,
     allStandings,
     teamSeasonStats,
     competitionTeams,
@@ -67,6 +69,7 @@ async function getCachedTeamData(teamSlug: string) {
   ] = await Promise.all([
     getTeamFixturesWithCompetition(db, team.id, 200),
     getTeamSquad(db, team.id),
+    getTeamTournamentSquad(db, team.id),
     getTeamAllStandings(db, team.id),
     getTeamSeasonStats(db, team.id),
     getTeamsInSameCompetition(db, team.id),
@@ -78,6 +81,7 @@ async function getCachedTeamData(teamSlug: string) {
     team,
     fixtures,
     squad,
+    tournamentSquad,
     allStandings,
     teamSeasonStats,
     competitionTeams,
@@ -146,6 +150,7 @@ export default async function TeamPage({ params }: PageProps) {
     team,
     fixtures,
     squad,
+    tournamentSquad,
     allStandings,
     teamSeasonStats,
     competitionTeams,
@@ -230,7 +235,21 @@ export default async function TeamPage({ params }: PageProps) {
       key: 'squad',
       hash: hashes.squad,
       labelKey: 'squad',
-      content: <TeamSquadTable players={squad} locale={typedLocale} />,
+      content: tournamentSquad ? (
+        <div className="space-y-3">
+          <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-2.5">
+            <h3 className="label-caps">
+              {tournamentSquad.competitionName[typedLocale] ??
+                tournamentSquad.competitionName['en'] ??
+                ''}{' '}
+              {tournamentSquad.seasonYear}
+            </h3>
+          </div>
+          <TeamSquadTable players={tournamentSquad.players} locale={typedLocale} />
+        </div>
+      ) : (
+        <TeamSquadTable players={squad} locale={typedLocale} />
+      ),
     },
   ];
 

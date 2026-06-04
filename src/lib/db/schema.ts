@@ -190,6 +190,29 @@ export const squadMembers = pgTable(
   ],
 );
 
+// Curated tournament rosters (e.g. the official World Cup 2026 squad) — a manual
+// subset of a team's players for a specific competition+season, independent of
+// the full squad_members pool synced from the provider.
+export const tournamentSquads = pgTable(
+  'tournament_squads',
+  {
+    competitionId: bigint('competition_id', { mode: 'number' })
+      .notNull()
+      .references(() => competitions.id),
+    seasonYear: integer('season_year').notNull(),
+    teamId: bigint('team_id', { mode: 'number' })
+      .notNull()
+      .references(() => teams.id),
+    playerId: bigint('player_id', { mode: 'number' })
+      .notNull()
+      .references(() => players.id),
+  },
+  (t) => [
+    primaryKey({ columns: [t.competitionId, t.seasonYear, t.teamId, t.playerId] }),
+    index('tournament_squads_team_idx').on(t.teamId, t.competitionId, t.seasonYear),
+  ],
+);
+
 export const coaches = pgTable(
   'coaches',
   {
