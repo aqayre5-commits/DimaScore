@@ -28,7 +28,9 @@ import { ScoreHeader } from '@/components/match/ScoreHeader';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 import { MatchClientCenter } from '@/components/match/MatchClientCenter';
 import { PreMatchForm } from '@/components/match/PreMatchForm';
+import { PredictedLineup } from '@/components/match/PredictedLineup';
 import { getTeamForm, type FormResult } from '@/lib/db/queries/homepage';
+import { getCachedPredictedXI } from '@/lib/db/queries/predicted-lineup';
 import { MatchClientLeftRail, MatchClientRightRail } from '@/components/match/MatchClientSidebar';
 
 import { cacheLife } from 'next/cache';
@@ -164,6 +166,11 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const home = getTeamDisplayName(match.homeTeam, typedLocale);
   const away = getTeamDisplayName(match.awayTeam, typedLocale);
 
+  const predicted =
+    isUpcoming && homeTeamId > 0 && awayTeamId > 0
+      ? await getCachedPredictedXI(homeTeamId, awayTeamId, typedLocale)
+      : null;
+
   const competitionEntry = findEntryByCompetitionId(match.competition.id);
   const competitionHref = competitionEntry
     ? buildCompetitionHref(competitionEntry, typedLocale)
@@ -249,6 +256,15 @@ export default async function MatchDetailPage({ params }: PageProps) {
                 awayName={away}
                 homeForm={prefetch.homeForm}
                 awayForm={prefetch.awayForm}
+              />
+            )}
+            {isUpcoming && predicted && (
+              <PredictedLineup
+                locale={typedLocale}
+                homeName={home}
+                awayName={away}
+                homeLineup={predicted.home}
+                awayLineup={predicted.away}
               />
             )}
             <MatchClientCenter
