@@ -27,6 +27,8 @@ import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 import { MatchClientCenter } from '@/components/match/MatchClientCenter';
+import { PreMatchForm } from '@/components/match/PreMatchForm';
+import { getTeamForm, type FormResult } from '@/lib/db/queries/homepage';
 import { MatchClientLeftRail, MatchClientRightRail } from '@/components/match/MatchClientSidebar';
 
 import { cacheLife } from 'next/cache';
@@ -62,19 +64,32 @@ async function getCachedMatchData(fixtureId: number) {
 
   // Server-prefetch the tab data so the client useQuery hydrates with it (no
   // client-fetch "content dump"). Gated identically to the client `enabled`.
-  const [events, lineups, teamStats, playerStats, h2h, nextFixtures] = await Promise.all([
+  const [events, lineups, teamStats, playerStats, h2h, nextFixtures, formMap] = await Promise.all([
     !isUpcoming && coverage?.events ? getMatchEvents(db, fixtureId) : null,
     !isUpcoming && coverage?.lineups ? getMatchLineups(db, fixtureId) : null,
     hasStats ? getMatchStatistics(db, fixtureId) : null,
     hasStats ? getMatchPlayerStats(db, fixtureId) : null,
     hasTeams ? getHeadToHead(db, homeTeamId, awayTeamId, fixtureId) : [],
     hasTeams ? getNextFixtures(db, homeTeamId, awayTeamId, fixtureId) : [],
+    hasTeams ? getTeamForm(db, [homeTeamId, awayTeamId]) : new Map<number, FormResult[]>(),
   ]);
+  const homeForm = formMap.get(homeTeamId) ?? [];
+  const awayForm = formMap.get(awayTeamId) ?? [];
 
   return {
     match,
     coverage,
-    prefetch: { events, lineups, teamStats, playerStats, hasStats, h2h, nextFixtures },
+    prefetch: {
+      events,
+      lineups,
+      teamStats,
+      playerStats,
+      hasStats,
+      h2h,
+      nextFixtures,
+      homeForm,
+      awayForm,
+    },
   };
 }
 
@@ -227,6 +242,15 @@ export default async function MatchDetailPage({ params }: PageProps) {
         center={
           <div className="space-y-4">
             <ScoreHeader match={match} locale={typedLocale} competitionHref={competitionHref} />
+            {isUpcoming && (
+              <PreMatchForm
+                locale={typedLocale}
+                homeName={home}
+                awayName={away}
+                homeForm={prefetch.homeForm}
+                awayForm={prefetch.awayForm}
+              />
+            )}
             <MatchClientCenter
               matchId={matchId}
               locale={typedLocale}
