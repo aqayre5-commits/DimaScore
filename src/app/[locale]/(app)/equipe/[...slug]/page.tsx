@@ -39,10 +39,13 @@ const baseUrl = BASE_URL;
 
 // ── Tab hash fragments per locale ──
 
-const TAB_HASHES: Record<Locale, { standings: string; statistics: string; players: string }> = {
-  fr: { standings: 'classement', statistics: 'statistiques', players: 'effectif' },
-  en: { standings: 'standings', statistics: 'statistics', players: 'squad' },
-  ar: { standings: 'الترتيب', statistics: 'الإحصائيات', players: 'التشكيلة' },
+const TAB_HASHES: Record<
+  Locale,
+  { matches: string; standings: string; statistics: string; squad: string }
+> = {
+  fr: { matches: 'matchs', standings: 'classement', statistics: 'statistiques', squad: 'effectif' },
+  en: { matches: 'matches', standings: 'standings', statistics: 'statistics', squad: 'squad' },
+  ar: { matches: 'المباريات', standings: 'الترتيب', statistics: 'الإحصائيات', squad: 'التشكيلة' },
 };
 
 // ── Cached data ──
@@ -186,6 +189,13 @@ export default async function TeamPage({ params }: PageProps) {
   const hashes = TAB_HASHES[typedLocale];
   const tabs = [
     {
+      key: 'matches',
+      hash: hashes.matches,
+      labelKey: 'matches',
+      icon: 'calendar',
+      content: <TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />,
+    },
+    {
       key: 'standings',
       hash: hashes.standings,
       labelKey: 'standings',
@@ -207,9 +217,9 @@ export default async function TeamPage({ params }: PageProps) {
       content: <TeamStatistics data={teamSeasonStats} locale={typedLocale} />,
     },
     {
-      key: 'players',
-      hash: hashes.players,
-      labelKey: 'players',
+      key: 'squad',
+      hash: hashes.squad,
+      labelKey: 'squad',
       content: <TeamSquadTable players={squad} locale={typedLocale} />,
     },
   ];
@@ -217,7 +227,7 @@ export default async function TeamPage({ params }: PageProps) {
   return (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <SeoBreadcrumb segments={breadcrumbs} />
+        <SeoBreadcrumb segments={breadcrumbs} compactOnMobile />
       </div>
 
       <InnerPageShell
@@ -240,20 +250,19 @@ export default async function TeamPage({ params }: PageProps) {
             )}
           </div>
         }
-        center={<CenterTabs tabs={tabs} />}
-        rightRail={<TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />}
-        belowCenter={
+        center={
           <>
-            {/* Mobile-only: surface the right-rail (next match + fixtures), hidden xl:block. */}
-            <div className="space-y-4 xl:hidden">
-              {upcomingFixture && (
+            {/* Mobile-only Next/Last band above the tabs (desktop shows it in rightRailTop) */}
+            {upcomingFixture && (
+              <div className="mb-4 xl:hidden">
                 <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
-              )}
-              <TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />
-            </div>
-            <TeamMediaSection teamId={team.id} locale={typedLocale} />
+              </div>
+            )}
+            <CenterTabs tabs={tabs} />
           </>
         }
+        rightRail={<TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />}
+        belowCenter={<TeamMediaSection teamId={team.id} locale={typedLocale} />}
       />
     </>
   );

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export interface BreadcrumbSegment {
   label: string;
@@ -7,6 +8,11 @@ export interface BreadcrumbSegment {
 
 interface SeoBreadcrumbProps {
   segments: BreadcrumbSegment[];
+  /**
+   * When true, render a smaller, fainter row on mobile to reclaim space
+   * (reverts to the default size at md+). The JSON-LD is unaffected.
+   */
+  compactOnMobile?: boolean;
 }
 
 /**
@@ -14,7 +20,7 @@ interface SeoBreadcrumbProps {
  * Last segment is non-clickable (current page). ~22px total height.
  * Server component — no 'use client' needed.
  */
-export function SeoBreadcrumb({ segments }: SeoBreadcrumbProps) {
+export function SeoBreadcrumb({ segments, compactOnMobile = false }: SeoBreadcrumbProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -27,8 +33,18 @@ export function SeoBreadcrumb({ segments }: SeoBreadcrumbProps) {
   };
 
   return (
-    <nav aria-label="breadcrumb" className="px-4 py-1">
-      <ol className="flex items-center gap-1.5 text-[13px] text-text-secondary">
+    <nav
+      aria-label="breadcrumb"
+      className={cn('px-4', compactOnMobile ? 'py-0.5 md:py-1' : 'py-1')}
+    >
+      <ol
+        className={cn(
+          'flex items-center gap-1.5',
+          compactOnMobile
+            ? 'text-[11px] text-text-tertiary md:text-[13px] md:text-text-secondary'
+            : 'text-[13px] text-text-secondary',
+        )}
+      >
         {segments.map((seg, i) => (
           <li
             key={i}

@@ -48,18 +48,18 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
             <span className="text-3xl">&#9917;</span>
           </div>
         )}
-        {/* Mobile-only smaller logo */}
+        {/* Mobile-only logo — fills card height */}
         {team.logoUrl ? (
           <Image
             src={team.logoUrl}
             alt={name}
-            className="h-[72px] w-auto shrink-0 self-center object-contain md:hidden"
-            width={72}
-            height={72}
+            className="h-full max-h-[104px] w-auto shrink-0 self-stretch object-contain object-center md:hidden"
+            width={104}
+            height={104}
             priority
           />
         ) : flag ? (
-          <span className="flex items-center text-4xl md:hidden">{flag}</span>
+          <span className="flex items-center self-stretch text-5xl md:hidden">{flag}</span>
         ) : null}
 
         {/* Identity */}
@@ -91,9 +91,18 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
             </div>
           )}
 
-          {/* Quick facts — bordered pills, pushed to bottom */}
+          {/* Mobile-only dense meta line (Variant B) — replaces the pills below md */}
+          {(team.founded || team.venue?.name || team.venue?.capacity) && (
+            <p className="mt-1.5 truncate text-xs text-text-tertiary md:hidden">
+              {[team.founded, team.venue?.name, team.venue?.capacity?.toLocaleString()]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          )}
+
+          {/* Quick facts — bordered pills (desktop only), pushed to bottom */}
           {(team.venue || team.founded) && (
-            <div className="mt-auto flex flex-wrap gap-3 pt-2">
+            <div className="mt-auto hidden flex-wrap gap-3 pt-2 md:flex">
               {team.founded && (
                 <div className="flex flex-col items-center rounded-lg border border-accent-azure/20 bg-accent-azure/5 px-3 py-1.5">
                   <span className="text-sm font-bold tabular-nums text-text-primary">
