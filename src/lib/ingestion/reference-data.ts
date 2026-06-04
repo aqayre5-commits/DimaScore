@@ -61,8 +61,11 @@ export function mapCoverageToInsert(
     topScorers: cov.topScorers,
     topAssists: cov.topAssists,
     topCards: cov.topCards,
-    injuries: cov.injuries,
-    predictions: cov.predictions,
+    // Hardcoded false (like odds): the project ingests no injuries data and
+    // predictions are editorial-only, so the API's capability flags would
+    // otherwise gate empty tabs on. Re-enable per feature when populated.
+    injuries: false,
+    predictions: false,
     odds: false,
   };
 }
