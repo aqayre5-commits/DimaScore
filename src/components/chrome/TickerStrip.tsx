@@ -292,7 +292,7 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
         type="button"
         onClick={() => setPaused((p) => !p)}
         aria-label={paused ? t('playTicker') : t('pauseTicker')}
-        className="absolute end-0 top-0 z-10 flex h-full w-8 items-center justify-center bg-bg-canvas/80 backdrop-blur-sm transition-colors hover:bg-bg-canvas"
+        className="absolute end-0 top-0 z-10 flex h-full w-11 items-center justify-center bg-bg-canvas/80 backdrop-blur-sm transition-colors hover:bg-bg-canvas"
       >
         <PausePlayIcon className="size-3.5 text-text-secondary" />
       </button>
