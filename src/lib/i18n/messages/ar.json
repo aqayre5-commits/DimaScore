@@ -366,6 +366,8 @@
   },
   "teamPage": {
     "seoSections": "النتائج، المباريات، الترتيب، الإحصائيات والتشكيلة",
+    "viewFullStandings": "عرض الترتيب الكامل",
+    "showLess": "عرض أقل",
     "squad": "التشكيلة",
     "standings": "الترتيب",
     "goalkeeper": "حارس",

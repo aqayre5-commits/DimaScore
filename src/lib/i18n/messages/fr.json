@@ -366,6 +366,8 @@
   },
   "teamPage": {
     "seoSections": "Scores, Matchs, Classement, Statistiques et Effectif",
+    "viewFullStandings": "Voir le classement complet",
+    "showLess": "Réduire",
     "squad": "Effectif",
     "standings": "Classement",
     "goalkeeper": "GB",

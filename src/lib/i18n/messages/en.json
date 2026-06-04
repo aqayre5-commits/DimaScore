@@ -366,6 +366,8 @@
   },
   "teamPage": {
     "seoSections": "Scores, Matches, Standings, Statistics & Squad",
+    "viewFullStandings": "View full standings",
+    "showLess": "Show less",
     "squad": "Squad",
     "standings": "Standings",
     "goalkeeper": "GK",
