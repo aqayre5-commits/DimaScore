@@ -84,7 +84,7 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
       </div>
 
       {/* Slide content */}
-      <div className="flex flex-col items-center px-8 pb-2 pt-14">
+      <div className="flex flex-col items-center px-4 pb-2 pt-14 sm:px-8">
         <CarouselSlide match={match} locale={locale} labels={labels} isFirst={idx === 0} />
       </div>
 
@@ -111,7 +111,7 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
       )}
 
       {/* Bottom bar: stadium · dots · capacity */}
-      <div className="flex items-center justify-between px-6 pb-4 pt-3">
+      <div className="flex items-center justify-between px-4 pb-4 pt-3 sm:px-6">
         <div className="flex min-w-0 flex-1 items-center gap-1.5 text-xs font-medium text-text-secondary">
           {match.venueName && (
             <>
