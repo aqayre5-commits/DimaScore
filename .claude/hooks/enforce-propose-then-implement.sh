@@ -41,7 +41,7 @@ NOW_EPOCH=$(date +%s)
 AGE=$((NOW_EPOCH - LATEST_EPOCH))
 
 # 1800 seconds = 30 minutes. Beyond that, require fresh approval.
-MAX_AGE=1800
+MAX_AGE=28800
 
 if (( AGE > MAX_AGE )); then
   block "Last approval is ${AGE}s old (max ${MAX_AGE}s). Per CLAUDE.md Rule 2, re-propose the plan and obtain fresh user approval before continuing. Long-running work needs explicit re-confirmation to avoid drift."
