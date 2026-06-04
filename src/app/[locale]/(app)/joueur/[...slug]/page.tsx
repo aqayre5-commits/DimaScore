@@ -199,6 +199,13 @@ export default async function PlayerPage({ params }: PageProps) {
         }
         belowCenter={
           <div className="mt-6 space-y-6">
+            {/* Mobile-only: surface the right-rail (next match + transfers), hidden xl:block. */}
+            <div className="space-y-4 xl:hidden">
+              {upcomingFixture && (
+                <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
+              )}
+              <PlayerTransfers transfers={transfers} locale={typedLocale} />
+            </div>
             <PlayerMediaSection playerId={player.id} locale={typedLocale} />
           </div>
         }

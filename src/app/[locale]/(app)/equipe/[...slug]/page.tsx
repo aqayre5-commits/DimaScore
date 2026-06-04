@@ -242,7 +242,18 @@ export default async function TeamPage({ params }: PageProps) {
         }
         center={<CenterTabs tabs={tabs} />}
         rightRail={<TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />}
-        belowCenter={<TeamMediaSection teamId={team.id} locale={typedLocale} />}
+        belowCenter={
+          <>
+            {/* Mobile-only: surface the right-rail (next match + fixtures), hidden xl:block. */}
+            <div className="space-y-4 xl:hidden">
+              {upcomingFixture && (
+                <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
+              )}
+              <TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />
+            </div>
+            <TeamMediaSection teamId={team.id} locale={typedLocale} />
+          </>
+        }
       />
     </>
   );
