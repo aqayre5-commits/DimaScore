@@ -149,7 +149,7 @@ export function MatchClientCenter({
       )}
 
       {/* Fallback */}
-      {hasNoData && (
+      {hasNoData && !isUpcoming && (
         <div className="px-4 py-10 text-center">
           <p className="text-sm text-text-tertiary">{t('predictionComingSoon')}</p>
         </div>
