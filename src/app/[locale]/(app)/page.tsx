@@ -6,11 +6,11 @@ import { BASE_URL } from '@/lib/constants/site';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
-import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { HomeFeaturedCarousel } from '@/components/homepage/HomeFeaturedCarousel';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
 import { HomeLeftRail } from '@/components/homepage/HomeLeftRail';
-import { HomeRightRailStreamed } from '@/components/homepage/HomeRightRailStreamed';
+import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
+import { getHomeRailData } from '@/lib/db/queries/home-rail';
 import { HomeTrendingPlayersStreamed } from '@/components/homepage/HomeTrendingPlayersStreamed';
 import { AboutCard } from '@/components/tournament/AboutCard';
 import { getHomepageAboutContent } from '@/lib/constants/homepage-about-content';
@@ -185,10 +185,12 @@ export default async function HomePage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
-  const [{ featured, matchesByCategory, matchCounts, leftRailComps }, t] = await Promise.all([
-    getCachedHomepageData(),
-    getTranslations({ locale, namespace: 'homepage' }),
-  ]);
+  const [{ featured, matchesByCategory, matchCounts, leftRailComps }, railData, t] =
+    await Promise.all([
+      getCachedHomepageData(),
+      getHomeRailData(typedLocale),
+      getTranslations({ locale, namespace: 'homepage' }),
+    ]);
 
   // Enrich featured matches: WC venues + team form
   const WC_COMP_ID = 1;
@@ -250,54 +252,59 @@ export default async function HomePage({ params }: PageProps) {
 
   return (
     <>
-      <InnerPageShell
-        leftRail={
-          <HomeLeftRail
-            sections={leftRailSections}
-            counts={matchCounts}
-            locale={typedLocale}
-            labels={leftRailLabels}
-          />
-        }
-        center={
-          <div className="space-y-4">
-            <HomeFeaturedCarousel
-              matches={featured}
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
+        <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-6">
+          {/* Left rail — competition nav. Desktop only: the drawer + bottom tab bar cover mobile. */}
+          <aside className="hidden xl:col-start-1 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
+            <HomeLeftRail
+              sections={leftRailSections}
+              counts={matchCounts}
               locale={typedLocale}
-              labels={{
-                featuredMatch: t('featured'),
-                kicksOffIn: t('kicksOffIn'),
-                stadium: t('stadium'),
-                expectedAttendance: t('expectedAttendance'),
-              }}
+              labels={leftRailLabels}
             />
-            <HomeMatchTabs
-              live={matchesByCategory.live}
-              upcoming={matchesByCategory.upcoming}
-              results={matchesByCategory.results}
-              locale={typedLocale}
-              labels={matchTabLabels}
-            />
-            <Suspense>
-              <HomeTrendingPlayersStreamed locale={typedLocale} />
-            </Suspense>
-          </div>
-        }
-        rightRail={
-          <Suspense
-            fallback={
-              <div className="space-y-4">
-                {Array.from({ length: 3 }, (_, i) => (
-                  <div key={i} className="h-48 animate-pulse rounded-xl bg-bg-surface-2" />
-                ))}
+          </aside>
+
+          {/* Center column */}
+          <div className="order-1 min-w-0 xl:order-none xl:col-start-2 xl:row-start-1">
+            <div className="space-y-4">
+              <HomeFeaturedCarousel
+                matches={featured}
+                locale={typedLocale}
+                labels={{
+                  featuredMatch: t('featured'),
+                  kicksOffIn: t('kicksOffIn'),
+                  stadium: t('stadium'),
+                  expectedAttendance: t('expectedAttendance'),
+                }}
+              />
+              <HomeMatchTabs
+                live={matchesByCategory.live}
+                upcoming={matchesByCategory.upcoming}
+                results={matchesByCategory.results}
+                locale={typedLocale}
+                labels={matchTabLabels}
+              />
+
+              {/* Rail data surfaced in the mobile flow (value-ordered); hidden on desktop. */}
+              <div className="xl:hidden">
+                <HomeRailWidgets data={railData} locale={typedLocale} variant="mobile" />
               </div>
-            }
-          >
-            <HomeRightRailStreamed locale={typedLocale} />
-          </Suspense>
-        }
-        belowCenter={<AboutCard content={getHomepageAboutContent(typedLocale)} />}
-      />
+
+              <Suspense>
+                <HomeTrendingPlayersStreamed locale={typedLocale} />
+              </Suspense>
+            </div>
+            <div className="mt-6">
+              <AboutCard content={getHomepageAboutContent(typedLocale)} />
+            </div>
+          </div>
+
+          {/* Right rail — desktop only (mobile gets the value-ordered block above) */}
+          <aside className="hidden xl:col-start-3 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
+            <HomeRailWidgets data={railData} locale={typedLocale} variant="desktop" />
+          </aside>
+        </div>
+      </div>
 
       <WebSiteJsonLd baseUrl={baseUrl} locale={typedLocale} />
       <OrganizationJsonLd baseUrl={baseUrl} />

@@ -1,18 +1,30 @@
+import { Fragment } from 'react';
 import { getTranslations } from 'next-intl/server';
-import { getHomeRailData } from '@/lib/db/queries/home-rail';
 import { HomeNextMatch } from './HomeNextMatch';
 import { HomeLiveGroupStandings } from './HomeLiveGroupStandings';
 import { HomeTopMatches } from './HomeTodaysMatches';
 import { HomeLionsAbroad } from './HomeLionsAbroad';
 import { HomeStandingsMini } from './HomeStandingsMini';
 import { HomeTopScorers } from './HomeTopScorers';
+import type { HomeRailData } from '@/lib/db/queries/home-rail';
 import type { Locale } from '@/lib/i18n/config';
 
 interface Props {
+  data: HomeRailData;
   locale: Locale;
+  /**
+   * desktop = right-rail order (unchanged from the original rail).
+   * mobile  = value-first order surfaced in the main flow on small screens.
+   */
+  variant: 'desktop' | 'mobile';
 }
 
-export async function HomeRightRailStreamed({ locale }: Props) {
+const SEQUENCES: Record<Props['variant'], string[]> = {
+  desktop: ['nextMatch', 'liveGroups', 'topMatches', 'lions', 'standings', 'scorers'],
+  mobile: ['nextMatch', 'standings', 'scorers', 'topMatches', 'lions', 'liveGroups'],
+};
+
+export async function HomeRailWidgets({ data, locale, variant }: Props) {
   const t = await getTranslations({ locale, namespace: 'homepage' });
   const {
     nextFeatured,
@@ -21,7 +33,7 @@ export async function HomeRightRailStreamed({ locale }: Props) {
     moroccanPerformances,
     topScorersData,
     standingsLeagues,
-  } = await getHomeRailData(locale);
+  } = data;
 
   const standingsLabels = {
     viewFullStandings: t('viewFullStandings'),
@@ -34,22 +46,21 @@ export async function HomeRightRailStreamed({ locale }: Props) {
     points: t('points'),
   };
 
-  return (
-    <div className="space-y-4">
-      {nextFeatured && (
-        <HomeNextMatch
-          match={nextFeatured.match}
-          goals={nextFeatured.goals}
-          locale={locale}
-          labels={{
-            nextMatch: t('nextMatch'),
-            liveNow: t('liveNow'),
-            viewMatch: t('viewMatch'),
-          }}
-        />
-      )}
-
-      {liveGroupStandings.length > 0 && (
+  const widgets: Record<string, React.ReactNode> = {
+    nextMatch: nextFeatured ? (
+      <HomeNextMatch
+        match={nextFeatured.match}
+        goals={nextFeatured.goals}
+        locale={locale}
+        labels={{
+          nextMatch: t('nextMatch'),
+          liveNow: t('liveNow'),
+          viewMatch: t('viewMatch'),
+        }}
+      />
+    ) : null,
+    liveGroups:
+      liveGroupStandings.length > 0 ? (
         <HomeLiveGroupStandings
           groups={liveGroupStandings}
           locale={locale}
@@ -66,9 +77,9 @@ export async function HomeRightRailStreamed({ locale }: Props) {
             points: t('points'),
           }}
         />
-      )}
-
-      {topMatches.length > 0 && (
+      ) : null,
+    topMatches:
+      topMatches.length > 0 ? (
         <HomeTopMatches
           groups={topMatches}
           locale={locale}
@@ -78,9 +89,9 @@ export async function HomeRightRailStreamed({ locale }: Props) {
             today: t('today'),
           }}
         />
-      )}
-
-      {moroccanPerformances.length > 0 && (
+      ) : null,
+    lions:
+      moroccanPerformances.length > 0 ? (
         <HomeLionsAbroad
           performances={moroccanPerformances}
           locale={locale}
@@ -93,28 +104,32 @@ export async function HomeRightRailStreamed({ locale }: Props) {
             viewAll: t('viewAll'),
           }}
         />
-      )}
-
-      {standingsLeagues[0] && (
-        <HomeStandingsMini
-          compName={standingsLeagues[0].compName}
-          countryKey={standingsLeagues[0].countryKey}
-          slug={standingsLeagues[0].slug}
-          rows={standingsLeagues[0].rows}
-          locale={locale}
-          labels={standingsLabels}
-        />
-      )}
-
-      {topScorersData.scorers.length > 0 && (
+      ) : null,
+    standings: standingsLeagues[0] ? (
+      <HomeStandingsMini
+        compName={standingsLeagues[0].compName}
+        countryKey={standingsLeagues[0].countryKey}
+        slug={standingsLeagues[0].slug}
+        rows={standingsLeagues[0].rows}
+        locale={locale}
+        labels={standingsLabels}
+      />
+    ) : null,
+    scorers:
+      topScorersData.scorers.length > 0 ? (
         <HomeTopScorers
           competitionName={topScorersData.competitionName}
           scorers={topScorersData.scorers}
           locale={locale}
-          labels={{
-            topScorers: t('topScorers'),
-          }}
+          labels={{ topScorers: t('topScorers') }}
         />
+      ) : null,
+  };
+
+  return (
+    <div className="space-y-4">
+      {SEQUENCES[variant].map((key) =>
+        widgets[key] ? <Fragment key={key}>{widgets[key]}</Fragment> : null,
       )}
     </div>
   );
