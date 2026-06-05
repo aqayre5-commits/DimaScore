@@ -38,6 +38,7 @@ function formatHeaderDate(date: Date, locale: Locale): string {
 export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
   const t = useTranslations('leaguePage');
   const { homeTeam, awayTeam, kickoffAt, venue, statusCode, homeScore, awayScore } = fixture;
+  const { homeScorePen, awayScorePen } = fixture;
 
   const homeCode = resolveTeamCode(homeTeam, locale);
   const awayCode = resolveTeamCode(awayTeam, locale);
@@ -121,7 +122,13 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
                   </div>
                 ) : (
                   <span className="mt-0.5 inline-block rounded bg-bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-text-tertiary">
-                    {statusCode === 'AET' ? 'AET' : statusCode === 'PEN' ? 'PEN' : 'FT'}
+                    {statusCode === 'AET'
+                      ? 'AET'
+                      : statusCode === 'PEN'
+                        ? homeScorePen != null && awayScorePen != null
+                          ? `PEN ${homeScorePen}-${awayScorePen}`
+                          : 'PEN'
+                        : 'FT'}
                   </span>
                 )}
               </>

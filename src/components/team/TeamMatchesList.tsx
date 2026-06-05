@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
-import { getMatchState, isLive as isLiveStatus, getMatchWinner } from '@/lib/match-status';
+import { getMatchState, isLive as isLiveStatus } from '@/lib/match-status';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
@@ -139,14 +139,6 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
   const isLive = state === 'live';
   const isDone = state === 'finished';
   const showScore = (isLive || isDone) && f.homeScore != null && f.awayScore != null;
-  const winner = isDone ? getMatchWinner(f) : null;
-
-  const nameCls = (side: 'home' | 'away') =>
-    winner === side
-      ? 'font-semibold text-text-primary'
-      : isDone
-        ? 'text-text-secondary'
-        : 'text-text-primary';
 
   let subLabel = '';
   if (isLive) subLabel = isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE';
@@ -184,9 +176,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
             className="size-6 shrink-0 object-contain"
           />
         )}
-        <span className={`truncate text-sm ${nameCls('home')}`}>
-          {teamName(f.homeTeam, locale)}
-        </span>
+        <span className="truncate text-sm text-text-primary">{teamName(f.homeTeam, locale)}</span>
       </div>
 
       {/* centre — vs / score, with state sub-label (FT / AET / PEN x-y) */}
@@ -209,7 +199,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
 
       {/* away */}
       <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-        <span className={`truncate text-end text-sm ${nameCls('away')}`}>
+        <span className="truncate text-end text-sm text-text-primary">
           {teamName(f.awayTeam, locale)}
         </span>
         {f.awayTeam?.logoUrl && (

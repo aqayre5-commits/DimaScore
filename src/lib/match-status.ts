@@ -32,28 +32,3 @@ export function isFinished(statusCode: string, kickoffAt?: Date): boolean {
   if (kickoffAt && kickoffAt <= new Date()) return true;
   return false;
 }
-
-/**
- * True winner of a finished match, accounting for penalty shootouts.
- * For PEN, regulation/ET is a draw and the shootout (home_score_pen vs
- * away_score_pen) decides it; otherwise the goals decide. Falls back to 'draw'
- * when scores are missing (e.g. a PEN row with no pen score).
- */
-export function getMatchWinner(f: {
-  statusCode: string;
-  homeScore: number | null;
-  awayScore: number | null;
-  homeScorePen: number | null;
-  awayScorePen: number | null;
-}): 'home' | 'away' | 'draw' {
-  if (f.statusCode === 'PEN' && f.homeScorePen != null && f.awayScorePen != null) {
-    if (f.homeScorePen > f.awayScorePen) return 'home';
-    if (f.awayScorePen > f.homeScorePen) return 'away';
-    return 'draw';
-  }
-  if (f.homeScore != null && f.awayScore != null) {
-    if (f.homeScore > f.awayScore) return 'home';
-    if (f.awayScore > f.homeScore) return 'away';
-  }
-  return 'draw';
-}

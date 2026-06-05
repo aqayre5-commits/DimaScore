@@ -18,20 +18,13 @@ export function MatchRow({ fixture, locale, enablePrefetch, competition }: Match
   const state = getMatchState(fixture.statusCode, fixture.kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
+  const showPenScore =
+    fixture.statusCode === 'PEN' && fixture.homeScorePen != null && fixture.awayScorePen != null;
 
   const homeLabel = getTeamDisplayName(fixture.homeTeam, locale);
   const awayLabel = getTeamDisplayName(fixture.awayTeam, locale);
 
-  const homeWon =
-    isFinished &&
-    fixture.homeScore != null &&
-    fixture.awayScore != null &&
-    fixture.homeScore > fixture.awayScore;
-  const awayWon =
-    isFinished &&
-    fixture.homeScore != null &&
-    fixture.awayScore != null &&
-    fixture.awayScore > fixture.homeScore;
+  const nameCls = isLive ? 'font-medium text-text-primary' : 'text-text-primary';
 
   const preview = previewFromDayFixture(fixture, competition);
 
@@ -53,7 +46,7 @@ export function MatchRow({ fixture, locale, enablePrefetch, competition }: Match
           </span>
         ) : isFinished ? (
           <span className="text-xs text-text-tertiary">
-            {fixture.statusCode === 'PEN' ? 'Pen' : 'FT'}
+            {fixture.statusCode === 'AET' ? 'AET' : fixture.statusCode === 'PEN' ? '' : 'FT'}
           </span>
         ) : (
           <span className="text-xs tabular-nums text-text-secondary">
@@ -63,16 +56,8 @@ export function MatchRow({ fixture, locale, enablePrefetch, competition }: Match
       </div>
 
       {/* Home team */}
-      <div className="flex min-w-0 flex-1 items-center gap-1.5 justify-end">
-        <span
-          className={`overflow-hidden text-ellipsis whitespace-nowrap text-base ${
-            isLive
-              ? 'font-medium text-text-primary'
-              : awayWon
-                ? 'text-text-tertiary'
-                : 'text-text-primary'
-          }`}
-        >
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
+        <span className={`overflow-hidden text-ellipsis whitespace-nowrap text-base ${nameCls}`}>
           {homeLabel}
         </span>
         {fixture.homeTeam?.logoUrl ? (
@@ -88,8 +73,8 @@ export function MatchRow({ fixture, locale, enablePrefetch, competition }: Match
         )}
       </div>
 
-      {/* Score or vs */}
-      <div className="w-10 shrink-0 text-center tabular-nums">
+      {/* Score (+ pen score beneath) or vs */}
+      <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight tabular-nums">
         {fixture.homeScore != null && fixture.awayScore != null ? (
           <span
             className={`text-sm font-semibold ${isLive ? 'text-score-live' : 'text-text-primary'}`}
@@ -98,6 +83,11 @@ export function MatchRow({ fixture, locale, enablePrefetch, competition }: Match
           </span>
         ) : (
           <span className="text-xs text-text-tertiary">{isFinished ? '–' : 'vs'}</span>
+        )}
+        {showPenScore && (
+          <span className="whitespace-nowrap text-[10px] font-semibold uppercase text-text-tertiary">
+            PEN {fixture.homeScorePen}-{fixture.awayScorePen}
+          </span>
         )}
       </div>
 
@@ -114,15 +104,7 @@ export function MatchRow({ fixture, locale, enablePrefetch, competition }: Match
             {fixture.awayTeam?.code?.slice(0, 2) ?? '—'}
           </span>
         )}
-        <span
-          className={`overflow-hidden text-ellipsis whitespace-nowrap text-base ${
-            isLive
-              ? 'font-medium text-text-primary'
-              : homeWon
-                ? 'text-text-tertiary'
-                : 'text-text-primary'
-          }`}
-        >
+        <span className={`overflow-hidden text-ellipsis whitespace-nowrap text-base ${nameCls}`}>
           {awayLabel}
         </span>
       </div>

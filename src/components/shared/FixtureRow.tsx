@@ -26,12 +26,16 @@ interface FixtureRowProps {
   awayTeam: FixtureTeam | null;
   homeScore: number | null;
   awayScore: number | null;
+  homeScorePen?: number | null;
+  awayScorePen?: number | null;
   locale: Locale;
 }
 
 /**
  * Shared fixture row used across competition, team, and match list views.
- * 3 states: upcoming (TBD score), live (animated dot), finished (bold score).
+ * States: upcoming (time), live (animated dot), finished (score). Shootouts
+ * show the pen score stacked under the regulation score; no winner emphasis —
+ * the score line differentiates the teams.
  *
  * Layout: HOME [flag] [full name] ... score ... [full name] [flag] AWAY
  */
@@ -43,6 +47,8 @@ export function FixtureRow({
   awayTeam,
   homeScore,
   awayScore,
+  homeScorePen = null,
+  awayScorePen = null,
   locale,
 }: FixtureRowProps) {
   const t = useTranslations('matchDetail');
@@ -50,6 +56,7 @@ export function FixtureRow({
   const isLive = state === 'live';
   const isFinished = state === 'finished';
   const hasScore = homeScore != null && awayScore != null;
+  const showPenScore = statusCode === 'PEN' && homeScorePen != null && awayScorePen != null;
 
   const time = formatMatchTime(kickoffAt, locale);
 
@@ -59,9 +66,6 @@ export function FixtureRow({
     homeTeam?.isNational && homeTeam.countryCode ? codeToFlag(homeTeam.countryCode) : null;
   const awayFlag =
     awayTeam?.isNational && awayTeam.countryCode ? codeToFlag(awayTeam.countryCode) : null;
-
-  const homeWon = isFinished && hasScore && homeScore! > awayScore!;
-  const awayWon = isFinished && hasScore && awayScore! > homeScore!;
 
   const preview = previewFromFixtureRow({
     homeTeam,
@@ -90,11 +94,7 @@ export function FixtureRow({
           </span>
         ) : isFinished ? (
           <span className="text-xs text-text-tertiary">
-            {statusCode === 'AET'
-              ? t('extraTime')
-              : statusCode === 'PEN'
-                ? t('penalties')
-                : t('fullTime')}
+            {statusCode === 'AET' ? t('extraTime') : statusCode === 'PEN' ? '' : t('fullTime')}
           </span>
         ) : (
           <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
@@ -106,15 +106,13 @@ export function FixtureRow({
       {/* Home team: [logo/flag] [full name] */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
         <TeamBadge team={homeTeam} flag={homeFlag} />
-        <span
-          className={`overflow-hidden text-ellipsis whitespace-nowrap ${homeWon ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
-        >
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
           {homeName}
         </span>
       </div>
 
-      {/* Score */}
-      <div className="w-12 shrink-0 text-center tabular-nums">
+      {/* Score, with pen score stacked beneath for shootouts */}
+      <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight tabular-nums">
         {hasScore ? (
           <span
             className={`text-base font-semibold ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
@@ -124,13 +122,16 @@ export function FixtureRow({
         ) : (
           <span className="text-xs text-text-tertiary">- : -</span>
         )}
+        {showPenScore && (
+          <span className="whitespace-nowrap text-[10px] font-semibold uppercase text-text-tertiary">
+            {t('penalties')} {homeScorePen}-{awayScorePen}
+          </span>
+        )}
       </div>
 
       {/* Away team: [full name] [logo/flag] */}
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
-        <span
-          className={`overflow-hidden text-ellipsis whitespace-nowrap ${awayWon ? 'font-semibold text-text-primary' : 'text-text-secondary'}`}
-        >
+        <span className="overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
           {awayName}
         </span>
         <TeamBadge team={awayTeam} flag={awayFlag} />

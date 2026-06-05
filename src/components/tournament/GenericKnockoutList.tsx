@@ -80,6 +80,8 @@ export function GenericKnockoutList({ fixtures, locale }: GenericKnockoutListPro
                   awayTeam={f.awayTeam}
                   homeScore={f.homeScore}
                   awayScore={f.awayScore}
+                  homeScorePen={f.homeScorePen}
+                  awayScorePen={f.awayScorePen}
                   locale={locale}
                 />
               </div>

@@ -146,6 +146,8 @@ export function LeagueFixturesCard({
                   awayTeam={f.awayTeam}
                   homeScore={f.homeScore}
                   awayScore={f.awayScore}
+                  homeScorePen={f.homeScorePen}
+                  awayScorePen={f.awayScorePen}
                   locale={locale}
                 />
               ))}
