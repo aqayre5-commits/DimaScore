@@ -11,6 +11,7 @@ import { TeamCompetitionTeams } from '@/components/team/TeamCompetitionTeams';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { TeamStatistics } from '@/components/team/TeamStatistics';
 import { TeamMatchesList } from '@/components/team/TeamMatchesList';
+import { TeamGroupStandingsCard } from '@/components/team/TeamGroupStandingsCard';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 
 import { CenterTabs } from '@/components/tournament/CenterTabs';
@@ -208,7 +209,18 @@ export default async function TeamPage({ params }: PageProps) {
       key: 'matches',
       hash: hashes.matches,
       labelKey: 'matches',
-      content: <TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />,
+      content: (
+        <div className="space-y-4">
+          <TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />
+          <TeamGroupStandingsCard
+            team={team}
+            fixtures={fixtures}
+            allStandings={allStandings}
+            locale={typedLocale}
+            standingsHref={`#${hashes.standings}`}
+          />
+        </div>
+      ),
     },
     {
       key: 'standings',
