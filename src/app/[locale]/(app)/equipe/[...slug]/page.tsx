@@ -230,7 +230,7 @@ export default async function TeamPage({ params }: PageProps) {
       hash: hashes.matches,
       labelKey: 'matches',
       content: (
-        <div className="space-y-4">
+        <div className="space-y-2.5">
           <TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />
           <TeamGroupStandingsCard
             team={team}
@@ -299,7 +299,7 @@ export default async function TeamPage({ params }: PageProps) {
           ) : undefined
         }
         leftRail={
-          <div className="space-y-4">
+          <div className="space-y-2.5">
             <LeagueLeftRail locale={typedLocale} activeCompetitionId={primaryComp?.id} />
             {competitionTeams.teams.length > 0 && (
               <TeamCompetitionTeams
@@ -315,7 +315,7 @@ export default async function TeamPage({ params }: PageProps) {
           <>
             {/* Mobile-only Next/Last band above the tabs (desktop shows it in rightRailTop) */}
             {upcomingFixture && (
-              <div className="mb-4 xl:hidden">
+              <div className="mb-2.5 xl:hidden">
                 <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
               </div>
             )}
@@ -323,7 +323,7 @@ export default async function TeamPage({ params }: PageProps) {
           </>
         }
         rightRail={
-          <div className="space-y-4">
+          <div className="space-y-2.5">
             {secondFixture && <FeaturedMatchCard fixture={secondFixture} locale={typedLocale} />}
             <KeyPlayersCard players={keyPlayers} locale={typedLocale} />
             <TournamentScorersCard data={tournamentScorers} locale={typedLocale} />
@@ -332,7 +332,7 @@ export default async function TeamPage({ params }: PageProps) {
         belowCenter={
           <>
             {/* Mobile-only: the desktop right-rail cards, surfaced below the tabs */}
-            <div className="mb-4 space-y-4 xl:hidden">
+            <div className="mb-2.5 space-y-2.5 xl:hidden">
               {secondFixture && <FeaturedMatchCard fixture={secondFixture} locale={typedLocale} />}
               <KeyPlayersCard players={keyPlayers} locale={typedLocale} />
               <TournamentScorersCard data={tournamentScorers} locale={typedLocale} />
