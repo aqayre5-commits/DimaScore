@@ -286,8 +286,8 @@ export default async function TeamPage({ params }: PageProps) {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <SeoBreadcrumb segments={breadcrumbs} compactOnMobile />
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-2">
+        <SeoBreadcrumb segments={breadcrumbs} compact />
       </div>
 
       <InnerPageShell

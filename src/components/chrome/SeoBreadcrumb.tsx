@@ -9,18 +9,18 @@ export interface BreadcrumbSegment {
 interface SeoBreadcrumbProps {
   segments: BreadcrumbSegment[];
   /**
-   * When true, render a smaller, fainter row on mobile to reclaim space
-   * (reverts to the default size at md+). The JSON-LD is unaffected.
+   * Render a minimal, faint, single-line row at all breakpoints to reclaim
+   * space. Kept visible for orientation/back-nav; the JSON-LD below is what
+   * search engines consume and is unaffected by this flag.
    */
-  compactOnMobile?: boolean;
+  compact?: boolean;
 }
 
 /**
  * SEO breadcrumb with schema.org BreadcrumbList JSON-LD.
- * Last segment is non-clickable (current page). ~22px total height.
- * Server component — no 'use client' needed.
+ * Last segment is non-clickable (current page). Server component.
  */
-export function SeoBreadcrumb({ segments, compactOnMobile = false }: SeoBreadcrumbProps) {
+export function SeoBreadcrumb({ segments, compact = false }: SeoBreadcrumbProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -33,16 +33,13 @@ export function SeoBreadcrumb({ segments, compactOnMobile = false }: SeoBreadcru
   };
 
   return (
-    <nav
-      aria-label="breadcrumb"
-      className={cn('px-4', compactOnMobile ? 'py-0.5 md:py-1' : 'py-1')}
-    >
+    <nav aria-label="breadcrumb" className={cn('px-4', compact ? 'py-px' : 'py-1')}>
       <ol
         className={cn(
-          'flex items-center gap-1.5',
-          compactOnMobile
-            ? 'text-[11px] text-text-tertiary md:text-[13px] md:text-text-secondary'
-            : 'text-[13px] text-text-secondary',
+          'flex items-center',
+          compact
+            ? 'gap-0.5 text-[10px] leading-none text-text-quaternary'
+            : 'gap-1.5 text-[13px] text-text-secondary',
         )}
       >
         {segments.map((seg, i) => (
@@ -50,11 +47,11 @@ export function SeoBreadcrumb({ segments, compactOnMobile = false }: SeoBreadcru
             key={i}
             className={cn(
               'flex items-center gap-1',
-              !compactOnMobile && i > 0 && i < segments.length - 1 && 'hidden md:flex',
+              !compact && i > 0 && i < segments.length - 1 && 'hidden md:flex',
             )}
           >
             {i > 0 && (
-              <span aria-hidden="true" className="text-text-tertiary">
+              <span aria-hidden="true" className="text-text-quaternary">
                 ›
               </span>
             )}
