@@ -152,9 +152,10 @@ export default async function TeamPage({ params }: PageProps) {
   const typedLocale = locale as Locale;
   const teamSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
 
-  const [data, tBc] = await Promise.all([
+  const [data, tBc, tTeam] = await Promise.all([
     getCachedTeamData(teamSlug),
     getTranslations({ locale, namespace: 'breadcrumb' }),
+    getTranslations({ locale, namespace: 'teamPage' }),
   ]);
   if (!data) notFound();
   const {
@@ -219,7 +220,7 @@ export default async function TeamPage({ params }: PageProps) {
       breadcrumbs.push({ label: fallbackName });
     }
   }
-  breadcrumbs.push({ label: teamName });
+  breadcrumbs.push({ label: `${teamName} ${tTeam('seoSections')}` });
 
   // Center tabs — Standings, Statistics, Players (per schematic)
   const hashes = TAB_HASHES[typedLocale];
@@ -286,7 +287,7 @@ export default async function TeamPage({ params }: PageProps) {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-2">
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
         <SeoBreadcrumb segments={breadcrumbs} compact />
       </div>
 
