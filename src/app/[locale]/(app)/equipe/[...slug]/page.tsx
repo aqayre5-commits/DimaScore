@@ -329,7 +329,17 @@ export default async function TeamPage({ params }: PageProps) {
             <TournamentScorersCard data={tournamentScorers} locale={typedLocale} />
           </div>
         }
-        belowCenter={<TeamMediaSection teamId={team.id} locale={typedLocale} />}
+        belowCenter={
+          <>
+            {/* Mobile-only: the desktop right-rail cards, surfaced below the tabs */}
+            <div className="mb-4 space-y-4 xl:hidden">
+              {secondFixture && <FeaturedMatchCard fixture={secondFixture} locale={typedLocale} />}
+              <KeyPlayersCard players={keyPlayers} locale={typedLocale} />
+              <TournamentScorersCard data={tournamentScorers} locale={typedLocale} />
+            </div>
+            <TeamMediaSection teamId={team.id} locale={typedLocale} />
+          </>
+        }
       />
     </>
   );
