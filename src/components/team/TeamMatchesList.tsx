@@ -79,10 +79,6 @@ export function TeamMatchesList({ fixtures, locale }: TeamMatchesListProps) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-      <div className="border-b border-border-subtle px-4 py-3">
-        <h3 className="label-caps">{t('matches')}</h3>
-      </div>
-
       {/* upcoming / live / finished toggle */}
       <div className="flex border-b border-border-subtle">
         {states.map((s) => (
