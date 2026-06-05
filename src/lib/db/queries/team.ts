@@ -390,6 +390,92 @@ export async function getTeamKeyPlayers(
   }));
 }
 
+// ── Tournament top scorers & assists (team's current/upcoming tournament) ──
+
+export interface TournamentScorerRow {
+  playerId: number | null;
+  name: string;
+  photo: string | null;
+  teamName: string | null;
+  teamLogo: string | null;
+  value: number;
+}
+
+export interface TournamentScorers {
+  competitionName: Record<string, string>;
+  scorers: TournamentScorerRow[];
+  assisters: TournamentScorerRow[];
+}
+
+function mapScorerRows(
+  rows: {
+    player_id: string | null;
+    name: string | null;
+    photo: string | null;
+    team_name: string | null;
+    team_logo: string | null;
+    value: string;
+  }[],
+): TournamentScorerRow[] {
+  return rows.map((r) => ({
+    playerId: r.player_id != null ? Number(r.player_id) : null,
+    name: r.name ?? '—',
+    photo: r.photo,
+    teamName: r.team_name,
+    teamLogo: r.team_logo,
+    value: Number(r.value),
+  }));
+}
+
+export async function getTeamTournamentScorers(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+  limit = 5,
+): Promise<TournamentScorers | null> {
+  // Competition + season of the team's nearest upcoming/live fixture.
+  const fx = await db.execute(
+    sql`SELECT competition_id, season_year FROM fixtures
+        WHERE (home_team_id = ${teamId} OR away_team_id = ${teamId})
+          AND status_code NOT IN ('FT','AET','PEN','PST','CANC','ABD','AWD','WO')
+          AND kickoff_at >= NOW() - interval '3 hours'
+        ORDER BY kickoff_at ASC LIMIT 1`,
+  );
+  if (fx.rows.length === 0) return null;
+  const fxRow = fx.rows[0] as { competition_id: string | null; season_year: string | null };
+  if (fxRow.competition_id == null || fxRow.season_year == null) return null;
+  const compId = Number(fxRow.competition_id);
+  const season = Number(fxRow.season_year);
+
+  const nameRow = await db.execute(sql`SELECT name FROM competitions WHERE id = ${compId} LIMIT 1`);
+  if (nameRow.rows.length === 0) return null;
+  const competitionName = (nameRow.rows[0] as { name: Record<string, string> }).name;
+
+  const scorerRows = await db.execute(
+    sql`SELECT player_id, stats->>'playerName' AS name, stats->>'playerPhoto' AS photo,
+               stats->>'teamName' AS team_name, stats->>'teamLogo' AS team_logo,
+               (stats->>'goals')::int AS value
+        FROM player_season_stats
+        WHERE competition_id = ${compId} AND season_year = ${season}
+          AND COALESCE((stats->>'goals')::int, 0) > 0
+        ORDER BY (stats->>'goals')::int DESC LIMIT ${limit}`,
+  );
+  const assistRows = await db.execute(
+    sql`SELECT player_id, stats->>'playerName' AS name, stats->>'playerPhoto' AS photo,
+               stats->>'teamName' AS team_name, stats->>'teamLogo' AS team_logo,
+               (stats->>'assists')::int AS value
+        FROM player_season_stats
+        WHERE competition_id = ${compId} AND season_year = ${season}
+          AND COALESCE((stats->>'assists')::int, 0) > 0
+        ORDER BY (stats->>'assists')::int DESC LIMIT ${limit}`,
+  );
+
+  return {
+    competitionName,
+    scorers: mapScorerRows(scorerRows.rows as Parameters<typeof mapScorerRows>[0]),
+    assisters: mapScorerRows(assistRows.rows as Parameters<typeof mapScorerRows>[0]),
+  };
+}
+
 // ── Q4: Team standings (find team's primary competition, fetch standings) ──
 
 export async function getTeamStandings(
