@@ -170,6 +170,13 @@ export default async function TeamPage({ params }: PageProps) {
     .find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
   const upcomingFixture = liveMatch ?? nextUpcoming ?? mostRecentCompleted ?? null;
 
+  // Second featured card: the fixture following the first upcoming/live one.
+  const upcomingSeq = fixtures.filter((f) => {
+    const s = getMatchState(f.statusCode, f.kickoffAt);
+    return s === 'live' || s === 'upcoming';
+  });
+  const secondFixture = upcomingSeq[1] ?? null;
+
   // Competition name for left rail team tiles
   const compTeamsName = competitionTeams.competitionName
     ? (competitionTeams.competitionName[typedLocale] ??
@@ -302,7 +309,11 @@ export default async function TeamPage({ params }: PageProps) {
             <CenterTabs tabs={tabs} />
           </>
         }
-        rightRail={<TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />}
+        rightRail={
+          <div className="space-y-4">
+            {secondFixture && <FeaturedMatchCard fixture={secondFixture} locale={typedLocale} />}
+          </div>
+        }
         belowCenter={<TeamMediaSection teamId={team.id} locale={typedLocale} />}
       />
     </>
