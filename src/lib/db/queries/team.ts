@@ -322,6 +322,74 @@ export async function getTeamTournamentSquad(
   };
 }
 
+// ── Key players (top contributors by goals+assists, recent seasons) ──
+
+export interface KeyPlayer {
+  id: number;
+  name: Record<string, string>;
+  position: string | null;
+  photoUrl: string | null;
+  clubName: Record<string, string> | null;
+  clubLogoUrl: string | null;
+  goals: number;
+  assists: number;
+}
+
+export async function getTeamKeyPlayers(
+  db: NeonHttpDatabase<typeof schema>,
+  teamId: number,
+  limit = 4,
+): Promise<KeyPlayer[]> {
+  // Recent window = the two most recent seasons we have stats for this team.
+  const maxRow = await db.execute(
+    sql`SELECT max(season_year) AS m FROM player_season_stats WHERE team_id = ${teamId}`,
+  );
+  const maxSeason = Number((maxRow.rows[0] as { m: string | null })?.m ?? 0);
+  if (!maxSeason) return [];
+  const cutoff = maxSeason - 1;
+
+  const rows = await db.execute(
+    sql`SELECT p.id, p.name, p.position, p.photo_url AS "photoUrl",
+               ct.name AS "clubName", ct.logo_url AS "clubLogoUrl",
+               SUM(COALESCE((pss.stats->>'goals')::int, 0)) AS goals,
+               SUM(COALESCE((pss.stats->>'assists')::int, 0)) AS assists
+        FROM player_season_stats pss
+        JOIN players p ON p.id = pss.player_id
+        JOIN squad_members sm ON sm.team_id = ${teamId} AND sm.player_id = p.id
+        LEFT JOIN teams ct ON ct.id = p.current_team_id
+        WHERE pss.team_id = ${teamId} AND pss.season_year >= ${cutoff}
+        GROUP BY p.id, p.name, p.position, p.photo_url, ct.name, ct.logo_url
+        HAVING SUM(COALESCE((pss.stats->>'goals')::int, 0))
+             + SUM(COALESCE((pss.stats->>'assists')::int, 0)) > 0
+        ORDER BY (SUM(COALESCE((pss.stats->>'goals')::int, 0))
+                + SUM(COALESCE((pss.stats->>'assists')::int, 0))) DESC,
+                 SUM(COALESCE((pss.stats->>'goals')::int, 0)) DESC
+        LIMIT ${limit}`,
+  );
+
+  return (
+    rows.rows as {
+      id: string;
+      name: Record<string, string>;
+      position: string | null;
+      photoUrl: string | null;
+      clubName: Record<string, string> | null;
+      clubLogoUrl: string | null;
+      goals: string;
+      assists: string;
+    }[]
+  ).map((r) => ({
+    id: Number(r.id),
+    name: r.name,
+    position: r.position,
+    photoUrl: r.photoUrl,
+    clubName: r.clubName,
+    clubLogoUrl: r.clubLogoUrl,
+    goals: Number(r.goals),
+    assists: Number(r.assists),
+  }));
+}
+
 // ── Q4: Team standings (find team's primary competition, fetch standings) ──
 
 export async function getTeamStandings(

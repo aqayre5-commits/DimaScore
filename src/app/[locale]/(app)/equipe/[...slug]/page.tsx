@@ -12,6 +12,7 @@ import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { TeamStatistics } from '@/components/team/TeamStatistics';
 import { TeamMatchesList } from '@/components/team/TeamMatchesList';
 import { TeamGroupStandingsCard } from '@/components/team/TeamGroupStandingsCard';
+import { KeyPlayersCard } from '@/components/team/KeyPlayersCard';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 
 import { CenterTabs } from '@/components/tournament/CenterTabs';
@@ -28,6 +29,7 @@ import {
   getTeamFormResults,
   getTeamPrimaryCompetition,
   getTeamTournamentSquad,
+  getTeamKeyPlayers,
 } from '@/lib/db/queries/team';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import { BASE_URL } from '@/lib/constants/site';
@@ -67,6 +69,7 @@ async function getCachedTeamData(teamSlug: string) {
     competitionTeams,
     formResults,
     primaryComp,
+    keyPlayers,
   ] = await Promise.all([
     getTeamFixturesWithCompetition(db, team.id, 200),
     getTeamSquad(db, team.id),
@@ -76,6 +79,7 @@ async function getCachedTeamData(teamSlug: string) {
     getTeamsInSameCompetition(db, team.id),
     getTeamFormResults(db, team.id),
     getTeamPrimaryCompetition(db, team.id),
+    getTeamKeyPlayers(db, team.id),
   ]);
 
   return {
@@ -88,6 +92,7 @@ async function getCachedTeamData(teamSlug: string) {
     competitionTeams,
     formResults,
     primaryComp,
+    keyPlayers,
   };
 }
 
@@ -157,6 +162,7 @@ export default async function TeamPage({ params }: PageProps) {
     competitionTeams,
     formResults,
     primaryComp,
+    keyPlayers,
   } = data;
   const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
 
@@ -312,6 +318,7 @@ export default async function TeamPage({ params }: PageProps) {
         rightRail={
           <div className="space-y-4">
             {secondFixture && <FeaturedMatchCard fixture={secondFixture} locale={typedLocale} />}
+            <KeyPlayersCard players={keyPlayers} locale={typedLocale} />
           </div>
         }
         belowCenter={<TeamMediaSection teamId={team.id} locale={typedLocale} />}
