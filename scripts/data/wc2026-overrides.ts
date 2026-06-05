@@ -11,6 +11,7 @@ export const WC2026_OVERRIDES: Record<string, Record<string, number>> = {
   Mexico: {
     'Santiago Gimenez': 94562, // Santiago Tomás Giménez (AC Milan) — collided with "G. Gimenez"
     'Edson Alvarez': 2869, // ingested — distinct from #51068 (Efraín Álvarez)
+    'Luis Chavez': 35690, // ingested — Luis Gerardo Chávez, distinct from #390002 Mateo
   },
   'Czech Republic': {
     'David Zima': 128772, // Slavia Praha — common first name "David"

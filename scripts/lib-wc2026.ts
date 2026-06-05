@@ -179,12 +179,14 @@ export async function resolveNation(nation: NationSquad): Promise<NationResoluti
 
   const results: PlayerResolution[] = [];
   const teamsNeeded = new Set<number>();
+  const claimed = new Set<number>(); // a DB player can back only one squad slot
 
   for (const entry of nation.players) {
     // Manual pin wins over any heuristic.
     const overrideId = WC2026_OVERRIDES[nation.dbName]?.[entry.name];
     if (overrideId != null) {
       const idx = ID_TO_INDEX!.get(overrideId);
+      claimed.add(overrideId);
       results.push({
         entry,
         status: 'matched',
@@ -197,12 +199,13 @@ export async function resolveNation(nation: NationSquad): Promise<NationResoluti
 
     const eRaw = rawTokens(entry.name);
     const et = tokenSet(eRaw);
-    const cand = candidateIndices(et);
+    const cand = candidateIndices(et).filter((i) => !claimed.has(ALL![i].id));
 
     const poolCand = cand.filter((i) => poolSet.has(ALL![i].id));
     const poolBest = bestUnique(eRaw, et, poolCand);
     if (poolBest.index != null) {
       const p = ALL![poolBest.index];
+      claimed.add(p.id);
       results.push({ entry, status: 'matched', source: 'pool', playerId: p.id, dbName: p.name });
       continue;
     }
@@ -210,6 +213,7 @@ export async function resolveNation(nation: NationSquad): Promise<NationResoluti
     const gBest = bestUnique(eRaw, et, cand);
     if (gBest.index != null) {
       const p = ALL![gBest.index];
+      claimed.add(p.id);
       results.push({ entry, status: 'matched', source: 'global', playerId: p.id, dbName: p.name });
       teamsNeeded.add(p.id);
     } else if (gBest.viable.length > 1) {

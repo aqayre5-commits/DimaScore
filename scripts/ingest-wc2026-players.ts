@@ -35,6 +35,12 @@ const PLAYERS: IngestPlayer[] = [
     position: 'Defender',
     photoUrl: 'https://media.api-sports.io/football/players/66214.png',
   }, // David Doudera (Czech Republic)
+  {
+    id: 35690,
+    name: 'L. Chávez',
+    position: 'Midfielder',
+    photoUrl: 'https://media.api-sports.io/football/players/35690.png',
+  }, // Luis Gerardo Chávez (Mexico) — distinct from #390002 Mateo
 ];
 
 async function main(): Promise<void> {
