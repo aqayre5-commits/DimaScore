@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
-import { getMatchState, isLive as isLiveStatus } from '@/lib/match-status';
+import { getMatchState, isLive as isLiveStatus, getMatchWinner } from '@/lib/match-status';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
@@ -139,6 +139,29 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
   const isLive = state === 'live';
   const isDone = state === 'finished';
   const showScore = (isLive || isDone) && f.homeScore != null && f.awayScore != null;
+  const winner = isDone ? getMatchWinner(f) : null;
+
+  const nameCls = (side: 'home' | 'away') =>
+    winner === side
+      ? 'font-semibold text-text-primary'
+      : isDone
+        ? 'text-text-secondary'
+        : 'text-text-primary';
+
+  let subLabel = '';
+  if (isLive) subLabel = isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE';
+  else if (isDone) {
+    if (f.statusCode === 'PEN') {
+      subLabel =
+        f.homeScorePen != null && f.awayScorePen != null
+          ? `PEN ${f.homeScorePen}-${f.awayScorePen}`
+          : 'PEN';
+    } else if (f.statusCode === 'AET') {
+      subLabel = 'AET';
+    } else {
+      subLabel = 'FT';
+    }
+  }
 
   return (
     <a
@@ -161,10 +184,12 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
             className="size-6 shrink-0 object-contain"
           />
         )}
-        <span className="truncate text-sm text-text-primary">{teamName(f.homeTeam, locale)}</span>
+        <span className={`truncate text-sm ${nameCls('home')}`}>
+          {teamName(f.homeTeam, locale)}
+        </span>
       </div>
 
-      {/* centre — vs / score, with state sub-label */}
+      {/* centre — vs / score, with state sub-label (FT / AET / PEN x-y) */}
       <div className="flex w-16 shrink-0 flex-col items-center justify-center leading-tight">
         {showScore ? (
           <span
@@ -175,14 +200,16 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
         ) : (
           <span className="text-xs font-medium text-text-tertiary">vs</span>
         )}
-        <span className="text-[10px] uppercase tracking-wide text-text-quaternary">
-          {isLive ? (isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE') : isDone ? 'FT' : ''}
-        </span>
+        {subLabel && (
+          <span className="whitespace-nowrap text-[10px] uppercase tracking-wide text-text-quaternary">
+            {subLabel}
+          </span>
+        )}
       </div>
 
       {/* away */}
       <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-        <span className="truncate text-end text-sm text-text-primary">
+        <span className={`truncate text-end text-sm ${nameCls('away')}`}>
           {teamName(f.awayTeam, locale)}
         </span>
         {f.awayTeam?.logoUrl && (

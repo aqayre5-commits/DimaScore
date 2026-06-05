@@ -60,6 +60,8 @@ export async function hydrateFixtures(
     awayScore: f.awayScore,
     homeScoreHt: f.homeScoreHt,
     awayScoreHt: f.awayScoreHt,
+    homeScorePen: f.homeScorePen,
+    awayScorePen: f.awayScorePen,
     venueId: f.venueId,
     homeTeam: f.homeTeamId ? (teamsMap.get(f.homeTeamId) ?? null) : null,
     awayTeam: f.awayTeamId ? (teamsMap.get(f.awayTeamId) ?? null) : null,
