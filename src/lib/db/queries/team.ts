@@ -455,7 +455,7 @@ export async function getTeamTournamentScorers(
                stats->>'teamName' AS team_name, stats->>'teamLogo' AS team_logo,
                (stats->>'goals')::int AS value
         FROM player_season_stats
-        WHERE competition_id = ${compId} AND season_year = ${season}
+        WHERE competition_id = ${compId} AND season_year = ${season} AND team_id = ${teamId}
           AND COALESCE((stats->>'goals')::int, 0) > 0
         ORDER BY (stats->>'goals')::int DESC LIMIT ${limit}`,
   );
@@ -464,7 +464,7 @@ export async function getTeamTournamentScorers(
                stats->>'teamName' AS team_name, stats->>'teamLogo' AS team_logo,
                (stats->>'assists')::int AS value
         FROM player_season_stats
-        WHERE competition_id = ${compId} AND season_year = ${season}
+        WHERE competition_id = ${compId} AND season_year = ${season} AND team_id = ${teamId}
           AND COALESCE((stats->>'assists')::int, 0) > 0
         ORDER BY (stats->>'assists')::int DESC LIMIT ${limit}`,
   );
