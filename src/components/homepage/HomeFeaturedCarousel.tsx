@@ -31,6 +31,14 @@ function computeCountdown(kickoffAt: Date) {
 
 function useCountdown(kickoffAt: Date) {
   const [remaining, setRemaining] = useState(() => computeCountdown(kickoffAt));
+  const [prevTime, setPrevTime] = useState(kickoffAt.getTime());
+
+  // Recompute immediately when the slide (kickoffAt) changes — adjusting state
+  // during render (not in an effect), so a new slide never shows the old countdown.
+  if (prevTime !== kickoffAt.getTime()) {
+    setPrevTime(kickoffAt.getTime());
+    setRemaining(computeCountdown(kickoffAt));
+  }
 
   useEffect(() => {
     const id = setInterval(() => setRemaining(computeCountdown(kickoffAt)), 60_000);
