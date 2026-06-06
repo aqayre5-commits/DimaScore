@@ -27,6 +27,9 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
   const t = useTranslations('teamPage');
   const name = resolveTeamName(team, locale);
   const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
+  // National teams have no single home stadium — the API's "default venue" is misleading,
+  // so suppress venue/capacity for them (founded year still shows). Audit P2-3.
+  const headerVenue = team.isNational ? null : team.venue;
 
   return (
     <div className="h-full overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15">
@@ -92,16 +95,16 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
           )}
 
           {/* Mobile-only dense meta line (Variant B) — replaces the pills below md */}
-          {(team.founded || team.venue?.name || team.venue?.capacity) && (
+          {(team.founded || headerVenue?.name || headerVenue?.capacity) && (
             <p className="mt-1.5 truncate text-xs text-text-tertiary md:hidden">
-              {[team.founded, team.venue?.name, team.venue?.capacity?.toLocaleString()]
+              {[team.founded, headerVenue?.name, headerVenue?.capacity?.toLocaleString()]
                 .filter(Boolean)
                 .join(' · ')}
             </p>
           )}
 
           {/* Quick facts — bordered pills (desktop only), pushed to bottom */}
-          {(team.venue || team.founded) && (
+          {(headerVenue || team.founded) && (
             <div className="mt-auto hidden flex-wrap gap-3 pt-2 md:flex">
               {team.founded && (
                 <div className="flex flex-col items-center rounded-lg border border-accent-azure/20 bg-accent-azure/5 px-3 py-1.5">
@@ -111,16 +114,16 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
                   <span className="text-[10px] text-text-tertiary">{t('founded_label')}</span>
                 </div>
               )}
-              {team.venue?.name && (
+              {headerVenue?.name && (
                 <div className="flex flex-col items-center rounded-lg border border-accent-azure/20 bg-accent-azure/5 px-3 py-1.5">
-                  <span className="text-sm font-bold text-text-primary">{team.venue.name}</span>
+                  <span className="text-sm font-bold text-text-primary">{headerVenue.name}</span>
                   <span className="text-[10px] text-text-tertiary">{t('stadium')}</span>
                 </div>
               )}
-              {team.venue?.capacity && (
+              {headerVenue?.capacity && (
                 <div className="flex flex-col items-center rounded-lg border border-accent-azure/20 bg-accent-azure/5 px-3 py-1.5">
                   <span className="text-sm font-bold tabular-nums text-text-primary">
-                    {team.venue.capacity.toLocaleString()}
+                    {headerVenue.capacity.toLocaleString()}
                   </span>
                   <span className="text-[10px] text-text-tertiary">{t('capacity')}</span>
                 </div>
