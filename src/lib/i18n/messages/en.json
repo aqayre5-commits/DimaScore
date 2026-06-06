@@ -106,6 +106,9 @@
     "international": "International",
     "sectionsLeague": "Scores, Matches, Standings, Stats, Teams",
     "sectionsCup": "Scores, Matches, Standings & Knockout",
+    "sectionsMatch": "Live Score, Lineups, Stats & H2H",
+    "matchday": "Matchday {number}",
+    "roundOf16": "Round of 16",
     "morocco": "Morocco"
   },
   "footer": {

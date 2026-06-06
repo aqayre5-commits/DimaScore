@@ -39,6 +39,14 @@ import { BASE_URL } from '@/lib/constants/site';
 
 const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
 
+/** Tidy API-Football round strings: "Regular Season - 38" → "Matchday 38", "8th Finals" → "Round of 16". */
+function prettyRound(round: string, tBc: Awaited<ReturnType<typeof getTranslations>>): string {
+  const md = round.match(/^(?:Regular Season|Group Stage)\s*-\s*(\d+)$/i);
+  if (md) return tBc('matchday', { number: md[1] });
+  if (/^8th\s+finals?$/i.test(round)) return tBc('roundOf16');
+  return round;
+}
+
 interface PageProps {
   params: Promise<{ locale: string; id: string }>;
 }
@@ -179,8 +187,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${locale}` },
     { label: compName, href: competitionHref ?? undefined },
-    ...(match.round ? [{ label: match.round }] : []),
-    { label: `${home} vs ${away}` },
+    ...(match.round ? [{ label: prettyRound(match.round, tBc) }] : []),
+    { label: `${home} vs ${away}, ${tBc('sectionsMatch')}` },
   ];
 
   const matchId = String(fixtureId);
@@ -230,8 +238,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
   const pageContent = (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <SeoBreadcrumb segments={breadcrumbs} />
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
+        <SeoBreadcrumb segments={breadcrumbs} compact />
       </div>
 
       <InnerPageShell

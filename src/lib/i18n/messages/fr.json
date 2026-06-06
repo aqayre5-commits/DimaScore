@@ -106,6 +106,9 @@
     "international": "International",
     "sectionsLeague": "Scores, Matchs, Classement, Stats, Équipes",
     "sectionsCup": "Scores, Matchs, Classement et Phase finale",
+    "sectionsMatch": "Score en direct, Compositions, Stats et Confrontations",
+    "matchday": "Journée {number}",
+    "roundOf16": "Huitièmes de finale",
     "morocco": "Maroc"
   },
   "footer": {
