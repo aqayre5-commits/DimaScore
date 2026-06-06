@@ -53,45 +53,32 @@ const nextConfig: NextConfig = {
         destination: '/:locale/competition/:country/:tournament/:season',
         permanent: false,
       },
-      // www.dimascore.com → dimascore.com
+      // dimascore.ma is the primary domain — served directly (no redirect).
+      // www.dimascore.ma → apex (canonical, no www)
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.dimascore.ma' }],
+        destination: 'https://dimascore.ma/:path*',
+        permanent: true,
+      },
+      // dimascore.com is the doorway → redirect to the primary .ma, path preserved
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'dimascore.com' }],
+        destination: 'https://dimascore.ma/:path*',
+        permanent: true,
+      },
+      // www.dimascore.com → dimascore.ma
       {
         source: '/:path*',
         has: [{ type: 'host', value: 'www.dimascore.com' }],
-        destination: 'https://dimascore.com/:path*',
-        permanent: true,
-      },
-      // dimascore.ma root → Morocco edition
-      {
-        source: '/',
-        has: [{ type: 'host', value: 'dimascore.ma' }],
-        destination: 'https://dimascore.com/fr/edition/maroc',
-        permanent: true,
-      },
-      // dimascore.ma deep links → /fr tree
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'dimascore.ma' }],
-        destination: 'https://dimascore.com/fr/:path*',
-        permanent: true,
-      },
-      // www.dimascore.ma root → Morocco edition
-      {
-        source: '/',
-        has: [{ type: 'host', value: 'www.dimascore.ma' }],
-        destination: 'https://dimascore.com/fr/edition/maroc',
-        permanent: true,
-      },
-      // www.dimascore.ma deep links → /fr tree
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.dimascore.ma' }],
-        destination: 'https://dimascore.com/fr/:path*',
+        destination: 'https://dimascore.ma/:path*',
         permanent: true,
       },
     ];
   },
   async headers() {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dimascore.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dimascore.ma';
     return [
       {
         source: '/(.*)',
