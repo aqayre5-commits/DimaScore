@@ -25,6 +25,9 @@ export async function PreMatchForm({
   if (homeForm.length === 0 && awayForm.length === 0) return null;
   const t = await getTranslations({ locale, namespace: 'matchDetail' });
 
+  // Same slot count for both rows so unequal result counts stay aligned (≤ 5).
+  const slots = Math.min(5, Math.max(homeForm.length, awayForm.length));
+
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       <div className="border-b border-border-subtle bg-bg-surface-2 px-4 py-2.5">
@@ -33,19 +36,19 @@ export async function PreMatchForm({
         </h3>
       </div>
       <div className="divide-y divide-border-subtle">
-        <FormRow name={homeName} form={homeForm} />
-        <FormRow name={awayName} form={awayForm} />
+        <FormRow name={homeName} form={homeForm} slots={slots} />
+        <FormRow name={awayName} form={awayForm} slots={slots} />
       </div>
     </div>
   );
 }
 
-function FormRow({ name, form }: { name: string; form: FormResult[] }) {
+function FormRow({ name, form, slots }: { name: string; form: FormResult[]; slots: number }) {
   return (
     <div className="flex items-center justify-between gap-3 px-4 py-3">
       <span className="min-w-0 truncate text-sm font-medium text-text-primary">{name}</span>
       {form.length > 0 ? (
-        <FormDots results={form} />
+        <FormDots results={form} slots={slots} />
       ) : (
         <span className="text-xs text-text-tertiary">—</span>
       )}

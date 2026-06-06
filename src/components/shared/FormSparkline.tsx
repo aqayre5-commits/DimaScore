@@ -76,6 +76,11 @@ export type FormResult = 'W' | 'D' | 'L';
 
 interface FormDotsProps {
   results: FormResult[];
+  /**
+   * Pad (on the left) with muted placeholder slots up to this count, so rows with
+   * different result counts stay the same width and right-align. Omit for no padding.
+   */
+  slots?: number;
 }
 
 const FORM_COLORS: Record<FormResult, string> = {
@@ -84,11 +89,20 @@ const FORM_COLORS: Record<FormResult, string> = {
   L: 'bg-accent-crimson',
 };
 
-export function FormDots({ results }: FormDotsProps) {
-  if (results.length === 0) return null;
+export function FormDots({ results, slots }: FormDotsProps) {
+  if (results.length === 0 && !slots) return null;
+
+  const padCount = slots ? Math.max(0, slots - results.length) : 0;
 
   return (
     <div className="flex items-center gap-1">
+      {Array.from({ length: padCount }).map((_, i) => (
+        <span
+          key={`pad-${i}`}
+          className="size-5 rounded-full border border-border-subtle bg-bg-surface-2"
+          aria-hidden="true"
+        />
+      ))}
       {results.map((r, i) => (
         <span
           key={i}
