@@ -13,7 +13,8 @@ import { getCompactTeamLabel } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
-import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
+import { useQueryClient } from '@tanstack/react-query';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { Locale } from '@/lib/i18n/config';
 import type { FixtureStatus } from '@/lib/data/types';
 
@@ -193,42 +194,22 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
   const copyRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('topStrip');
 
-  // Pusher diffs stored as patches + removals. Props (fixtures) stay source of truth.
-  // Clear stale patches during render when props change (React docs: "adjusting state
-  // during rendering" — no useEffect, no cascading re-renders).
-  const fixtureIds = fixtures.map((f) => f.id).join(',');
-  const [prevFixtureIds, setPrevFixtureIds] = useState(fixtureIds);
-  const [patches, setPatches] = useState(() => new Map<number, ScorePatch>());
-  const [removed, setRemoved] = useState(() => new Set<number>());
-  if (prevFixtureIds !== fixtureIds) {
-    setPrevFixtureIds(fixtureIds);
-    setPatches(new Map());
-    setRemoved(new Set());
-  }
+  const queryClient = useQueryClient();
 
-  const handleScoreUpdate = useCallback((payload: ScoreUpdatePayload) => {
-    if (TERMINAL_STATUSES.has(payload.statusCode)) {
-      setRemoved((prev) => {
-        const next = new Set(prev);
-        next.add(payload.fixtureId);
-        return next;
-      });
-      return;
-    }
-    setPatches((prev) => {
-      const next = new Map(prev);
-      next.set(payload.fixtureId, {
-        homeScore: payload.homeScore,
-        awayScore: payload.awayScore,
-        statusCode: payload.statusCode,
-        minute: payload.minute,
-      });
-      return next;
-    });
-  }, []);
+  // Pusher = instant nudge: on any score event just refetch the live poll (the single
+  // source of truth) rather than keeping a second patch state. Degrades gracefully if
+  // Pusher isn't configured — the 30s poll still drives updates.
+  const handleScoreUpdate = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['live-fixtures'] });
+  }, [queryClient]);
 
   useEffect(() => {
-    const client = getPusherClient();
+    let client: ReturnType<typeof getPusherClient>;
+    try {
+      client = getPusherClient();
+    } catch {
+      return;
+    }
     const channel = client.subscribe(CHANNELS.LIVE_SCORES);
     channel.bind(EVENTS.SCORE_UPDATE, handleScoreUpdate);
     return () => {
@@ -239,10 +220,25 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
 
   const [paused, setPaused] = useState(false);
 
-  const merged = useMemo(
-    () => applyPatches(fixtures, patches, removed),
-    [fixtures, patches, removed],
-  );
+  // The 30s live poll is the source of truth — rebuild patches/removals from it.
+  const livePatches = useLiveFixtures();
+  const merged = useMemo(() => {
+    const patches = new Map<number, ScorePatch>();
+    const removed = new Set<number>();
+    for (const [id, p] of livePatches) {
+      if (TERMINAL_STATUSES.has(p.statusCode)) {
+        removed.add(id);
+      } else {
+        patches.set(id, {
+          homeScore: p.homeScore,
+          awayScore: p.awayScore,
+          statusCode: p.statusCode,
+          minute: p.minute,
+        });
+      }
+    }
+    return applyPatches(fixtures, patches, removed);
+  }, [fixtures, livePatches]);
   const renderable = merged.filter((f) => isRenderable(f, locale));
 
   // Duration = original copy width / speed (60 px/s).

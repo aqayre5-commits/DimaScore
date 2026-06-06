@@ -11,6 +11,7 @@ import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
 import { useMounted } from '@/hooks/useMounted';
+import { useLiveFixtures, type LiveFixturePatch } from '@/hooks/useLiveFixtures';
 
 interface Props {
   live: HomeFixture[];
@@ -141,6 +142,33 @@ function isSameDay(a: Date, b: Date) {
   );
 }
 
+/** Overlay the 30s live poll onto fixtures, deduped by id (first occurrence wins). */
+function applyLivePatches(
+  fixtures: HomeFixture[],
+  patches: Map<number, LiveFixturePatch>,
+): HomeFixture[] {
+  const byId = new Map<number, HomeFixture>();
+  for (const f of fixtures) {
+    if (byId.has(f.id)) continue;
+    const p = patches.get(f.id);
+    byId.set(
+      f.id,
+      p
+        ? {
+            ...f,
+            statusCode: p.statusCode,
+            minute: p.minute,
+            homeScore: p.homeScore,
+            awayScore: p.awayScore,
+            homeScorePen: p.homeScorePen,
+            awayScorePen: p.awayScorePen,
+          }
+        : f,
+    );
+  }
+  return [...byId.values()];
+}
+
 export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props) {
   type Tab = 'all' | 'live' | 'upcoming' | 'results';
   const [activeTab, setActiveTab] = useState<Tab>('all');
@@ -159,10 +187,20 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   });
   const dateLabel = dateOffset === 0 ? `${labels.today}, ${formattedDate}` : formattedDate;
 
-  // Filter each category by selected date (live always shows all)
-  const dayLive = live.filter((f) => isSameDay(f.kickoffAt, selectedDate));
-  const dayUpcoming = upcoming.filter((f) => isSameDay(f.kickoffAt, selectedDate));
-  const dayResults = results.filter((f) => isSameDay(f.kickoffAt, selectedDate));
+  // Overlay the 30s live poll onto every fixture, then re-bucket by the *patched*
+  // status so live rows tick and a finishing match moves Live → Results without a
+  // reload. Order: live, then upcoming (soonest first), then results (newest first).
+  const livePatches = useLiveFixtures();
+  const dayFixtures = applyLivePatches([...live, ...upcoming, ...results], livePatches).filter(
+    (f) => isSameDay(f.kickoffAt, selectedDate),
+  );
+  const dayLive = dayFixtures.filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
+  const dayUpcoming = dayFixtures
+    .filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming')
+    .sort((a, b) => a.kickoffAt.getTime() - b.kickoffAt.getTime());
+  const dayResults = dayFixtures
+    .filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished')
+    .sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
   const dayAll = [...dayLive, ...dayUpcoming, ...dayResults];
 
   const tabDefs: { key: Tab; label: string; count: number }[] = [

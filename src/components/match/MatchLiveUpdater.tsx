@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 
 const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
 const TERMINAL_CODES = new Set([
@@ -134,6 +135,29 @@ export function MatchLiveUpdater({
       pusher.unsubscribe(channelName);
     };
   }, [fixtureId, initialStatus, state.statusCode, handleUpdate]);
+
+  // 30s live poll (shared) — the reliable source that ticks the minute and survives a
+  // starved or disconnected Pusher. Applies this fixture's patch to the overlay state.
+  const livePatches = useLiveFixtures();
+  const poll = livePatches.get(fixtureId);
+  const prevPollScore = useRef(`${initialHomeScore}-${initialAwayScore}`);
+  useEffect(() => {
+    if (!poll) return;
+    const scoreKey = `${poll.homeScore}-${poll.awayScore}`;
+    const scoreChanged = scoreKey !== prevPollScore.current;
+    prevPollScore.current = scoreKey;
+    setState({
+      homeScore: poll.homeScore,
+      awayScore: poll.awayScore,
+      statusCode: poll.statusCode,
+      minute: poll.minute,
+      extraMinute: poll.extraMinute,
+      scoreFlash: scoreChanged,
+    });
+    if (scoreChanged) {
+      queryClient.invalidateQueries({ queryKey: ['match', String(fixtureId)] });
+    }
+  }, [poll, fixtureId, queryClient]);
 
   return <LiveMatchContext.Provider value={state}>{children}</LiveMatchContext.Provider>;
 }
