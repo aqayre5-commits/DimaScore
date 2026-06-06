@@ -204,7 +204,8 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
                   : 'text-text-tertiary hover:text-text-secondary'
               }`}
             >
-              {td.label} (<span suppressHydrationWarning>{td.count}</span>)
+              {td.label}
+              {mounted && td.count > 0 ? ` (${td.count})` : ''}
               {activeTab === td.key && (
                 <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent-azure" />
               )}
