@@ -97,9 +97,12 @@
   },
   "mobileTabBar": {
     "matches": "المباريات",
+    "home": "الرئيسية",
+    "wc26": "المونديال",
     "search": "بحث",
     "favorites": "المفضلة",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "theme": "المظهر"
   },
   "breadcrumb": {
     "football": "كرة القدم",

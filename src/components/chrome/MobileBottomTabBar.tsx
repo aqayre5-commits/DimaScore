@@ -1,68 +1,73 @@
 'use client';
 
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { Trophy, Search, Heart, Settings } from 'lucide-react';
+import { Home, Trophy, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { type Locale } from '@/lib/i18n/config';
+import { getTopNavEntries, buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
+import { SettingsSheet } from './SettingsSheet';
 
-const tabs = [
-  { key: 'matches', icon: Trophy, href: '', disabled: false },
-  { key: 'search', icon: Search, href: null, disabled: false },
-  { key: 'favorites', icon: Heart, href: null, disabled: true },
-  { key: 'settings', icon: Settings, href: null, disabled: true },
-] as const;
+const SearchModal = dynamic(() => import('./SearchModal').then((m) => m.SearchModal), {
+  ssr: false,
+});
+
+const tabClass = 'flex flex-col items-center gap-0.5 px-3 py-1';
 
 /**
- * Mobile bottom tab bar — 4 tabs, fixed bottom, shown md:hidden only.
- * Matches homepage.md Section inherited chrome spec.
+ * Mobile bottom tab bar — Home / WC26 / Search / Settings. Fixed bottom, md:hidden.
+ * Search opens the same modal as the desktop header; Settings opens a sheet with the
+ * theme + language controls.
  */
 export function MobileBottomTabBar() {
   const t = useTranslations('mobileTabBar');
-  const locale = useLocale();
+  const locale = useLocale() as Locale;
   const pathname = usePathname();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const wcEntry = getTopNavEntries().find((e) => e.competitionId === 1);
+  const wcHref = wcEntry ? buildCompetitionHref(wcEntry, locale) : `/${locale}`;
+
+  const isHome = pathname === `/${locale}` || pathname === `/${locale}/`;
+  const isWc = wcHref !== `/${locale}` && pathname.startsWith(wcHref);
 
   return (
     <nav
       aria-label="Mobile navigation"
       className="fixed inset-x-0 bottom-0 z-40 flex min-h-14 items-center justify-around border-t border-border-subtle bg-bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
     >
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
+      <Link
+        href={`/${locale}`}
+        className={cn(tabClass, isHome ? 'text-accent-azure' : 'text-text-tertiary')}
+      >
+        <Home className="size-5" />
+        <span className="text-xs font-medium">{t('home')}</span>
+      </Link>
 
-        if (tab.disabled) {
-          return (
-            <span
-              key={tab.key}
-              className="flex flex-col items-center gap-0.5 px-3 py-1 text-text-tertiary/40"
-            >
-              <Icon className="size-5" />
-              <span className="text-xs font-medium">{t(tab.key)}</span>
-            </span>
-          );
-        }
+      <Link
+        href={wcHref}
+        className={cn(tabClass, isWc ? 'text-accent-azure' : 'text-text-tertiary')}
+      >
+        <Trophy className="size-5" />
+        <span className="text-xs font-medium">{t('wc26')}</span>
+      </Link>
 
-        const tabHref = tab.href;
-        const href = tabHref != null ? `/${locale}${tabHref}` : '#';
-        const isActive =
-          tabHref === ''
-            ? pathname === `/${locale}` || pathname === `/${locale}/`
-            : tabHref != null && pathname.startsWith(`/${locale}${tabHref}`);
+      <button
+        type="button"
+        onClick={() => setSearchOpen(true)}
+        aria-label={t('search')}
+        className={cn(tabClass, 'text-text-tertiary')}
+      >
+        <Search className="size-5" />
+        <span className="text-xs font-medium">{t('search')}</span>
+      </button>
 
-        return (
-          <Link
-            key={tab.key}
-            href={href}
-            className={cn(
-              'flex flex-col items-center gap-0.5 px-3 py-1',
-              isActive ? 'text-accent-azure' : 'text-text-tertiary',
-            )}
-          >
-            <Icon className="size-5" />
-            <span className="text-xs font-medium">{t(tab.key)}</span>
-          </Link>
-        );
-      })}
+      <SettingsSheet />
+
+      {searchOpen && <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />}
     </nav>
   );
 }

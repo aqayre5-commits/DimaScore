@@ -97,9 +97,12 @@
   },
   "mobileTabBar": {
     "matches": "Matchs",
+    "home": "Accueil",
+    "wc26": "CM26",
     "search": "Recherche",
     "favorites": "Favoris",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "theme": "Thème"
   },
   "breadcrumb": {
     "football": "Football",
