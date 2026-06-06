@@ -1,13 +1,14 @@
-import { NextResponse } from 'next/server';
+import { createHash } from 'node:crypto';
 import { inArray, or, and, gte, sql } from 'drizzle-orm';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import type { LiveFixturePatch } from '@/lib/realtime/live-types';
 
-// Live data — never cached. With cacheComponents, route handlers are dynamic by default
-// (no 'use cache'), and the response sets no-store. Polled by the client every 30s.
-export async function GET() {
+// Live data. A short shared (CDN) cache collapses concurrent DB reads at scale, while the
+// browser revalidates each poll (max-age=0) so it never serves stale and gets a cheap 304
+// when nothing changed. Polled by the client (useLiveFixtures).
+export async function GET(request: Request) {
   // Currently-live fixtures, plus ones finished in the last 4h so a client that
   // was watching sees the final score + live→FT transition before they age out.
   const rows: LiveFixturePatch[] = await db
@@ -32,5 +33,16 @@ export async function GET() {
       ),
     );
 
-  return NextResponse.json({ fixtures: rows }, { headers: { 'Cache-Control': 'no-store' } });
+  const body = JSON.stringify({ fixtures: rows });
+  const etag = `"${createHash('sha1').update(body).digest('base64url')}"`;
+  const headers = {
+    'Content-Type': 'application/json',
+    ETag: etag,
+    'Cache-Control': 'public, max-age=0, s-maxage=5, stale-while-revalidate=30',
+  };
+
+  if (request.headers.get('if-none-match') === etag) {
+    return new Response(null, { status: 304, headers });
+  }
+  return new Response(body, { status: 200, headers });
 }

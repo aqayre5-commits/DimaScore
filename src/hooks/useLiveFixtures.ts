@@ -7,14 +7,16 @@ import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 export type { LiveFixturePatch };
 
-const ACTIVE_MS = 30_000;
+const ACTIVE_MS = 15_000;
 const IDLE_MS = 60_000;
 const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
 // Halves where the match clock runs — safe to advance the minute locally between polls.
 const RUNNING_CODES = new Set<string>(['1H', '2H', 'ET']);
 
 async function fetchLiveFixtures(): Promise<LiveFixturePatch[]> {
-  const res = await fetch('/api/v1/live', { cache: 'no-store' });
+  // Default cache mode (not no-store) so the browser sends If-None-Match and honours the
+  // route's max-age=0 + s-maxage: cheap 304s on unchanged polls, fresh on every change.
+  const res = await fetch('/api/v1/live');
   if (!res.ok) throw new Error(`live fetch failed: ${res.status}`);
   const data = (await res.json()) as { fixtures: LiveFixturePatch[] };
   return data.fixtures;
