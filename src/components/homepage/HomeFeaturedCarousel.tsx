@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatFeaturedDate } from '@/lib/utils/date';
+import { getMatchState } from '@/lib/match-status';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
@@ -52,6 +54,7 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const livePatches = useLiveFixtures();
 
   const next = useCallback(
     () => setIdx((i) => (i === matches.length - 1 ? 0 : i + 1)),
@@ -76,7 +79,21 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
 
   if (matches.length === 0) return null;
 
-  const match = matches[idx];
+  // Overlay the live poll so a featured match that kicks off (or finishes) while you're
+  // on the page flips from "VS + countdown" to a live/final score.
+  const raw = matches[idx];
+  const patch = livePatches.get(raw.id);
+  const match: HomeFixture = patch
+    ? {
+        ...raw,
+        statusCode: patch.statusCode,
+        minute: patch.minute,
+        homeScore: patch.homeScore,
+        awayScore: patch.awayScore,
+        homeScorePen: patch.homeScorePen,
+        awayScorePen: patch.awayScorePen,
+      }
+    : raw;
 
   return (
     <div
@@ -97,8 +114,6 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
       <div className="flex flex-col items-center px-4 pb-2 pt-14 sm:px-8">
         <CarouselSlide match={match} locale={locale} labels={labels} isFirst={idx === 0} />
       </div>
-
-      {/* Venue info — inline with dots row */}
 
       {/* Navigation arrows */}
       {matches.length > 1 && (
@@ -178,6 +193,11 @@ function CarouselSlide({
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
   const { days, hours, minutes } = useCountdown(match.kickoffAt);
 
+  const state = getMatchState(match.statusCode, match.kickoffAt);
+  const isLive = state === 'live';
+  const isFinished = state === 'finished';
+  const showScore = (isLive || isFinished) && match.homeScore != null && match.awayScore != null;
+
   return (
     <div className="flex w-full flex-col items-center gap-4 text-center">
       {/* Competition + Group/Round */}
@@ -213,15 +233,40 @@ function CarouselSlide({
           </span>
         </div>
 
-        {/* Center: VS + date */}
+        {/* Center: live/final score or VS + date */}
         <div className="flex shrink-0 flex-col items-center gap-2 px-2">
-          <span className="text-3xl font-black tracking-tight text-accent-azure">VS</span>
-          <p
-            className="text-xs font-medium tracking-wide text-text-tertiary"
-            suppressHydrationWarning
-          >
-            {formatFeaturedDate(match.kickoffAt, locale)}
-          </p>
+          {showScore ? (
+            <>
+              <span className="text-3xl font-black tabular-nums tracking-tight text-text-primary">
+                {match.homeScore} - {match.awayScore}
+              </span>
+              {isLive ? (
+                <span className="flex items-center gap-1 text-xs font-bold text-score-live">
+                  <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
+                  {match.statusCode === 'HT' ? 'HT' : `${match.minute ?? ''}'`}
+                </span>
+              ) : (
+                <span className="text-xs font-medium text-text-tertiary">
+                  {match.statusCode === 'AET' ? 'AET' : 'FT'}
+                  {match.statusCode === 'PEN' &&
+                  match.homeScorePen != null &&
+                  match.awayScorePen != null
+                    ? ` · PEN ${match.homeScorePen}-${match.awayScorePen}`
+                    : ''}
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="text-3xl font-black tracking-tight text-accent-azure">VS</span>
+              <p
+                className="text-xs font-medium tracking-wide text-text-tertiary"
+                suppressHydrationWarning
+              >
+                {formatFeaturedDate(match.kickoffAt, locale)}
+              </p>
+            </>
+          )}
         </div>
 
         {/* Away team */}
@@ -248,19 +293,21 @@ function CarouselSlide({
         </div>
       </div>
 
-      {/* Countdown */}
-      <div className="flex flex-col items-center gap-2 pt-1">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
-          {labels.kicksOffIn}
-        </span>
-        <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
-          <CountdownUnit value={days} label="DAYS" />
-          <div className="h-12 w-px bg-border-subtle" />
-          <CountdownUnit value={hours} label="HOURS" />
-          <div className="h-12 w-px bg-border-subtle" />
-          <CountdownUnit value={minutes} label="MINS" />
+      {/* Countdown — only before kickoff */}
+      {state === 'upcoming' && (
+        <div className="flex flex-col items-center gap-2 pt-1">
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
+            {labels.kicksOffIn}
+          </span>
+          <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
+            <CountdownUnit value={days} label="DAYS" />
+            <div className="h-12 w-px bg-border-subtle" />
+            <CountdownUnit value={hours} label="HOURS" />
+            <div className="h-12 w-px bg-border-subtle" />
+            <CountdownUnit value={minutes} label="MINS" />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
