@@ -4,6 +4,10 @@ import { notFound } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import {
+  findEntryByCompetitionId,
+  buildCompetitionHref,
+} from '@/lib/constants/competitions-mega-menu';
 import { TeamPageHeader } from '@/components/team/TeamPageHeader';
 import { TeamSquadTable } from '@/components/team/TeamSquadTable';
 import { TeamStandingsWithFilter } from '@/components/team/TeamStandingsWithFilter';
@@ -198,8 +202,8 @@ export default async function TeamPage({ params }: PageProps) {
 
   // Breadcrumbs: Football > Competition > Team (no country level for teams).
   // primaryComp is League-only (null for national teams). When absent, fall back
-  // to the team's default standings competition (e.g. World Cup 2026) as a
-  // text-only crumb — the snapshot carries no slug/country to build a link.
+  // to the team's default standings competition (e.g. World Cup 2026), linked via
+  // its mega-menu entry when one exists (else a plain text crumb).
   const breadcrumbs: BreadcrumbSegment[] = [{ label: tBc('football'), href: `/${locale}` }];
   if (primaryComp) {
     const compName = primaryComp.name[typedLocale] ?? primaryComp.name['en'] ?? primaryComp.slug;
@@ -212,7 +216,11 @@ export default async function TeamPage({ params }: PageProps) {
     const fallbackComp = allStandings.competitions[0];
     const fallbackName = fallbackComp.name[typedLocale] ?? fallbackComp.name['en'];
     if (fallbackName) {
-      breadcrumbs.push({ label: fallbackName });
+      const fallbackEntry = findEntryByCompetitionId(fallbackComp.id);
+      breadcrumbs.push({
+        label: fallbackName,
+        href: fallbackEntry ? buildCompetitionHref(fallbackEntry, typedLocale) : undefined,
+      });
     }
   }
   breadcrumbs.push({ label: `${teamName} ${tTeam('seoSections')}` });
