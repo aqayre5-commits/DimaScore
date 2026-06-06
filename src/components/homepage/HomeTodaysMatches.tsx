@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
@@ -31,12 +30,6 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
         <h2 className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
           {labels.topMatches}
         </h2>
-        <Link
-          href={`/${locale}/matches`}
-          className="text-[11px] font-medium text-accent-azure hover:underline"
-        >
-          {labels.seeAll}
-        </Link>
       </div>
 
       <div className="divide-y divide-border-subtle">

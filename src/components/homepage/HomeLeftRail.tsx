@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
@@ -75,15 +74,6 @@ export function HomeLeftRail({ sections, counts, locale, labels }: Props) {
             </div>
           ))}
         </nav>
-        <div className="border-t border-border-subtle">
-          <Link
-            href={`/${locale}/competitions`}
-            className="flex items-center justify-between px-4 py-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-          >
-            {labels.viewAllCompetitions}
-            <ChevronRight className="size-3.5" />
-          </Link>
-        </div>
       </div>
 
       {/* Quick Filters */}
