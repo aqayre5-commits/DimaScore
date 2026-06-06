@@ -33,7 +33,6 @@ import {
   getTeamKeyPlayers,
   getTeamTournamentScorers,
 } from '@/lib/db/queries/team';
-import { getLeagueCountryName } from '@/lib/constants/league-content';
 import { BASE_URL } from '@/lib/constants/site';
 import { cacheLife } from 'next/cache';
 
@@ -197,16 +196,12 @@ export default async function TeamPage({ params }: PageProps) {
       '')
     : '';
 
-  // Breadcrumbs: Football > [Country >] Competition > Team
+  // Breadcrumbs: Football > Competition > Team (no country level for teams).
   // primaryComp is League-only (null for national teams). When absent, fall back
   // to the team's default standings competition (e.g. World Cup 2026) as a
   // text-only crumb — the snapshot carries no slug/country to build a link.
   const breadcrumbs: BreadcrumbSegment[] = [{ label: tBc('football'), href: `/${locale}` }];
   if (primaryComp) {
-    const countryName = getLeagueCountryName(primaryComp.countryCode, typedLocale);
-    if (countryName) {
-      breadcrumbs.push({ label: countryName });
-    }
     const compName = primaryComp.name[typedLocale] ?? primaryComp.name['en'] ?? primaryComp.slug;
     const countrySlug = (primaryComp.countryCode ?? '').toLowerCase();
     breadcrumbs.push({
