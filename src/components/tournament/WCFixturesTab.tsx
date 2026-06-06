@@ -76,9 +76,16 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
 
   // Filter fixtures
   const filtered = useMemo(() => {
+    // Chronological (soonest first) for all/upcoming/live; reverse only for results,
+    // where the most-recent finished match should lead.
+    const ascending = statusFilter !== 'results';
     let result = [...fixtures]
       .filter((f) => !f.round?.toLowerCase().includes('ranking of third'))
-      .sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
+      .sort((a, b) =>
+        ascending
+          ? a.kickoffAt.getTime() - b.kickoffAt.getTime()
+          : b.kickoffAt.getTime() - a.kickoffAt.getTime(),
+      );
 
     // Status filter
     if (statusFilter !== 'all') {
