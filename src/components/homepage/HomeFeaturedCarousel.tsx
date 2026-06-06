@@ -50,7 +50,7 @@ function useCountdown(kickoffAt: Date) {
 
 export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
   const [idx, setIdx] = useState(0);
-  const [hovered, setHovered] = useState(false);
+  const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const next = useCallback(
@@ -59,12 +59,12 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
   );
 
   useEffect(() => {
-    if (matches.length <= 1 || hovered) return;
-    timerRef.current = setInterval(next, 7000);
+    if (matches.length <= 1 || paused) return;
+    timerRef.current = setInterval(next, 10000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [matches.length, hovered, next]);
+  }, [matches.length, paused, next]);
 
   const goTo = useCallback((i: number) => {
     setIdx(i);
@@ -81,8 +81,10 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
   return (
     <div
       className="relative overflow-hidden rounded-xl border border-border-subtle bg-bg-surface"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
     >
       {/* Badge */}
       <div className="absolute start-4 top-4 z-10">
