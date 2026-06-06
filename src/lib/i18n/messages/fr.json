@@ -109,6 +109,8 @@
     "sectionsMatch": "Score en direct, Compositions, Stats et Confrontations",
     "matchday": "Journée {number}",
     "roundOf16": "Huitièmes de finale",
+    "sectionsPlayer": "Stats, Carrière et Palmarès",
+    "sectionsCoach": "Profil et Carrière",
     "morocco": "Maroc"
   },
   "footer": {

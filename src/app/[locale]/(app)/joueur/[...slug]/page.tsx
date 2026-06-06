@@ -23,8 +23,8 @@ import {
   getPlayerTrophies,
   getPlayerLastRatings,
 } from '@/lib/db/queries/player';
-import { getTeamFixturesWithCompetition, getTeamPrimaryCompetition } from '@/lib/db/queries/team';
-import { getLeagueCountryName } from '@/lib/constants/league-content';
+import { getTeamFixturesWithCompetition } from '@/lib/db/queries/team';
+import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
 import { BASE_URL } from '@/lib/constants/site';
 
 interface PageProps {
@@ -93,19 +93,18 @@ export default async function PlayerPage({ params }: PageProps) {
 
   const tBc = await getTranslations({ locale, namespace: 'breadcrumb' });
   const playerName =
-    player.name[typedLocale] ??
-    player.name['en'] ??
-    [player.firstname, player.lastname].filter(Boolean).join(' ') ??
+    [player.firstname, player.lastname].filter(Boolean).join(' ') ||
+    player.name[typedLocale] ||
+    player.name['en'] ||
     playerSlug;
 
   // Parallel data fetching
-  const [fixtures, seasonStats, transfers, trophies, lastRatings, primaryComp] = await Promise.all([
+  const [fixtures, seasonStats, transfers, trophies, lastRatings] = await Promise.all([
     player.currentTeam ? getTeamFixturesWithCompetition(db, player.currentTeam.id, 200) : [],
     getPlayerSeasonStats(db, player.id),
     getPlayerTransfers(db, player.id),
     getPlayerTrophies(db, player.id),
     getPlayerLastRatings(db, player.id),
-    player.currentTeam ? getTeamPrimaryCompetition(db, player.currentTeam.id) : null,
   ]);
 
   // Filter out not-yet-started seasons (European season N starts Aug N)
@@ -125,28 +124,13 @@ export default async function PlayerPage({ params }: PageProps) {
     .find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
   const upcomingFixture = liveMatch ?? nextUpcoming ?? mostRecentCompleted ?? null;
 
-  // Breadcrumbs: Football > League > Team > Player
-  const breadcrumbs: BreadcrumbSegment[] = [{ label: tBc('football'), href: `/${locale}` }];
-  if (primaryComp) {
-    const countryName = getLeagueCountryName(primaryComp.countryCode, typedLocale);
-    if (countryName) {
-      breadcrumbs.push({ label: countryName });
-    }
-    const compName = primaryComp.name[typedLocale] ?? primaryComp.name['en'] ?? primaryComp.slug;
-    const countrySlug = (primaryComp.countryCode ?? '').toLowerCase();
-    breadcrumbs.push({
-      label: compName,
-      href: `/${locale}/competition/${countrySlug}/${primaryComp.slug}`,
-    });
-  }
-  if (player.currentTeam) {
-    const teamName = player.currentTeam.name[typedLocale] ?? player.currentTeam.name['en'] ?? '';
-    breadcrumbs.push({
-      label: teamName,
-      href: `/${locale}/equipe/${player.currentTeam.slug}`,
-    });
-  }
-  breadcrumbs.push({ label: playerName });
+  // Breadcrumbs: Football > Nationality > Player (+ sections)
+  const nationality = getLocalizedCountryName(player.nationalityCode, locale);
+  const breadcrumbs: BreadcrumbSegment[] = [
+    { label: tBc('football'), href: `/${locale}` },
+    ...(nationality ? [{ label: nationality }] : []),
+    { label: `${playerName}, ${tBc('sectionsPlayer')}` },
+  ];
 
   // Center tabs — Statistics (season dropdown), Career (all-seasons table), Trophies (placeholder)
   const hashes = TAB_HASHES[typedLocale];
@@ -173,8 +157,8 @@ export default async function PlayerPage({ params }: PageProps) {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <SeoBreadcrumb segments={breadcrumbs} />
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
+        <SeoBreadcrumb segments={breadcrumbs} compact />
       </div>
 
       <InnerPageShell

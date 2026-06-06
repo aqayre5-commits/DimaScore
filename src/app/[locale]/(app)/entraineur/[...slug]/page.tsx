@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { locales, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
 import { CoachPageHeader } from '@/components/coach/CoachPageHeader';
 import { CoachCareerTable } from '@/components/coach/CoachCareerTable';
 import { db } from '@/lib/db/client';
@@ -82,14 +83,16 @@ export default async function CoachPage({ params }: PageProps) {
   const displayName =
     coach.firstname && coach.lastname ? `${coach.firstname} ${coach.lastname}` : coach.name;
 
+  const nationality = getLocalizedCountryName(coach.nationalityCode, locale);
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${locale}` },
-    { label: displayName },
+    ...(nationality ? [{ label: nationality }] : []),
+    { label: `${displayName}, ${tBc('sectionsCoach')}` },
   ];
 
   return (
     <div className="mx-auto w-full max-w-[1280px] space-y-4 px-4 py-4">
-      <SeoBreadcrumb segments={breadcrumbs} />
+      <SeoBreadcrumb segments={breadcrumbs} compact />
       <CoachPageHeader coach={coach} locale={typedLocale} />
       <CoachCareerTable career={coach.career} />
     </div>

@@ -109,6 +109,8 @@
     "sectionsMatch": "Live Score, Lineups, Stats & H2H",
     "matchday": "Matchday {number}",
     "roundOf16": "Round of 16",
+    "sectionsPlayer": "Stats, Career & Trophies",
+    "sectionsCoach": "Profile & Career",
     "morocco": "Morocco"
   },
   "footer": {
