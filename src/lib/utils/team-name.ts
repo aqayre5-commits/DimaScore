@@ -2,6 +2,7 @@ type TeamLike = {
   name: Record<string, string>;
   shortName: Record<string, string>;
   code: string | null;
+  isNational?: boolean | null;
 };
 
 /**
@@ -27,35 +28,56 @@ export function getTeamDisplayName(team: TeamLike | null, locale: string): strin
 /**
  * Compact locale-aware team label for space-constrained contexts (ticker, score strips).
  *
- * For AR, prefer Arabic shortName/name first since 47/48 national teams have
- * shortName.ar; codes embedded in RTL text cause bidi artifacts. For EN/FR,
- * code-first is fine — Latin codes render naturally in LTR and most club teams
- * have no FR data anyway. Club teams in AR fall through to Latin name (no AR
- * data exists) — acceptable degradation until ingestion is fixed.
+ * National teams prefer their (FIFA) tri-code — the scoreboard convention (BRA, ARG,
+ * RSA). Clubs prefer their real (short) name; a cryptic federation code (RAJ, ORA) is
+ * only a last resort. For AR, Arabic shortName/name comes first either way, since Latin
+ * codes embedded in RTL text cause bidi artifacts.
  *
- * AR chain:  shortName.ar → name.ar truncated → code → shortName.en → name.en truncated → '???'
- * EN/FR:     code → shortName[locale] → shortName.en → name[locale] truncated → name.en truncated → '???'
+ * National AR:    shortName.ar → name.ar trunc → code → shortName.en → name.en trunc → 'TBD'
+ * National EN/FR: code → shortName[locale] → shortName.en → name[locale] trunc → name.en trunc → 'TBD'
+ * Club AR:        shortName.ar → name.ar trunc → shortName.en → name.en trunc → code → 'TBD'
+ * Club EN/FR:     shortName[locale] → shortName.en → name[locale] trunc → name.en trunc → code → 'TBD'
  */
 export function getCompactTeamLabel(team: TeamLike | null, locale: string, maxLen = 6): string {
   if (!team) return '—';
 
+  const isNational = team.isNational ?? false;
+
   if (locale === 'ar') {
+    return isNational
+      ? (team.shortName['ar'] ??
+          truncate(team.name['ar'], maxLen) ??
+          team.code ??
+          team.shortName['en'] ??
+          truncate(team.name['en'], maxLen) ??
+          'TBD')
+      : (team.shortName['ar'] ??
+          truncate(team.name['ar'], maxLen) ??
+          team.shortName['en'] ??
+          truncate(team.name['en'], maxLen) ??
+          team.code ??
+          'TBD');
+  }
+
+  if (isNational) {
+    // National teams: the FIFA tri-code is the ideal compact label (BRA, ARG, RSA).
     return (
-      team.shortName['ar'] ??
-      truncate(team.name['ar'], maxLen) ??
       team.code ??
+      team.shortName[locale] ??
       team.shortName['en'] ??
+      truncate(team.name[locale], maxLen) ??
       truncate(team.name['en'], maxLen) ??
       'TBD'
     );
   }
 
+  // Club teams: prefer the real (short) name; a cryptic code is the last resort.
   return (
-    team.code ??
     team.shortName[locale] ??
     team.shortName['en'] ??
     truncate(team.name[locale], maxLen) ??
     truncate(team.name['en'], maxLen) ??
+    team.code ??
     'TBD'
   );
 }
