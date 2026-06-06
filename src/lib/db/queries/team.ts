@@ -589,7 +589,11 @@ export async function getTeamsInSameCompetition(
     )
     .orderBy(asc(schema.standings.rank));
 
-  const teamIds = standingsRows.map((r) => r.teamId).filter((id): id is number => id != null);
+  // Dedup: a team can hold >1 standings row in the same comp/season (e.g. WC group
+  // stage + "Ranking of third-placed teams"). Set preserves first-seen (best rank).
+  const teamIds = [
+    ...new Set(standingsRows.map((r) => r.teamId).filter((id): id is number => id != null)),
+  ];
 
   if (teamIds.length === 0) return { competitionName, teams: [] };
 
