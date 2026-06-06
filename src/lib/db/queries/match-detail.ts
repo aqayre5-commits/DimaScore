@@ -556,6 +556,11 @@ export async function getNextFixtures(
         AND f.kickoff_at > NOW()
         AND f.id != ${excludeFixtureId}
         AND (f.home_team_id = ${teamId} OR f.away_team_id = ${teamId})
+        -- Skip fixtures with an undetermined slot (e.g. unclinched knockout brackets),
+        -- so the "next match" widget never renders a "TBD" opponent. Prefers the next
+        -- fully-determined fixture (the upcoming group game) instead.
+        AND f.home_team_id IS NOT NULL
+        AND f.away_team_id IS NOT NULL
       ORDER BY f.kickoff_at ASC
       LIMIT 1
     `);
