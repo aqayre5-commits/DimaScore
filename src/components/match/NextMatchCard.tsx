@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { formatMatchTime } from '@/lib/utils/date';
 import type { NextFixture } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -84,10 +85,7 @@ function NextFixtureRow({
     month: 'short',
   }).format(fixture.kickoffAt);
 
-  const timeStr = new Intl.DateTimeFormat(locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(fixture.kickoffAt);
+  const timeStr = formatMatchTime(fixture.kickoffAt, locale);
 
   const matchup = fixture.isHome
     ? `${teamName} vs ${opponentName}`
