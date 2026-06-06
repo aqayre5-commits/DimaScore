@@ -10,9 +10,10 @@ import { EventTimeline } from '@/components/match/EventTimeline';
 import { LineupPitch } from '@/components/match/LineupPitch';
 import { StatsBars } from '@/components/match/StatsBars';
 import { PlayerRatingsPanel } from '@/components/match/PlayerRatingBadge';
-import { MatchMediaSection } from '@/components/match/MatchMediaSection';
 import { MatchSectionNav } from '@/components/match/MatchSectionNav';
 import { fetchMatchLineups } from '@/lib/api/match';
+import { useLiveMatch } from '@/components/match/MatchLiveUpdater';
+import { isLive } from '@/lib/match-status';
 
 interface MatchClientCenterProps {
   matchId: string;
@@ -49,16 +50,23 @@ export function MatchClientCenter({
 }: MatchClientCenterProps) {
   const t = useTranslations('matchDetail');
 
+  // While the match is live, poll the detail endpoints (SofaScore-style) so freshly
+  // ingested lineups/events/stats surface without a reload. Stops once it goes FT.
+  const live = useLiveMatch();
+  const liveRefetch = live && isLive(live.statusCode) ? 30_000 : false;
+
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: qk.matchEvents(matchId),
     queryFn: () => fetchMatchEvents(matchId),
     enabled: !isUpcoming && (coverage?.events ?? false),
+    refetchInterval: liveRefetch,
   });
 
   const { data: lineups, isLoading: lineupsLoading } = useQuery({
     queryKey: qk.matchLineups(matchId),
     queryFn: () => fetchMatchLineups(matchId),
     enabled: !isUpcoming && (coverage?.lineups ?? false),
+    refetchInterval: liveRefetch,
   });
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
@@ -67,6 +75,7 @@ export function MatchClientCenter({
     enabled:
       !isUpcoming &&
       ((coverage?.statisticsFixtures ?? false) || (coverage?.statisticsPlayers ?? false)),
+    refetchInterval: liveRefetch,
   });
 
   const hasEvents = (coverage?.events ?? false) && (events?.length ?? 0) > 0;
@@ -151,7 +160,7 @@ export function MatchClientCenter({
       {/* Fallback */}
       {hasNoData && !isUpcoming && (
         <div className="px-4 py-10 text-center">
-          <p className="text-sm text-text-tertiary">{t('predictionComingSoon')}</p>
+          <p className="text-sm text-text-tertiary">{t('noLiveDetailData')}</p>
         </div>
       )}
     </div>

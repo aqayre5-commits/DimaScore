@@ -3,6 +3,7 @@ import { getDataProvider } from '@/lib/data';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { mapFixtureToInsert } from '@/lib/ingestion/fixtures';
+import { syncLiveFixtureDetails } from '@/lib/ingestion/fixture-details';
 import { getPusherServer } from '@/lib/realtime/pusher-server';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
@@ -11,6 +12,11 @@ import { computeDeltas, type FixtureRow } from './diff';
 import { trackCall, resetTick, isQuotaExhausted } from './quota';
 
 const TRACKED_COMPETITION_IDS = new Set(VERIFIED_COMPETITIONS.map((c) => c.id));
+
+// Re-fetch a live fixture's events at most this often (or immediately on a score delta).
+const EVENT_THROTTLE_MS = 120_000;
+// Per-fixture last events-sync time; persists across ticks in the long-running worker.
+const lastEventSync = new Map<number, number>();
 
 export interface PollResult {
   liveCount: number;
@@ -51,6 +57,63 @@ export async function pollLiveFixtures(): Promise<PollResult> {
 
   const dbMap = new Map<number, FixtureRow>(dbRows.map((r) => [r.id, r]));
   const deltas = computeDeltas(liveFixtures, dbMap);
+
+  // Live detail ingestion: lineups once per fixture, events on a score delta or every
+  // ~2 min, gated on each league's coverage flags (uncovered feeds skipped). Quota-aware.
+  {
+    const leagueIds = [...new Set(liveFixtures.map((f) => f.league.id))];
+    const coverageRows = await db
+      .select({
+        leagueId: schema.leagueCoverage.leagueId,
+        season: schema.leagueCoverage.season,
+        events: schema.leagueCoverage.events,
+        lineups: schema.leagueCoverage.lineups,
+      })
+      .from(schema.leagueCoverage)
+      .where(inArray(schema.leagueCoverage.leagueId, leagueIds));
+    const coverage = new Map<string, { events: boolean; lineups: boolean }>();
+    for (const r of coverageRows) {
+      coverage.set(`${r.leagueId}-${r.season}`, { events: !!r.events, lineups: !!r.lineups });
+    }
+
+    const existingLineups = await db
+      .select({ fixtureId: schema.fixtureLineups.fixtureId })
+      .from(schema.fixtureLineups)
+      .where(inArray(schema.fixtureLineups.fixtureId, fixtureIds));
+    const hasLineups = new Set(existingLineups.map((r) => r.fixtureId));
+
+    const deltaIds = new Set(deltas.map((d) => d.fixtureId));
+    const now = Date.now();
+    for (const f of liveFixtures) {
+      if (isQuotaExhausted()) break;
+      const cov = coverage.get(`${f.league.id}-${f.league.season}`);
+      if (!cov) continue;
+      const wantLineups = cov.lineups && !hasLineups.has(f.id);
+      const wantEvents =
+        cov.events &&
+        (deltaIds.has(f.id) || now - (lastEventSync.get(f.id) ?? 0) > EVENT_THROTTLE_MS);
+      if (!wantLineups && !wantEvents) continue;
+      try {
+        const counts = await syncLiveFixtureDetails(provider, db, f.id, {
+          events: wantEvents,
+          lineups: wantLineups,
+        });
+        if (wantEvents) {
+          trackCall();
+          lastEventSync.set(f.id, now);
+        }
+        if (wantLineups) trackCall();
+        console.log(
+          `  [details] fixture=${f.id} events=${counts.events} lineups=${counts.lineups}`,
+        );
+      } catch (err) {
+        console.error(
+          `  [details] fixture=${f.id} failed:`,
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
+  }
 
   if (deltas.length === 0) {
     const { tickCalls } = resetTick();

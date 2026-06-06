@@ -171,6 +171,64 @@ export async function syncFixtureDetails(
   };
 }
 
+// ── Live sync: events and/or lineups only, never sets detailsSyncedAt ──
+
+/**
+ * Lightweight detail sync for an in-progress match. Fetches only events and/or lineups
+ * (gated by `want`, so an uncovered feed is skipped) and never marks detailsSyncedAt —
+ * the post-FT cron still runs the full sync (stats + player stats) once the match ends.
+ */
+export async function syncLiveFixtureDetails(
+  provider: DataProvider,
+  db: NeonHttpDatabase<typeof schema>,
+  fixtureId: number,
+  want: { events: boolean; lineups: boolean },
+): Promise<{ events: number; lineups: number }> {
+  const [events, lineups] = await Promise.all([
+    want.events
+      ? provider
+          .getFixtureEvents({ fixture: fixtureId })
+          .catch(() => [] as NormalizedFixtureEvent[])
+      : Promise.resolve([] as NormalizedFixtureEvent[]),
+    want.lineups
+      ? provider
+          .getFixtureLineups({ fixture: fixtureId })
+          .catch(() => [] as NormalizedFixtureLineup[])
+      : Promise.resolve([] as NormalizedFixtureLineup[]),
+  ]);
+
+  let eventsCount = 0;
+  let lineupsCount = 0;
+
+  await runWrites(async (tx) => {
+    if (want.events && events.length > 0) {
+      const eventRows = events.map((e) => mapEvent(fixtureId, e));
+      await tx.delete(schema.fixtureEvents).where(eq(schema.fixtureEvents.fixtureId, fixtureId));
+      await tx.insert(schema.fixtureEvents).values(eventRows);
+      eventsCount = eventRows.length;
+    }
+
+    for (const l of lineups) {
+      const row = mapLineup(fixtureId, l);
+      await tx
+        .insert(schema.fixtureLineups)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [schema.fixtureLineups.fixtureId, schema.fixtureLineups.teamId],
+          set: {
+            coachId: row.coachId,
+            formation: row.formation,
+            starters: row.starters,
+            substitutes: row.substitutes,
+          },
+        });
+      lineupsCount++;
+    }
+  });
+
+  return { events: eventsCount, lineups: lineupsCount };
+}
+
 // ── Batch: find fixtures missing details ──
 
 export async function getFixturesMissingDetails(
