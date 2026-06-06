@@ -14,7 +14,6 @@ import { db } from '@/lib/db/client';
 import { getStandings, getCurrentSeasons } from '@/lib/db/queries';
 import {
   getHomeMatchesByCategory,
-  getHomeMatchCounts,
   getTrendingPlayers,
   getCompetitionsByIds,
 } from '@/lib/db/queries/homepage';
@@ -142,7 +141,6 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
 
   const [
     matchesByCategory,
-    matchCounts,
     trendingPlayers,
     leftRailComps,
     standingsResults,
@@ -151,7 +149,6 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
     topScorersData,
   ] = await Promise.all([
     getHomeMatchesByCategory(db),
-    getHomeMatchCounts(db),
     getTrendingPlayers(db, 6),
     getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
     Promise.all(
@@ -190,15 +187,6 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
       .filter((c): c is NonNullable<typeof c> => c != null),
   })).filter((s) => s.items.length > 0);
 
-  const leftRailLabels = {
-    viewAllCompetitions: t('viewAllCompetitions'),
-    liveNow: t('liveNow'),
-    todaysMatches: t('todaysMatches'),
-    upcoming: t('upcomingFilter'),
-    results: t('resultsFilter'),
-    quickFilters: t('quickFilters'),
-  };
-
   const matchTabLabels = {
     all: t('all'),
     live: t('live'),
@@ -223,14 +211,7 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
 
   return (
     <InnerPageShell
-      leftRail={
-        <HomeLeftRail
-          sections={leftRailSections}
-          counts={matchCounts}
-          locale={typedLocale}
-          labels={leftRailLabels}
-        />
-      }
+      leftRail={<HomeLeftRail sections={leftRailSections} locale={typedLocale} />}
       center={
         <div className="space-y-4">
           <div className="rounded-xl border border-border-subtle bg-bg-surface p-4">

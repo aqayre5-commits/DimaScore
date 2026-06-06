@@ -314,28 +314,6 @@ export async function getTrendingPlayers(
   }));
 }
 
-/** Match counts for quick filters. */
-export async function getHomeMatchCounts(
-  db: NeonHttpDatabase<typeof schema>,
-): Promise<{ live: number; today: number; upcoming: number; results: number }> {
-  const rows = await db.execute(
-    sql`SELECT
-          COUNT(*) FILTER (WHERE status_code IN ('1H','HT','2H','ET','BT','P','LIVE')) AS live,
-          COUNT(*) FILTER (WHERE kickoff_at >= date_trunc('day', NOW()) AND kickoff_at < date_trunc('day', NOW()) + INTERVAL '1 day') AS today,
-          COUNT(*) FILTER (WHERE status_code = 'NS' AND kickoff_at >= NOW()) AS upcoming,
-          COUNT(*) FILTER (WHERE status_code IN ('FT','AET','PEN','WO','AWD')) AS results
-        FROM fixtures`,
-  );
-
-  const r = rows.rows[0] as { live: string; today: string; upcoming: string; results: string };
-  return {
-    live: Number(r.live),
-    today: Number(r.today),
-    upcoming: Number(r.upcoming),
-    results: Number(r.results),
-  };
-}
-
 /** Fetch specific competitions by ID, preserving order, enriched with mega menu slugs. */
 export async function getCompetitionsByIds(db: NeonHttpDatabase<typeof schema>, ids: number[]) {
   if (ids.length === 0) return [];

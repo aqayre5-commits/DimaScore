@@ -18,7 +18,6 @@ import { db } from '@/lib/db/client';
 import {
   getFeaturedMatches,
   getHomeMatchesByCategory,
-  getHomeMatchCounts,
   getCompetitionsByIds,
 } from '@/lib/db/queries/homepage';
 import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
@@ -170,13 +169,12 @@ const LEFT_RAIL_LOGO_OVERRIDES: Record<number, string> = {
 async function getCachedHomepageData() {
   'use cache';
   cacheLife('minutes');
-  const [featured, matchesByCategory, matchCounts, leftRailComps] = await Promise.all([
+  const [featured, matchesByCategory, leftRailComps] = await Promise.all([
     getFeaturedMatches(db),
     getHomeMatchesByCategory(db),
-    getHomeMatchCounts(db),
     getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
   ]);
-  return { featured, matchesByCategory, matchCounts, leftRailComps };
+  return { featured, matchesByCategory, leftRailComps };
 }
 
 // ── Page ──
@@ -185,12 +183,11 @@ export default async function HomePage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
-  const [{ featured, matchesByCategory, matchCounts, leftRailComps }, railData, t] =
-    await Promise.all([
-      getCachedHomepageData(),
-      getHomeRailData(typedLocale),
-      getTranslations({ locale, namespace: 'homepage' }),
-    ]);
+  const [{ featured, matchesByCategory, leftRailComps }, railData, t] = await Promise.all([
+    getCachedHomepageData(),
+    getHomeRailData(typedLocale),
+    getTranslations({ locale, namespace: 'homepage' }),
+  ]);
 
   // Enrich featured matches: WC venues + team form
   const WC_COMP_ID = 1;
@@ -230,15 +227,6 @@ export default async function HomePage({ params }: PageProps) {
       .filter((c): c is NonNullable<typeof c> => c != null),
   })).filter((s) => s.items.length > 0);
 
-  const leftRailLabels = {
-    viewAllCompetitions: t('viewAllCompetitions'),
-    liveNow: t('liveNow'),
-    todaysMatches: t('todaysMatches'),
-    upcoming: t('upcomingFilter'),
-    results: t('resultsFilter'),
-    quickFilters: t('quickFilters'),
-  };
-
   const matchTabLabels = {
     all: t('all'),
     live: t('live'),
@@ -256,12 +244,7 @@ export default async function HomePage({ params }: PageProps) {
         <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-6">
           {/* Left rail — competition nav. Desktop only: the drawer + bottom tab bar cover mobile. */}
           <aside className="hidden xl:col-start-1 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
-            <HomeLeftRail
-              sections={leftRailSections}
-              counts={matchCounts}
-              locale={typedLocale}
-              labels={leftRailLabels}
-            />
+            <HomeLeftRail sections={leftRailSections} locale={typedLocale} />
           </aside>
 
           {/* Center column */}
