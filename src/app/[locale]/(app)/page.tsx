@@ -84,53 +84,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-// ── League definitions for standings mini widget ──
-
-const HOMEPAGE_LEAGUES = [
-  {
-    compId: 200,
-    countryKey: 'maroc',
-    slugs: { fr: 'botola-pro', en: 'botola-pro', ar: 'البطولة-الاحترافية' } as Record<
-      string,
-      string
-    >,
-    label: { fr: 'Botola Pro', en: 'Botola Pro', ar: 'البطولة الاحترافية' },
-  },
-  {
-    compId: 39,
-    countryKey: 'angleterre',
-    slugs: { fr: 'premier-league', en: 'premier-league', ar: 'الدوري-الإنجليزي-الممتاز' } as Record<
-      string,
-      string
-    >,
-    label: { fr: 'Premier League', en: 'Premier League', ar: 'الدوري الإنجليزي' },
-  },
-  {
-    compId: 140,
-    countryKey: 'espagne',
-    slugs: { fr: 'la-liga', en: 'la-liga', ar: 'الدوري-الإسباني' } as Record<string, string>,
-    label: { fr: 'LaLiga', en: 'LaLiga', ar: 'الدوري الإسباني' },
-  },
-  {
-    compId: 78,
-    countryKey: 'allemagne',
-    slugs: { fr: 'bundesliga', en: 'bundesliga', ar: 'الدوري-الألماني' } as Record<string, string>,
-    label: { fr: 'Bundesliga', en: 'Bundesliga', ar: 'الدوري الألماني' },
-  },
-  {
-    compId: 135,
-    countryKey: 'italie',
-    slugs: { fr: 'serie-a', en: 'serie-a', ar: 'الدوري-الإيطالي' } as Record<string, string>,
-    label: { fr: 'Serie A', en: 'Serie A', ar: 'الدوري الإيطالي' },
-  },
-  {
-    compId: 61,
-    countryKey: 'france',
-    slugs: { fr: 'ligue-1', en: 'ligue-1', ar: 'الدوري-الفرنسي' } as Record<string, string>,
-    label: { fr: 'Ligue 1', en: 'Ligue 1', ar: 'الدوري الفرنسي' },
-  },
-];
-
 // ── Left rail competition sections ──
 
 const LEFT_RAIL_SECTIONS = [
