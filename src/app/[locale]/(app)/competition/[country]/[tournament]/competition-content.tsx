@@ -144,7 +144,7 @@ async function ComingSoon({ locale, tournament }: { locale: string; tournament: 
 
   return (
     <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
-      <SeoBreadcrumb segments={breadcrumbs} />
+      <SeoBreadcrumb segments={breadcrumbs} compact />
       <div className="mt-8 flex flex-col items-center gap-4 text-center">
         <div className="flex size-16 items-center justify-center rounded-full bg-bg-surface-2">
           <span className="text-2xl">🏆</span>

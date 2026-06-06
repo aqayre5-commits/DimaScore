@@ -131,7 +131,7 @@ export async function renderGenericCupPage(
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${rawLocale}` },
     ...(countryName ? [{ label: countryName }] : []),
-    { label: competitionName },
+    { label: `${competitionName}, ${tBc('sectionsCup')}` },
   ];
 
   // Exclude qualifying rounds from hero match count (e.g. UCL 1st/2nd/3rd Qualifying + Play-offs)
@@ -207,8 +207,8 @@ export async function renderGenericCupPage(
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <SeoBreadcrumb segments={breadcrumbs} />
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
+        <SeoBreadcrumb segments={breadcrumbs} compact />
       </div>
 
       <InnerPageShell

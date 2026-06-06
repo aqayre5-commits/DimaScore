@@ -260,10 +260,10 @@ export async function renderCupPage(
     { label: t('football'), href: `/${rawLocale}` },
     { label: t('international') },
     { label: cupContent?.breadcrumbOrg ?? 'FIFA' },
-    { label: pageTitle },
+    { label: `${pageTitle}, ${t('sectionsCup')}` },
   ];
 
-  const breadcrumb = <SeoBreadcrumb segments={breadcrumbSegments} />;
+  const breadcrumb = <SeoBreadcrumb segments={breadcrumbSegments} compact />;
 
   // About card content
   const aboutContent = getAboutContent(competitionId, locale);
@@ -384,7 +384,7 @@ export async function renderCupPage(
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">{breadcrumb}</div>
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">{breadcrumb}</div>
       <InnerPageShell
         pageHeader={
           <TournamentPageHeader

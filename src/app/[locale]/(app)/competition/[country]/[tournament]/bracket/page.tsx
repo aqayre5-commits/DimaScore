@@ -114,7 +114,7 @@ export default async function BracketPage({ params }: PageProps) {
   return (
     <>
       <div className="mx-auto w-full max-w-7xl px-4 py-6">
-        <SeoBreadcrumb segments={breadcrumbs} />
+        <SeoBreadcrumb segments={breadcrumbs} compact />
         <h1 className="mt-4 text-2xl font-semibold text-text-primary">
           {tournamentName} — {bracketTitle}
         </h1>

@@ -104,6 +104,8 @@
   "breadcrumb": {
     "football": "Football",
     "international": "International",
+    "sectionsLeague": "Scores, Matches, Standings, Stats, Teams",
+    "sectionsCup": "Scores, Matches, Standings & Knockout",
     "morocco": "Morocco"
   },
   "footer": {

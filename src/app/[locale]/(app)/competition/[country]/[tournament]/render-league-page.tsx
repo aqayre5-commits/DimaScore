@@ -172,7 +172,7 @@ export async function renderLeaguePage(
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${rawLocale}` },
     ...(countryName ? [{ label: countryName }] : []),
-    { label: competitionName },
+    { label: `${competitionName}, ${tBc('sectionsLeague')}` },
   ];
 
   // Center tabs — Overview / Matches / Standings / Stats / Teams
@@ -251,8 +251,8 @@ export async function renderLeaguePage(
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <SeoBreadcrumb segments={breadcrumbs} />
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
+        <SeoBreadcrumb segments={breadcrumbs} compact />
       </div>
 
       <InnerPageShell
