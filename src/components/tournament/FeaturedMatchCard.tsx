@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import { KickoffCountdown } from '@/components/shared/KickoffCountdown';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -37,8 +38,16 @@ function formatHeaderDate(date: Date, locale: Locale): string {
 
 export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
   const t = useTranslations('leaguePage');
-  const { homeTeam, awayTeam, kickoffAt, venue, statusCode, homeScore, awayScore } = fixture;
-  const { homeScorePen, awayScorePen } = fixture;
+  const { homeTeam, awayTeam, kickoffAt, venue } = fixture;
+
+  // Overlay the shared live poll so the card flips to a live/final score when the match
+  // starts or ends, instead of staying frozen on the SSR snapshot + countdown.
+  const patch = useLiveFixtures().get(fixture.id);
+  const statusCode = patch?.statusCode ?? fixture.statusCode;
+  const homeScore = patch?.homeScore ?? fixture.homeScore;
+  const awayScore = patch?.awayScore ?? fixture.awayScore;
+  const homeScorePen = patch?.homeScorePen ?? fixture.homeScorePen;
+  const awayScorePen = patch?.awayScorePen ?? fixture.awayScorePen;
 
   const homeCode = resolveTeamCode(homeTeam, locale);
   const awayCode = resolveTeamCode(awayTeam, locale);

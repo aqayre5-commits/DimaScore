@@ -5,6 +5,7 @@ import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { Play } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatKickoff } from '@/lib/utils/date';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { RightRailFixture, GoalEvent } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
@@ -26,15 +27,22 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
   const homeName = getTeamDisplayName(match.homeTeam, locale);
   const awayName = getTeamDisplayName(match.awayTeam, locale);
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
-  const isLive = LIVE_CODES.includes(match.statusCode);
+  // Overlay the shared live poll so the widget flips from "next match" to live (and ticks
+  // the minute) when the fixture kicks off, instead of staying on the SSR snapshot.
+  const patch = useLiveFixtures().get(match.id);
+  const statusCode = patch?.statusCode ?? match.statusCode;
+  const minute = patch?.minute ?? match.minute;
+  const homeScore = patch?.homeScore ?? match.homeScore;
+  const awayScore = patch?.awayScore ?? match.awayScore;
+  const isLive = LIVE_CODES.includes(statusCode);
 
   const preview = previewFromFixtureRow({
     homeTeam: match.homeTeam,
     awayTeam: match.awayTeam,
-    homeScore: match.homeScore,
-    awayScore: match.awayScore,
-    statusCode: match.statusCode,
-    minute: match.minute,
+    homeScore,
+    awayScore,
+    statusCode,
+    minute,
     kickoffAt: match.kickoffAt,
     competition: { name: match.competition.name, slug: match.competition.slug },
   });
@@ -49,7 +57,7 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
         {isLive && (
           <span className="flex items-center gap-1 rounded-full bg-score-live/10 px-2 py-0.5 text-[11px] font-bold text-score-live">
             <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-            {match.statusCode === 'HT' ? 'HT' : `${match.minute ?? ''}'`}
+            {statusCode === 'HT' ? 'HT' : `${minute ?? ''}'`}
           </span>
         )}
       </div>
@@ -103,7 +111,7 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
           <div className="shrink-0 text-center">
             {isLive ? (
               <p className="text-2xl font-bold tabular-nums text-text-primary">
-                {match.homeScore ?? 0} - {match.awayScore ?? 0}
+                {homeScore ?? 0} - {awayScore ?? 0}
               </p>
             ) : (
               <p className="text-lg font-semibold text-text-tertiary">VS</p>
