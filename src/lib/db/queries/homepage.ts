@@ -230,6 +230,7 @@ export async function getFeaturedMatches(
       schema.standings,
       and(
         eq(schema.standings.competitionId, schema.fixtures.competitionId),
+        eq(schema.standings.seasonYear, schema.fixtures.seasonYear),
         eq(schema.standings.teamId, schema.fixtures.homeTeamId),
         sql`${schema.standings.groupLabel} LIKE 'Group%'`,
       ),
