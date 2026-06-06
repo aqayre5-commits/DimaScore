@@ -2,6 +2,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedTeam, NormalizedVenue } from '@/lib/data/types';
 import * as schema from '@/lib/db/schema';
+import { runWrites } from '@/lib/db/client';
 import type { SyncStats } from './types';
 import { slugify } from './slug';
 import { buildCountryLookup, resolveCountryCode } from './country-lookup';
@@ -51,7 +52,7 @@ export async function syncTeams(
   const inserted = 0;
   let updated = 0;
 
-  await db.transaction(async (tx) => {
+  await runWrites(async (tx) => {
     for (const t of teams) {
       // Upsert venue first (side-effect) — skip if venue id is null
       if (t.venue?.id) {

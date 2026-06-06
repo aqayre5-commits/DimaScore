@@ -3,6 +3,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedTopPlayer } from '@/lib/data/types';
 import * as schema from '@/lib/db/schema';
+import { runWrites } from '@/lib/db/client';
 import type { SyncStats } from './types';
 
 function mapTopPlayerToInsert(p: NormalizedTopPlayer, competitionId: number, seasonYear: number) {
@@ -39,7 +40,7 @@ export async function syncTopScorers(
 
   let updated = 0;
 
-  await db.transaction(async (tx) => {
+  await runWrites(async (tx) => {
     for (const p of players) {
       const row = mapTopPlayerToInsert(p, params.leagueId, params.season);
       if (!row) continue;
@@ -77,7 +78,7 @@ export async function syncTopAssists(
 
   let updated = 0;
 
-  await db.transaction(async (tx) => {
+  await runWrites(async (tx) => {
     for (const p of players) {
       const row = mapTopPlayerToInsert(p, params.leagueId, params.season);
       if (!row) continue;

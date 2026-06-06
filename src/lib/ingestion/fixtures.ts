@@ -2,6 +2,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedFixture } from '@/lib/data/types';
 import * as schema from '@/lib/db/schema';
+import { runWrites } from '@/lib/db/client';
 import type { SyncStats } from './types';
 import { parseRoundNumber } from './round';
 
@@ -48,7 +49,7 @@ export async function syncFixtures(
   const inserted = 0;
   let updated = 0;
 
-  await db.transaction(async (tx) => {
+  await runWrites(async (tx) => {
     for (const f of fixtures) {
       // Upsert venue as side-effect (match venue)
       if (f.venue.id) {

@@ -2,6 +2,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedStandingEntry } from '@/lib/data/types';
 import * as schema from '@/lib/db/schema';
+import { runWrites } from '@/lib/db/client';
 import type { SyncStats } from './types';
 
 // ─── Mapper (exported for testing) ───
@@ -44,7 +45,7 @@ export async function syncStandings(
   const inserted = 0;
   let updated = 0;
 
-  await db.transaction(async (tx) => {
+  await runWrites(async (tx) => {
     for (const group of groups) {
       for (const entry of group) {
         const row = mapStandingToInsert(entry, params.leagueId, params.season);

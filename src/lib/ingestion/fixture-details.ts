@@ -8,6 +8,7 @@ import type {
   NormalizedFixturePlayer,
 } from '@/lib/data/types';
 import * as schema from '@/lib/db/schema';
+import { runWrites } from '@/lib/db/client';
 
 // ── Events ──
 
@@ -92,7 +93,7 @@ export async function syncFixtureDetails(
   let statisticsCount = 0;
   let playerStatsCount = 0;
 
-  await db.transaction(async (tx) => {
+  await runWrites(async (tx) => {
     // Events: delete existing + batch insert fresh
     if (events.length > 0) {
       const eventRows = events.map((e) => mapEvent(fixtureId, e));

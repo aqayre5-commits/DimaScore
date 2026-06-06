@@ -2,6 +2,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedCountry, NormalizedLeague } from '@/lib/data/types';
 import * as schema from '@/lib/db/schema';
+import { runWrites } from '@/lib/db/client';
 import type { SyncStats, CompetitionMeta } from './types';
 import { slugify } from './slug';
 
@@ -80,7 +81,7 @@ export async function syncCountries(
   let inserted = 0;
   let updated = 0;
 
-  await db.transaction(async (tx) => {
+  await runWrites(async (tx) => {
     for (const c of countries) {
       if (!c.code) continue; // skip countries without a code
       const row = mapCountryToInsert(c);
@@ -118,7 +119,7 @@ export async function syncCompetitionsWithSeasons(
     leagueData.push({ league: leagues[0], meta });
   }
 
-  await db.transaction(async (tx) => {
+  await runWrites(async (tx) => {
     for (const { league, meta } of leagueData) {
       // Upsert competition
       const compRow = mapCompetitionToInsert(league, meta);
