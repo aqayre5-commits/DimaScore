@@ -72,6 +72,10 @@ export async function buildCountryLookup(
     'east timor': lookup.get('timor-leste'),
     'chinese taipei': lookup.get('chinese-taipei'),
     'faroe islands': lookup.get('faroe-islands'),
+    // Friendlies surfaced team.country values that differ from the /countries names.
+    'kyrgyz-republic': lookup.get('kyrgyzstan'),
+    'cape-verde-islands': lookup.get('cape-verde'),
+    'north-korea': lookup.get('north-korea') ?? lookup.get('korea-dpr') ?? lookup.get('korea dpr'),
   };
 
   for (const [alias, code] of Object.entries(aliases)) {
