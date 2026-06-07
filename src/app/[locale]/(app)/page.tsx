@@ -8,7 +8,7 @@ import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
 import { HomeFeaturedCarousel } from '@/components/homepage/HomeFeaturedCarousel';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
-import { HomeLeftRail } from '@/components/homepage/HomeLeftRail';
+import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
 import { getHomeRailData } from '@/lib/db/queries/home-rail';
 import { HomeTrendingPlayersStreamed } from '@/components/homepage/HomeTrendingPlayersStreamed';
@@ -107,16 +107,6 @@ const LEFT_RAIL_SECTIONS = [
 
 const ALL_LEFT_RAIL_IDS = LEFT_RAIL_SECTIONS.flatMap((s) => s.ids);
 
-const LEFT_RAIL_NAME_OVERRIDES: Record<number, Record<string, string>> = {
-  1: { en: 'World Cup 2026', fr: 'Coupe du Monde 2026', ar: 'كأس العالم 2026' },
-  6: { en: 'AFCON 2027', fr: 'AFCON 2027', ar: 'كأس أمم إفريقيا 2027' },
-  922: { en: 'WAFCON 2026', fr: 'WAFCON 2026', ar: 'كأس أمم إفريقيا للسيدات 2026' },
-};
-
-const LEFT_RAIL_LOGO_OVERRIDES: Record<number, string> = {
-  1: '/logos/world-cup-2026.png',
-};
-
 // ── Cached data ──
 
 async function getCachedHomepageData() {
@@ -160,25 +150,9 @@ export default async function HomePage({ params }: PageProps) {
     }
   }
 
-  // Build left rail sections
-  const compMap = new Map(leftRailComps.map((c) => [c.id, c]));
-  const leftRailSections = LEFT_RAIL_SECTIONS.map((s) => ({
-    label: t(s.labelKey),
-    items: s.ids
-      .map((id) => {
-        const c = compMap.get(id);
-        if (!c) return null;
-        const nameOverride = LEFT_RAIL_NAME_OVERRIDES[id];
-        const logoOverride = LEFT_RAIL_LOGO_OVERRIDES[id];
-        if (!nameOverride && !logoOverride) return c;
-        return {
-          ...c,
-          ...(nameOverride && { name: { ...c.name, ...nameOverride } }),
-          ...(logoOverride && { logoUrl: logoOverride }),
-        };
-      })
-      .filter((c): c is NonNullable<typeof c> => c != null),
-  })).filter((s) => s.items.length > 0);
+  // Left-rail competition logos — LeagueLeftRail builds its own sections + curated names
+  // from the mega-menu (single source of truth, shared with every other page).
+  const competitionLogos = Object.fromEntries(leftRailComps.map((c) => [c.id, c.logoUrl]));
 
   const matchTabLabels = {
     all: t('all'),
@@ -197,7 +171,7 @@ export default async function HomePage({ params }: PageProps) {
         <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-6">
           {/* Left rail — competition nav. Desktop only: the drawer + bottom tab bar cover mobile. */}
           <aside className="hidden xl:col-start-1 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
-            <HomeLeftRail sections={leftRailSections} locale={typedLocale} />
+            <LeagueLeftRail locale={typedLocale} competitionLogos={competitionLogos} />
           </aside>
 
           {/* Center column */}

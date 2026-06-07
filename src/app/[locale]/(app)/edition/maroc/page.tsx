@@ -5,7 +5,7 @@ import { BASE_URL } from '@/lib/constants/site';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
 import { HomeTrendingPlayers } from '@/components/homepage/HomeTrendingPlayers';
-import { HomeLeftRail } from '@/components/homepage/HomeLeftRail';
+import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { HomeNextMatch } from '@/components/homepage/HomeNextMatch';
 import { HomeLionsAbroad } from '@/components/homepage/HomeLionsAbroad';
 import { HomeStandingsMini } from '@/components/homepage/HomeStandingsMini';
@@ -69,12 +69,6 @@ const LEFT_RAIL_SECTIONS = [
 ];
 
 const ALL_LEFT_RAIL_IDS = LEFT_RAIL_SECTIONS.flatMap((s) => s.ids);
-
-const LEFT_RAIL_NAME_OVERRIDES: Record<number, Record<string, string>> = {
-  1: { en: 'World Cup 2026', fr: 'Coupe du Monde 2026', ar: 'كأس العالم 2026' },
-  6: { en: 'AFCON 2027', fr: 'AFCON 2027', ar: 'كأس أمم إفريقيا 2027' },
-  922: { en: 'WAFCON 2026', fr: 'WAFCON 2026', ar: 'كأس أمم إفريقيا للسيدات 2026' },
-};
 
 // ── Metadata ──
 
@@ -172,20 +166,9 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
     rows: standingsResults[i],
   })).filter((l) => l.rows.length > 0);
 
-  // Build left rail sections
-  const compMap = new Map(leftRailComps.map((c) => [c.id, c]));
-  const leftRailSections = LEFT_RAIL_SECTIONS.map((s) => ({
-    label: t(s.labelKey),
-    items: s.ids
-      .map((id) => {
-        const c = compMap.get(id);
-        if (!c) return null;
-        const nameOverride = LEFT_RAIL_NAME_OVERRIDES[id];
-        if (!nameOverride) return c;
-        return { ...c, name: { ...c.name, ...nameOverride } };
-      })
-      .filter((c): c is NonNullable<typeof c> => c != null),
-  })).filter((s) => s.items.length > 0);
+  // Left-rail competition logos — LeagueLeftRail builds its own sections + curated names
+  // from the mega-menu (single source of truth, shared with every other page).
+  const competitionLogos = Object.fromEntries(leftRailComps.map((c) => [c.id, c.logoUrl]));
 
   const matchTabLabels = {
     all: t('all'),
@@ -211,7 +194,7 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
 
   return (
     <InnerPageShell
-      leftRail={<HomeLeftRail sections={leftRailSections} locale={typedLocale} />}
+      leftRail={<LeagueLeftRail locale={typedLocale} competitionLogos={competitionLogos} />}
       center={
         <div className="space-y-4">
           <div className="rounded-xl border border-border-subtle bg-bg-surface p-4">
