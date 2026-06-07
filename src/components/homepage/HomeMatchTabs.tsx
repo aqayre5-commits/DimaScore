@@ -169,6 +169,42 @@ function applyLivePatches(
   return [...byId.values()];
 }
 
+/** Group fixtures by competition (each competition once) so same-competition matches are
+ *  contiguous — the list then renders one divider per competition. Competitions with live
+ *  matches surface first, then upcoming, then results; within a group: live, then upcoming
+ *  (soonest first), then results (newest first). */
+function groupByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
+  const rank = (f: HomeFixture) => {
+    const s = getMatchState(f.statusCode, f.kickoffAt);
+    return s === 'live' ? 0 : s === 'upcoming' ? 1 : 2;
+  };
+  const sortWithin = (a: HomeFixture, b: HomeFixture) => {
+    const ra = rank(a);
+    const rb = rank(b);
+    if (ra !== rb) return ra - rb;
+    return ra === 2
+      ? b.kickoffAt.getTime() - a.kickoffAt.getTime() // results: newest first
+      : a.kickoffAt.getTime() - b.kickoffAt.getTime(); // live/upcoming: soonest first
+  };
+  const groups = new Map<number, HomeFixture[]>();
+  for (const f of fixtures) {
+    const arr = groups.get(f.competition.id) ?? [];
+    arr.push(f);
+    groups.set(f.competition.id, arr);
+  }
+  return [...groups.values()]
+    .map((g) => {
+      g.sort(sortWithin);
+      return {
+        g,
+        bestRank: Math.min(...g.map(rank)),
+        earliest: Math.min(...g.map((f) => f.kickoffAt.getTime())),
+      };
+    })
+    .sort((a, b) => a.bestRank - b.bestRank || a.earliest - b.earliest)
+    .flatMap((x) => x.g);
+}
+
 export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props) {
   type Tab = 'all' | 'live' | 'upcoming' | 'results';
   const [activeTab, setActiveTab] = useState<Tab>('all');
@@ -195,26 +231,26 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
     (f) => isSameDay(f.kickoffAt, selectedDate),
   );
   const dayLive = dayFixtures.filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
-  const dayUpcoming = dayFixtures
-    .filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming')
-    .sort((a, b) => a.kickoffAt.getTime() - b.kickoffAt.getTime());
-  const dayResults = dayFixtures
-    .filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished')
-    .sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
-  const dayAll = [...dayLive, ...dayUpcoming, ...dayResults];
+  const dayUpcoming = dayFixtures.filter(
+    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming',
+  );
+  const dayResults = dayFixtures.filter(
+    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished',
+  );
 
   const tabDefs: { key: Tab; label: string; count: number }[] = [
-    { key: 'all', label: labels.all, count: dayAll.length },
+    { key: 'all', label: labels.all, count: dayFixtures.length },
     { key: 'live', label: labels.live, count: dayLive.length },
     { key: 'upcoming', label: labels.upcoming, count: dayUpcoming.length },
     { key: 'results', label: labels.results, count: dayResults.length },
   ];
 
+  // Each tab grouped by competition — one divider per competition, no recurring headers.
   const matchesByTab: Record<Tab, HomeFixture[]> = {
-    all: dayAll,
-    live: dayLive,
-    upcoming: dayUpcoming,
-    results: dayResults,
+    all: groupByCompetition(dayFixtures),
+    live: groupByCompetition(dayLive),
+    upcoming: groupByCompetition(dayUpcoming),
+    results: groupByCompetition(dayResults),
   };
   const fixtures = matchesByTab[activeTab];
 
