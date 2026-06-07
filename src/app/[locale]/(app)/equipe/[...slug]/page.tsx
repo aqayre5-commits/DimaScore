@@ -24,6 +24,8 @@ import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { TeamMediaSection } from '@/components/team/TeamMediaSection';
 import { WorldCupHistoryCard } from '@/components/team/WorldCupHistoryCard';
 import { getTeamWorldCupResults } from '@/lib/db/queries/team-world-cup';
+import { NationalTeamAboutCard } from '@/components/team/NationalTeamAboutCard';
+import { getNationalTeamContent } from '@/lib/constants/national-team-content';
 import { db } from '@/lib/db/client';
 import { getMatchState } from '@/lib/match-status';
 import {
@@ -180,6 +182,7 @@ export default async function TeamPage({ params }: PageProps) {
     tournamentScorers,
     worldCupResults,
   } = data;
+  const nationalTeamAbout = getNationalTeamContent(team.id, typedLocale);
   const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
 
   // Featured match priority: live > next upcoming > most recent completed
@@ -346,6 +349,11 @@ export default async function TeamPage({ params }: PageProps) {
               <KeyPlayersCard players={keyPlayers} locale={typedLocale} />
               <TournamentScorersCard data={tournamentScorers} locale={typedLocale} />
             </div>
+            {nationalTeamAbout && (
+              <div className="mb-2.5">
+                <NationalTeamAboutCard content={nationalTeamAbout} locale={typedLocale} />
+              </div>
+            )}
             {team.isNational && worldCupResults.length > 0 && (
               <div className="mb-2.5">
                 <WorldCupHistoryCard results={worldCupResults} locale={typedLocale} />
