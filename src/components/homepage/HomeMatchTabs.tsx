@@ -123,13 +123,15 @@ function MatchRow({
         <span className="truncate text-sm text-text-primary">{awayName}</span>
       </div>
 
-      {/* Live badge */}
-      {isLive && (
-        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-score-live/10 px-2 py-0.5 text-[10px] font-bold uppercase text-score-live">
-          <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-          Live
-        </span>
-      )}
+      {/* Live badge — fixed trailing slot so columns align across live/upcoming/finished rows */}
+      <div className="flex w-14 shrink-0 justify-end">
+        {isLive && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-score-live/10 px-2 py-0.5 text-[10px] font-bold uppercase text-score-live">
+            <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
+            Live
+          </span>
+        )}
+      </div>
     </MatchLink>
   );
 }
