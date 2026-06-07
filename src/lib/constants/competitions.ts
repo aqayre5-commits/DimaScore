@@ -344,6 +344,16 @@ export const VERIFIED_COMPETITIONS: CompetitionMeta[] = [
     isMoroccoFocus: false,
     displayPriority: 65,
   },
+  // ── International friendlies (national-team friendlies during international breaks) ──
+  {
+    id: 10,
+    slug: 'friendlies',
+    tier: 6,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 66,
+  },
 ];
 
 /**
