@@ -35,6 +35,7 @@
   },
   "megaMenu": {
     "morocco": "Morocco",
+    "teams": "Teams",
     "tournaments": "Tournaments",
     "topLeagues": "Top Leagues",
     "cupsAndContinental": "Cups & Continental",
@@ -674,6 +675,7 @@
     "losses": "L",
     "noH2H": "No previous meetings",
     "predictionComingSoon": "Available closer to kick-off",
+    "noLiveDetailData": "Detailed data isn't available for this match",
     "mediaComingSoon": "Match highlights coming soon",
     "matchInfo": "Match Info",
     "competition": "Competition",

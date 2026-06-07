@@ -46,3 +46,32 @@ export function resolveCountryKey(slug: string, locale: Locale): string | undefi
   }
   return undefined;
 }
+
+/**
+ * Human display names for countries/confederations — used as section headers in the
+ * competitions rail. (The slugs above are lowercase URL forms, not display names.)
+ */
+export const COUNTRY_LABELS: Record<string, Record<Locale, string>> = {
+  fifa: { fr: 'International', en: 'International', ar: 'دولي' },
+  uefa: { fr: 'Europe', en: 'Europe', ar: 'أوروبا' },
+  caf: { fr: 'Afrique', en: 'Africa', ar: 'إفريقيا' },
+  maroc: { fr: 'Maroc', en: 'Morocco', ar: 'المغرب' },
+  angleterre: { fr: 'Angleterre', en: 'England', ar: 'إنجلترا' },
+  espagne: { fr: 'Espagne', en: 'Spain', ar: 'إسبانيا' },
+  italie: { fr: 'Italie', en: 'Italy', ar: 'إيطاليا' },
+  allemagne: { fr: 'Allemagne', en: 'Germany', ar: 'ألمانيا' },
+  france: { fr: 'France', en: 'France', ar: 'فرنسا' },
+  algerie: { fr: 'Algérie', en: 'Algeria', ar: 'الجزائر' },
+  tunisie: { fr: 'Tunisie', en: 'Tunisia', ar: 'تونس' },
+  egypte: { fr: 'Égypte', en: 'Egypt', ar: 'مصر' },
+  emirats: { fr: 'Émirats arabes unis', en: 'United Arab Emirates', ar: 'الإمارات' },
+  'arabie-saoudite': { fr: 'Arabie saoudite', en: 'Saudi Arabia', ar: 'السعودية' },
+  turquie: { fr: 'Turquie', en: 'Turkey', ar: 'تركيا' },
+  bresil: { fr: 'Brésil', en: 'Brazil', ar: 'البرازيل' },
+  argentine: { fr: 'Argentine', en: 'Argentina', ar: 'الأرجنتين' },
+};
+
+/** Resolve a country/confederation display name for a given locale. */
+export function getCountryLabel(key: string, locale: Locale): string {
+  return COUNTRY_LABELS[key]?.[locale] ?? key;
+}

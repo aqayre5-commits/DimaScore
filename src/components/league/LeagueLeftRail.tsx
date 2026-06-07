@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 import {
   ALL_ENTRIES,
-  MEGA_MENU_SECTIONS,
   buildCompetitionHref,
   type MegaMenuEntry,
 } from '@/lib/constants/competitions-mega-menu';
+import { getCountryLabel } from '@/lib/constants/country-slugs';
+import { codeToFlag } from '@/lib/flags';
 import type { Locale } from '@/lib/i18n/config';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
@@ -20,7 +21,7 @@ interface LeagueLeftRailProps {
   competitionLogos?: Record<number, string | null>;
 }
 
-/** Primary sections shown by default (matches homepage left rail). */
+/** Curated primary sections shown by default (competition ids). */
 const PRIMARY_SECTION_IDS: { labelKey: string; ids: number[] }[] = [
   { labelKey: 'morocco', ids: [200, 201, 822] },
   { labelKey: 'tournaments', ids: [1, 922, 6] },
@@ -28,15 +29,50 @@ const PRIMARY_SECTION_IDS: { labelKey: string; ids: number[] }[] = [
   { labelKey: 'cupsAndContinental', ids: [2, 3, 848] },
 ];
 
-const PRIMARY_IDS = new Set(PRIMARY_SECTION_IDS.flatMap((s) => s.ids));
+/** Featured national-team quick links. */
+const FEATURED_TEAMS: { slug: string; key: string; code: string }[] = [
+  { slug: 'morocco-31', key: 'maroc', code: 'MA' },
+  { slug: 'france-2', key: 'france', code: 'FR' },
+  { slug: 'spain-9', key: 'espagne', code: 'ES' },
+  { slug: 'england-10', key: 'angleterre', code: 'GB-ENG' },
+  { slug: 'brazil-6', key: 'bresil', code: 'BR' },
+  { slug: 'argentina-26', key: 'argentine', code: 'AR' },
+];
 
-/** Remaining mega menu sections shown when "View all" is expanded. */
-const EXTRA_SECTIONS = MEGA_MENU_SECTIONS.filter((s) =>
-  s.entries.some((e) => !PRIMARY_IDS.has(e.competitionId)),
-);
+/** Country display order for the expanded "View all" catalog (unknown keys appended). */
+const COUNTRY_ORDER = [
+  'maroc',
+  'fifa',
+  'uefa',
+  'caf',
+  'angleterre',
+  'espagne',
+  'italie',
+  'allemagne',
+  'france',
+  'arabie-saoudite',
+  'egypte',
+  'algerie',
+  'tunisie',
+  'emirats',
+  'turquie',
+];
 
 function findEntry(id: number): MegaMenuEntry | undefined {
   return ALL_ENTRIES.find((e) => e.competitionId === id);
+}
+
+/** Every competition grouped by country, ordered, for the expanded catalog. */
+function countryGroups(): { key: string; entries: MegaMenuEntry[] }[] {
+  const byKey = new Map<string, MegaMenuEntry[]>();
+  for (const e of ALL_ENTRIES) {
+    const arr = byKey.get(e.countryKey) ?? [];
+    arr.push(e);
+    byKey.set(e.countryKey, arr);
+  }
+  const ordered = COUNTRY_ORDER.filter((k) => byKey.has(k));
+  const rest = [...byKey.keys()].filter((k) => !COUNTRY_ORDER.includes(k)).sort();
+  return [...ordered, ...rest].map((key) => ({ key, entries: byKey.get(key)! }));
 }
 
 export function LeagueLeftRail({
@@ -48,61 +84,64 @@ export function LeagueLeftRail({
   const tC = useTranslations('competition');
   const [expanded, setExpanded] = useState(false);
 
+  const compLogo = (id: number) =>
+    id === 1 ? '/competitions/wc-2026-trophy.png' : (competitionLogos?.[id] ?? null);
+
+  const renderComps = (ids: number[]) =>
+    ids.map((id) => {
+      const entry = findEntry(id);
+      return entry ? (
+        <CompLink
+          key={`${id}-${entry.labelKey}`}
+          entry={entry}
+          locale={locale}
+          isActive={id === activeCompetitionId}
+          logoUrl={compLogo(id)}
+          label={tC(entry.labelKey)}
+        />
+      ) : null;
+    });
+
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       <nav>
-        {PRIMARY_SECTION_IDS.map((section) => (
-          <div key={section.labelKey}>
-            <div className="px-4 py-2">
-              <h2 className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
-                {t(section.labelKey)}
-              </h2>
-            </div>
-            {section.ids.map((id) => {
-              const entry = findEntry(id);
-              if (!entry) return null;
-              const logoUrl =
-                id === 1 ? '/competitions/wc-2026-trophy.png' : (competitionLogos?.[id] ?? null);
-              return (
-                <CompLink
-                  key={`${id}-${entry.labelKey}`}
-                  entry={entry}
-                  locale={locale}
-                  isActive={id === activeCompetitionId}
-                  logoUrl={logoUrl}
-                  label={tC(entry.labelKey)}
-                />
-              );
-            })}
-          </div>
+        {/* Morocco */}
+        <Section title={t('morocco')}>{renderComps(PRIMARY_SECTION_IDS[0].ids)}</Section>
+
+        {/* Teams (national teams) */}
+        <Section title={t('teams')}>
+          {FEATURED_TEAMS.map((team) => (
+            <TeamLink
+              key={team.slug}
+              href={`/${locale}/equipe/${team.slug}`}
+              flag={codeToFlag(team.code)}
+              label={getCountryLabel(team.key, locale)}
+            />
+          ))}
+        </Section>
+
+        {/* Remaining curated sections */}
+        {PRIMARY_SECTION_IDS.slice(1).map((section) => (
+          <Section key={section.labelKey} title={t(section.labelKey)}>
+            {renderComps(section.ids)}
+          </Section>
         ))}
 
-        {/* Expanded extra sections */}
+        {/* Expanded: the full catalog grouped by country */}
         {expanded &&
-          EXTRA_SECTIONS.map((section) => (
-            <div key={section.titleKey}>
-              <div className="px-4 py-2">
-                <h2 className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
-                  {t(section.titleKey)}
-                </h2>
-              </div>
-              {section.entries.map((entry) => {
-                const logoUrl =
-                  entry.competitionId === 1
-                    ? '/competitions/wc-2026-trophy.png'
-                    : (competitionLogos?.[entry.competitionId] ?? null);
-                return (
-                  <CompLink
-                    key={`${entry.competitionId}-${entry.labelKey}`}
-                    entry={entry}
-                    locale={locale}
-                    isActive={entry.competitionId === activeCompetitionId}
-                    logoUrl={logoUrl}
-                    label={tC(entry.labelKey)}
-                  />
-                );
-              })}
-            </div>
+          countryGroups().map((group) => (
+            <Section key={group.key} title={getCountryLabel(group.key, locale)}>
+              {group.entries.map((entry) => (
+                <CompLink
+                  key={`${entry.competitionId}-${entry.labelKey}`}
+                  entry={entry}
+                  locale={locale}
+                  isActive={entry.competitionId === activeCompetitionId}
+                  logoUrl={compLogo(entry.competitionId)}
+                  label={tC(entry.labelKey)}
+                />
+              ))}
+            </Section>
           ))}
       </nav>
 
@@ -121,6 +160,39 @@ export function LeagueLeftRail({
         </button>
       </div>
     </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <div className="px-4 py-2">
+        <h2 className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+          {title}
+        </h2>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function TeamLink({ href, flag, label }: { href: string; flag: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 border-l-2 border-transparent px-4 py-2 transition-colors hover:bg-accent-azure/5 hover:text-accent-azure"
+    >
+      {flag ? (
+        <span className="flex size-5 shrink-0 items-center justify-center text-base leading-none">
+          {flag}
+        </span>
+      ) : (
+        <div className="flex size-5 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">
+          {label.slice(0, 2)}
+        </div>
+      )}
+      <p className="min-w-0 flex-1 truncate text-sm text-text-primary">{label}</p>
+    </Link>
   );
 }
 

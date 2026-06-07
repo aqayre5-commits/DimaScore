@@ -78,6 +78,7 @@
     "tunisiaLigue1": "الدوري التونسي",
     "uaeProLeague": "دوري المحترفين الإماراتي",
     "superLig": "الدوري التركي",
+    "teams": "المنتخبات",
     "tournaments": "البطولات",
     "topLeagues": "أفضل الدوريات",
     "cupsAndContinental": "الكؤوس والقارية"
@@ -674,6 +675,7 @@
     "losses": "خ",
     "noH2H": "لا مواجهات سابقة",
     "predictionComingSoon": "متاح قبل الانطلاق",
+    "noLiveDetailData": "التفاصيل غير متوفّرة لهذه المباراة",
     "mediaComingSoon": "ملخص المباراة قريبًا",
     "matchInfo": "معلومات المباراة",
     "competition": "المسابقة",

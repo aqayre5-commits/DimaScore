@@ -78,6 +78,7 @@
     "tunisiaLigue1": "Ligue 1 Tunisie",
     "uaeProLeague": "UAE Pro League",
     "superLig": "Süper Lig",
+    "teams": "Équipes",
     "tournaments": "Tournois",
     "topLeagues": "Top championnats",
     "cupsAndContinental": "Coupes & Continental"
@@ -674,6 +675,7 @@
     "losses": "D",
     "noH2H": "Aucune confrontation précédente",
     "predictionComingSoon": "Disponible à l'approche du coup d'envoi",
+    "noLiveDetailData": "Données détaillées indisponibles pour ce match",
     "mediaComingSoon": "Résumé du match bientôt disponible",
     "matchInfo": "Infos match",
     "competition": "Compétition",
