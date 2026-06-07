@@ -48,11 +48,13 @@ async function main(): Promise<void> {
     .where(eq(schema.seasons.competitionId, FRIENDLIES.id))
     .orderBy(desc(schema.seasons.year));
 
-  const season = rows.find((r) => r.isCurrent)?.year ?? rows[0]?.year;
-  if (season == null) {
-    console.warn('[friendlies] no seasons returned by the API — nothing to ingest.');
-    process.exit(0);
-  }
+  // Season to ingest: an explicit CLI arg, else the API's current, else latest, else this year.
+  const argSeason = process.argv[2] ? Number(process.argv[2]) : undefined;
+  const season =
+    argSeason ??
+    rows.find((r) => r.isCurrent)?.year ??
+    rows[0]?.year ??
+    new Date().getUTCFullYear();
   console.log(`[friendlies] ingesting season ${season}…`);
 
   // 3. Teams first (fixtures reference team ids — FK), then fixtures.
