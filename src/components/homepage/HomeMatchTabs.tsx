@@ -305,7 +305,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
                   const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
                   elements.push(
                     <div
-                      key={`sep-${groupKey}`}
+                      key={`sep-${matchIdx}-${groupKey}`}
                       className="flex items-center gap-2 bg-bg-surface-2 px-4 py-1.5"
                     >
                       {f.competition.logoUrl ? (
