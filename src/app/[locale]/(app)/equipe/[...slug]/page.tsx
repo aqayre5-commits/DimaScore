@@ -22,6 +22,8 @@ import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 
 import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { TeamMediaSection } from '@/components/team/TeamMediaSection';
+import { WorldCupHistoryCard } from '@/components/team/WorldCupHistoryCard';
+import { getTeamWorldCupResults } from '@/lib/db/queries/team-world-cup';
 import { db } from '@/lib/db/client';
 import { getMatchState } from '@/lib/match-status';
 import {
@@ -76,6 +78,7 @@ async function getCachedTeamData(teamSlug: string) {
     primaryComp,
     keyPlayers,
     tournamentScorers,
+    worldCupResults,
   ] = await Promise.all([
     getTeamFixturesWithCompetition(db, team.id, 200),
     getTeamSquad(db, team.id),
@@ -87,6 +90,7 @@ async function getCachedTeamData(teamSlug: string) {
     getTeamPrimaryCompetition(db, team.id),
     getTeamKeyPlayers(db, team.id),
     getTeamTournamentScorers(db, team.id),
+    team.isNational ? getTeamWorldCupResults(db, team.id) : Promise.resolve([]),
   ]);
 
   return {
@@ -101,6 +105,7 @@ async function getCachedTeamData(teamSlug: string) {
     primaryComp,
     keyPlayers,
     tournamentScorers,
+    worldCupResults,
   };
 }
 
@@ -173,6 +178,7 @@ export default async function TeamPage({ params }: PageProps) {
     primaryComp,
     keyPlayers,
     tournamentScorers,
+    worldCupResults,
   } = data;
   const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
 
@@ -340,6 +346,11 @@ export default async function TeamPage({ params }: PageProps) {
               <KeyPlayersCard players={keyPlayers} locale={typedLocale} />
               <TournamentScorersCard data={tournamentScorers} locale={typedLocale} />
             </div>
+            {team.isNational && worldCupResults.length > 0 && (
+              <div className="mb-2.5">
+                <WorldCupHistoryCard results={worldCupResults} locale={typedLocale} />
+              </div>
+            )}
             <TeamMediaSection teamId={team.id} locale={typedLocale} />
           </>
         }
