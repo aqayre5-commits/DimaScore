@@ -58,6 +58,10 @@ function MatchRow({
     competition: { name: fixture.competition.name, slug: fixture.competition.slug },
   });
 
+  const hasScore = fixture.homeScore != null && fixture.awayScore != null;
+  const homeWon = isFinished && hasScore && (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0);
+  const awayWon = isFinished && hasScore && (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0);
+
   return (
     <MatchLink
       matchId={String(fixture.id)}
@@ -65,73 +69,84 @@ function MatchRow({
       preview={preview}
       prefetchIntent={enablePrefetch}
       ariaLabel={`${homeName} vs ${awayName}`}
-      className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-bg-surface-2"
+      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-bg-surface-2"
     >
-      {/* Time / Minute */}
-      <div className="w-10 shrink-0 text-center">
+      {/* Time / status */}
+      <div className="w-12 shrink-0 text-center">
         {isLive ? (
-          <span className="text-xs font-bold tabular-nums text-score-live">
+          <span className="text-sm font-bold tabular-nums text-score-live">
             {fixture.statusCode === 'HT' ? 'HT' : `${fixture.minute ?? ''}'`}
           </span>
         ) : isFinished ? (
-          <span className="text-[11px] font-medium text-text-tertiary">FT</span>
+          <span className="text-xs font-medium text-text-tertiary">FT</span>
         ) : (
-          <span className="text-xs tabular-nums text-text-secondary">
+          <span className="text-sm tabular-nums text-text-secondary">
             {formatMatchTime(fixture.kickoffAt, locale as Locale)}
           </span>
         )}
       </div>
 
-      {/* Home team */}
-      <div className="flex min-w-0 flex-1 items-center gap-1.5 justify-end">
-        <span className="truncate text-sm text-text-primary">{homeName}</span>
-        {fixture.homeTeam?.logoUrl ? (
-          <TeamLogo
-            src={fixture.homeTeam.logoUrl}
-            size={16}
-            className="size-4 shrink-0 object-contain"
-          />
-        ) : (
-          <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-            {homeName.slice(0, 2)}
+      {/* Teams — stacked on two lines so full names fit (no truncation) */}
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex items-center gap-2.5">
+          {fixture.homeTeam?.logoUrl ? (
+            <TeamLogo
+              src={fixture.homeTeam.logoUrl}
+              size={24}
+              className="size-6 shrink-0 object-contain"
+            />
+          ) : (
+            <span className="flex size-6 shrink-0 items-center justify-center rounded bg-bg-surface-2 text-[9px] font-bold text-text-tertiary">
+              {homeName.slice(0, 2)}
+            </span>
+          )}
+          <span
+            className={`truncate text-base ${awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
+          >
+            {homeName}
           </span>
-        )}
+        </div>
+        <div className="flex items-center gap-2.5">
+          {fixture.awayTeam?.logoUrl ? (
+            <TeamLogo
+              src={fixture.awayTeam.logoUrl}
+              size={24}
+              className="size-6 shrink-0 object-contain"
+            />
+          ) : (
+            <span className="flex size-6 shrink-0 items-center justify-center rounded bg-bg-surface-2 text-[9px] font-bold text-text-tertiary">
+              {awayName.slice(0, 2)}
+            </span>
+          )}
+          <span
+            className={`truncate text-base ${homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
+          >
+            {awayName}
+          </span>
+        </div>
       </div>
 
-      {/* Score */}
-      <div className="w-14 shrink-0 text-center tabular-nums">
-        {fixture.homeScore != null && fixture.awayScore != null ? (
-          <span className={`text-sm font-bold ${isLive ? 'text-score-live' : 'text-text-primary'}`}>
-            {fixture.homeScore} - {fixture.awayScore}
-          </span>
+      {/* Right — stacked scores (red when live, loser dimmed) or VS for upcoming */}
+      <div className="w-8 shrink-0 text-center text-base font-bold tabular-nums">
+        {hasScore ? (
+          <div className="space-y-2">
+            <div
+              className={
+                isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'
+              }
+            >
+              {fixture.homeScore}
+            </div>
+            <div
+              className={
+                isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'
+              }
+            >
+              {fixture.awayScore}
+            </div>
+          </div>
         ) : (
-          <span className="text-xs text-text-tertiary">vs</span>
-        )}
-      </div>
-
-      {/* Away team */}
-      <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        {fixture.awayTeam?.logoUrl ? (
-          <TeamLogo
-            src={fixture.awayTeam.logoUrl}
-            size={16}
-            className="size-4 shrink-0 object-contain"
-          />
-        ) : (
-          <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-            {awayName.slice(0, 2)}
-          </span>
-        )}
-        <span className="truncate text-sm text-text-primary">{awayName}</span>
-      </div>
-
-      {/* Live badge — fixed trailing slot so columns align across live/upcoming/finished rows */}
-      <div className="flex w-14 shrink-0 justify-end">
-        {isLive && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-score-live/10 px-2 py-0.5 text-[10px] font-bold uppercase text-score-live">
-            <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-            Live
-          </span>
+          <span className="text-xs font-semibold text-text-tertiary">VS</span>
         )}
       </div>
     </MatchLink>
