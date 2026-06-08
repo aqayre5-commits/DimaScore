@@ -262,137 +262,139 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const displayed = expanded ? fixtures : fixtures.slice(0, displayLimit);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-      {/* Tab bar */}
-      <div className="flex items-center justify-between px-4">
-        <div className="flex">
-          {tabDefs.map((td) => (
+    <div className="space-y-2.5">
+      {/* Tabs + day-picker — their own card; stacks on mobile so each gets a full row */}
+      <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+        <div className="flex flex-col px-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex">
+            {tabDefs.map((td) => (
+              <button
+                key={td.key}
+                onClick={() => {
+                  setActiveTab(td.key);
+                  setDateOffset(0);
+                  setExpanded(false);
+                }}
+                className={`relative px-3 py-3 text-sm font-medium transition-colors ${
+                  activeTab === td.key
+                    ? 'text-accent-azure'
+                    : 'text-text-tertiary hover:text-text-secondary'
+                }`}
+              >
+                {td.label}
+                {mounted && td.count > 0 ? ` (${td.count})` : ''}
+                {activeTab === td.key && (
+                  <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent-azure" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-1 self-end pb-2 sm:self-auto sm:pb-0">
             <button
-              key={td.key}
               onClick={() => {
-                setActiveTab(td.key);
-                setDateOffset(0);
+                setDateOffset((d) => d - 1);
                 setExpanded(false);
               }}
-              className={`relative px-3 py-3 text-sm font-medium transition-colors ${
-                activeTab === td.key
-                  ? 'text-accent-azure'
-                  : 'text-text-tertiary hover:text-text-secondary'
-              }`}
+              className="flex size-7 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+              aria-label="Previous day"
             >
-              {td.label}
-              {mounted && td.count > 0 ? ` (${td.count})` : ''}
-              {activeTab === td.key && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent-azure" />
-              )}
+              <ChevronLeft className="size-4" />
             </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => {
-              setDateOffset((d) => d - 1);
-              setExpanded(false);
-            }}
-            className="flex size-7 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-            aria-label="Previous day"
-          >
-            <ChevronLeft className="size-4" />
-          </button>
-          <span
-            className="min-w-[90px] text-center text-xs font-medium text-text-primary"
-            suppressHydrationWarning
-          >
-            {dateLabel}
-          </span>
-          <button
-            onClick={() => {
-              setDateOffset((d) => d + 1);
-              setExpanded(false);
-            }}
-            className="flex size-7 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-            aria-label="Next day"
-          >
-            <ChevronRight className="size-4" />
-          </button>
+            <span
+              className="min-w-[90px] whitespace-nowrap text-center text-xs font-medium text-text-primary"
+              suppressHydrationWarning
+            >
+              {dateLabel}
+            </span>
+            <button
+              onClick={() => {
+                setDateOffset((d) => d + 1);
+                setExpanded(false);
+              }}
+              className="flex size-7 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+              aria-label="Next day"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-border-subtle" />
-
-      {/* Match rows grouped by competition + date — gated on mounted to avoid
-          server-vs-client day-boundary divergence in the filtered fixture set. */}
-      <div>
-        {mounted ? (
-          displayed.length > 0 ? (
-            (() => {
-              const elements: React.ReactNode[] = [];
-              let lastGroupKey = '';
-              let matchIdx = 0;
-              for (const f of displayed) {
-                const dateStr = f.kickoffAt.toLocaleDateString(locale, {
-                  weekday: 'short',
-                  day: 'numeric',
-                  month: 'short',
-                });
-                const groupKey = `${f.competition.id}-${f.kickoffAt.toDateString()}`;
-                if (groupKey !== lastGroupKey) {
-                  lastGroupKey = groupKey;
-                  const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
-                  elements.push(
-                    <div
-                      key={`sep-${matchIdx}-${groupKey}`}
-                      className="flex items-center gap-2 bg-bg-surface-2 px-4 py-1.5"
-                    >
-                      {f.competition.logoUrl ? (
-                        <CompetitionLogo
-                          src={f.competition.logoUrl}
-                          size={16}
-                          className="size-4 shrink-0 object-contain"
-                        />
-                      ) : (
-                        <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-3 text-[7px] font-bold text-text-tertiary">
-                          {compName.slice(0, 2)}
+      {/* Match list — separate card */}
+      <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+        {/* Grouped by competition + date — gated on mounted to avoid server-vs-client
+            day-boundary divergence in the filtered fixture set. */}
+        <div>
+          {mounted ? (
+            displayed.length > 0 ? (
+              (() => {
+                const elements: React.ReactNode[] = [];
+                let lastGroupKey = '';
+                let matchIdx = 0;
+                for (const f of displayed) {
+                  const dateStr = f.kickoffAt.toLocaleDateString(locale, {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                  });
+                  const groupKey = `${f.competition.id}-${f.kickoffAt.toDateString()}`;
+                  if (groupKey !== lastGroupKey) {
+                    lastGroupKey = groupKey;
+                    const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
+                    elements.push(
+                      <div
+                        key={`sep-${matchIdx}-${groupKey}`}
+                        className="flex items-center gap-2 bg-bg-surface-2 px-4 py-1.5"
+                      >
+                        {f.competition.logoUrl ? (
+                          <CompetitionLogo
+                            src={f.competition.logoUrl}
+                            size={16}
+                            className="size-4 shrink-0 object-contain"
+                          />
+                        ) : (
+                          <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-3 text-[7px] font-bold text-text-tertiary">
+                            {compName.slice(0, 2)}
+                          </span>
+                        )}
+                        <span className="text-[11px] font-semibold text-text-secondary">
+                          {compName}
                         </span>
-                      )}
-                      <span className="text-[11px] font-semibold text-text-secondary">
-                        {compName}
-                      </span>
-                      <span className="text-[11px] text-text-tertiary">&middot; {dateStr}</span>
+                        <span className="text-[11px] text-text-tertiary">&middot; {dateStr}</span>
+                      </div>,
+                    );
+                  }
+                  elements.push(
+                    <div key={f.id} className="border-b border-border-subtle last:border-b-0">
+                      <MatchRow fixture={f} locale={locale} enablePrefetch={matchIdx < 3} />
                     </div>,
                   );
+                  matchIdx++;
                 }
-                elements.push(
-                  <div key={f.id} className="border-b border-border-subtle last:border-b-0">
-                    <MatchRow fixture={f} locale={locale} enablePrefetch={matchIdx < 3} />
-                  </div>,
-                );
-                matchIdx++;
-              }
-              return elements;
-            })()
-          ) : (
-            <div className="px-4 py-8 text-center text-sm text-text-tertiary">
-              {labels.noMatches}
-            </div>
-          )
-        ) : null}
-      </div>
-
-      {/* Show more / Show less — also gated, since hasMore depends on the
-          mount-time filter result. */}
-      {mounted && hasMore && (
-        <div className="border-t border-border-subtle px-4 py-2.5 text-center">
-          <button
-            onClick={() => setExpanded((v) => !v)}
-            className="text-sm font-medium text-accent-azure transition-colors hover:text-accent-azure/80"
-          >
-            {expanded ? labels.showLess : labels.viewFullSchedule} {expanded ? '↑' : '→'}
-          </button>
+                return elements;
+              })()
+            ) : (
+              <div className="px-4 py-8 text-center text-sm text-text-tertiary">
+                {labels.noMatches}
+              </div>
+            )
+          ) : null}
         </div>
-      )}
+
+        {/* Show more / Show less — also gated, since hasMore depends on the
+          mount-time filter result. */}
+        {mounted && hasMore && (
+          <div className="border-t border-border-subtle px-4 py-2.5 text-center">
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="text-sm font-medium text-accent-azure transition-colors hover:text-accent-azure/80"
+            >
+              {expanded ? labels.showLess : labels.viewFullSchedule} {expanded ? '↑' : '→'}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
