@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronDown } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { isRtl, type Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -17,26 +17,26 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import {
-  MEGA_MENU_SECTIONS,
-  getTopNavEntries,
-  buildCompetitionHref,
-} from '@/lib/constants/competitions-mega-menu';
+import { ALL_ENTRIES } from '@/lib/constants/competitions-mega-menu';
+import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { LangSwitcher } from './LangSwitcher';
 import { ThemeToggle } from './ThemeToggle';
-import { Menu } from 'lucide-react';
+
+// Competition logos come from a fixed CDN path, so derive them by id — no server fetch needed.
+const COMPETITION_LOGOS: Record<number, string> = Object.fromEntries(
+  ALL_ENTRIES.map((e) => [
+    e.competitionId,
+    `https://media.api-sports.io/football/leagues/${e.competitionId}.png`,
+  ]),
+);
 
 export function MobileDrawer() {
   const t = useTranslations('topbar');
   const tApp = useTranslations('app');
-  const tMega = useTranslations('megaMenu');
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const side = isRtl(locale) ? 'right' : 'left';
   const [open, setOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
-
-  const topNavEntries = getTopNavEntries();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -45,14 +45,13 @@ export function MobileDrawer() {
       >
         <Menu className="size-5" />
       </SheetTrigger>
-      <SheetContent side={side}>
+      <SheetContent side={side} className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="text-text-primary">{tApp('name')}</SheetTitle>
           <SheetDescription>{tApp('tagline')}</SheetDescription>
         </SheetHeader>
 
-        {/* Nav links */}
-        <nav className="flex flex-col gap-1 px-4">
+        <div className="space-y-2 px-4">
           {/* Home */}
           <Link
             href={`/${locale}`}
@@ -67,49 +66,20 @@ export function MobileDrawer() {
             {t('home')}
           </Link>
 
-          {/* 8 direct competition links */}
-          {topNavEntries.map((entry) => (
-            <Link
-              key={`${entry.competitionId}-${entry.labelKey}`}
-              href={buildCompetitionHref(entry, locale)}
-              onClick={() => setOpen(false)}
-              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-            >
-              {tMega(entry.labelKey)}
-            </Link>
-          ))}
-
-          {/* More expandable — remaining competitions */}
-          <button
-            onClick={() => setMoreOpen((v) => !v)}
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
+          {/* The full competitions rail. Tapping any competition/team link closes the drawer —
+              the click bubbles from the rail's <a> elements; the "View all" toggle is a <button>,
+              so expanding it leaves the drawer open. */}
+          <div
+            onClick={(e) => {
+              if ((e.target as HTMLElement).closest('a')) setOpen(false);
+            }}
           >
-            {t('more')}
-            <ChevronDown className={cn('size-4 transition-transform', moreOpen && 'rotate-180')} />
-          </button>
-          {moreOpen && (
-            <div className="flex flex-col gap-0.5 ps-4">
-              {MEGA_MENU_SECTIONS.flatMap((section) =>
-                section.entries
-                  .filter((e) => e.isCurrentlyVisible)
-                  .map((entry) => (
-                    <Link
-                      key={`${entry.competitionId}-${entry.labelKey}`}
-                      href={buildCompetitionHref(entry, locale)}
-                      onClick={() => setOpen(false)}
-                      className="block rounded-lg px-3 py-2 text-sm text-text-secondary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-                    >
-                      {tMega(entry.labelKey)}
-                    </Link>
-                  )),
-              )}
-            </div>
-          )}
-        </nav>
+            <LeagueLeftRail locale={locale} competitionLogos={COMPETITION_LOGOS} />
+          </div>
+        </div>
 
         <Separator className="mx-4" />
 
-        {/* Bottom actions */}
         <div className="flex items-center gap-2 px-4">
           <LangSwitcher />
           <ThemeToggle />
