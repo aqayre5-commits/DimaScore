@@ -52,6 +52,20 @@ export interface TrendingPlayer {
 const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
 const FINISHED_CODES = ['FT', 'AET', 'PEN', 'WO', 'AWD'];
 
+const FRIENDLIES_ID = 10;
+const YOUTH_NAME_RE = /\bU-?\d{2}\b/;
+const isYouthTeam = (team: TeamSnapshot | null): boolean =>
+  !!team && Object.values(team.name).some((n) => YOUTH_NAME_RE.test(n));
+
+/** Hide broken/noise rows from the homepage match list: fixtures with an unresolved team
+ *  (which render as "TBD"), and youth (U18–U23) entries in the Friendlies feed. */
+function isDisplayableFixture(f: HomeFixture): boolean {
+  if (!f.homeTeam || !f.awayTeam) return false;
+  if (f.competition.id === FRIENDLIES_ID && (isYouthTeam(f.homeTeam) || isYouthTeam(f.awayTeam)))
+    return false;
+  return true;
+}
+
 const ROUND_NORMALIZE: Record<string, string> = {
   '16th Finals': 'Round of 32',
   '8th Finals': 'Round of 16',
@@ -185,6 +199,7 @@ export async function getHomeMatchesByCategory(
 
   for (const r of rows) {
     const f = mapFixtureRow(r, teamsMap);
+    if (!isDisplayableFixture(f)) continue;
     if (LIVE_CODES.includes(r.statusCode)) live.push(f);
     else if (r.statusCode === 'NS') upcoming.push(f);
     else results.push(f);
