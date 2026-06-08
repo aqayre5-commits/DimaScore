@@ -84,17 +84,17 @@
     "cupsAndContinental": "الكؤوس والقارية"
   },
   "topNav": {
-    "botolaPro": "Botola",
-    "worldCup2026": "WC26",
-    "afcon": "AFCON",
-    "championsLeague": "UCL",
-    "premierLeague": "EPL",
+    "botolaPro": "البطولة",
+    "worldCup2026": "كأس العالم",
+    "afcon": "أمم إفريقيا",
+    "championsLeague": "دوري الأبطال",
+    "premierLeague": "الدوري الإنجليزي",
     "laLiga": "LaLiga",
     "ligue1": "Ligue 1",
     "bundesliga": "Bundesliga",
     "serieA": "Serie A",
-    "wafcon2026": "WAFCON",
-    "cafChampionsLeague": "CAF CL"
+    "wafcon2026": "أمم إفريقيا سيدات",
+    "cafChampionsLeague": "دوري أبطال إفريقيا"
   },
   "mobileTabBar": {
     "matches": "المباريات",
