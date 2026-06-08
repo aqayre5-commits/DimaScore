@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
-import { ChevronLeft, ChevronRight, ChevronDown, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
@@ -336,7 +336,6 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
             <span className="whitespace-nowrap" suppressHydrationWarning>
               {dateLabel}
             </span>
-            <ChevronDown className="size-4 shrink-0 text-text-tertiary" />
           </button>
           <button
             onClick={() => {
