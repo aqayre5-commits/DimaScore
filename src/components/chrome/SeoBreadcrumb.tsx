@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { BASE_URL } from '@/lib/constants/site';
 
 export interface BreadcrumbSegment {
   label: string;
@@ -21,14 +22,21 @@ interface SeoBreadcrumbProps {
  * Last segment is non-clickable (current page). Server component.
  */
 export function SeoBreadcrumb({ segments, compact = false }: SeoBreadcrumbProps) {
+  // BreadcrumbList rules: every ListItem except the last requires an absolute `item` URL. The
+  // visible trail can include an unlinkable node (e.g. a country with no landing page) — drop
+  // such non-last hrefless nodes from the JSON-LD and renumber so it stays valid, and emit
+  // `item` as an absolute URL (relative hrefs are flagged "Invalid URL in field 'id'").
+  const schemaSegments = segments.filter((seg, i) => seg.href || i === segments.length - 1);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: segments.map((seg, i) => ({
+    itemListElement: schemaSegments.map((seg, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       name: seg.label,
-      ...(seg.href ? { item: seg.href } : {}),
+      ...(seg.href
+        ? { item: seg.href.startsWith('http') ? seg.href : `${BASE_URL}${seg.href}` }
+        : {}),
     })),
   };
 
