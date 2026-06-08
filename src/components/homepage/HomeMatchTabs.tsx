@@ -24,6 +24,8 @@ interface Props {
     upcoming: string;
     results: string;
     today: string;
+    yesterday: string;
+    tomorrow: string;
     viewFullSchedule: string;
     showLess: string;
     noMatches: string;
@@ -223,7 +225,14 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
     day: 'numeric',
     month: 'short',
   });
-  const dateLabel = dateOffset === 0 ? `${labels.today}, ${formattedDate}` : formattedDate;
+  const dateLabel =
+    dateOffset === 0
+      ? labels.today
+      : dateOffset === -1
+        ? labels.yesterday
+        : dateOffset === 1
+          ? labels.tomorrow
+          : formattedDate;
 
   // Overlay the 30s live poll onto every fixture, then re-bucket by the *patched*
   // status so live rows tick and a finishing match moves Live → Results without a
@@ -290,7 +299,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
             ))}
           </div>
 
-          <div className="flex items-center gap-1 self-end pb-2 sm:self-auto sm:pb-0">
+          <div className="-mx-4 mt-1 flex items-center justify-between gap-1 border-t border-border-subtle px-4 pt-2 pb-2 sm:mx-0 sm:mt-0 sm:w-auto sm:border-0 sm:p-0">
             <button
               onClick={() => {
                 setDateOffset((d) => d - 1);

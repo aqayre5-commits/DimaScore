@@ -160,6 +160,8 @@ export default async function HomePage({ params }: PageProps) {
     upcoming: t('upcoming'),
     results: t('resultsTab'),
     today: t('today'),
+    yesterday: t('yesterday'),
+    tomorrow: t('tomorrow'),
     viewFullSchedule: t('viewFullSchedule'),
     showLess: t('showLess'),
     noMatches: t('noMatches'),
