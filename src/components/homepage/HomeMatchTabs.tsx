@@ -69,7 +69,7 @@ function MatchRow({
       preview={preview}
       prefetchIntent={enablePrefetch}
       ariaLabel={`${homeName} vs ${awayName}`}
-      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-bg-surface-2"
+      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent-azure/10"
     >
       {/* Time / status */}
       <div className="w-12 shrink-0 text-center">
