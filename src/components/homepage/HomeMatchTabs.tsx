@@ -189,9 +189,10 @@ function applyLivePatches(
 }
 
 /** Group fixtures by competition (each competition once) so same-competition matches are
- *  contiguous — the list then renders one divider per competition. Competitions with live
- *  matches surface first, then upcoming, then results; within a group: live, then upcoming
- *  (soonest first), then results (newest first). */
+ *  contiguous — one divider per competition. Groups are ordered by the competition's curated
+ *  displayPriority (lower = more important, so World Cup / Botola / top leagues lead and
+ *  friendlies sink), then earliest kickoff; within a group: live, then upcoming (soonest),
+ *  then results (newest first). */
 function groupByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
   const rank = (f: HomeFixture) => {
     const s = getMatchState(f.statusCode, f.kickoffAt);
@@ -216,11 +217,11 @@ function groupByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
       g.sort(sortWithin);
       return {
         g,
-        bestRank: Math.min(...g.map(rank)),
+        priority: g[0].competition.displayPriority,
         earliest: Math.min(...g.map((f) => f.kickoffAt.getTime())),
       };
     })
-    .sort((a, b) => a.bestRank - b.bestRank || a.earliest - b.earliest)
+    .sort((a, b) => a.priority - b.priority || a.earliest - b.earliest)
     .flatMap((x) => x.g);
 }
 

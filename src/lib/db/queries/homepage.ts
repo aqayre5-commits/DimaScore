@@ -26,6 +26,7 @@ export interface HomeFixture {
     slug: string;
     countryCode: string | null;
     logoUrl: string | null;
+    displayPriority: number;
   };
   venueName: string | null;
   venueCity: string | null;
@@ -85,6 +86,7 @@ function mapFixtureRow(
     compSlug: string;
     compCountryCode: string | null;
     compLogoUrl: string | null;
+    compDisplayPriority: number | null;
     venueName?: string | null;
     venueCity?: string | null;
     venueCapacity?: number | null;
@@ -112,6 +114,7 @@ function mapFixtureRow(
       slug: r.compSlug,
       countryCode: r.compCountryCode,
       logoUrl: r.compLogoUrl,
+      displayPriority: r.compDisplayPriority ?? 100,
     },
     venueName: r.venueName ?? null,
     venueCity: r.venueCity ?? null,
@@ -148,6 +151,7 @@ export async function getHomeMatchesByCategory(
       compSlug: schema.competitions.slug,
       compCountryCode: schema.competitions.countryCode,
       compLogoUrl: schema.competitions.logoUrl,
+      compDisplayPriority: schema.competitions.displayPriority,
     })
     .from(schema.fixtures)
     .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
@@ -219,6 +223,7 @@ export async function getFeaturedMatches(
       compSlug: schema.competitions.slug,
       compCountryCode: schema.competitions.countryCode,
       compLogoUrl: schema.competitions.logoUrl,
+      compDisplayPriority: schema.competitions.displayPriority,
       venueName: schema.venues.name,
       venueCity: schema.venues.city,
       venueCapacity: schema.venues.capacity,
