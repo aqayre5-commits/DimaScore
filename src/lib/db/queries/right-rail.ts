@@ -9,6 +9,21 @@ import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 // ── Status code sets ──
 
 const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+
+// Featured card must skip the same noise the homepage list filters: fixtures whose teams don't
+// resolve (render "TBD") and youth (U17–U23) entries in the Friendlies feed.
+const DISPLAYABLE = sql`
+  EXISTS (SELECT 1 FROM teams WHERE id = ${schema.fixtures.homeTeamId})
+  AND EXISTS (SELECT 1 FROM teams WHERE id = ${schema.fixtures.awayTeamId})
+  AND NOT (
+    ${schema.fixtures.competitionId} = 10
+    AND EXISTS (
+      SELECT 1 FROM teams t
+      WHERE t.id IN (${schema.fixtures.homeTeamId}, ${schema.fixtures.awayTeamId})
+        AND t.name->>'en' ~ ' U-?[0-9]{2}$'
+    )
+  )
+`;
 const FINISHED_CODES = ['FT', 'AET', 'PEN', 'WO', 'AWD'];
 
 export interface RightRailFixture {
@@ -175,7 +190,7 @@ export async function getNextFeaturedMatch(
     .from(schema.fixtures)
     .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
     .leftJoin(schema.venues, eq(schema.fixtures.venueId, schema.venues.id))
-    .where(inArray(schema.fixtures.statusCode, LIVE_CODES))
+    .where(and(inArray(schema.fixtures.statusCode, LIVE_CODES), DISPLAYABLE))
     .orderBy(FEATURED_ORDER)
     .limit(1);
 
@@ -216,6 +231,7 @@ export async function getNextFeaturedMatch(
           eq(schema.fixtures.statusCode, 'NS'),
           gte(schema.fixtures.kickoffAt, now),
           lt(schema.fixtures.kickoffAt, horizon48h),
+          DISPLAYABLE,
         ),
       )
       .orderBy(FEATURED_ORDER)
@@ -230,7 +246,13 @@ export async function getNextFeaturedMatch(
         .from(schema.fixtures)
         .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
         .leftJoin(schema.venues, eq(schema.fixtures.venueId, schema.venues.id))
-        .where(and(eq(schema.fixtures.statusCode, 'NS'), gte(schema.fixtures.kickoffAt, now)))
+        .where(
+          and(
+            eq(schema.fixtures.statusCode, 'NS'),
+            gte(schema.fixtures.kickoffAt, now),
+            DISPLAYABLE,
+          ),
+        )
         .orderBy(FEATURED_ORDER)
         .limit(1);
 
