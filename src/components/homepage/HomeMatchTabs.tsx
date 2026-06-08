@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Calendar } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
@@ -274,59 +274,80 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
     <div className="space-y-2.5">
       {/* Tabs + day-picker — their own card; stacks on mobile so each gets a full row */}
       <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-        <div className="flex flex-col px-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex">
-            {tabDefs.map((td) => (
-              <button
-                key={td.key}
-                onClick={() => {
-                  setActiveTab(td.key);
-                  setDateOffset(0);
-                  setExpanded(false);
-                }}
-                className={`relative px-3 py-3 text-sm font-medium transition-colors ${
-                  activeTab === td.key
-                    ? 'text-accent-azure'
-                    : 'text-text-tertiary hover:text-text-secondary'
-                }`}
-              >
-                {td.label}
-                {mounted && td.count > 0 ? ` (${td.count})` : ''}
-                {activeTab === td.key && (
-                  <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent-azure" />
-                )}
-              </button>
-            ))}
+        {/* Segmented tabs — active tab is a filled pill; counts are badges */}
+        <div className="p-2.5">
+          <div className="flex items-center justify-between gap-1 rounded-xl bg-bg-surface-2 p-1">
+            {tabDefs.map((td) => {
+              const active = activeTab === td.key;
+              return (
+                <button
+                  key={td.key}
+                  onClick={() => {
+                    setActiveTab(td.key);
+                    setDateOffset(0);
+                    setExpanded(false);
+                  }}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                    active
+                      ? 'bg-accent-azure text-white shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  <span>{td.label}</span>
+                  {mounted && td.count > 0 && (
+                    <span
+                      className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold tabular-nums ${
+                        active ? 'bg-white/25 text-white' : 'bg-bg-surface-3 text-text-tertiary'
+                      }`}
+                    >
+                      {td.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          <div className="-mx-4 mt-1 flex items-center justify-between gap-1 border-t border-border-subtle px-4 pt-2 pb-2 sm:mx-0 sm:mt-0 sm:w-auto sm:border-0 sm:p-0">
-            <button
-              onClick={() => {
-                setDateOffset((d) => d - 1);
-                setExpanded(false);
-              }}
-              className="flex size-7 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-              aria-label="Previous day"
-            >
-              <ChevronLeft className="size-4" />
-            </button>
-            <span
-              className="min-w-[90px] whitespace-nowrap text-center text-xs font-medium text-text-primary"
-              suppressHydrationWarning
-            >
+        {/* Divider */}
+        <div className="border-t border-border-subtle" />
+
+        {/* Day picker — circular nav buttons flanking a centered date pill */}
+        <div className="flex items-center gap-2 px-3 py-3">
+          <button
+            onClick={() => {
+              setDateOffset((d) => d - 1);
+              setExpanded(false);
+            }}
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-text-secondary transition-colors hover:bg-bg-surface-3 hover:text-text-primary"
+            aria-label="Previous day"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <button
+            onClick={() => {
+              setDateOffset(0);
+              setExpanded(false);
+            }}
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-bg-surface-2 px-4 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-surface-3"
+            aria-label="Jump to today"
+          >
+            <Calendar className="size-4 shrink-0 text-accent-azure" />
+            <span className="whitespace-nowrap" suppressHydrationWarning>
               {dateLabel}
             </span>
-            <button
-              onClick={() => {
-                setDateOffset((d) => d + 1);
-                setExpanded(false);
-              }}
-              className="flex size-7 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-              aria-label="Next day"
-            >
-              <ChevronRight className="size-4" />
-            </button>
-          </div>
+            <ChevronDown className="size-4 shrink-0 text-text-tertiary" />
+          </button>
+          <button
+            onClick={() => {
+              setDateOffset((d) => d + 1);
+              setExpanded(false);
+            }}
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-text-secondary transition-colors hover:bg-bg-surface-3 hover:text-text-primary"
+            aria-label="Next day"
+          >
+            <ChevronRight className="size-4" />
+          </button>
         </div>
       </div>
 
