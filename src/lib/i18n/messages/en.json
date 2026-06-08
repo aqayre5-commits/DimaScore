@@ -171,6 +171,8 @@
     "resultsTab": "Results",
     "allCompetitions": "All",
     "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
     "viewFullSchedule": "View full schedule",
     "showLess": "Show less",
     "noMatches": "No matches",
