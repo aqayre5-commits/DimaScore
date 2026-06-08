@@ -46,8 +46,9 @@ export function MobileDrawer() {
         <Menu className="size-5" />
       </SheetTrigger>
       <SheetContent side={side} className="overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="text-text-primary">{tApp('name')}</SheetTitle>
+        {/* Visually hidden — kept only so the dialog has an accessible title/description. */}
+        <SheetHeader className="sr-only">
+          <SheetTitle>{tApp('name')}</SheetTitle>
           <SheetDescription>{tApp('tagline')}</SheetDescription>
         </SheetHeader>
 
