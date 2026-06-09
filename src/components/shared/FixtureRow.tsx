@@ -37,7 +37,9 @@ interface FixtureRowProps {
  * show the pen score stacked under the regulation score; no winner emphasis —
  * the score line differentiates the teams.
  *
- * Layout: HOME [flag] [full name] ... score ... [full name] [flag] AWAY
+ * Responsive: HORIZONTAL on desktop (HOME [flag][name] … score … [name][flag] AWAY);
+ * STACKED on mobile (home over away, full names, score/time on the right) so names
+ * never truncate on narrow screens.
  */
 export function FixtureRow({
   fixtureId,
@@ -76,6 +78,35 @@ export function FixtureRow({
     kickoffAt,
   });
 
+  // ── Shared bits (rendered in both the desktop and mobile layouts) ──
+  const statusLabel = isLive
+    ? statusCode === 'HT'
+      ? t('halfTime')
+      : statusCode
+    : isFinished
+      ? statusCode === 'AET'
+        ? t('extraTime')
+        : statusCode === 'PEN'
+          ? ''
+          : t('fullTime')
+      : null;
+
+  const scoreNode = hasScore ? (
+    <span
+      className={`text-base font-semibold ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
+    >
+      {homeScore} - {awayScore}
+    </span>
+  ) : (
+    <span className="text-xs text-text-tertiary">- : -</span>
+  );
+
+  const penNode = showPenScore ? (
+    <span className="whitespace-nowrap text-[10px] font-semibold uppercase text-text-tertiary">
+      {t('penalties')} {homeScorePen}-{awayScorePen}
+    </span>
+  ) : null;
+
   return (
     <MatchLink
       matchId={String(fixtureId)}
@@ -83,58 +114,76 @@ export function FixtureRow({
       preview={preview}
       prefetchIntent
       ariaLabel={`${homeName} vs ${awayName}`}
-      className="flex items-center gap-2 rounded-md py-2 text-base transition-colors hover:bg-bg-surface-2"
+      className="block rounded-md text-base transition-colors hover:bg-bg-surface-2"
     >
-      {/* Time / status column */}
-      <div className="w-12 shrink-0 text-center">
-        {isLive ? (
-          <span className="flex items-center justify-center gap-1 text-xs font-semibold text-accent-emerald">
-            <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
-            {statusCode === 'HT' ? t('halfTime') : statusCode}
+      {/* ── Desktop: horizontal ── */}
+      <div className="hidden items-center gap-2 py-2 md:flex">
+        <div className="w-12 shrink-0 text-center">
+          {isLive ? (
+            <span className="flex items-center justify-center gap-1 text-xs font-semibold text-accent-emerald">
+              <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
+              {statusLabel}
+            </span>
+          ) : isFinished ? (
+            <span className="text-xs text-text-tertiary">{statusLabel}</span>
+          ) : (
+            <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
+              {time}
+            </span>
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">
+          <TeamBadge team={homeTeam} flag={homeFlag} />
+          <span className="overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
+            {homeName}
           </span>
-        ) : isFinished ? (
-          <span className="text-xs text-text-tertiary">
-            {statusCode === 'AET' ? t('extraTime') : statusCode === 'PEN' ? '' : t('fullTime')}
+        </div>
+
+        <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight tabular-nums">
+          {scoreNode}
+          {penNode}
+        </div>
+
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
+          <span className="overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
+            {awayName}
           </span>
-        ) : (
-          <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
-            {time}
-          </span>
-        )}
+          <TeamBadge team={awayTeam} flag={awayFlag} />
+        </div>
       </div>
 
-      {/* Home team: [logo/flag] [full name] */}
-      <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        <TeamBadge team={homeTeam} flag={homeFlag} />
-        <span className="overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
-          {homeName}
-        </span>
-      </div>
+      {/* ── Mobile: stacked (home over away, full names, score/time on the right) ── */}
+      <div className="flex items-center gap-3 py-2 md:hidden">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <div className="flex items-center gap-2">
+            <TeamBadge team={homeTeam} flag={homeFlag} />
+            <span className="truncate text-base text-text-primary">{homeName}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <TeamBadge team={awayTeam} flag={awayFlag} />
+            <span className="truncate text-base text-text-primary">{awayName}</span>
+          </div>
+        </div>
 
-      {/* Score, with pen score stacked beneath for shootouts */}
-      <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight tabular-nums">
-        {hasScore ? (
-          <span
-            className={`text-base font-semibold ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
-          >
-            {homeScore} - {awayScore}
-          </span>
-        ) : (
-          <span className="text-xs text-text-tertiary">- : -</span>
-        )}
-        {showPenScore && (
-          <span className="whitespace-nowrap text-[10px] font-semibold uppercase text-text-tertiary">
-            {t('penalties')} {homeScorePen}-{awayScorePen}
-          </span>
-        )}
-      </div>
-
-      {/* Away team: [full name] [logo/flag] */}
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
-        <span className="overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
-          {awayName}
-        </span>
-        <TeamBadge team={awayTeam} flag={awayFlag} />
+        <div className="flex shrink-0 flex-col items-end justify-center gap-0.5 text-right leading-tight tabular-nums">
+          {hasScore ? (
+            scoreNode
+          ) : (
+            <span className="text-sm tabular-nums text-text-secondary" suppressHydrationWarning>
+              {time}
+            </span>
+          )}
+          {isLive ? (
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-accent-emerald">
+              <span className="size-1 animate-pulse rounded-full bg-accent-emerald" />
+              {statusLabel}
+            </span>
+          ) : isFinished && statusLabel ? (
+            <span className="text-[10px] text-text-tertiary">{statusLabel}</span>
+          ) : null}
+          {penNode}
+        </div>
       </div>
     </MatchLink>
   );
