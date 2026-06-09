@@ -171,8 +171,9 @@ export function TournamentPageHeader({
               <div className="hidden md:block">{editionControl}</div>
             </div>
 
-            {/* Stats — desktop only (hidden on mobile); bordered pill row pushed to bottom */}
-            <div className="mt-auto hidden flex-wrap gap-3 md:flex">
+            {/* Stats — compact 2×2 grid on mobile filling the existing empty space below the meta
+                (bottom-anchored, adds no height), bordered pill row on desktop */}
+            <div className="mt-auto grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
               {stats.map((s) => (
                 <div
                   key={s.label}
