@@ -141,7 +141,7 @@ export function TournamentPageHeader({
               width={200}
               height={200}
               sizes="(min-width: 768px) 200px, 42vw"
-              className="h-auto max-h-[180px] w-auto max-w-[42%] shrink-0 self-end object-contain object-bottom drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:h-full md:max-h-[160px] md:max-w-none"
+              className="h-[200px] w-auto max-w-[42%] shrink-0 self-end object-contain object-bottom drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:h-full md:max-h-[160px] md:max-w-none"
               priority
             />
           )}
@@ -171,9 +171,8 @@ export function TournamentPageHeader({
               <div className="hidden md:block">{editionControl}</div>
             </div>
 
-            {/* Stats — compact 2×2 grid on mobile filling the existing empty space below the meta
-                (bottom-anchored, adds no height), bordered pill row on desktop */}
-            <div className="mt-auto grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
+            {/* Stats — desktop only (hidden on mobile); bordered pill row pushed to bottom */}
+            <div className="mt-auto hidden flex-wrap gap-3 md:flex">
               {stats.map((s) => (
                 <div
                   key={s.label}
