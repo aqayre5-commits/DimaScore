@@ -64,7 +64,6 @@ export function TournamentPageHeader({
   introText,
   tournamentPhase,
   moroccoGroup,
-  orgName,
   matchesCount,
   availableSeasons,
   seasonYear,
@@ -85,15 +84,16 @@ export function TournamentPageHeader({
     }
   }
 
+  // Desktop shows flags + country names; mobile shows just the flags (a bit larger). No org label.
   const hostNations = metadata.hostCountryCodes
     .map((c) => `${codeToFlag(c)} ${HOST_NAMES[c] ?? c}`)
     .join(' · ');
+  const hostFlags = metadata.hostCountryCodes.map((c) => codeToFlag(c)).join(' ');
 
   const kickoff = new Date(metadata.kickoffDate);
   const final = new Date(metadata.finalDate);
   const dateRange = `${kickoff.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} – ${final.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
 
-  const org = orgName ?? 'FIFA';
   const logoSrc = CUP_LOGOS[metadata.competitionId];
 
   const stats = [
@@ -129,13 +129,18 @@ export function TournamentPageHeader({
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <h1 className="font-display text-2xl font-semibold text-text-primary md:text-3xl">
+                <h1 className="font-display whitespace-nowrap text-lg font-semibold text-text-primary md:whitespace-normal md:text-3xl">
                   {pageTitle}
                 </h1>
-                <p className="mt-1 text-sm text-text-secondary">
-                  {hostNations} · {org}
+                {/* Mobile: host flags only (larger). Desktop: flags + country names. */}
+                <p className="mt-1 text-text-secondary">
+                  <span className="text-lg md:hidden">{hostFlags}</span>
+                  <span className="hidden text-sm md:inline">{hostNations}</span>
                 </p>
-                <p className="mt-0.5 text-sm text-text-tertiary" suppressHydrationWarning>
+                <p
+                  className="mt-0.5 whitespace-nowrap text-sm text-text-tertiary"
+                  suppressHydrationWarning
+                >
                   {dateRange}
                 </p>
               </div>
@@ -158,8 +163,8 @@ export function TournamentPageHeader({
               )}
             </div>
 
-            {/* Stats — 2×2 grid on mobile, bordered pill row on desktop; pushed to bottom */}
-            <div className="mt-auto grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
+            {/* Stats — desktop only (hidden on mobile); bordered pill row pushed to bottom */}
+            <div className="mt-auto hidden flex-wrap gap-3 md:flex">
               {stats.map((s) => (
                 <div
                   key={s.label}
