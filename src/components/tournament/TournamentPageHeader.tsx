@@ -111,26 +111,18 @@ export function TournamentPageHeader({
     <div className="h-full">
       <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15 p-2">
         <div className="relative flex flex-1 items-stretch gap-5">
-          {/* Competition logo */}
+          {/* Competition logo — one responsive image, kept large and bottom-anchored at every
+              size (no mobile shrink); width-capped on mobile so the title/flags aren't squeezed. */}
           {logoSrc && (
-            <>
-              <Image
-                src={logoSrc}
-                alt=""
-                width={200}
-                height={200}
-                className="hidden h-full max-h-[160px] w-auto shrink-0 object-contain object-bottom drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:block"
-                priority
-              />
-              <Image
-                src={logoSrc}
-                alt=""
-                width={80}
-                height={80}
-                className="h-[80px] w-auto shrink-0 self-end object-contain drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:hidden"
-                priority
-              />
-            </>
+            <Image
+              src={logoSrc}
+              alt=""
+              width={200}
+              height={200}
+              sizes="(min-width: 768px) 200px, 42vw"
+              className="h-auto max-h-[180px] w-auto max-w-[42%] shrink-0 self-end object-contain object-bottom drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:h-full md:max-h-[160px] md:max-w-none"
+              priority
+            />
           )}
 
           {/* Title + meta + stats */}
@@ -166,8 +158,8 @@ export function TournamentPageHeader({
               )}
             </div>
 
-            {/* Stats — bordered pills, pushed to bottom */}
-            <div className="mt-auto flex flex-wrap gap-3">
+            {/* Stats — 2×2 grid on mobile, bordered pill row on desktop; pushed to bottom */}
+            <div className="mt-auto grid grid-cols-2 gap-2 md:flex md:flex-wrap md:gap-3">
               {stats.map((s) => (
                 <div
                   key={s.label}
