@@ -108,75 +108,76 @@ export function LeaguePageHeader({
       : []),
   ];
 
+  // Season control — top-right on desktop; on its own line under the meta on mobile (so it doesn't
+  // collide with the title).
+  const seasonControl =
+    availableSeasons.length > 1 ? (
+      <select
+        value={seasonYear}
+        onChange={handleSeasonChange}
+        className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure focus:outline-none focus:ring-1 focus:ring-accent"
+      >
+        {availableSeasons.map((s) => (
+          <option key={s.year} value={s.year}>
+            {formatSeason(s.year)}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <span className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure">
+        {formatSeason(seasonYear)}
+      </span>
+    );
+
   return (
     <div className="h-full">
       <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15 p-2 md:min-h-[180px]">
         <div className="relative flex flex-1 items-stretch gap-5">
-          {/* Logo */}
+          {/* Logo — one responsive image; fills the card height on the left and drives the mobile
+              height, width-capped so square crests stay sensible. Keeps dark-logo inversion. */}
           {logoSrc ? (
-            <>
-              <Image
-                src={logoSrc}
-                alt=""
-                className={`hidden h-full max-h-[160px] max-w-[200px] w-auto shrink-0 object-contain object-bottom md:block${needsInvert ? ' logo-invert' : ''}`}
-                width={96}
-                height={96}
-                priority
-              />
-              <Image
-                src={logoSrc}
-                alt=""
-                className={`h-[80px] w-auto shrink-0 self-end object-contain md:hidden${needsInvert ? ' logo-invert' : ''}`}
-                width={96}
-                height={96}
-                priority
-              />
-            </>
+            <Image
+              src={logoSrc}
+              alt=""
+              width={96}
+              height={96}
+              sizes="(min-width: 768px) 200px, 40vw"
+              className={`h-[160px] w-auto max-w-[40%] shrink-0 self-end object-contain object-bottom md:h-full md:max-h-[160px] md:max-w-[200px]${needsInvert ? ' logo-invert' : ''}`}
+              priority
+            />
           ) : (
-            <div className="flex size-24 shrink-0 items-center justify-center rounded-lg bg-bg-surface-2 md:size-32">
+            <div className="flex size-24 shrink-0 items-center justify-center self-end rounded-lg bg-bg-surface-2 md:size-32">
               <span className="text-4xl">🏆</span>
             </div>
           )}
 
-          {/* Title + meta + stats — height matches logo */}
+          {/* Title + meta + stats */}
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <h1 className="font-display text-2xl font-semibold text-text-primary md:text-3xl">
+                <h1 className="font-display text-lg font-semibold text-text-primary md:text-3xl">
                   {name}
                 </h1>
                 <div className="mt-1.5 flex items-center gap-2">
                   {countryName && (
-                    <span className="text-base text-text-secondary">
-                      <span className="text-lg">{countryFlag(competition.countryCode)}</span>{' '}
+                    <span className="text-sm text-text-secondary md:text-base">
+                      <span className="text-base md:text-lg">
+                        {countryFlag(competition.countryCode)}
+                      </span>{' '}
                       {countryName}
                     </span>
                   )}
                 </div>
+                {/* Mobile: season selector on its own line (clears the title) */}
+                <div className="mt-2 md:hidden">{seasonControl}</div>
               </div>
-              {/* Season selector badge */}
-              {availableSeasons.length > 1 ? (
-                <select
-                  value={seasonYear}
-                  onChange={handleSeasonChange}
-                  className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure focus:outline-none focus:ring-1 focus:ring-accent"
-                >
-                  {availableSeasons.map((s) => (
-                    <option key={s.year} value={s.year}>
-                      {formatSeason(s.year)}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure">
-                  {formatSeason(seasonYear)}
-                </span>
-              )}
+              {/* Desktop: season selector top-right */}
+              <div className="hidden md:block">{seasonControl}</div>
             </div>
 
-            {/* Stats — bordered pills, pushed to bottom */}
+            {/* Stats — desktop only (hidden on mobile); bordered pill row pushed to bottom */}
             {stats.length > 0 && (
-              <div className="mt-auto flex flex-wrap gap-3">
+              <div className="mt-auto hidden flex-wrap gap-3 md:flex">
                 {stats.map((s) => (
                   <div
                     key={s.label}
