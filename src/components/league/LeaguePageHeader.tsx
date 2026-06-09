@@ -142,7 +142,7 @@ export function LeaguePageHeader({
               width={96}
               height={96}
               sizes="(min-width: 768px) 200px, 40vw"
-              className={`h-[160px] w-auto max-w-[40%] shrink-0 self-end object-contain object-bottom md:h-full md:max-h-[160px] md:max-w-[200px]${needsInvert ? ' logo-invert' : ''}`}
+              className={`h-[120px] w-auto max-w-[36%] shrink-0 self-end object-contain object-bottom md:h-full md:max-h-[160px] md:max-w-[200px]${needsInvert ? ' logo-invert' : ''}`}
               priority
             />
           ) : (
