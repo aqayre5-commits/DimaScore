@@ -107,6 +107,27 @@ export function TournamentPageHeader({
       : []),
   ];
 
+  // Edition/season control — top-right on desktop; on its own line under the meta on mobile, so it
+  // doesn't collide with the one-line title.
+  const editionControl =
+    availableSeasons && availableSeasons.length > 1 ? (
+      <select
+        value={displayYear}
+        onChange={handleSeasonChange}
+        className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure focus:outline-none focus:ring-1 focus:ring-accent"
+      >
+        {availableSeasons.map((s) => (
+          <option key={s.year} value={s.year}>
+            Edition: {s.year}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <span className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure">
+        Edition: {displayYear}
+      </span>
+    );
+
   return (
     <div className="h-full">
       <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15 p-2">
@@ -143,24 +164,11 @@ export function TournamentPageHeader({
                 >
                   {dateRange}
                 </p>
+                {/* Mobile: edition control on its own line (clears the one-line title) */}
+                <div className="mt-2 md:hidden">{editionControl}</div>
               </div>
-              {availableSeasons && availableSeasons.length > 1 ? (
-                <select
-                  value={displayYear}
-                  onChange={handleSeasonChange}
-                  className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure focus:outline-none focus:ring-1 focus:ring-accent"
-                >
-                  {availableSeasons.map((s) => (
-                    <option key={s.year} value={s.year}>
-                      Edition: {s.year}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure">
-                  Edition: {displayYear}
-                </span>
-              )}
+              {/* Desktop: edition control top-right */}
+              <div className="hidden md:block">{editionControl}</div>
             </div>
 
             {/* Stats — desktop only (hidden on mobile); bordered pill row pushed to bottom */}
