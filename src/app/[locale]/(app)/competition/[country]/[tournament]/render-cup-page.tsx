@@ -335,26 +335,22 @@ export async function renderCupPage(
       hash: hashes.standings,
       labelKey: 'standings',
       icon: 'table',
-      content: <StandingsTab standings={standings} metadata={metadata} locale={locale} />,
+      // Best 3rd-placed teams (WC/AFCON only — bestThird is null otherwise) render as a table
+      // below the group standings instead of a separate tab, to declutter the tab bar.
+      content: (
+        <div className="space-y-6">
+          <StandingsTab standings={standings} metadata={metadata} locale={locale} />
+          {bestThird && (
+            <BestThirdTab
+              rows={bestThird.rows}
+              locale={locale}
+              qualifiedCount={8}
+              hasTiesRequiringFallback={bestThird.hasTiesRequiringFallback}
+            />
+          )}
+        </div>
+      ),
     },
-    ...(bestThird
-      ? [
-          {
-            key: 'bestThird',
-            hash: hashes.bestThird,
-            labelKey: 'bestThird',
-            icon: 'award',
-            content: (
-              <BestThirdTab
-                rows={bestThird.rows}
-                locale={locale}
-                qualifiedCount={8}
-                hasTiesRequiringFallback={bestThird.hasTiesRequiringFallback}
-              />
-            ),
-          },
-        ]
-      : []),
     {
       key: 'knockout',
       hash: hashes.knockout,
