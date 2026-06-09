@@ -6,6 +6,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SearchResults } from '@/lib/db/queries/search';
+import { buildCompetitionHrefById } from '@/lib/constants/competitions-mega-menu';
+import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
 
 interface SearchModalProps {
@@ -103,12 +105,12 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
       flatItems.push({ href: `/${locale}/joueur/${player.slug}`, label: name });
     }
     for (const comp of results.competitions) {
+      // Canonical URL by id; skip competitions with no real page (must match the render below
+      // exactly so keyboard-nav indices stay aligned with the rendered rows).
+      const href = buildCompetitionHrefById(comp.id, locale as Locale);
+      if (!href) continue;
       const name = comp.name[locale] ?? comp.name['en'] ?? '—';
-      // Competition URL uses country/slug pattern — use slug directly for now
-      flatItems.push({
-        href: `/${locale}/competition/${comp.countryCode ?? 'int'}/${comp.slug}`,
-        label: name,
-      });
+      flatItems.push({ href, label: name });
     }
   }
 
@@ -264,15 +266,17 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             {results.competitions.length > 0 && (
               <ResultGroup label={t('competitions')}>
                 {results.competitions.map((comp) => {
+                  // Skip uncovered comps (no page) before consuming a flat index, so this stays
+                  // aligned with the keyboard-nav list above.
+                  const href = buildCompetitionHrefById(comp.id, locale as Locale);
+                  if (!href) return null;
                   const idx = flatIdx++;
                   const name = comp.name[locale] ?? comp.name['en'] ?? '—';
                   return (
                     <ResultRow
                       key={`comp-${comp.id}`}
                       active={idx === activeIndex}
-                      onClick={() =>
-                        navigate(`/${locale}/competition/${comp.countryCode ?? 'int'}/${comp.slug}`)
-                      }
+                      onClick={() => navigate(href)}
                     >
                       {comp.logoUrl ? (
                         <Image

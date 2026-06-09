@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { findCupContentBySlug } from '@/lib/constants/cup-content';
@@ -83,6 +84,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   // Try to resolve a proper name from mega menu + DB
   const entry = resolveEntry(tournament, typedLocale);
+  // Unrecognized slug (cup-content handled above; not in ALL_ENTRIES here) → 404 in this blocking
+  // metadata phase so the response commits a real 404 status. notFound() inside the streamed page
+  // body renders the 404 UI but leaves the HTTP status at 200 under cacheComponents.
+  if (!entry) notFound();
   let displayName = tournament.replace(/-/g, ' ');
   let description = `${displayName} — DimaScore`;
 

@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { notFound } from 'next/navigation';
 import { cacheLife } from 'next/cache';
 import { inArray } from 'drizzle-orm';
 import type { Locale } from '@/lib/i18n/config';
@@ -95,6 +96,10 @@ export async function CompetitionContent({
   }
 
   if (!entry) {
+    // Slug isn't a recognized competition (not in ALL_ENTRIES or cup-content) → real 404, not a
+    // 200 soft-404 shell. This covers raw DB slugs (e.g. `world-cup` vs `world-cup-2026`) and
+    // garbage. Covered-but-dataless competitions (entry resolves, no DB row) still show ComingSoon.
+    if (!slugCupContent) notFound();
     return <ComingSoon locale={rawLocale} tournament={tournament} />;
   }
 

@@ -461,6 +461,16 @@ export function buildCompetitionHref(entry: MegaMenuEntry, locale: Locale): stri
   return `/${locale}/competition/${countrySlug}/${slugs[locale]}`;
 }
 
+/**
+ * Build a competition URL from a competition id, or return null when the competition isn't in
+ * ALL_ENTRIES (i.e. has no real page). Link sites that only hold a DB id should use this so links
+ * always resolve to the canonical localized URL — never a raw DB slug that lands on a 404.
+ */
+export function buildCompetitionHrefById(competitionId: number, locale: Locale): string | null {
+  const entry = findEntryByCompetitionId(competitionId);
+  return entry ? buildCompetitionHref(entry, locale) : null;
+}
+
 // ---------------------------------------------------------------------------
 // Competition families — related competitions shown at bottom of pages
 // ---------------------------------------------------------------------------

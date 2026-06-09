@@ -8,6 +8,8 @@ import { MatchRow } from './MatchRow';
 import type { CompetitionGroup } from '@/lib/db/queries/fixtures-by-day';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
+import { buildCompetitionHrefById } from '@/lib/constants/competitions-mega-menu';
+import type { Locale } from '@/lib/i18n/config';
 import { CompetitionLogo } from '@/components/shared/Logo';
 
 interface MatchRowGroupProps {
@@ -23,29 +25,42 @@ export function MatchRowGroup({ group, locale, defaultExpanded }: MatchRowGroupP
 
   const compName = getLocalizedCompetitionName(competition, locale);
   const countryLabel = getLocalizedCountryName(competition.countryCode, locale);
+  // Canonical competition URL by id — null when the competition has no real page (not in
+  // ALL_ENTRIES); then the header renders as plain text, never a dead link to a 404 shell.
+  const compHref = buildCompetitionHrefById(competition.id, locale as Locale);
+
+  const compInner = (
+    <>
+      {competition.logoUrl ? (
+        <CompetitionLogo
+          src={competition.logoUrl}
+          size={20}
+          className="h-5 w-5 shrink-0 object-contain"
+        />
+      ) : (
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">
+          {competition.slug.slice(0, 2).toUpperCase()}
+        </span>
+      )}
+      <span className="truncate text-base font-semibold text-text-primary">{compName}</span>
+    </>
+  );
 
   return (
     <div className="border-b border-border-subtle">
       {/* Group header */}
       <div className="flex items-center gap-2 px-3 py-2">
-        {/* Competition logo + name (clickable → competition page) */}
-        <Link
-          href={`/${locale}/competition/${competition.countryCode?.toLowerCase() ?? 'fifa'}/${competition.slug}`}
-          className="flex min-w-0 items-center gap-2 transition-colors hover:text-accent-green"
-        >
-          {competition.logoUrl ? (
-            <CompetitionLogo
-              src={competition.logoUrl}
-              size={20}
-              className="h-5 w-5 shrink-0 object-contain"
-            />
-          ) : (
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">
-              {competition.slug.slice(0, 2).toUpperCase()}
-            </span>
-          )}
-          <span className="truncate text-base font-semibold text-text-primary">{compName}</span>
-        </Link>
+        {/* Competition logo + name → canonical competition page (plain text when no page exists) */}
+        {compHref ? (
+          <Link
+            href={compHref}
+            className="flex min-w-0 items-center gap-2 transition-colors hover:text-accent-green"
+          >
+            {compInner}
+          </Link>
+        ) : (
+          <div className="flex min-w-0 items-center gap-2">{compInner}</div>
+        )}
 
         {/* Country (non-clickable per deferred-affordance rule) */}
         {countryLabel && (
