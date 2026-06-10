@@ -15,7 +15,6 @@ import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { OverviewTab } from '@/components/tournament/OverviewTab';
 import { StandingsTab } from '@/components/tournament/StandingsTab';
 import { KnockoutTab } from '@/components/tournament/KnockoutTab';
-import { KnockoutCardList } from '@/components/tournament/KnockoutCardList';
 import { GenericKnockoutList } from '@/components/tournament/GenericKnockoutList';
 import { CupFixturesByRound } from '@/components/tournament/CupFixturesByRound';
 import { DynamicKnockoutBracket } from '@/components/tournament/DynamicKnockoutBracket';
@@ -365,8 +364,6 @@ export async function renderCupPage(
             matches={cupBracket?.matches}
             thirdPlaceMatch={cupBracket?.thirdPlaceMatch}
           />
-        ) : competitionId === 6 ? (
-          <KnockoutCardList fixtures={knockoutFixtures} locale={locale} />
         ) : cupBracket ? (
           <DynamicKnockoutBracket
             matches={cupBracket.matches}
