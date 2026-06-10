@@ -135,6 +135,8 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
   const isLive = state === 'live';
   const isDone = state === 'finished';
   const showScore = (isLive || isDone) && f.homeScore != null && f.awayScore != null;
+  const homeWon = isDone && showScore && (f.homeScore ?? 0) > (f.awayScore ?? 0);
+  const awayWon = isDone && showScore && (f.awayScore ?? 0) > (f.homeScore ?? 0);
 
   let subLabel = '';
   if (isLive) subLabel = isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE';
@@ -151,62 +153,161 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
     }
   }
 
+  const compName = f.competition
+    ? (f.competition.name[locale] ?? f.competition.name['en'] ?? '')
+    : '';
+
   return (
-    <a
-      href={`/${locale}/match/${f.id}`}
-      className="flex items-center gap-2 px-3 py-3 transition-colors hover:bg-bg-surface-2"
-    >
-      {/* kickoff time */}
-      <div className="w-11 shrink-0 text-center text-xs tabular-nums text-text-tertiary">
-        {formatMatchTime(f.kickoffAt, locale)}
-      </div>
+    <a href={`/${locale}/match/${f.id}`} className="block transition-colors hover:bg-bg-surface-2">
+      {/* ── Desktop: horizontal (UNCHANGED) ── */}
+      <div className="hidden items-center gap-2 px-3 py-3 md:flex">
+        <div className="w-11 shrink-0 text-center text-xs tabular-nums text-text-tertiary">
+          {formatMatchTime(f.kickoffAt, locale)}
+        </div>
 
-      {/* home */}
-      <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
-        {f.homeTeam?.logoUrl && (
-          <Image
-            src={f.homeTeam.logoUrl}
-            alt=""
-            width={24}
-            height={24}
-            className="size-6 shrink-0 object-contain"
-          />
-        )}
-        <span className="truncate text-sm text-text-primary">{teamName(f.homeTeam, locale)}</span>
-      </div>
+        <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
+          {f.homeTeam?.logoUrl && (
+            <Image
+              src={f.homeTeam.logoUrl}
+              alt=""
+              width={24}
+              height={24}
+              className="size-6 shrink-0 object-contain"
+            />
+          )}
+          <span className="truncate text-sm text-text-primary">{teamName(f.homeTeam, locale)}</span>
+        </div>
 
-      {/* centre — vs / score, with state sub-label (FT / AET / PEN x-y) */}
-      <div className="flex w-16 shrink-0 flex-col items-center justify-center leading-tight">
-        {showScore ? (
-          <span
-            className={`text-sm font-bold tabular-nums ${isLive ? 'text-accent-crimson' : 'text-text-primary'}`}
-          >
-            {f.homeScore} - {f.awayScore}
+        <div className="flex w-16 shrink-0 flex-col items-center justify-center leading-tight">
+          {showScore ? (
+            <span
+              className={`text-sm font-bold tabular-nums ${isLive ? 'text-accent-crimson' : 'text-text-primary'}`}
+            >
+              {f.homeScore} - {f.awayScore}
+            </span>
+          ) : (
+            <span className="text-xs font-medium text-text-tertiary">vs</span>
+          )}
+          {subLabel && (
+            <span className="whitespace-nowrap text-[10px] uppercase tracking-wide text-text-quaternary">
+              {subLabel}
+            </span>
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
+          <span className="truncate text-end text-sm text-text-primary">
+            {teamName(f.awayTeam, locale)}
           </span>
-        ) : (
-          <span className="text-xs font-medium text-text-tertiary">vs</span>
-        )}
-        {subLabel && (
-          <span className="whitespace-nowrap text-[10px] uppercase tracking-wide text-text-quaternary">
-            {subLabel}
-          </span>
-        )}
+          {f.awayTeam?.logoUrl && (
+            <Image
+              src={f.awayTeam.logoUrl}
+              alt=""
+              width={24}
+              height={24}
+              className="size-6 shrink-0 object-contain"
+            />
+          )}
+        </div>
       </div>
 
-      {/* away */}
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-        <span className="truncate text-end text-sm text-text-primary">
-          {teamName(f.awayTeam, locale)}
-        </span>
-        {f.awayTeam?.logoUrl && (
-          <Image
-            src={f.awayTeam.logoUrl}
-            alt=""
-            width={24}
-            height={24}
-            className="size-6 shrink-0 object-contain"
-          />
+      {/* ── Mobile: competition header (multi-comp) + teams · divider · meta ── */}
+      <div className="px-3 md:hidden">
+        {compName && (
+          <div className="flex items-center gap-1.5 pt-2 text-xs text-text-tertiary">
+            {f.competition?.logoUrl && (
+              <Image
+                src={f.competition.logoUrl}
+                alt=""
+                width={16}
+                height={16}
+                className="size-4 shrink-0 object-contain"
+              />
+            )}
+            <span className="truncate">{compName}</span>
+          </div>
         )}
+
+        <div className="flex items-stretch gap-3 py-2.5">
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex items-center gap-2.5">
+              {f.homeTeam?.logoUrl ? (
+                <Image
+                  src={f.homeTeam.logoUrl}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="size-6 shrink-0 object-contain"
+                />
+              ) : (
+                <span className="inline-block size-6 shrink-0 rounded bg-bg-surface-2" />
+              )}
+              <span
+                className={`min-w-0 flex-1 truncate text-base ${awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
+              >
+                {teamName(f.homeTeam, locale)}
+              </span>
+              {showScore && (
+                <span
+                  className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'}`}
+                >
+                  {f.homeScore}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2.5">
+              {f.awayTeam?.logoUrl ? (
+                <Image
+                  src={f.awayTeam.logoUrl}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="size-6 shrink-0 object-contain"
+                />
+              ) : (
+                <span className="inline-block size-6 shrink-0 rounded bg-bg-surface-2" />
+              )}
+              <span
+                className={`min-w-0 flex-1 truncate text-base ${homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
+              >
+                {teamName(f.awayTeam, locale)}
+              </span>
+              {showScore && (
+                <span
+                  className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'}`}
+                >
+                  {f.awayScore}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="w-px shrink-0 self-stretch bg-border-subtle" />
+
+          <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight">
+            {isLive ? (
+              <span className="text-sm font-bold tabular-nums text-score-live">
+                {isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE'}
+              </span>
+            ) : isDone ? (
+              <span className="text-xs font-medium text-text-tertiary">
+                {f.statusCode === 'AET' ? 'AET' : 'FT'}
+              </span>
+            ) : (
+              <span className="text-sm tabular-nums text-text-secondary" suppressHydrationWarning>
+                {formatMatchTime(f.kickoffAt, locale)}
+              </span>
+            )}
+            {isDone &&
+              f.statusCode === 'PEN' &&
+              f.homeScorePen != null &&
+              f.awayScorePen != null && (
+                <span className="mt-0.5 text-[9px] font-semibold uppercase text-text-tertiary">
+                  PEN {f.homeScorePen}-{f.awayScorePen}
+                </span>
+              )}
+          </div>
+        </div>
       </div>
     </a>
   );

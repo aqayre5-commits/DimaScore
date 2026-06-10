@@ -1,6 +1,6 @@
 'use client';
 
-import { TeamLogo } from '@/components/shared/Logo';
+import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { formatMatchTime } from '@/lib/utils/date';
@@ -29,14 +29,18 @@ interface FixtureRowProps {
   homeScorePen?: number | null;
   awayScorePen?: number | null;
   locale: Locale;
+  /** Competition label (logo + name) — shown ONLY on mobile and ONLY for multi-competition lists
+   *  (e.g. team page, mixed lists). Omit on single-competition pages (it's in the hero). */
+  competition?: { name: string; logoUrl: string | null };
 }
 
 /**
  * Shared fixture row used across competition, team, and match list views.
  *
- * Responsive: HORIZONTAL on desktop (HOME [flag][name] … score … [name][flag] AWAY);
- * STACKED on mobile, matching the homepage row — time/status on the left, home over away
- * with full names (no truncation), per-team scores stacked on the right (or "VS"), loser dimmed.
+ * Desktop (md+): horizontal — HOME [flag][name] … score … [name][flag] AWAY. Unchanged.
+ * Mobile (<md): stacked — optional competition header, then teams home-over-away with full names
+ * and per-team scores on the left, a vertical divider, and time/status on the right (the date
+ * lives in the group header, so it isn't repeated here). Loser dimmed.
  */
 export function FixtureRow({
   fixtureId,
@@ -49,6 +53,7 @@ export function FixtureRow({
   homeScorePen = null,
   awayScorePen = null,
   locale,
+  competition,
 }: FixtureRowProps) {
   const t = useTranslations('matchDetail');
   const state = getMatchState(statusCode, kickoffAt);
@@ -98,7 +103,7 @@ export function FixtureRow({
       ariaLabel={`${homeName} vs ${awayName}`}
       className="block rounded-md text-base transition-colors hover:bg-bg-surface-2"
     >
-      {/* ── Desktop: horizontal ── */}
+      {/* ── Desktop: horizontal (UNCHANGED) ── */}
       <div className="hidden items-center gap-2 py-2 md:flex">
         <div className="w-12 shrink-0 text-center">
           {isLive ? (
@@ -147,68 +152,75 @@ export function FixtureRow({
         </div>
       </div>
 
-      {/* ── Mobile: stacked, matching the homepage row ── */}
-      <div className="flex items-center gap-3 py-2 md:hidden">
-        {/* Time / status */}
-        <div className="w-12 shrink-0 text-center">
-          {isLive ? (
-            <span className="text-sm font-bold tabular-nums text-score-live">{statusLabel}</span>
-          ) : isFinished ? (
-            <span className="text-xs font-medium text-text-tertiary">{statusLabel}</span>
-          ) : (
-            <span className="text-sm tabular-nums text-text-secondary" suppressHydrationWarning>
-              {time}
-            </span>
-          )}
-        </div>
-
-        {/* Teams — home over away, full names */}
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex items-center gap-2.5">
-            <TeamBadge team={homeTeam} flag={homeFlag} big />
-            <span
-              className={`truncate text-base ${awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
-            >
-              {homeName}
-            </span>
+      {/* ── Mobile: competition header (multi-comp lists only) + teams · divider · meta ── */}
+      <div className="md:hidden">
+        {competition && (
+          <div className="flex items-center gap-1.5 pt-1.5 text-xs text-text-tertiary">
+            {competition.logoUrl && (
+              <CompetitionLogo
+                src={competition.logoUrl}
+                size={16}
+                className="size-4 shrink-0 object-contain"
+              />
+            )}
+            <span className="truncate">{competition.name}</span>
           </div>
-          <div className="flex items-center gap-2.5">
-            <TeamBadge team={awayTeam} flag={awayFlag} big />
-            <span
-              className={`truncate text-base ${homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
-            >
-              {awayName}
-            </span>
-          </div>
-        </div>
+        )}
 
-        {/* Per-team scores stacked, or VS for upcoming */}
-        <div className="w-8 shrink-0 text-center text-base font-bold tabular-nums">
-          {hasScore ? (
-            <div className="space-y-2">
-              <div
-                className={
-                  isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'
-                }
+        <div className="flex items-stretch gap-3 py-2">
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex items-center gap-2.5">
+              <TeamBadge team={homeTeam} flag={homeFlag} big />
+              <span
+                className={`min-w-0 flex-1 truncate text-base ${awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
               >
-                {homeScore}
-              </div>
-              <div
-                className={
-                  isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'
-                }
-              >
-                {awayScore}
-              </div>
-              {showPenScore && (
-                <div className="text-[9px] font-semibold uppercase text-text-tertiary">
-                  ({homeScorePen}-{awayScorePen})
-                </div>
+                {homeName}
+              </span>
+              {hasScore && (
+                <span
+                  className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'}`}
+                >
+                  {homeScore}
+                </span>
               )}
             </div>
-          ) : (
-            <span className="text-xs font-semibold text-text-tertiary">VS</span>
-          )}
+            <div className="flex items-center gap-2.5">
+              <TeamBadge team={awayTeam} flag={awayFlag} big />
+              <span
+                className={`min-w-0 flex-1 truncate text-base ${homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
+              >
+                {awayName}
+              </span>
+              {hasScore && (
+                <span
+                  className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'}`}
+                >
+                  {awayScore}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="w-px shrink-0 self-stretch bg-border-subtle" />
+
+          <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight">
+            {isLive ? (
+              <span className="text-sm font-bold tabular-nums text-score-live">{statusLabel}</span>
+            ) : isFinished ? (
+              <span className="text-xs font-medium text-text-tertiary">
+                {statusLabel || t('fullTime')}
+              </span>
+            ) : (
+              <span className="text-sm tabular-nums text-text-secondary" suppressHydrationWarning>
+                {time}
+              </span>
+            )}
+            {showPenScore && (
+              <span className="mt-0.5 text-[9px] font-semibold uppercase text-text-tertiary">
+                {t('penalties')} {homeScorePen}-{awayScorePen}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </MatchLink>
