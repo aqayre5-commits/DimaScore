@@ -273,90 +273,163 @@ function WCMatchRow({
       matchId={String(fixture.id)}
       href={`/${locale}/match/${fixture.id}`}
       preview={preview}
-      className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent-azure/5"
+      className="block transition-colors hover:bg-accent-azure/5"
     >
-      {/* Time / status */}
-      <div className="w-12 shrink-0 text-center">
-        {isLive ? (
-          <span className="flex items-center justify-center gap-1 text-xs font-semibold text-accent-emerald">
-            <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
-            {statusCode === 'HT' ? 'HT' : statusCode}
-          </span>
-        ) : isFinished ? (
-          <span className="text-xs text-text-tertiary">FT</span>
-        ) : (
-          <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
-            {time}
-          </span>
-        )}
-      </div>
-
-      {/* Home team */}
-      <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        <TeamBadge team={homeTeam} flag={homeFlag} />
-        <span
-          className={cn(
-            'truncate text-sm',
-            homeWon ? 'font-semibold text-text-primary' : 'text-text-secondary',
+      {/* \u2500\u2500 Desktop: horizontal (with Group \u00B7 Venue) \u2500\u2500 */}
+      <div className="hidden items-center gap-3 px-4 py-2.5 md:flex">
+        <div className="w-12 shrink-0 text-center">
+          {isLive ? (
+            <span className="flex items-center justify-center gap-1 text-xs font-semibold text-accent-emerald">
+              <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
+              {statusCode === 'HT' ? 'HT' : statusCode}
+            </span>
+          ) : isFinished ? (
+            <span className="text-xs text-text-tertiary">FT</span>
+          ) : (
+            <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
+              {time}
+            </span>
           )}
-        >
-          {homeName}
-        </span>
-      </div>
+        </div>
 
-      {/* Center: vs + group + venue */}
-      <div className="flex shrink-0 flex-col items-center text-center">
-        {hasScore ? (
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">
+          <TeamBadge team={homeTeam} flag={homeFlag} />
           <span
             className={cn(
-              'text-sm font-bold tabular-nums',
-              isLive ? 'text-accent-emerald' : 'text-text-primary',
+              'truncate text-sm',
+              homeWon ? 'font-semibold text-text-primary' : 'text-text-secondary',
             )}
           >
-            {homeScore} - {awayScore}
+            {homeName}
           </span>
-        ) : (
-          <span className="text-xs text-text-tertiary">vs</span>
-        )}
-        {(groupLabel || venueName) && (
-          <span className="max-w-[180px] truncate text-[10px] text-text-tertiary">
-            {[groupLabel, venueName].filter(Boolean).join(' \u00B7 ')}
+        </div>
+
+        <div className="flex shrink-0 flex-col items-center text-center">
+          {hasScore ? (
+            <span
+              className={cn(
+                'text-sm font-bold tabular-nums',
+                isLive ? 'text-accent-emerald' : 'text-text-primary',
+              )}
+            >
+              {homeScore} - {awayScore}
+            </span>
+          ) : (
+            <span className="text-xs text-text-tertiary">vs</span>
+          )}
+          {(groupLabel || venueName) && (
+            <span className="max-w-[180px] truncate text-[10px] text-text-tertiary">
+              {[groupLabel, venueName].filter(Boolean).join(' \u00B7 ')}
+            </span>
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
+          <span
+            className={cn(
+              'truncate text-sm',
+              awayWon ? 'font-semibold text-text-primary' : 'text-text-secondary',
+            )}
+          >
+            {awayName}
           </span>
-        )}
+          <TeamBadge team={awayTeam} flag={awayFlag} />
+        </div>
       </div>
 
-      {/* Away team */}
-      <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
-        <span
-          className={cn(
-            'truncate text-sm',
-            awayWon ? 'font-semibold text-text-primary' : 'text-text-secondary',
+      {/* \u2500\u2500 Mobile: stacked, matching the homepage row \u2500\u2500 */}
+      <div className="flex items-center gap-3 px-4 py-2.5 md:hidden">
+        <div className="w-12 shrink-0 text-center">
+          {isLive ? (
+            <span className="text-sm font-bold tabular-nums text-score-live">
+              {statusCode === 'HT' ? 'HT' : statusCode}
+            </span>
+          ) : isFinished ? (
+            <span className="text-xs font-medium text-text-tertiary">FT</span>
+          ) : (
+            <span className="text-sm tabular-nums text-text-secondary" suppressHydrationWarning>
+              {time}
+            </span>
           )}
-        >
-          {awayName}
-        </span>
-        <TeamBadge team={awayTeam} flag={awayFlag} />
+        </div>
+
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex items-center gap-2.5">
+            <TeamBadge team={homeTeam} flag={homeFlag} big />
+            <span
+              className={cn(
+                'truncate text-base',
+                awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary',
+              )}
+            >
+              {homeName}
+            </span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <TeamBadge team={awayTeam} flag={awayFlag} big />
+            <span
+              className={cn(
+                'truncate text-base',
+                homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary',
+              )}
+            >
+              {awayName}
+            </span>
+          </div>
+        </div>
+
+        <div className="w-8 shrink-0 text-center text-base font-bold tabular-nums">
+          {hasScore ? (
+            <div className="space-y-2">
+              <div
+                className={
+                  isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'
+                }
+              >
+                {homeScore}
+              </div>
+              <div
+                className={
+                  isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'
+                }
+              >
+                {awayScore}
+              </div>
+            </div>
+          ) : (
+            <span className="text-xs font-semibold text-text-tertiary">VS</span>
+          )}
+        </div>
       </div>
     </MatchLink>
   );
 }
 
-function TeamBadge({ team, flag }: { team: FixtureWithTeams['homeTeam']; flag: string | null }) {
+function TeamBadge({
+  team,
+  flag,
+  big = false,
+}: {
+  team: FixtureWithTeams['homeTeam'];
+  flag: string | null;
+  big?: boolean;
+}) {
+  const box = big ? 'size-6' : 'size-5';
   if (team?.logoUrl) {
     return (
       <Image
         src={team.logoUrl}
         alt=""
-        width={20}
-        height={20}
-        className="size-5 shrink-0 object-contain"
+        width={big ? 24 : 20}
+        height={big ? 24 : 20}
+        className={`${box} shrink-0 object-contain`}
       />
     );
   }
   if (flag) {
-    return <span className="shrink-0 text-sm leading-none">{flag}</span>;
+    return <span className={`shrink-0 leading-none ${big ? 'text-lg' : 'text-sm'}`}>{flag}</span>;
   }
-  return <span className="inline-block size-5 shrink-0 rounded bg-bg-surface-2" />;
+  return <span className={`inline-block ${box} shrink-0 rounded bg-bg-surface-2`} />;
 }
 
 function resolveFullName(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
