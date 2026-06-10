@@ -258,9 +258,56 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
         </div>
       </div>
 
-      {/* \u2500\u2500 Mobile: stacked, matching the homepage row \u2500\u2500 */}
-      <div className="flex items-center gap-3 px-4 py-2.5 md:hidden">
-        <div className="w-12 shrink-0 text-center">
+      {/* \u2500\u2500 Mobile: teams + per-team scores \u00b7 divider \u00b7 time/status \u2500\u2500 */}
+      <div className="flex items-stretch gap-3 px-4 py-2.5 md:hidden">
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex items-center gap-2.5">
+            <TeamBadge team={homeTeam} big />
+            <span
+              className={cn(
+                'min-w-0 flex-1 truncate text-base',
+                awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary',
+              )}
+            >
+              {homeName}
+            </span>
+            {hasScore && (
+              <span
+                className={cn(
+                  'text-base font-bold tabular-nums',
+                  isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary',
+                )}
+              >
+                {homeScore}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2.5">
+            <TeamBadge team={awayTeam} big />
+            <span
+              className={cn(
+                'min-w-0 flex-1 truncate text-base',
+                homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary',
+              )}
+            >
+              {awayName}
+            </span>
+            {hasScore && (
+              <span
+                className={cn(
+                  'text-base font-bold tabular-nums',
+                  isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary',
+                )}
+              >
+                {awayScore}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="w-px shrink-0 self-stretch bg-border-subtle" />
+
+        <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight">
           {isLive ? (
             <span className="text-sm font-bold tabular-nums text-score-live">
               {statusCode === 'HT' ? 'HT' : statusCode}
@@ -271,54 +318,6 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
             <span className="text-sm tabular-nums text-text-secondary" suppressHydrationWarning>
               {time}
             </span>
-          )}
-        </div>
-
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex items-center gap-2.5">
-            <TeamBadge team={homeTeam} big />
-            <span
-              className={cn(
-                'truncate text-base',
-                awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary',
-              )}
-            >
-              {homeName}
-            </span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <TeamBadge team={awayTeam} big />
-            <span
-              className={cn(
-                'truncate text-base',
-                homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary',
-              )}
-            >
-              {awayName}
-            </span>
-          </div>
-        </div>
-
-        <div className="w-8 shrink-0 text-center text-base font-bold tabular-nums">
-          {hasScore ? (
-            <div className="space-y-2">
-              <div
-                className={
-                  isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'
-                }
-              >
-                {homeScore}
-              </div>
-              <div
-                className={
-                  isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'
-                }
-              >
-                {awayScore}
-              </div>
-            </div>
-          ) : (
-            <span className="text-xs font-semibold text-text-tertiary">VS</span>
           )}
         </div>
       </div>
