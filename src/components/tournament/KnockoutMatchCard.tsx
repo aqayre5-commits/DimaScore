@@ -119,19 +119,20 @@ function TeamRow({
         <span className="size-7 shrink-0 rounded bg-bg-surface-2" />
       )}
       <span className="text-sm font-bold tabular-nums text-text-primary">{code}</span>
-      <span className="flex-1" />
-      {showScore ? (
-        <span className="flex items-baseline gap-1 tabular-nums">
-          <span
-            className={cn('text-2xl font-bold', isLive ? 'text-score-live' : 'text-text-primary')}
-          >
-            {score ?? '–'}
-          </span>
-          {pen != null && <span className="text-sm font-medium text-text-tertiary">({pen})</span>}
+      <span className="ml-auto flex items-baseline tabular-nums">
+        <span
+          className={cn(
+            'w-8 text-right text-2xl font-bold',
+            !showScore ? 'text-text-quaternary' : isLive ? 'text-score-live' : 'text-text-primary',
+          )}
+        >
+          {showScore ? (score ?? '–') : '–'}
         </span>
-      ) : (
-        <span className="text-2xl font-bold text-text-quaternary">–</span>
-      )}
+        {/* Fixed-width penalty slot (reserved even when empty) so main scores stay aligned across cards */}
+        <span className="w-9 pl-1.5 text-left text-sm font-medium text-text-tertiary">
+          {pen != null ? `(${pen})` : ''}
+        </span>
+      </span>
     </div>
   );
 }
