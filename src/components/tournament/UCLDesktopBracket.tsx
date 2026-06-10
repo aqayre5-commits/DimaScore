@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/lib/i18n/config';
 import type { BracketMatch, KnockoutPhase } from './BracketMatchCell';
+import { BracketCardNode } from './BracketCardNode';
 import Image from 'next/image';
 
 // ── UCL-specific round labels ───────────────────────────────────────────────
@@ -262,12 +263,21 @@ function UCLMatchCard({ match }: { match: BracketMatch }) {
 interface UCLDesktopBracketProps {
   matches: BracketMatch[];
   locale: Locale;
+  /** 'card' renders the polished BracketCardNode (flag + code + score + status); 'default' is the UCL aggregate card. */
+  variant?: 'default' | 'card';
 }
 
-export function UCLDesktopBracket({ matches, locale }: UCLDesktopBracketProps) {
+export function UCLDesktopBracket({
+  matches,
+  locale,
+  variant = 'default',
+}: UCLDesktopBracketProps) {
   const labels = UCL_LABELS[locale] ?? UCL_LABELS.en;
   const phases = PHASE_ORDER.filter((p) => matches.some((m) => m.phase === p));
   const ordered = buildBracketOrder(matches);
+
+  const renderCard = (m: BracketMatch) =>
+    variant === 'card' ? <BracketCardNode match={m} /> : <UCLMatchCard match={m} />;
 
   const firstPhase = phases[0];
   const baseCount = (ordered.get(firstPhase) ?? []).length;
@@ -304,14 +314,8 @@ export function UCLDesktopBracket({ matches, locale }: UCLDesktopBracketProps) {
                             className="relative flex flex-col"
                             style={{ flex: pairFlex }}
                           >
-                            <div className="flex flex-1 items-center">
-                              <UCLMatchCard match={m1} />
-                            </div>
-                            {m2 && (
-                              <div className="flex flex-1 items-center">
-                                <UCLMatchCard match={m2} />
-                              </div>
-                            )}
+                            <div className="flex flex-1 items-center">{renderCard(m1)}</div>
+                            {m2 && <div className="flex flex-1 items-center">{renderCard(m2)}</div>}
                           </div>
                         );
                       })
@@ -321,7 +325,7 @@ export function UCLDesktopBracket({ matches, locale }: UCLDesktopBracketProps) {
                           className="flex items-center"
                           style={{ flex: baseCount }}
                         >
-                          <UCLMatchCard match={match} />
+                          {renderCard(match)}
                         </div>
                       ))}
                 </div>

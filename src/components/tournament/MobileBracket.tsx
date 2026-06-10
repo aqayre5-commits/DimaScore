@@ -3,12 +3,15 @@
 import { useEffect, useRef } from 'react';
 import type { Locale } from '@/lib/i18n/config';
 import { BracketMatchCell, type BracketMatch, type KnockoutPhase } from './BracketMatchCell';
+import { BracketCardNode } from './BracketCardNode';
 
 interface MobileBracketProps {
   matches: BracketMatch[];
   thirdPlaceMatch?: BracketMatch;
   locale: Locale;
   activePhase: KnockoutPhase;
+  /** 'card' renders the polished BracketCardNode; 'default' is the legacy BracketMatchCell. */
+  variant?: 'default' | 'card';
 }
 
 /** Ordered sequence of rounds for mobile slides. 3rd place last per spec. */
@@ -31,6 +34,7 @@ export function MobileBracket({
   thirdPlaceMatch,
   locale,
   activePhase,
+  variant = 'default',
 }: MobileBracketProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
@@ -75,13 +79,19 @@ export function MobileBracket({
 
             {/* Stacked match cells */}
             <div className="flex flex-col items-center gap-2">
-              {slideMatches.map((match) => (
-                <BracketMatchCell
-                  key={match.matchId}
-                  match={match}
-                  className="w-full max-w-[280px]"
-                />
-              ))}
+              {slideMatches.map((match) =>
+                variant === 'card' ? (
+                  <div key={match.matchId} className="w-full max-w-[280px]">
+                    <BracketCardNode match={match} />
+                  </div>
+                ) : (
+                  <BracketMatchCell
+                    key={match.matchId}
+                    match={match}
+                    className="w-full max-w-[280px]"
+                  />
+                ),
+              )}
             </div>
           </div>
         );

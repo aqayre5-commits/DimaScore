@@ -15,6 +15,9 @@ export interface BracketMatch {
   awayLabel: string;
   homeScore?: number | null;
   awayScore?: number | null;
+  homeScorePen?: number | null;
+  awayScorePen?: number | null;
+  statusCode?: string;
   homeLeg1Score?: number | null;
   homeLeg2Score?: number | null;
   awayLeg1Score?: number | null;

@@ -21,16 +21,20 @@ export function DynamicKnockoutBracket({
   matches,
   thirdPlaceMatch,
   locale,
+  competitionId,
 }: DynamicKnockoutBracketProps) {
   const activePhase =
     matches.find((m) => m.status === 'live' || m.status === 'upcoming')?.phase ??
     matches[matches.length - 1]?.phase ??
     'r16';
 
+  // AFCON (6) uses the polished flag + code + score + status node; other cups keep the default.
+  const variant = competitionId === 6 ? 'card' : 'default';
+
   return (
     <>
       <div className="hidden md:block">
-        <UCLDesktopBracket matches={matches} locale={locale} />
+        <UCLDesktopBracket matches={matches} locale={locale} variant={variant} />
       </div>
       <div className="block md:hidden">
         <MobileBracket
@@ -38,6 +42,7 @@ export function DynamicKnockoutBracket({
           thirdPlaceMatch={thirdPlaceMatch}
           locale={locale}
           activePhase={activePhase}
+          variant={variant}
         />
       </div>
     </>
