@@ -18,6 +18,8 @@ export interface BracketMatch {
   homeScorePen?: number | null;
   awayScorePen?: number | null;
   statusCode?: string;
+  /** Full ISO kickoff datetime (used by BracketCardNode to show time + date). */
+  kickoffISO?: string;
   homeLeg1Score?: number | null;
   homeLeg2Score?: number | null;
   awayLeg1Score?: number | null;

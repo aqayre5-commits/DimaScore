@@ -81,8 +81,8 @@ export function MobileBracket({
             <div className="flex flex-col items-center gap-2">
               {slideMatches.map((match) =>
                 variant === 'card' ? (
-                  <div key={match.matchId} className="w-full max-w-[280px]">
-                    <BracketCardNode match={match} />
+                  <div key={match.matchId} className="w-full max-w-[340px]">
+                    <BracketCardNode match={match} locale={locale} />
                   </div>
                 ) : (
                   <BracketMatchCell

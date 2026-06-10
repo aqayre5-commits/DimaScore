@@ -276,18 +276,23 @@ export function UCLDesktopBracket({
   const phases = PHASE_ORDER.filter((p) => matches.some((m) => m.phase === p));
   const ordered = buildBracketOrder(matches);
 
+  const isCard = variant === 'card';
+  // The card node carries a right-hand status panel, so it needs a wider column and taller rows.
+  const colW = isCard ? 280 : 176;
+  const rowH = isCard ? 128 : 110;
+
   const renderCard = (m: BracketMatch) =>
-    variant === 'card' ? <BracketCardNode match={m} /> : <UCLMatchCard match={m} />;
+    isCard ? <BracketCardNode match={m} locale={locale} /> : <UCLMatchCard match={m} />;
 
   const firstPhase = phases[0];
   const baseCount = (ordered.get(firstPhase) ?? []).length;
-  const minHeight = Math.max(baseCount * 110, 600);
+  const minHeight = Math.max(baseCount * rowH, 600);
 
   return (
     <div className="overflow-x-auto pb-4">
       <div
         className="flex items-stretch"
-        style={{ minWidth: `${phases.length * 224}px`, minHeight: `${minHeight}px` }}
+        style={{ minWidth: `${phases.length * (colW + 48)}px`, minHeight: `${minHeight}px` }}
       >
         {phases.map((phase, phaseIdx) => {
           const roundMatches = ordered.get(phase) ?? [];
@@ -299,7 +304,7 @@ export function UCLDesktopBracket({
           return (
             <div key={phase} className="flex min-w-0">
               {/* ── Match column ── */}
-              <div className="flex flex-col" style={{ width: '176px' }}>
+              <div className="flex flex-col" style={{ width: `${colW}px` }}>
                 <div className="mb-3 h-5 whitespace-nowrap text-center text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
                   {labels[phase] ?? phase}
                 </div>
