@@ -75,6 +75,7 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
             lost: t('lost'),
             goalDiff: t('goalDiff'),
             points: t('points'),
+            live: t('live'),
           }}
         />
       ) : null,

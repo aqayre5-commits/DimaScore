@@ -54,6 +54,16 @@ export interface GoalEvent {
   playerName: string;
 }
 
+/** Today's fixtures for a group — lets the client compute a live/provisional table. */
+export interface LiveGroupFixture {
+  id: number;
+  homeTeamId: number | null;
+  awayTeamId: number | null;
+  homeScore: number | null;
+  awayScore: number | null;
+  statusCode: string;
+}
+
 export interface GroupStandingsBlock {
   competitionId: number;
   competitionName: Record<string, string>;
@@ -61,6 +71,7 @@ export interface GroupStandingsBlock {
   competitionLogoUrl: string | null;
   groupLabel: string;
   rows: StandingRow[];
+  fixtures: LiveGroupFixture[];
 }
 
 export interface TopMatchDateGroup {
@@ -377,6 +388,7 @@ export async function getLiveGroupStandings(
         competitionLogoUrl: r.comp_logo_url,
         groupLabel: r.group_label.replace(/^Group\s*/, ''),
         rows: [],
+        fixtures: [],
       };
       blocks.push(currentBlock);
     }
@@ -397,6 +409,48 @@ export async function getLiveGroupStandings(
       description: r.description,
       team: teamId ? (teamsMap.get(teamId) ?? null) : null,
     });
+  }
+
+  // ── Attach today's fixtures to each group so the client can compute a live/provisional table ──
+  const compIds = [...new Set(blocks.map((b) => b.competitionId))];
+  if (compIds.length > 0) {
+    const fixtureRows = await db
+      .select({
+        id: schema.fixtures.id,
+        homeTeamId: schema.fixtures.homeTeamId,
+        awayTeamId: schema.fixtures.awayTeamId,
+        homeScore: schema.fixtures.homeScore,
+        awayScore: schema.fixtures.awayScore,
+        statusCode: schema.fixtures.statusCode,
+      })
+      .from(schema.fixtures)
+      .where(
+        and(
+          inArray(schema.fixtures.competitionId, compIds),
+          gte(schema.fixtures.kickoffAt, todayStart),
+          lt(schema.fixtures.kickoffAt, todayEnd),
+        ),
+      );
+
+    const teamToBlock = new Map<number, GroupStandingsBlock>();
+    for (const b of blocks) {
+      for (const row of b.rows) {
+        if (row.teamId != null) teamToBlock.set(row.teamId, b);
+      }
+    }
+    for (const f of fixtureRows) {
+      const block =
+        (f.homeTeamId != null ? teamToBlock.get(f.homeTeamId) : undefined) ??
+        (f.awayTeamId != null ? teamToBlock.get(f.awayTeamId) : undefined);
+      block?.fixtures.push({
+        id: f.id,
+        homeTeamId: f.homeTeamId,
+        awayTeamId: f.awayTeamId,
+        homeScore: f.homeScore,
+        awayScore: f.awayScore,
+        statusCode: f.statusCode,
+      });
+    }
   }
 
   return blocks;
