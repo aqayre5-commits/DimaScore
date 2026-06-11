@@ -89,7 +89,7 @@ export function DesktopBracket({
       <div
         ref={containerRef}
         dir={isRtl ? 'rtl' : undefined}
-        className="relative grid min-w-[2600px] gap-x-2 gap-y-1"
+        className="relative grid min-w-[2150px] gap-x-2 gap-y-1"
         style={{
           gridTemplateColumns: 'repeat(9, 1fr)',
           gridTemplateRows: 'auto repeat(16, minmax(48px, auto))',

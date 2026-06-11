@@ -16,7 +16,7 @@ import type { Locale } from '@/lib/i18n/config';
  *
  * Placeholder ties (WC pre-tournament: slot codes like 1A / 3ABCDF / W73, no team yet) render the
  * slot label as the "code", a TBD flag box, no score, and just the date in the panel.
- * Type scale: score + code are 16px (text-base); everything else is 12px (text-xs).
+ * Type scale: score + code are 14px (text-sm); everything else is 12px (text-xs).
  * `w-full` so it fills the desktop tree column and the mobile slide. `data-match-id` kept for parity.
  */
 export function BracketCardNode({
@@ -38,8 +38,9 @@ export function BracketCardNode({
 
   const kickoff = match.kickoffISO ? new Date(match.kickoffISO) : null;
   const timeStr = kickoff ? formatMatchTime(kickoff, locale) : '';
+  // Short date (no weekday) so it fits the compact status panel.
   const dateStr = kickoff
-    ? formatMatchDate(kickoff, locale, { weekday: 'short', month: 'short', day: 'numeric' })
+    ? formatMatchDate(kickoff, locale, { month: 'short', day: 'numeric' })
     : (match.date ?? '');
 
   return (
@@ -75,7 +76,7 @@ export function BracketCardNode({
       {/* Status panel — plain, no tint or icons. Divider faces the team section. */}
       <div
         className={cn(
-          'flex w-[92px] shrink-0 flex-col items-center justify-center gap-0.5 px-[5px] py-[2px] text-center',
+          'flex w-[72px] shrink-0 flex-col items-center justify-center gap-0.5 px-[5px] py-[2px] text-center',
           mirrored ? 'border-r border-border-subtle' : 'border-l border-border-subtle',
         )}
       >
@@ -137,19 +138,19 @@ function NodeRow({
           <Image
             src={logoUrl}
             alt=""
-            width={36}
-            height={24}
-            className="h-6 w-9 rounded-[3px] border border-border-subtle/60 object-cover"
+            width={28}
+            height={20}
+            className="h-5 w-7 rounded-[3px] border border-border-subtle/60 object-cover"
           />
         ) : (
-          <span className="h-6 w-9 rounded-[3px] bg-bg-surface-2" />
+          <span className="h-5 w-7 rounded-[3px] bg-bg-surface-2" />
         )}
       </span>
 
       {/* Code — pushed toward the flag (ml-auto when mirrored) */}
       <span
         className={cn(
-          'min-w-0 truncate text-base font-bold tabular-nums text-text-primary',
+          'min-w-0 truncate text-sm font-bold tabular-nums text-text-primary',
           mirrored && 'ml-auto',
         )}
       >
@@ -165,7 +166,7 @@ function NodeRow({
       >
         <span
           className={cn(
-            'w-6 text-base font-bold',
+            'w-5 text-sm font-bold',
             mirrored ? 'text-left' : 'text-right',
             !showScore ? 'text-text-quaternary' : isLive ? 'text-score-live' : 'text-text-primary',
           )}
@@ -175,7 +176,7 @@ function NodeRow({
         {/* Reserved penalty slot (kept even when empty) so main scores align across cards */}
         <span
           className={cn(
-            'w-9 text-xs font-medium text-text-tertiary',
+            'w-7 text-xs font-medium text-text-tertiary',
             mirrored ? 'pr-1.5 text-right' : 'pl-1.5 text-left',
           )}
         >
