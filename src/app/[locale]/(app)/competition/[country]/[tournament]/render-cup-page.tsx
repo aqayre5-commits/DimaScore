@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
@@ -207,6 +208,7 @@ export async function renderCupPage(
   competitionLogos?: Record<number, string | null>,
 ) {
   const t = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
+  const tTournament = await getTranslations({ locale: rawLocale, namespace: 'tournament' });
 
   let metadata = initialMetadata;
   const competitionId = metadata.competitionId;
@@ -375,13 +377,23 @@ export async function renderCupPage(
             thirdPlaceMatch={cupBracket?.thirdPlaceMatch}
           />
         ) : cupBracket ? (
-          <DynamicKnockoutBracket
-            matches={cupBracket.matches}
-            thirdPlaceMatch={cupBracket.thirdPlaceMatch}
-            locale={locale}
-            gridConfig={cupBracket.gridConfig}
-            competitionId={competitionId}
-          />
+          <div className="space-y-4">
+            {(competitionId === 6 || competitionId === 922) && (
+              <Link
+                href={`/${rawLocale}/competition/${rawCountry}/${rawTournament}/bracket?season=${seasonYear}`}
+                className="inline-flex items-center gap-1 rounded-lg border border-accent-azure/30 bg-accent-azure/10 px-3 py-1.5 text-xs font-medium text-accent-azure transition-colors hover:bg-accent-azure/20"
+              >
+                {tTournament('viewFullBracket')} →
+              </Link>
+            )}
+            <DynamicKnockoutBracket
+              matches={cupBracket.matches}
+              thirdPlaceMatch={cupBracket.thirdPlaceMatch}
+              locale={locale}
+              gridConfig={cupBracket.gridConfig}
+              competitionId={competitionId}
+            />
+          </div>
         ) : (
           <GenericKnockoutList fixtures={knockoutFixtures} locale={locale} />
         ),
