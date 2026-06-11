@@ -34,7 +34,7 @@ export function BracketColumn({ matches, gridColumn, rowSpan, phase, locale }: B
             gridRow: `${i * rowSpan + 2} / span ${rowSpan}`,
           }}
         >
-          <BracketCardNode match={match} locale={locale} />
+          <BracketCardNode match={match} locale={locale} mirrored={match.side === 'right'} />
         </div>
       ))}
     </>
