@@ -8,7 +8,8 @@ import type { Locale } from '@/lib/i18n/config';
  * Knockout-bracket node — the match card. Left: two team rows (flag + 3-letter code + score, with
  * a reserved penalty slot so main scores stay aligned). Right: a plain status panel (same card
  * background, no tint or icons) showing kickoff time (upcoming) / a pulsing LIVE dot (live) /
- * FT·AET with a stacked PEN line on shootouts (finished), with the date beneath.
+ * FT with a stacked PEN line on shootouts (finished), with the date beneath.
+ * Type scale: score + code are 16px (text-base); everything else is 12px (text-xs).
  * `w-full` so it fills the desktop tree column and the mobile slide. `data-match-id` kept for parity.
  */
 export function BracketCardNode({ match, locale }: { match: BracketMatch; locale: Locale }) {
@@ -16,7 +17,8 @@ export function BracketCardNode({ match, locale }: { match: BracketMatch; locale
   const isFinished = match.status === 'finished';
   const showScore = isLive || isFinished;
   const hasPens = match.homeScorePen != null && match.awayScorePen != null;
-  const ftLabel = match.statusCode === 'AET' ? 'AET' : 'FT';
+  // AET folded into FT per spec — all finished ties read FT; PEN still stacks beneath on shootouts.
+  const ftLabel = 'FT';
 
   const kickoff = match.kickoffISO ? new Date(match.kickoffISO) : null;
   const timeStr = kickoff ? formatMatchTime(kickoff, locale) : '';
@@ -50,24 +52,22 @@ export function BracketCardNode({ match, locale }: { match: BracketMatch; locale
       </div>
 
       {/* Status panel — plain, no tint or icons */}
-      <div className="flex w-[92px] shrink-0 flex-col items-center justify-center gap-0.5 border-l border-border-subtle px-2 text-center">
+      <div className="flex w-[92px] shrink-0 flex-col items-center justify-center gap-0.5 border-l border-border-subtle px-[5px] py-[2px] text-center">
         {isLive ? (
-          <span className="flex items-center gap-1.5 text-sm font-bold text-score-live">
+          <span className="flex items-center gap-1.5 text-xs font-bold text-score-live">
             <span className="size-2 animate-pulse rounded-full bg-score-live" />
             {match.statusCode === 'HT' ? 'HT' : 'LIVE'}
           </span>
         ) : isFinished ? (
           <span className="leading-tight">
-            <span className="block text-base font-bold text-text-primary">{ftLabel}</span>
+            <span className="block text-xs font-bold text-text-primary">{ftLabel}</span>
             {hasPens && (
-              <span className="block text-[11px] font-semibold uppercase text-text-tertiary">
-                PEN
-              </span>
+              <span className="block text-xs font-semibold uppercase text-text-tertiary">PEN</span>
             )}
           </span>
         ) : (
           <span
-            className="text-base font-bold tabular-nums text-text-primary"
+            className="text-xs font-bold tabular-nums text-text-primary"
             suppressHydrationWarning
           >
             {timeStr}
@@ -75,7 +75,7 @@ export function BracketCardNode({ match, locale }: { match: BracketMatch; locale
         )}
 
         {dateStr && (
-          <span className="text-[10px] leading-tight text-text-tertiary" suppressHydrationWarning>
+          <span className="text-xs leading-tight text-text-tertiary" suppressHydrationWarning>
             {dateStr}
           </span>
         )}
@@ -100,7 +100,7 @@ function NodeRow({
   isLive: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2.5">
+    <div className="flex items-center gap-2.5 px-[5px] py-[5px]">
       {logoUrl ? (
         <Image
           src={logoUrl}
@@ -116,14 +116,14 @@ function NodeRow({
       <span className="ml-auto flex items-baseline tabular-nums">
         <span
           className={cn(
-            'w-6 text-right text-2xl font-bold',
+            'w-6 text-right text-base font-bold',
             !showScore ? 'text-text-quaternary' : isLive ? 'text-score-live' : 'text-text-primary',
           )}
         >
           {showScore ? (score ?? '–') : '–'}
         </span>
         {/* Reserved penalty slot (kept even when empty) so main scores align across cards */}
-        <span className="w-9 pl-1.5 text-left text-sm font-medium text-text-tertiary">
+        <span className="w-9 pl-1.5 text-left text-xs font-medium text-text-tertiary">
           {pen != null ? `(${pen})` : ''}
         </span>
       </span>
