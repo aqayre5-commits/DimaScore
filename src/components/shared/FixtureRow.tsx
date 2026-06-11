@@ -107,8 +107,8 @@ export function FixtureRow({
       <div className="hidden items-center gap-2 py-2 md:flex">
         <div className="w-12 shrink-0 text-center">
           {isLive ? (
-            <span className="flex items-center justify-center gap-1 text-xs font-semibold text-accent-emerald">
-              <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
+            <span className="flex items-center justify-center gap-1 text-xs font-semibold text-score-live">
+              <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
               {statusLabel}
             </span>
           ) : isFinished ? (
@@ -130,7 +130,7 @@ export function FixtureRow({
         <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight tabular-nums">
           {hasScore ? (
             <span
-              className={`text-base font-semibold ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
+              className={`text-base font-semibold ${isLive ? 'text-score-live' : 'text-text-primary'}`}
             >
               {homeScore} - {awayScore}
             </span>

@@ -200,8 +200,8 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
       <div className="hidden items-center gap-3 px-4 py-2.5 md:flex">
         <div className="w-12 shrink-0 text-center">
           {isLive ? (
-            <span className="flex items-center justify-center gap-1 text-xs font-semibold text-accent-emerald">
-              <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
+            <span className="flex items-center justify-center gap-1 text-xs font-semibold text-score-live">
+              <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
               {statusCode === 'HT' ? 'HT' : statusCode}
             </span>
           ) : isFinished ? (
@@ -230,7 +230,7 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
             <span
               className={cn(
                 'text-sm font-bold tabular-nums',
-                isLive ? 'text-accent-emerald' : 'text-text-primary',
+                isLive ? 'text-score-live' : 'text-text-primary',
               )}
             >
               {homeScore} - {awayScore}

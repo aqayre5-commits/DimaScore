@@ -118,14 +118,14 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
             {isFinished || isLive ? (
               <>
                 <div
-                  className={`text-xl font-bold tabular-nums ${isLive ? 'text-accent-emerald' : 'text-text-primary'}`}
+                  className={`text-xl font-bold tabular-nums ${isLive ? 'text-score-live' : 'text-text-primary'}`}
                 >
                   {homeScore != null && awayScore != null ? `${homeScore} - ${awayScore}` : '- : -'}
                 </div>
                 {isLive ? (
                   <div className="mt-1 flex items-center justify-center gap-1">
-                    <span className="size-1.5 animate-pulse rounded-full bg-accent-emerald" />
-                    <span className="text-xs font-semibold text-accent-emerald">
+                    <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
+                    <span className="text-xs font-semibold text-score-live">
                       {statusCode === 'HT' ? 'HT' : statusCode}
                     </span>
                   </div>

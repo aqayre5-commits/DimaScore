@@ -122,7 +122,7 @@ function UCLMatchCard({ match }: { match: BracketMatch }) {
       data-match-id={match.matchId}
       className={cn(
         'w-[176px] shrink-0 overflow-hidden rounded-lg border bg-bg-surface text-xs',
-        match.status === 'live' ? 'border-accent-emerald/50' : 'border-border-subtle',
+        match.status === 'live' ? 'border-score-live/50' : 'border-border-subtle',
       )}
     >
       {showScores && hasTwoLegs && (
@@ -242,7 +242,7 @@ function UCLMatchCard({ match }: { match: BracketMatch }) {
 
       <div className="border-t border-border-subtle bg-bg-surface-2 px-2 py-0.5 text-[10px] text-text-tertiary">
         {match.status === 'live' && (
-          <span className="mr-1 inline-block size-1.5 animate-pulse rounded-full bg-accent-emerald align-middle" />
+          <span className="mr-1 inline-block size-1.5 animate-pulse rounded-full bg-score-live align-middle" />
         )}
         {showScores && hasTwoLegs ? (
           <span>
