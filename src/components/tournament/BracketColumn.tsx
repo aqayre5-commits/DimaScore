@@ -1,14 +1,17 @@
-import { BracketMatchCell, type BracketMatch, type KnockoutPhase } from './BracketMatchCell';
+import { type BracketMatch, type KnockoutPhase } from './BracketMatchCell';
+import { BracketCardNode } from './BracketCardNode';
+import type { Locale } from '@/lib/i18n/config';
 
 interface BracketColumnProps {
   matches: BracketMatch[];
   gridColumn: number;
   rowSpan: number;
   phase: KnockoutPhase;
+  locale: Locale;
 }
 
 /**
- * Renders BracketMatchCells for one round + side as direct grid
+ * Renders BracketCardNodes for one round + side as direct grid
  * children. Each cell is placed into the parent DesktopBracket
  * grid via explicit gridColumn / gridRow styles.
  *
@@ -18,7 +21,7 @@ interface BracketColumnProps {
  * Row indices are offset by +1 to account for the header row at
  * grid-row 1.
  */
-export function BracketColumn({ matches, gridColumn, rowSpan, phase }: BracketColumnProps) {
+export function BracketColumn({ matches, gridColumn, rowSpan, phase, locale }: BracketColumnProps) {
   return (
     <>
       {matches.map((match, i) => (
@@ -31,7 +34,7 @@ export function BracketColumn({ matches, gridColumn, rowSpan, phase }: BracketCo
             gridRow: `${i * rowSpan + 2} / span ${rowSpan}`,
           }}
         >
-          <BracketMatchCell match={match} />
+          <BracketCardNode match={match} locale={locale} />
         </div>
       ))}
     </>

@@ -3,12 +3,8 @@
 import { useEffect, useRef } from 'react';
 import type { Locale } from '@/lib/i18n/config';
 import { BracketColumn } from './BracketColumn';
-import {
-  BracketMatchCell,
-  type BracketMatch,
-  type KnockoutPhase,
-  type BracketSide,
-} from './BracketMatchCell';
+import { type BracketMatch, type KnockoutPhase, type BracketSide } from './BracketMatchCell';
+import { BracketCardNode } from './BracketCardNode';
 import { BracketConnectors } from './BracketConnectors';
 import { ROUND_LABELS } from '@/lib/constants/wc2026-bracket-builder';
 
@@ -56,8 +52,11 @@ const HEADER_COLUMNS: Array<{ col: number; phase: KnockoutPhase }> = [
  * Left half converges rightward, right half converges leftward.
  * Final and 3rd-place occupy the center column (5).
  *
+ * Cells are BracketCardNode (the AFCON card design); the grid is widened to fit its
+ * ~280px width. BracketConnectors reads [data-match-id] positions, so it follows the
+ * wider cells automatically.
+ *
  * RTL (Arabic): dir="rtl" on grid reverses column visual order.
- * BracketConnectors reads computed direction for edge logic.
  */
 export function DesktopBracket({
   matches,
@@ -90,7 +89,7 @@ export function DesktopBracket({
       <div
         ref={containerRef}
         dir={isRtl ? 'rtl' : undefined}
-        className="relative grid min-w-[1500px] gap-x-2 gap-y-1"
+        className="relative grid min-w-[2600px] gap-x-2 gap-y-1"
         style={{
           gridTemplateColumns: 'repeat(9, 1fr)',
           gridTemplateRows: 'auto repeat(16, minmax(48px, auto))',
@@ -120,6 +119,7 @@ export function DesktopBracket({
               gridColumn={col}
               rowSpan={rowSpan}
               phase={phase}
+              locale={locale}
             />
           );
         })}
@@ -131,7 +131,7 @@ export function DesktopBracket({
             className="flex items-center justify-center self-center"
             style={{ gridColumn: 5, gridRow: '5 / span 5' }}
           >
-            <BracketMatchCell match={finalMatch} />
+            <BracketCardNode match={finalMatch} locale={locale} />
           </div>
         )}
 
@@ -142,7 +142,7 @@ export function DesktopBracket({
             className="flex items-center justify-center self-center"
             style={{ gridColumn: 5, gridRow: '11 / span 5' }}
           >
-            <BracketMatchCell match={thirdPlaceMatch} />
+            <BracketCardNode match={thirdPlaceMatch} locale={locale} />
           </div>
         )}
 

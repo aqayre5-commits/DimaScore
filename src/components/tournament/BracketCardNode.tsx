@@ -8,13 +8,16 @@ import type { Locale } from '@/lib/i18n/config';
  * Knockout-bracket node — the match card. Left: two team rows (flag + 3-letter code + score, with
  * a reserved penalty slot so main scores stay aligned). Right: a plain status panel (same card
  * background, no tint or icons) showing kickoff time (upcoming) / a pulsing LIVE dot (live) /
- * FT with a stacked PEN line on shootouts (finished), with the date beneath.
+ * FT with a stacked PEN line on shootouts (finished) / the date (placeholder), with the date beneath.
+ * Placeholder ties (WC pre-tournament: slot codes like 1A / 3ABCDF / W73, no team yet) render the
+ * slot label as the "code", a TBD flag box, no score, and just the date in the panel.
  * Type scale: score + code are 16px (text-base); everything else is 12px (text-xs).
  * `w-full` so it fills the desktop tree column and the mobile slide. `data-match-id` kept for parity.
  */
 export function BracketCardNode({ match, locale }: { match: BracketMatch; locale: Locale }) {
   const isLive = match.status === 'live';
   const isFinished = match.status === 'finished';
+  const isPlaceholder = match.status === 'placeholder';
   const showScore = isLive || isFinished;
   const hasPens = match.homeScorePen != null && match.awayScorePen != null;
   // AET folded into FT per spec — all finished ties read FT; PEN still stacks beneath on shootouts.
@@ -65,6 +68,8 @@ export function BracketCardNode({ match, locale }: { match: BracketMatch; locale
               <span className="block text-xs font-semibold uppercase text-text-tertiary">PEN</span>
             )}
           </span>
+        ) : isPlaceholder ? (
+          <span className="text-xs font-medium text-text-tertiary">{match.statusLabel}</span>
         ) : (
           <span
             className="text-xs font-bold tabular-nums text-text-primary"
@@ -74,7 +79,7 @@ export function BracketCardNode({ match, locale }: { match: BracketMatch; locale
           </span>
         )}
 
-        {dateStr && (
+        {!isPlaceholder && dateStr && (
           <span className="text-xs leading-tight text-text-tertiary" suppressHydrationWarning>
             {dateStr}
           </span>
@@ -112,8 +117,10 @@ function NodeRow({
       ) : (
         <span className="h-6 w-9 shrink-0 rounded-[3px] bg-bg-surface-2" />
       )}
-      <span className="text-base font-bold tabular-nums text-text-primary">{code}</span>
-      <span className="ml-auto flex items-baseline tabular-nums">
+      <span className="min-w-0 truncate text-base font-bold tabular-nums text-text-primary">
+        {code}
+      </span>
+      <span className="ml-auto flex shrink-0 items-baseline tabular-nums">
         <span
           className={cn(
             'w-6 text-right text-base font-bold',

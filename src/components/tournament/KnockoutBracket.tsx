@@ -42,6 +42,7 @@ export function KnockoutBracket({
           thirdPlaceMatch={thirdPlaceMatch}
           locale={locale}
           activePhase={activePhase}
+          variant="card"
         />
       </div>
     </>
