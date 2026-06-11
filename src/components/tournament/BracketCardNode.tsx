@@ -100,7 +100,7 @@ function NodeRow({
   isLive: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2.5 px-[5px] py-[5px]">
+    <div className="flex items-center gap-2.5 px-[5px] py-2.5">
       {logoUrl ? (
         <Image
           src={logoUrl}
