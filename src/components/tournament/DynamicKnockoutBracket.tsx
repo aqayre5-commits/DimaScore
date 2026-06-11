@@ -28,10 +28,11 @@ export function DynamicKnockoutBracket({
     matches[matches.length - 1]?.phase ??
     'r16';
 
-  // AFCON (6) uses the polished flag + code + score + status node; other cups keep the default.
-  const variant = competitionId === 6 ? 'card' : 'default';
+  // AFCON (6) and WAFCON (922) use the polished flag + code + score + status node; other cups
+  // keep the default.
+  const variant = competitionId === 6 || competitionId === 922 ? 'card' : 'default';
 
-  // AFCON (card variant) shows the same converging tree on every breakpoint — it scrolls
+  // Card variant (AFCON/WAFCON) shows the same converging tree on every breakpoint — it scrolls
   // horizontally on mobile. Other cups keep the desktop-tree / mobile-slides split.
   if (variant === 'card') {
     return <UCLDesktopBracket matches={matches} locale={locale} variant={variant} />;
