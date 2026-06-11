@@ -74,6 +74,26 @@ export async function generateMetadata({
     alternates: {
       languages,
     },
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: 'any' },
+        { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+        { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
+      ],
+      apple: [{ url: '/icon-192.png', type: 'image/png', sizes: '192x192' }],
+    },
+    manifest: '/manifest.webmanifest',
+    openGraph: {
+      type: 'website',
+      siteName: 'DimaScore',
+      url: `${baseUrl}/${locale}`,
+      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'DimaScore' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'DimaScore',
+      images: ['/twitter-image.png'],
+    },
   };
 }
 
