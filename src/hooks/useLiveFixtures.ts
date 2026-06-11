@@ -4,22 +4,29 @@ import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { LiveFixturePatch } from '@/lib/realtime/live-types';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { BUILD_ID } from '@/lib/constants/build';
 
 export type { LiveFixturePatch };
 
 const ACTIVE_MS = 15_000;
 const IDLE_MS = 60_000;
+// Version-check cadence on pages with no live surface mounted (the banner self-polls this slowly).
+const VERSION_POLL_MS = 5 * 60_000;
 const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
 // Halves where the match clock runs — safe to advance the minute locally between polls.
 const RUNNING_CODES = new Set<string>(['1H', '2H', 'ET']);
 
-async function fetchLiveFixtures(): Promise<LiveFixturePatch[]> {
+interface LivePayload {
+  fixtures: LiveFixturePatch[];
+  buildId?: string;
+}
+
+async function fetchLiveFixtures(): Promise<LivePayload> {
   // Default cache mode (not no-store) so the browser sends If-None-Match and honours the
   // route's max-age=0 + s-maxage: cheap 304s on unchanged polls, fresh on every change.
   const res = await fetch('/api/v1/live');
   if (!res.ok) throw new Error(`live fetch failed: ${res.status}`);
-  const data = (await res.json()) as { fixtures: LiveFixturePatch[] };
-  return data.fixtures;
+  return (await res.json()) as LivePayload;
 }
 
 /**
@@ -36,8 +43,8 @@ export function useLiveFixtures(): Map<number, LiveFixturePatch> {
     queryKey: ['live-fixtures'],
     queryFn: fetchLiveFixtures,
     refetchInterval: (query) => {
-      const rows = query.state.data;
-      const anyLive = rows?.some((f) => LIVE_CODES.has(f.statusCode)) ?? false;
+      const anyLive =
+        query.state.data?.fixtures?.some((f) => LIVE_CODES.has(f.statusCode)) ?? false;
       return anyLive ? ACTIVE_MS : IDLE_MS;
     },
     refetchIntervalInBackground: false,
@@ -56,8 +63,9 @@ export function useLiveFixtures(): Map<number, LiveFixturePatch> {
     const elapsedMin =
       tickAt && dataUpdatedAt ? Math.max(0, Math.floor((tickAt - dataUpdatedAt) / 60_000)) : 0;
     const map = new Map<number, LiveFixturePatch>();
-    if (data) {
-      for (const f of data) {
+    const fixtures = data?.fixtures;
+    if (fixtures) {
+      for (const f of fixtures) {
         const minute =
           elapsedMin > 0 && f.minute != null && RUNNING_CODES.has(f.statusCode)
             ? f.minute + elapsedMin
@@ -67,4 +75,21 @@ export function useLiveFixtures(): Map<number, LiveFixturePatch> {
     }
     return map;
   }, [data, dataUpdatedAt, tickAt]);
+}
+
+/**
+ * True when the server's build id differs from this bundle's — i.e. a new deployment is live and
+ * the open tab is running stale code. Shares the live-fixtures query (so it dedupes on live pages);
+ * on idle/static pages it self-polls every VERSION_POLL_MS and pauses while the tab is hidden.
+ */
+export function useUpdateAvailable(): boolean {
+  const { data } = useQuery({
+    queryKey: ['live-fixtures'],
+    queryFn: fetchLiveFixtures,
+    refetchInterval: VERSION_POLL_MS,
+    refetchIntervalInBackground: false,
+    staleTime: 0,
+  });
+  const serverBuildId = data?.buildId;
+  return serverBuildId != null && serverBuildId !== BUILD_ID;
 }

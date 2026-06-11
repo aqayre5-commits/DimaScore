@@ -15,7 +15,9 @@
     "teams": "الفرق",
     "players": "اللاعبون",
     "live": "مباشر",
-    "football": "كرة القدم"
+    "football": "كرة القدم",
+    "updateAvailable": "يتوفر إصدار جديد",
+    "refresh": "تحديث"
   },
   "topbar": {
     "home": "الرئيسية",

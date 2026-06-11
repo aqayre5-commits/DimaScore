@@ -27,6 +27,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Build id baked into the bundle (server + client) for the update-banner version check.
+  env: {
+    NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA || 'dev',
+  },
   cacheComponents: true,
   cacheLife: {
     match: { revalidate: 30, expire: 3600 },

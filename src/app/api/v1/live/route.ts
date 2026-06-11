@@ -4,6 +4,7 @@ import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import type { LiveFixturePatch } from '@/lib/realtime/live-types';
+import { BUILD_ID } from '@/lib/constants/build';
 
 // Live data. A short shared (CDN) cache collapses concurrent DB reads at scale, while the
 // browser revalidates each poll (max-age=0) so it never serves stale and gets a cheap 304
@@ -33,7 +34,9 @@ export async function GET(request: Request) {
       ),
     );
 
-  const body = JSON.stringify({ fixtures: rows });
+  // buildId rides the body so a new deployment flips the ETag (forcing one 200 that delivers the
+  // new id to open tabs); unchanged within a deployment, so 304s still apply.
+  const body = JSON.stringify({ fixtures: rows, buildId: BUILD_ID });
   const etag = `"${createHash('sha1').update(body).digest('base64url')}"`;
   const headers = {
     'Content-Type': 'application/json',

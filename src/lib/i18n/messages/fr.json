@@ -15,7 +15,9 @@
     "teams": "Équipes",
     "players": "Joueurs",
     "live": "Live",
-    "football": "Football"
+    "football": "Football",
+    "updateAvailable": "Une nouvelle version est disponible",
+    "refresh": "Actualiser"
   },
   "topbar": {
     "home": "Accueil",
