@@ -102,7 +102,7 @@ export async function getCurrentSeasonYear(
 export async function getAvailableSeasons(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number,
-): Promise<{ year: number; isCurrent: boolean }[]> {
+): Promise<{ year: number; isCurrent: boolean; fixtureCount: number }[]> {
   const [rows, fixtureCountRows] = await Promise.all([
     db
       .select({
@@ -122,11 +122,16 @@ export async function getAvailableSeasons(
       .groupBy(schema.fixtures.seasonYear),
   ]);
 
+  const fixtureCountByYear = new Map(fixtureCountRows.map((r) => [r.seasonYear, Number(r.count)]));
   const seasonsWithFixtures = new Set(fixtureCountRows.map((r) => r.seasonYear));
 
   return rows
     .filter((r) => (r.isCurrent ?? false) || seasonsWithFixtures.has(r.year))
-    .map((r) => ({ year: r.year, isCurrent: r.isCurrent ?? false }));
+    .map((r) => ({
+      year: r.year,
+      isCurrent: r.isCurrent ?? false,
+      fixtureCount: fixtureCountByYear.get(r.year) ?? 0,
+    }));
 }
 
 export async function getLeagueRounds(

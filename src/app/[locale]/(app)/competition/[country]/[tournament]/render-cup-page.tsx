@@ -231,6 +231,16 @@ export async function renderCupPage(
     availableSeasons,
     tournamentPhase,
   } = await getCachedCupData(competitionId, seasonYear, metadata);
+
+  // AFCON (6) has fragmentary early editions (2021/2019/2015) — hide them from the edition selector,
+  // keeping only the current edition and seasons with a full tournament's worth of fixtures (a
+  // complete edition is ~52; the fragments are ≤12). AFCON-only; other competitions are unaffected.
+  const MIN_AFCON_EDITION_FIXTURES = 24;
+  const visibleSeasons =
+    competitionId === 6
+      ? availableSeasons.filter((s) => s.isCurrent || s.fixtureCount >= MIN_AFCON_EDITION_FIXTURES)
+      : availableSeasons;
+
   const fallbackName =
     { 1: 'FIFA World Cup', 6: 'AFCON', 922: 'WAFCON' }[competitionId] ?? `Cup ${competitionId}`;
   const pageTitle = cupContent?.titles[locale] ?? `${fallbackName} ${seasonYear}`;
@@ -392,7 +402,7 @@ export async function renderCupPage(
             moroccoGroup={moroccoContext}
             orgName={cupContent?.breadcrumbOrg}
             matchesCount={allCupFixtures.length}
-            availableSeasons={availableSeasons}
+            availableSeasons={visibleSeasons}
             seasonYear={seasonYear}
           />
         }
