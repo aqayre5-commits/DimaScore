@@ -75,7 +75,7 @@ export function HomeNextMatch({ match, goals, locale, labels }: Props) {
             />
           )}
           <span className="truncate">{compName}</span>
-          {match.round && <span> · {match.round}</span>}
+          {(match.groupLabel ?? match.round) && <span> · {match.groupLabel ?? match.round}</span>}
         </div>
 
         {/* Kickoff time for upcoming */}

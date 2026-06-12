@@ -159,6 +159,42 @@ function mapToRightRailFixture(
   };
 }
 
+/**
+ * The real group ("Group A") for a fixture's teams, resolved from standings (fixtures store no
+ * group). Excludes the malformed "Group Stage" catch-all; returns null if unresolved.
+ */
+async function resolveGroupLabel(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number | null,
+  seasonYear: number | null,
+  homeTeamId: number | null,
+  awayTeamId: number | null,
+): Promise<string | null> {
+  if (competitionId == null || seasonYear == null) return null;
+  const teamIds = [homeTeamId, awayTeamId].filter((id): id is number => id != null);
+  if (teamIds.length === 0) return null;
+  const rows = await db
+    .select({ teamId: schema.standings.teamId, groupLabel: schema.standings.groupLabel })
+    .from(schema.standings)
+    .where(
+      and(
+        eq(schema.standings.competitionId, competitionId),
+        eq(schema.standings.seasonYear, seasonYear),
+        inArray(schema.standings.teamId, teamIds),
+      ),
+    );
+  for (const teamId of teamIds) {
+    for (const r of rows) {
+      if (r.teamId !== teamId || r.groupLabel == null) continue;
+      const norm = r.groupLabel.replace(/^Group Stage\s*-\s*/i, '');
+      const low = norm.toLowerCase();
+      if (low === 'group stage' || !low.startsWith('group ')) continue;
+      return norm;
+    }
+  }
+  return null;
+}
+
 // ── Round-based priority boost ──
 // Knockout rounds get a priority boost so a UCL Final (base 45) outranks
 // a Botola regular-season match (base 20). Qualifier rounds excluded.
@@ -192,6 +228,7 @@ export async function getNextFeaturedMatch(
       statusCode: schema.fixtures.statusCode,
       minute: schema.fixtures.minute,
       round: schema.fixtures.round,
+      seasonYear: schema.fixtures.seasonYear,
       homeTeamId: schema.fixtures.homeTeamId,
       awayTeamId: schema.fixtures.awayTeamId,
       homeScore: schema.fixtures.homeScore,
@@ -224,6 +261,7 @@ export async function getNextFeaturedMatch(
       statusCode: schema.fixtures.statusCode,
       minute: schema.fixtures.minute,
       round: schema.fixtures.round,
+      seasonYear: schema.fixtures.seasonYear,
       homeTeamId: schema.fixtures.homeTeamId,
       awayTeamId: schema.fixtures.awayTeamId,
       homeScore: schema.fixtures.homeScore,
@@ -285,6 +323,17 @@ export async function getNextFeaturedMatch(
   const teamsMap = await hydrateTeams(db, teamIds);
 
   const match = mapToRightRailFixture(row, teamsMap);
+
+  // Show the real group (e.g. "Group D") for group-stage matches instead of the round.
+  if (match.round && /group/i.test(match.round)) {
+    match.groupLabel = await resolveGroupLabel(
+      db,
+      row.compId,
+      row.seasonYear,
+      row.homeTeamId,
+      row.awayTeamId,
+    );
+  }
 
   // Get goals if live
   let goals: GoalEvent[] = [];
