@@ -629,7 +629,8 @@ export async function getTopMatchesThisWeek(
     for (const s of standingRows) {
       if (s.teamId == null || s.groupLabel == null) continue;
       const norm = s.groupLabel.replace(/^Group Stage\s*-\s*/i, '');
-      if (!/^Group [A-Z]/i.test(norm)) continue;
+      const low = norm.toLowerCase();
+      if (low === 'group stage' || !low.startsWith('group ')) continue;
       teamGroup.set(`${s.competitionId}:${s.seasonYear}:${s.teamId}`, norm);
     }
     for (const r of groupStage) {
