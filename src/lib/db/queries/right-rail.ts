@@ -438,29 +438,39 @@ export async function getLiveGroupStandings(
       fxByComp.set(f.competitionId, arr);
     }
 
+    const earliestKickoff = new Map<GroupStandingsBlock, number>();
     for (const b of blocks) {
       const compFx = fxByComp.get(b.competitionId) ?? [];
       // Server: fill an empty group table from finished results (immune to a stale /standings feed).
       b.rows = applyComputedStandings(b.rows, compFx);
       // Client overlay: today's fixtures for this group's teams (live matches layer on top).
       const teamIds = new Set(b.rows.map((r) => r.teamId).filter((x): x is number => x != null));
-      b.fixtures = compFx
-        .filter(
-          (f) =>
-            f.kickoffAt >= todayStart &&
-            f.kickoffAt < todayEnd &&
-            ((f.homeTeamId != null && teamIds.has(f.homeTeamId)) ||
-              (f.awayTeamId != null && teamIds.has(f.awayTeamId))),
-        )
-        .map((f) => ({
-          id: f.id,
-          homeTeamId: f.homeTeamId,
-          awayTeamId: f.awayTeamId,
-          homeScore: f.homeScore,
-          awayScore: f.awayScore,
-          statusCode: f.statusCode,
-        }));
+      const todayFx = compFx.filter(
+        (f) =>
+          f.kickoffAt >= todayStart &&
+          f.kickoffAt < todayEnd &&
+          ((f.homeTeamId != null && teamIds.has(f.homeTeamId)) ||
+            (f.awayTeamId != null && teamIds.has(f.awayTeamId))),
+      );
+      b.fixtures = todayFx.map((f) => ({
+        id: f.id,
+        homeTeamId: f.homeTeamId,
+        awayTeamId: f.awayTeamId,
+        homeScore: f.homeScore,
+        awayScore: f.awayScore,
+        statusCode: f.statusCode,
+      }));
+      earliestKickoff.set(
+        b,
+        todayFx.length
+          ? Math.min(...todayFx.map((f) => f.kickoffAt.getTime()))
+          : Number.POSITIVE_INFINITY,
+      );
     }
+    // When multiple groups play today, order their tables by earliest kickoff (earliest first).
+    blocks.sort(
+      (a, b) => (earliestKickoff.get(a) ?? Infinity) - (earliestKickoff.get(b) ?? Infinity),
+    );
   }
 
   return blocks;

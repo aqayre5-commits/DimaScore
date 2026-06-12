@@ -1,8 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import type { GroupStandingsBlock } from '@/lib/db/queries/right-rail';
@@ -11,26 +10,28 @@ import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 
+interface Labels {
+  liveGroupStandings: string;
+  matchesToday: string;
+  viewFullGroup: string;
+  team: string;
+  played: string;
+  won: string;
+  drawn: string;
+  lost: string;
+  goalDiff: string;
+  points: string;
+  live: string;
+}
+
 interface Props {
   groups: GroupStandingsBlock[];
   locale: Locale;
-  labels: {
-    liveGroupStandings: string;
-    matchesToday: string;
-    viewFullGroup: string;
-    team: string;
-    played: string;
-    won: string;
-    drawn: string;
-    lost: string;
-    goalDiff: string;
-    points: string;
-    live: string;
-  };
+  labels: Labels;
 }
 
 // In-progress statuses (not finished) — only these are overlaid; finished matches are already in
-// the official standings, so applying them too would double-count.
+// the standings, so applying them too would double-count.
 const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE', 'INT']);
 
 function applyResult(row: StandingRow, scored: number, conceded: number) {
@@ -51,8 +52,7 @@ function applyResult(row: StandingRow, scored: number, conceded: number) {
 
 /**
  * Overlay each in-progress group fixture (freshest score from the live poll, snapshot fallback)
- * onto a clone of the official rows, then re-sort. Returns the (possibly provisional) rows, the
- * set of teams with a live adjustment, and whether any live match applied.
+ * onto a clone of the official rows, then re-sort.
  */
 function computeProvisional(
   group: GroupStandingsBlock,
@@ -91,66 +91,64 @@ function computeProvisional(
   return { rows: clone, liveTeamIds, hasLive: true };
 }
 
+/**
+ * One standings table per group playing today. No switcher — every today's group renders, ordered
+ * by kickoff (the server sorts the blocks). Each table live-updates via the in-progress overlay.
+ */
 export function HomeLiveGroupStandings({ groups, locale, labels }: Props) {
-  const [activeIdx, setActiveIdx] = useState(0);
   const live = useLiveFixtures();
+  if (groups.length === 0) return null;
+  return (
+    <div className="space-y-3">
+      {groups.map((group) => (
+        <GroupCard
+          key={`${group.competitionId}-${group.groupLabel}`}
+          group={group}
+          live={live}
+          locale={locale}
+          labels={labels}
+        />
+      ))}
+    </div>
+  );
+}
 
-  const group = groups[activeIdx];
+function GroupCard({
+  group,
+  live,
+  locale,
+  labels,
+}: {
+  group: GroupStandingsBlock;
+  live: ReturnType<typeof useLiveFixtures>;
+  locale: Locale;
+  labels: Labels;
+}) {
   const { rows, liveTeamIds, hasLive } = useMemo(
-    () =>
-      group
-        ? computeProvisional(group, live)
-        : { rows: [], liveTeamIds: new Set<number>(), hasLive: false },
+    () => computeProvisional(group, live),
     [group, live],
   );
-
-  if (groups.length === 0 || !group) return null;
-
-  const prev = () => setActiveIdx((i) => (i === 0 ? groups.length - 1 : i - 1));
-  const next = () => setActiveIdx((i) => (i === groups.length - 1 ? 0 : i + 1));
-
   const compName = group.competitionName[locale] ?? group.competitionName['en'] ?? '';
 
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5">
-        <div className="flex min-w-0 items-center gap-1.5">
-          {group.competitionLogoUrl && (
-            <CompetitionLogo
-              src={group.competitionLogoUrl}
-              size={16}
-              className="size-4 shrink-0 object-contain"
-            />
-          )}
-          <h2 className="truncate text-xs font-semibold text-text-primary">
-            {compName} · Group {group.groupLabel}
-          </h2>
-          {hasLive && (
-            <span className="flex shrink-0 items-center gap-1 rounded-full bg-score-live/10 px-1.5 py-0.5 text-[10px] font-bold text-score-live">
-              <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-              {labels.live}
-            </span>
-          )}
-        </div>
-        {groups.length > 1 && (
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              onClick={prev}
-              className="rounded p-0.5 text-text-tertiary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-            >
-              <ChevronLeft className="size-3.5" />
-            </button>
-            <span className="text-[10px] tabular-nums text-text-tertiary">
-              {activeIdx + 1}/{groups.length}
-            </span>
-            <button
-              onClick={next}
-              className="rounded p-0.5 text-text-tertiary transition-colors hover:bg-bg-surface-2 hover:text-text-primary"
-            >
-              <ChevronRight className="size-3.5" />
-            </button>
-          </div>
+      <div className="flex min-w-0 items-center gap-1.5 px-4 py-2.5">
+        {group.competitionLogoUrl && (
+          <CompetitionLogo
+            src={group.competitionLogoUrl}
+            size={16}
+            className="size-4 shrink-0 object-contain"
+          />
+        )}
+        <h2 className="truncate text-xs font-semibold text-text-primary">
+          {compName} · Group {group.groupLabel}
+        </h2>
+        {hasLive && (
+          <span className="flex shrink-0 items-center gap-1 rounded-full bg-score-live/10 px-1.5 py-0.5 text-[10px] font-bold text-score-live">
+            <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
+            {labels.live}
+          </span>
         )}
       </div>
 
@@ -222,23 +220,8 @@ export function HomeLiveGroupStandings({ groups, locale, labels }: Props) {
         </table>
       </div>
 
-      {/* Dots + link */}
-      <div className="flex items-center justify-between border-t border-border-subtle px-4 py-2">
-        {groups.length > 1 ? (
-          <div className="flex items-center gap-1">
-            {groups.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveIdx(i)}
-                className={`size-1.5 rounded-full transition-colors ${
-                  i === activeIdx ? 'bg-accent-azure' : 'bg-border-subtle hover:bg-text-tertiary'
-                }`}
-              />
-            ))}
-          </div>
-        ) : (
-          <div />
-        )}
+      {/* Link */}
+      <div className="flex items-center justify-end border-t border-border-subtle px-4 py-2">
         <Link
           href={`/${locale}/competition/${getCountrySlug(group.competitionSlug, locale) ?? group.competitionSlug}/${group.competitionSlug}`}
           className="text-[11px] font-medium text-accent-azure hover:underline"
