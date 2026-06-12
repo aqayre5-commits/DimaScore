@@ -103,8 +103,21 @@ export async function getStandings(
     )
     .orderBy(asc(schema.standings.groupLabel), asc(schema.standings.rank));
 
-  // Filter out "Ranking of third-placed teams" pseudo-group from API-Football
-  const filtered = rows.filter((r) => !r.groupLabel.toLowerCase().includes('ranking'));
+  // The standings sync produced duplicate rows under variant labels ("Group A" AND
+  // "Group Stage - Group A", plus a "Group Stage" aggregate). Normalize the variant prefix, drop
+  // the junk pseudo-groups (the aggregate + API-Football's "Ranking of third-placed teams"), then
+  // de-duplicate by (group, team) so each team appears once per group.
+  const seenStanding = new Set<string>();
+  const filtered = rows
+    .map((r) => ({ ...r, groupLabel: r.groupLabel.replace(/^Group Stage\s*-\s*/i, '') }))
+    .filter((r) => {
+      const g = r.groupLabel.toLowerCase();
+      if (g.includes('ranking') || g === 'group stage') return false;
+      const key = `${r.groupLabel}::${r.teamId}`;
+      if (seenStanding.has(key)) return false;
+      seenStanding.add(key);
+      return true;
+    });
 
   const teamIds = [
     ...new Set(filtered.map((r) => r.teamId).filter((id): id is number => id != null)),
