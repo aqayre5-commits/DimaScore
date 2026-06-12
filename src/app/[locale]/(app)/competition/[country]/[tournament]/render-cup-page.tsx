@@ -291,8 +291,11 @@ export async function renderCupPage(
   const facts = cupContent?.facts[locale] ?? [];
   const historicalTeamNames = cupContent?.historicalTeamNames[locale] ?? {};
 
-  // Best 3rd-placed teams (conditional on tournament format)
-  const bestThird = metadata.hasBestThirdPlace ? computeBestThirdPlaced(standings) : null;
+  // Best 3rd-placed teams (conditional on tournament format). Hidden until every team has played 2
+  // group matches — before that the ranking is meaningless (most teams 0-0) and misleading.
+  const groupStageReady = standings.length > 0 && standings.every((r) => (r.played ?? 0) >= 2);
+  const bestThird =
+    metadata.hasBestThirdPlace && groupStageReady ? computeBestThirdPlaced(standings) : null;
 
   const hasGroups = metadata.groups.length > 0;
 
