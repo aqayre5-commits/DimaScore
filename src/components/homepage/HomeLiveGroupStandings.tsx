@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { getCountrySlug } from '@/lib/constants/country-slugs';
+import { buildCompetitionHrefById } from '@/lib/constants/competitions-mega-menu';
 import type { GroupStandingsBlock } from '@/lib/db/queries/right-rail';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
@@ -152,6 +152,7 @@ function GroupCard({
     [group, live],
   );
   const compName = group.competitionName[locale] ?? group.competitionName['en'] ?? '';
+  const href = buildCompetitionHrefById(group.competitionId, locale);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
@@ -245,12 +246,14 @@ function GroupCard({
 
       {/* Link */}
       <div className="flex items-center justify-end border-t border-border-subtle px-4 py-2">
-        <Link
-          href={`/${locale}/competition/${getCountrySlug(group.competitionSlug, locale) ?? group.competitionSlug}/${group.competitionSlug}`}
-          className="text-[11px] font-medium text-accent-azure hover:underline"
-        >
-          {labels.viewFullGroup} →
-        </Link>
+        {href && (
+          <Link
+            href={`${href}#standings`}
+            className="text-[11px] font-medium text-accent-azure hover:underline"
+          >
+            {labels.viewFullGroup} →
+          </Link>
+        )}
       </div>
     </div>
   );
