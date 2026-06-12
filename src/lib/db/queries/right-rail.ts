@@ -34,6 +34,8 @@ export interface RightRailFixture {
   statusCode: string;
   minute: number | null;
   round: string | null;
+  /** Real group (e.g. "Group A") for group-stage matches, resolved from standings; else null. */
+  groupLabel: string | null;
   homeTeamId: number | null;
   awayTeamId: number | null;
   homeScore: number | null;
@@ -128,6 +130,7 @@ function mapToRightRailFixture(
     compLogoUrl: string | null;
     venueName?: string | null;
     venueCity?: string | null;
+    groupLabel?: string | null;
   },
   teamsMap: Map<number, TeamSnapshot>,
 ): RightRailFixture {
@@ -137,6 +140,7 @@ function mapToRightRailFixture(
     statusCode: r.statusCode,
     minute: r.minute,
     round: r.round,
+    groupLabel: r.groupLabel ?? null,
     homeTeamId: r.homeTeamId,
     awayTeamId: r.awayTeamId,
     homeScore: r.homeScore,
@@ -520,7 +524,7 @@ export async function getTopMatchesThisWeek(
 
   const rows = await db.execute(
     sql`SELECT
-          f.id, f.kickoff_at, f.status_code, f.minute, f.round,
+          f.id, f.kickoff_at, f.status_code, f.minute, f.round, f.season_year,
           f.home_team_id, f.away_team_id, f.home_score, f.away_score,
           c.id AS comp_id, c.name AS comp_name, c.slug AS comp_slug,
           c.country_code AS comp_country_code, c.logo_url AS comp_logo_url
@@ -569,6 +573,7 @@ export async function getTopMatchesThisWeek(
       status_code: string;
       minute: string | null;
       round: string | null;
+      season_year: string;
       home_team_id: string | null;
       away_team_id: string | null;
       home_score: string | null;
@@ -585,6 +590,8 @@ export async function getTopMatchesThisWeek(
     statusCode: r.status_code,
     minute: r.minute ? Number(r.minute) : null,
     round: r.round,
+    seasonYear: Number(r.season_year),
+    groupLabel: null as string | null,
     homeTeamId: r.home_team_id ? Number(r.home_team_id) : null,
     awayTeamId: r.away_team_id ? Number(r.away_team_id) : null,
     homeScore: r.home_score != null ? Number(r.home_score) : null,
@@ -603,6 +610,36 @@ export async function getTopMatchesThisWeek(
     if (r.awayTeamId != null) teamIds.add(r.awayTeamId);
   }
   const teamsMap = await hydrateTeams(db, teamIds);
+
+  // Resolve the real group (e.g. "Group A") for group-stage matches — fixtures store no group, so
+  // look up each match's team in the standings team→group map.
+  const groupStage = mapped.filter((r) => r.round && /group/i.test(r.round));
+  if (groupStage.length > 0) {
+    const groupCompIds = [...new Set(groupStage.map((r) => r.compId))];
+    const standingRows = await db
+      .select({
+        competitionId: schema.standings.competitionId,
+        seasonYear: schema.standings.seasonYear,
+        teamId: schema.standings.teamId,
+        groupLabel: schema.standings.groupLabel,
+      })
+      .from(schema.standings)
+      .where(inArray(schema.standings.competitionId, groupCompIds));
+    const teamGroup = new Map<string, string>();
+    for (const s of standingRows) {
+      if (s.teamId == null || s.groupLabel == null) continue;
+      const norm = s.groupLabel.replace(/^Group Stage\s*-\s*/i, '');
+      if (!/^Group [A-Z]/i.test(norm)) continue;
+      teamGroup.set(`${s.competitionId}:${s.seasonYear}:${s.teamId}`, norm);
+    }
+    for (const r of groupStage) {
+      const home =
+        r.homeTeamId != null ? teamGroup.get(`${r.compId}:${r.seasonYear}:${r.homeTeamId}`) : null;
+      const away =
+        r.awayTeamId != null ? teamGroup.get(`${r.compId}:${r.seasonYear}:${r.awayTeamId}`) : null;
+      r.groupLabel = home ?? away ?? null;
+    }
+  }
 
   // Group by date
   const groupMap = new Map<string, TopMatchDateGroup>();
