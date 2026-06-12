@@ -3,6 +3,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { HomeFixture } from './homepage';
 import type { StandingRow } from '../queries';
+import { applyComputedStandings } from '@/lib/standings/compute';
 import { TEAM_IDS } from '@/lib/constants/canonical-ids';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 
@@ -411,45 +412,54 @@ export async function getLiveGroupStandings(
     });
   }
 
-  // ── Attach today's fixtures to each group so the client can compute a live/provisional table ──
+  // ── Compute empty group tables from results + attach today's fixtures for the live overlay ──
   const compIds = [...new Set(blocks.map((b) => b.competitionId))];
   if (compIds.length > 0) {
-    const fixtureRows = await db
+    const allFixtures = await db
       .select({
         id: schema.fixtures.id,
+        competitionId: schema.fixtures.competitionId,
         homeTeamId: schema.fixtures.homeTeamId,
         awayTeamId: schema.fixtures.awayTeamId,
         homeScore: schema.fixtures.homeScore,
         awayScore: schema.fixtures.awayScore,
         statusCode: schema.fixtures.statusCode,
+        kickoffAt: schema.fixtures.kickoffAt,
       })
       .from(schema.fixtures)
-      .where(
-        and(
-          inArray(schema.fixtures.competitionId, compIds),
-          gte(schema.fixtures.kickoffAt, todayStart),
-          lt(schema.fixtures.kickoffAt, todayEnd),
-        ),
-      );
+      .where(inArray(schema.fixtures.competitionId, compIds))
+      .orderBy(asc(schema.fixtures.kickoffAt));
 
-    const teamToBlock = new Map<number, GroupStandingsBlock>();
-    for (const b of blocks) {
-      for (const row of b.rows) {
-        if (row.teamId != null) teamToBlock.set(row.teamId, b);
-      }
+    const fxByComp = new Map<number, typeof allFixtures>();
+    for (const f of allFixtures) {
+      if (f.competitionId == null) continue;
+      const arr = fxByComp.get(f.competitionId) ?? [];
+      arr.push(f);
+      fxByComp.set(f.competitionId, arr);
     }
-    for (const f of fixtureRows) {
-      const block =
-        (f.homeTeamId != null ? teamToBlock.get(f.homeTeamId) : undefined) ??
-        (f.awayTeamId != null ? teamToBlock.get(f.awayTeamId) : undefined);
-      block?.fixtures.push({
-        id: f.id,
-        homeTeamId: f.homeTeamId,
-        awayTeamId: f.awayTeamId,
-        homeScore: f.homeScore,
-        awayScore: f.awayScore,
-        statusCode: f.statusCode,
-      });
+
+    for (const b of blocks) {
+      const compFx = fxByComp.get(b.competitionId) ?? [];
+      // Server: fill an empty group table from finished results (immune to a stale /standings feed).
+      b.rows = applyComputedStandings(b.rows, compFx);
+      // Client overlay: today's fixtures for this group's teams (live matches layer on top).
+      const teamIds = new Set(b.rows.map((r) => r.teamId).filter((x): x is number => x != null));
+      b.fixtures = compFx
+        .filter(
+          (f) =>
+            f.kickoffAt >= todayStart &&
+            f.kickoffAt < todayEnd &&
+            ((f.homeTeamId != null && teamIds.has(f.homeTeamId)) ||
+              (f.awayTeamId != null && teamIds.has(f.awayTeamId))),
+        )
+        .map((f) => ({
+          id: f.id,
+          homeTeamId: f.homeTeamId,
+          awayTeamId: f.awayTeamId,
+          homeScore: f.homeScore,
+          awayScore: f.awayScore,
+          statusCode: f.statusCode,
+        }));
     }
   }
 

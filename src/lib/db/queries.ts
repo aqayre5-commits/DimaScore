@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 import type { TeamSnapshot, VenueSnapshot } from './queries-hydrate';
+import { applyComputedStandings } from '@/lib/standings/compute';
 
 export interface FixtureWithTeams {
   id: number;
@@ -110,7 +111,7 @@ export async function getStandings(
   ];
   const teamsMap = await getTeamsMap(db, teamIds);
 
-  return filtered.map((r) => ({
+  const result: StandingRow[] = filtered.map((r) => ({
     groupLabel: r.groupLabel.replace(/^Group\s+/i, ''),
     teamId: r.teamId,
     rank: r.rank,
@@ -126,6 +127,27 @@ export async function getStandings(
     description: r.description,
     team: r.teamId ? (teamsMap.get(r.teamId) ?? null) : null,
   }));
+
+  // Fallback: if a group's feed is unpopulated but its fixtures have results, compute it from
+  // the fixtures (immune to a stale/empty upstream /standings; populated groups untouched).
+  const fixtures = await db
+    .select({
+      homeTeamId: schema.fixtures.homeTeamId,
+      awayTeamId: schema.fixtures.awayTeamId,
+      homeScore: schema.fixtures.homeScore,
+      awayScore: schema.fixtures.awayScore,
+      statusCode: schema.fixtures.statusCode,
+    })
+    .from(schema.fixtures)
+    .where(
+      and(
+        eq(schema.fixtures.competitionId, competitionId),
+        eq(schema.fixtures.seasonYear, seasonYear),
+      ),
+    )
+    .orderBy(asc(schema.fixtures.kickoffAt));
+
+  return applyComputedStandings(result, fixtures);
 }
 
 // ── Batch hydration helpers ──
