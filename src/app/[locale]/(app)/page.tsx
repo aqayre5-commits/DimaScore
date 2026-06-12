@@ -10,6 +10,7 @@ import { HomeFeaturedCarousel } from '@/components/homepage/HomeFeaturedCarousel
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
+import { HomeNextMatch } from '@/components/homepage/HomeNextMatch';
 import { getHomeRailData } from '@/lib/db/queries/home-rail';
 import { HomeTrendingPlayersStreamed } from '@/components/homepage/HomeTrendingPlayersStreamed';
 import { AboutCard } from '@/components/tournament/AboutCard';
@@ -189,6 +190,23 @@ export default async function HomePage({ params }: PageProps) {
                   expectedAttendance: t('expectedAttendance'),
                 }}
               />
+
+              {/* Live Now / next-match card — above the tabs on mobile; desktop shows it in the rail. */}
+              {railData.nextFeatured && (
+                <div className="xl:hidden">
+                  <HomeNextMatch
+                    match={railData.nextFeatured.match}
+                    goals={railData.nextFeatured.goals}
+                    locale={typedLocale}
+                    labels={{
+                      nextMatch: t('nextMatch'),
+                      liveNow: t('liveNow'),
+                      viewMatch: t('viewMatch'),
+                    }}
+                  />
+                </div>
+              )}
+
               <HomeMatchTabs
                 live={matchesByCategory.live}
                 upcoming={matchesByCategory.upcoming}
