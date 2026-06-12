@@ -33,6 +33,19 @@ interface Props {
 // In-progress statuses (not finished) — only these are overlaid; finished matches are already in
 // the standings, so applying them too would double-count.
 const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE', 'INT']);
+const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN']);
+
+/** 0 = a match is live now, 1 = a match just finished today, 2 = upcoming only. Lower sorts first. */
+function groupTier(group: GroupStandingsBlock, live: ReturnType<typeof useLiveFixtures>): number {
+  let anyLive = false;
+  let anyFinished = false;
+  for (const fx of group.fixtures) {
+    const status = live.get(fx.id)?.statusCode ?? fx.statusCode;
+    if (LIVE_STATUSES.has(status)) anyLive = true;
+    else if (FINISHED_STATUSES.has(status)) anyFinished = true;
+  }
+  return anyLive ? 0 : anyFinished ? 1 : 2;
+}
 
 function applyResult(row: StandingRow, scored: number, conceded: number) {
   row.played = (row.played ?? 0) + 1;
@@ -97,10 +110,20 @@ function computeProvisional(
  */
 export function HomeLiveGroupStandings({ groups, locale, labels }: Props) {
   const live = useLiveFixtures();
+  // Live group(s) first, then just-finished, then upcoming — preserving the server's kickoff order
+  // within each tier (the server already sorts blocks by earliest kickoff today).
+  const ordered = useMemo(
+    () =>
+      groups
+        .map((group, i) => ({ group, i, tier: groupTier(group, live) }))
+        .sort((a, b) => a.tier - b.tier || a.i - b.i)
+        .map((x) => x.group),
+    [groups, live],
+  );
   if (groups.length === 0) return null;
   return (
     <div className="space-y-3">
-      {groups.map((group) => (
+      {ordered.map((group) => (
         <GroupCard
           key={`${group.competitionId}-${group.groupLabel}`}
           group={group}

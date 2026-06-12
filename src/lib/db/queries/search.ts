@@ -2,6 +2,7 @@ import { sql, inArray } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { escapeLikePattern } from '@/lib/utils/sql';
+import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 
 // ── Types ──
 
@@ -163,6 +164,10 @@ export async function searchAll(
         currentTeamLogoUrl: team?.logoUrl ?? null,
       };
     }),
-    competitions: competitions.map((c) => ({ type: 'competition', ...c })),
+    competitions: competitions.map((c) => ({
+      type: 'competition',
+      ...c,
+      logoUrl: resolveCompetitionLogo(c.id, c.logoUrl),
+    })),
   };
 }

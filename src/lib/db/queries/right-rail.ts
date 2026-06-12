@@ -4,6 +4,7 @@ import * as schema from '../schema';
 import type { HomeFixture } from './homepage';
 import type { StandingRow } from '../queries';
 import { applyComputedStandings } from '@/lib/standings/compute';
+import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { TEAM_IDS } from '@/lib/constants/canonical-ids';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 
@@ -147,7 +148,7 @@ function mapToRightRailFixture(
       name: r.compName,
       slug: r.compSlug,
       countryCode: r.compCountryCode,
-      logoUrl: r.compLogoUrl,
+      logoUrl: resolveCompetitionLogo(r.compId, r.compLogoUrl),
     },
     venueName: r.venueName ?? null,
     venueCity: r.venueCity ?? null,
@@ -399,7 +400,7 @@ export async function getLiveGroupStandings(
         competitionId: Number(r.competition_id),
         competitionName: r.comp_name,
         competitionSlug: r.comp_slug,
-        competitionLogoUrl: r.comp_logo_url,
+        competitionLogoUrl: resolveCompetitionLogo(Number(r.competition_id), r.comp_logo_url),
         groupLabel,
         rows: [],
         fixtures: [],

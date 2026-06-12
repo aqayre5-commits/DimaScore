@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { TeamSnapshot } from '../queries-hydrate';
+import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 
 // ── Match detail ──
 
@@ -153,7 +154,7 @@ export const getMatchDetail = cache(async function getMatchDetail(
       slug: row.compSlug,
       name: row.compName,
       countryCode: row.compCountryCode,
-      logoUrl: row.compLogoUrl,
+      logoUrl: resolveCompetitionLogo(row.compId, row.compLogoUrl),
     },
     venue,
     seasonYear: row.seasonYear,

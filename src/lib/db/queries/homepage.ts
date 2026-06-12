@@ -4,6 +4,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { ALL_ENTRIES } from '@/lib/constants/competitions-mega-menu';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
+import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 
 export interface HomeFixture {
   id: number;
@@ -127,7 +128,7 @@ function mapFixtureRow(
       name: r.compName,
       slug: r.compSlug,
       countryCode: r.compCountryCode,
-      logoUrl: r.compLogoUrl,
+      logoUrl: resolveCompetitionLogo(r.compId, r.compLogoUrl),
       displayPriority: r.compDisplayPriority ?? 100,
     },
     venueName: r.venueName ?? null,

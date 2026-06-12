@@ -4,6 +4,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { FixtureWithTeams, StandingRow } from '../queries';
 import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
+import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 
 // ── Types ──
 
@@ -176,7 +177,7 @@ async function getCompetitionsMap(
     .where(inArray(schema.competitions.id, compIds));
 
   const map = new Map<number, CompetitionSnapshot>();
-  for (const c of comps) map.set(c.id, c);
+  for (const c of comps) map.set(c.id, { ...c, logoUrl: resolveCompetitionLogo(c.id, c.logoUrl) });
   return map;
 }
 

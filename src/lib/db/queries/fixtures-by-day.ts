@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
+import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 
 export interface DayFixture {
   id: number;
@@ -97,7 +98,7 @@ export async function getFixturesByDay(
           slug: r.compSlug,
           name: r.compName,
           countryCode: r.compCountryCode,
-          logoUrl: r.compLogoUrl,
+          logoUrl: resolveCompetitionLogo(r.compId, r.compLogoUrl),
           displayPriority: r.compDisplayPriority ?? 100,
         },
         fixtures: [],
@@ -201,7 +202,7 @@ export async function getFixturesMultiDay(
           slug: r.compSlug,
           name: r.compName,
           countryCode: r.compCountryCode,
-          logoUrl: r.compLogoUrl,
+          logoUrl: resolveCompetitionLogo(r.compId, r.compLogoUrl),
           displayPriority: r.compDisplayPriority ?? 100,
         },
         fixtures: [],

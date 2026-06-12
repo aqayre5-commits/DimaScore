@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
+import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 
 export interface TopMatch {
   id: number;
@@ -123,7 +124,7 @@ export async function getTopMatches(
       name: r.compName,
       slug: r.compSlug,
       countryCode: r.compCountryCode,
-      logoUrl: r.compLogoUrl,
+      logoUrl: resolveCompetitionLogo(r.compId, r.compLogoUrl),
     },
   }));
 }
