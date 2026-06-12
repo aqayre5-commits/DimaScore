@@ -16,22 +16,37 @@ export async function GET(request: Request) {
     const withStandings = currentSeasons.filter((cs) => cs.hasStandingsCoverage);
 
     const results: { competitionId: number; season: number; updated: number }[] = [];
+    const errors: { competitionId: number; season: number; error: string }[] = [];
 
+    // Per-competition isolation: one failing competition must not abort the whole run
+    // (which previously left every competition's standings stale).
     for (const cs of withStandings) {
-      const stats = await syncStandings(provider, db, {
-        leagueId: cs.competitionId,
-        season: cs.year,
-      });
-      results.push({
-        competitionId: cs.competitionId,
-        season: cs.year,
-        updated: stats.updated,
-      });
+      try {
+        const stats = await syncStandings(provider, db, {
+          leagueId: cs.competitionId,
+          season: cs.year,
+        });
+        results.push({ competitionId: cs.competitionId, season: cs.year, updated: stats.updated });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(
+          `Cron standings: competition ${cs.competitionId} season ${cs.year} failed:`,
+          error,
+        );
+        errors.push({ competitionId: cs.competitionId, season: cs.year, error: message });
+      }
     }
 
-    return NextResponse.json({ ok: true, synced: results.length, results });
+    return NextResponse.json({
+      ok: true,
+      synced: results.length,
+      failed: errors.length,
+      results,
+      errors,
+    });
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error('Cron standings failed:', error);
-    return NextResponse.json({ ok: false, error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
