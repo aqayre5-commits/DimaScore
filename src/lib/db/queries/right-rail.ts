@@ -530,7 +530,7 @@ export async function getTopMatchesThisWeek(
           c.country_code AS comp_country_code, c.logo_url AS comp_logo_url
         FROM fixtures f
         JOIN competitions c ON c.id = f.competition_id
-        WHERE f.status_code IN ('1H','HT','2H','ET','BT','P','LIVE','NS')
+        WHERE f.status_code = 'NS'
           AND f.kickoff_at >= ${todayStart}
           AND f.kickoff_at < ${weekOut}
           AND (
