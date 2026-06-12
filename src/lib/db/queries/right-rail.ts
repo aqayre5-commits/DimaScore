@@ -373,29 +373,42 @@ export async function getLiveGroupStandings(
   }
   const teamsMap = await hydrateTeams(db, teamIds);
 
-  // Group rows into blocks
+  // Group rows into blocks. The sync produced duplicate rows under variant labels ("Group A" AND
+  // "Group Stage - Group A", plus a bare "Group Stage" catch-all), and the variants aren't adjacent
+  // in the result — so normalize the prefix, drop junk pseudo-groups, and key blocks by a Map with
+  // per-team de-duplication.
   const blocks: GroupStandingsBlock[] = [];
-  let currentKey = '';
-  let currentBlock: GroupStandingsBlock | null = null;
+  const blockMap = new Map<string, GroupStandingsBlock>();
+  const seenTeam = new Set<string>();
 
   for (const r of allRows.rows as RawRow[]) {
-    const key = `${r.competition_id}-${r.group_label}`;
-    if (key !== currentKey) {
-      currentKey = key;
-      currentBlock = {
+    const normalized = r.group_label.replace(/^Group Stage\s*-\s*/i, '');
+    const low = normalized.toLowerCase();
+    if (low.includes('ranking') || low === 'group stage') continue;
+    const groupLabel = normalized.replace(/^Group\s*/i, '');
+    const teamId = r.team_id ? Number(r.team_id) : null;
+
+    const blockKey = `${r.competition_id}-${groupLabel}`;
+    const teamKey = `${blockKey}::${teamId}`;
+    if (teamId != null && seenTeam.has(teamKey)) continue;
+    if (teamId != null) seenTeam.add(teamKey);
+
+    let block = blockMap.get(blockKey);
+    if (!block) {
+      block = {
         competitionId: Number(r.competition_id),
         competitionName: r.comp_name,
         competitionSlug: r.comp_slug,
         competitionLogoUrl: r.comp_logo_url,
-        groupLabel: r.group_label.replace(/^Group\s*/, ''),
+        groupLabel,
         rows: [],
         fixtures: [],
       };
-      blocks.push(currentBlock);
+      blockMap.set(blockKey, block);
+      blocks.push(block);
     }
-    const teamId = r.team_id ? Number(r.team_id) : null;
-    currentBlock!.rows.push({
-      groupLabel: r.group_label.replace(/^Group\s*/, ''),
+    block.rows.push({
+      groupLabel,
       teamId,
       rank: Number(r.rank),
       points: Number(r.points),
