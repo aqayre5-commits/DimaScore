@@ -163,7 +163,7 @@ function mapToRightRailFixture(
  * The real group ("Group A") for a fixture's teams, resolved from standings (fixtures store no
  * group). Excludes the malformed "Group Stage" catch-all; returns null if unresolved.
  */
-async function resolveGroupLabel(
+export async function resolveGroupLabel(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number | null,
   seasonYear: number | null,

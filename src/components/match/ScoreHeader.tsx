@@ -69,7 +69,9 @@ export function ScoreHeader({
           ) : (
             compName
           )}
-          {match.round && <span className="text-text-tertiary"> &middot; {match.round}</span>}
+          {(match.groupLabel ?? match.round) && (
+            <span className="text-text-tertiary"> &middot; {match.groupLabel ?? match.round}</span>
+          )}
         </p>
       </div>
 

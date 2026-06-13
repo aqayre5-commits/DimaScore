@@ -102,11 +102,11 @@ export function MatchInfoCard({ match, locale, competitionHref }: MatchInfoCardP
     });
   }
 
-  if (match.round) {
+  if (match.groupLabel ?? match.round) {
     rows.push({
       icon: Shield,
       label: t('round'),
-      value: match.round,
+      value: match.groupLabel ?? match.round,
     });
   }
 

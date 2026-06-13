@@ -120,7 +120,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   );
 
   const title = `${home} vs ${away} | ${compName} | DimaScore`;
-  const description = `${home} vs ${away} — ${compName}${match.round ? `, ${match.round}` : ''}`;
+  const roundLabel = match.groupLabel ?? match.round;
+  const description = `${home} vs ${away} — ${compName}${roundLabel ? `, ${roundLabel}` : ''}`;
   const canonical = `${BASE_URL}/${locale}/match/${fixtureId}`;
 
   return {
@@ -187,7 +188,9 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${locale}` },
     { label: compName, href: competitionHref ?? undefined },
-    ...(match.round ? [{ label: prettyRound(match.round, tBc) }] : []),
+    ...((match.groupLabel ?? match.round)
+      ? [{ label: match.groupLabel ?? prettyRound(match.round!, tBc) }]
+      : []),
     { label: `${home} vs ${away}, ${tBc('sectionsMatch')}` },
   ];
 

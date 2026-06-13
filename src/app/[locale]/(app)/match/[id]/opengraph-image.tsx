@@ -72,7 +72,7 @@ export default async function OGImage({
         }}
       >
         {compName}
-        {match.round ? ` — ${match.round}` : ''}
+        {(match.groupLabel ?? match.round) ? ` — ${match.groupLabel ?? match.round}` : ''}
       </p>
 
       {/* Teams row */}

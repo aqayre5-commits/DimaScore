@@ -5,6 +5,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
+import { resolveGroupLabel } from './right-rail';
 
 // ── Match detail ──
 
@@ -15,6 +16,8 @@ export interface MatchDetail {
   minute: number | null;
   extraMinute: number | null;
   round: string | null;
+  /** Resolved real group ("Group C") for group-stage fixtures; null otherwise. Prefer over `round`. */
+  groupLabel: string | null;
   referee: string | null;
   homeScore: number | null;
   awayScore: number | null;
@@ -119,6 +122,18 @@ export const getMatchDetail = cache(async function getMatchDetail(
     }
   }
 
+  // Fixtures carry no group; resolve the real group ("Group C") from standings for group-stage rounds.
+  let groupLabel: string | null = null;
+  if (row.round && /group/i.test(row.round)) {
+    groupLabel = await resolveGroupLabel(
+      db,
+      row.compId,
+      row.seasonYear,
+      row.homeTeamId,
+      row.awayTeamId,
+    );
+  }
+
   const venue: MatchDetail['venue'] = row.venueId
     ? {
         id: row.venueId,
@@ -136,6 +151,7 @@ export const getMatchDetail = cache(async function getMatchDetail(
     minute: row.minute,
     extraMinute: row.extraMinute,
     round: row.round,
+    groupLabel,
     referee: row.referee,
     homeScore: row.homeScore,
     awayScore: row.awayScore,
