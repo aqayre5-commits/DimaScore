@@ -272,7 +272,7 @@ export async function renderCupPage(
     { label: t('football'), href: `/${rawLocale}` },
     { label: t('international') },
     { label: cupContent?.breadcrumbOrg ?? 'FIFA' },
-    { label: `${pageTitle}, ${t('sectionsCup')}` },
+    { label: pageTitle },
   ];
 
   const breadcrumb = <SeoBreadcrumb segments={breadcrumbSegments} compact />;

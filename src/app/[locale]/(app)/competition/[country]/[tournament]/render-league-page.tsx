@@ -171,8 +171,16 @@ export async function renderLeaguePage(
   // Breadcrumbs
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${rawLocale}` },
-    ...(countryName ? [{ label: countryName }] : []),
-    { label: `${competitionName}, ${tBc('sectionsLeague')}` },
+    // Morocco links to its landing page so the crumb is clickable + present in the JSON-LD;
+    // other countries have no landing, so they stay a plain (non-linked) label.
+    ...(countryName
+      ? [
+          competition.countryCode === 'MA'
+            ? { label: countryName, href: `/${rawLocale}/edition/maroc` }
+            : { label: countryName },
+        ]
+      : []),
+    { label: competitionName },
   ];
 
   // Center tabs — Overview / Matches / Standings / Stats / Teams
