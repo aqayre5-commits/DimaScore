@@ -15,6 +15,8 @@ export async function GET(request: Request) {
   const rows: LiveFixturePatch[] = await db
     .select({
       id: schema.fixtures.id,
+      homeTeamId: schema.fixtures.homeTeamId,
+      awayTeamId: schema.fixtures.awayTeamId,
       statusCode: schema.fixtures.statusCode,
       minute: schema.fixtures.minute,
       extraMinute: schema.fixtures.extraMinute,

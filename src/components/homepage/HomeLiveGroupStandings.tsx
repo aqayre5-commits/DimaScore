@@ -199,9 +199,6 @@ function GroupCard({
                 <tr key={row.teamId ?? row.rank} className="text-text-primary">
                   <td className="py-1.5 pl-2">
                     <div className="flex items-center gap-1.5">
-                      {isLiveRow && (
-                        <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-score-live" />
-                      )}
                       {row.team?.logoUrl ? (
                         <TeamLogo
                           src={row.team.logoUrl}
@@ -212,6 +209,9 @@ function GroupCard({
                         <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />
                       )}
                       <span className="truncate font-medium">{teamName}</span>
+                      {isLiveRow && (
+                        <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-score-live" />
+                      )}
                     </div>
                   </td>
                   <td className="py-1.5 text-center tabular-nums text-text-secondary">

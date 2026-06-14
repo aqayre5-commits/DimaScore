@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { GroupTable } from './GroupTable';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { isLive } from '@/lib/match-status';
 import type { StandingRow } from '@/lib/db/queries';
 import type { CupMetadata } from '@/lib/constants/tournament-metadata';
 import type { Locale } from '@/lib/i18n/config';
@@ -22,6 +24,19 @@ interface StandingsTabProps {
 export function StandingsTab({ standings, metadata, locale }: StandingsTabProps) {
   const t = useTranslations('tournament');
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+
+  // Teams whose match is in progress right now (from the shared live poll). Used to flag the
+  // group header + the team rows as live, mirroring the homepage rail.
+  const live = useLiveFixtures();
+  const liveTeamIds = useMemo(() => {
+    const ids = new Set<number>();
+    for (const p of live.values()) {
+      if (!isLive(p.statusCode)) continue;
+      if (p.homeTeamId != null) ids.add(p.homeTeamId);
+      if (p.awayTeamId != null) ids.add(p.awayTeamId);
+    }
+    return ids;
+  }, [live]);
 
   const groupLabels = metadata.groups.map((g) => g.label);
   const moroccoGroup = metadata.groups.find((g) => g.isMoroccoGroup);
@@ -84,6 +99,7 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
               locale={locale}
               isMoroccoGroup={isMoroccoGroup}
               qualificationZones={metadata.qualificationZones}
+              liveTeamIds={liveTeamIds}
             />
           );
         })}

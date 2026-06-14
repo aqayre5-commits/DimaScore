@@ -17,6 +17,8 @@ interface GroupTableProps {
   locale: Locale;
   isMoroccoGroup: boolean;
   qualificationZones: QualificationZone[];
+  /** Team ids whose match is in progress — flags the header + rows as live. */
+  liveTeamIds?: Set<number>;
 }
 
 /**
@@ -30,8 +32,12 @@ export function GroupTable({
   locale,
   isMoroccoGroup,
   qualificationZones,
+  liveTeamIds,
 }: GroupTableProps) {
   const t = useTranslations('tournament');
+
+  const groupHasLive =
+    !!liveTeamIds && rows.some((r) => r.teamId != null && liveTeamIds.has(r.teamId));
 
   function getZoneColor(rank: number): string | null {
     for (const zone of qualificationZones) {
@@ -46,7 +52,7 @@ export function GroupTable({
       className="rounded-lg border border-border-subtle bg-bg-surface"
     >
       {/* Group header */}
-      <div className="border-b border-border-subtle px-4 py-2.5">
+      <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-2.5">
         <h3
           className={cn(
             'text-xs font-semibold',
@@ -56,6 +62,12 @@ export function GroupTable({
           {t('groupLabel', { label: groupLabel })}
           {isMoroccoGroup && <span className="ml-1">&#9733;</span>}
         </h3>
+        {groupHasLive && (
+          <span className="flex shrink-0 items-center gap-1 rounded-full bg-score-live/10 px-1.5 py-0.5 text-[10px] font-bold text-score-live">
+            <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
+            {t('live')}
+          </span>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -111,6 +123,7 @@ export function GroupTable({
                   ? codeToFlag(row.team.countryCode)
                   : null;
               const isMorocco = row.team?.code === 'MA';
+              const isLiveRow = !!liveTeamIds && row.teamId != null && liveTeamIds.has(row.teamId);
               const zoneColor = getZoneColor(row.rank);
               const formChars = row.form
                 ? row.form.split('').slice(-5)
@@ -158,6 +171,9 @@ export function GroupTable({
                           {teamName}
                         </span>
                       )}
+                      {isLiveRow && (
+                        <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-score-live" />
+                      )}
                     </span>
                   </td>
                   <td className="py-2 text-center tabular-nums text-text-secondary">
@@ -184,7 +200,11 @@ export function GroupTable({
                   <td
                     className={cn(
                       'py-2 text-center tabular-nums font-semibold',
-                      isMorocco ? 'text-accent-azure' : 'text-text-primary',
+                      isLiveRow
+                        ? 'text-score-live'
+                        : isMorocco
+                          ? 'text-accent-azure'
+                          : 'text-text-primary',
                     )}
                   >
                     {row.points}
