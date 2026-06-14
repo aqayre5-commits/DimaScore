@@ -433,6 +433,91 @@ export async function getTopAssistsForLeague(
   });
 }
 
+/**
+ * Top scorers for a single tournament edition, computed from this edition's goal events
+ * (`fixture_events`) rather than `player_season_stats`. For short-edition cups the upstream
+ * /players/topscorers feed is unreliable (returns non-participants/qualifier data), whereas the
+ * ingested goal events are accurate. Own goals are excluded; penalties count. Names/teams come from
+ * the canonical `players`/`teams` tables (localized), avoiding the stats-JSON HTML entities.
+ */
+export async function getEditionTopScorers(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+  locale: string,
+  limit = 5,
+): Promise<TopPlayerRow[]> {
+  const res = await db.execute(sql`
+    SELECT p.id AS player_id, p.slug AS player_slug,
+           COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
+           p.photo_url AS player_photo,
+           COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
+           t.logo_url AS team_logo,
+           COUNT(*)::int AS goals
+    FROM fixture_events e
+    JOIN fixtures f ON f.id = e.fixture_id
+    JOIN players p ON p.id = e.player_id
+    LEFT JOIN teams t ON t.id = e.team_id
+    WHERE f.competition_id = ${competitionId}
+      AND f.season_year = ${seasonYear}
+      AND e.type = 'Goal'
+      AND e.detail IS DISTINCT FROM 'Own Goal'
+    GROUP BY p.id, t.id
+    ORDER BY goals DESC, p.slug
+    LIMIT ${limit}
+  `);
+  return (res.rows as Array<Record<string, unknown>>).map((r) => ({
+    playerId: Number(r.player_id),
+    playerSlug: r.player_slug as string,
+    playerName: (r.player_name as string) ?? '',
+    playerPhoto: (r.player_photo as string) ?? null,
+    teamName: (r.team_name as string) ?? '',
+    teamLogo: (r.team_logo as string) ?? null,
+    goals: Number(r.goals) || 0,
+    assists: 0,
+  }));
+}
+
+/** Top assisters for a single edition, computed from goal-event `assist_player_id`. See {@link getEditionTopScorers}. */
+export async function getEditionTopAssists(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+  locale: string,
+  limit = 5,
+): Promise<TopPlayerRow[]> {
+  const res = await db.execute(sql`
+    SELECT p.id AS player_id, p.slug AS player_slug,
+           COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
+           p.photo_url AS player_photo,
+           COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
+           t.logo_url AS team_logo,
+           COUNT(*)::int AS assists
+    FROM fixture_events e
+    JOIN fixtures f ON f.id = e.fixture_id
+    JOIN players p ON p.id = e.assist_player_id
+    LEFT JOIN teams t ON t.id = e.team_id
+    WHERE f.competition_id = ${competitionId}
+      AND f.season_year = ${seasonYear}
+      AND e.type = 'Goal'
+      AND e.detail IS DISTINCT FROM 'Own Goal'
+      AND e.assist_player_id IS NOT NULL
+    GROUP BY p.id, t.id
+    ORDER BY assists DESC, p.slug
+    LIMIT ${limit}
+  `);
+  return (res.rows as Array<Record<string, unknown>>).map((r) => ({
+    playerId: Number(r.player_id),
+    playerSlug: r.player_slug as string,
+    playerName: (r.player_name as string) ?? '',
+    playerPhoto: (r.player_photo as string) ?? null,
+    teamName: (r.team_name as string) ?? '',
+    teamLogo: (r.team_logo as string) ?? null,
+    goals: 0,
+    assists: Number(r.assists) || 0,
+  }));
+}
+
 // ── Top cards ──
 
 export interface TopCardRow {

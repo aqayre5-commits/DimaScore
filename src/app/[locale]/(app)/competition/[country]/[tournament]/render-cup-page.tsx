@@ -39,14 +39,19 @@ import {
   getLeagueFixtures,
   getAvailableSeasons,
   getLeagueCoverage,
-  getTopScorersForLeague,
-  getTopAssistsForLeague,
+  getEditionTopScorers,
+  getEditionTopAssists,
 } from '@/lib/db/queries/league';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
-async function getCachedCupData(competitionId: number, seasonYear: number, metadata: CupMetadata) {
+async function getCachedCupData(
+  competitionId: number,
+  seasonYear: number,
+  metadata: CupMetadata,
+  locale: Locale,
+) {
   'use cache';
   cacheLife('minutes');
   const [
@@ -65,8 +70,8 @@ async function getCachedCupData(competitionId: number, seasonYear: number, metad
     getLeagueFixtures(db, competitionId, seasonYear),
     getAvailableSeasons(db, competitionId),
     getLeagueCoverage(db, competitionId, seasonYear),
-    getTopScorersForLeague(db, competitionId, seasonYear, 5),
-    getTopAssistsForLeague(db, competitionId, seasonYear, 5),
+    getEditionTopScorers(db, competitionId, seasonYear, locale, 5),
+    getEditionTopAssists(db, competitionId, seasonYear, locale, 5),
   ]);
   // Computed inside the cache boundary: computeTournamentPhase reads new Date(),
   // which is forbidden in a static prerender unless TTL-bounded by 'use cache'.
@@ -253,7 +258,7 @@ export async function renderCupPage(
     topScorers,
     topAssists,
     tournamentPhase,
-  } = await getCachedCupData(competitionId, seasonYear, metadata);
+  } = await getCachedCupData(competitionId, seasonYear, metadata, locale);
 
   // AFCON (6) has fragmentary early editions (2021/2019/2015) — hide them from the edition selector,
   // keeping only the current edition and seasons with a full tournament's worth of fixtures (a
