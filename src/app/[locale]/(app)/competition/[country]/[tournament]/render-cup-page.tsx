@@ -38,6 +38,9 @@ import {
   getLeagueFeaturedMatches,
   getLeagueFixtures,
   getAvailableSeasons,
+  getLeagueCoverage,
+  getTopScorersForLeague,
+  getTopAssistsForLeague,
 } from '@/lib/db/queries/league';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
@@ -46,14 +49,25 @@ import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 async function getCachedCupData(competitionId: number, seasonYear: number, metadata: CupMetadata) {
   'use cache';
   cacheLife('minutes');
-  const [standings, knockoutFixtures, cupFeaturedMatches, allCupFixtures, availableSeasons] =
-    await Promise.all([
-      getStandings(db, competitionId, seasonYear),
-      getKnockoutFixtures(db, competitionId, seasonYear),
-      getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
-      getLeagueFixtures(db, competitionId, seasonYear),
-      getAvailableSeasons(db, competitionId),
-    ]);
+  const [
+    standings,
+    knockoutFixtures,
+    cupFeaturedMatches,
+    allCupFixtures,
+    availableSeasons,
+    coverage,
+    topScorers,
+    topAssists,
+  ] = await Promise.all([
+    getStandings(db, competitionId, seasonYear),
+    getKnockoutFixtures(db, competitionId, seasonYear),
+    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
+    getLeagueFixtures(db, competitionId, seasonYear),
+    getAvailableSeasons(db, competitionId),
+    getLeagueCoverage(db, competitionId, seasonYear),
+    getTopScorersForLeague(db, competitionId, seasonYear, 5),
+    getTopAssistsForLeague(db, competitionId, seasonYear, 5),
+  ]);
   // Computed inside the cache boundary: computeTournamentPhase reads new Date(),
   // which is forbidden in a static prerender unless TTL-bounded by 'use cache'.
   const tournamentPhase = computeTournamentPhase(metadata, allCupFixtures);
@@ -63,6 +77,9 @@ async function getCachedCupData(competitionId: number, seasonYear: number, metad
     cupFeaturedMatches,
     allCupFixtures,
     availableSeasons,
+    coverage,
+    topScorers,
+    topAssists,
     tournamentPhase,
   };
 }
@@ -232,6 +249,9 @@ export async function renderCupPage(
     cupFeaturedMatches,
     allCupFixtures,
     availableSeasons,
+    coverage,
+    topScorers,
+    topAssists,
     tournamentPhase,
   } = await getCachedCupData(competitionId, seasonYear, metadata);
 
@@ -453,6 +473,9 @@ export async function renderCupPage(
               standings={standings}
               locale={locale}
               tournamentName={pageTitle}
+              coverage={coverage}
+              topScorers={topScorers}
+              topAssists={topAssists}
             />
           </div>
         }
