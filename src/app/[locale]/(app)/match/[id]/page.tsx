@@ -13,7 +13,7 @@ import {
   getHeadToHead,
   getNextFixtures,
 } from '@/lib/db/queries/match-detail';
-import { getMatchState } from '@/lib/match-status';
+import { getMatchState, LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { qk } from '@/lib/query-keys';
 import { previewFromMatchDetail } from '@/lib/match-header-preview';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
@@ -37,7 +37,7 @@ import { cacheLife } from 'next/cache';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 
-const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
+const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
 
 /** Tidy API-Football round strings: "Regular Season - 38" → "Matchday 38", "8th Finals" → "Round of 16". */
 function prettyRound(round: string, tBc: Awaited<ReturnType<typeof getTranslations>>): string {

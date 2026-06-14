@@ -1,6 +1,8 @@
 // Normalized domain types — adapter-agnostic.
 // Every DataProvider implementation emits these shapes.
 
+import { isLive } from '@/lib/match-status';
+
 // --- Fixture status (§A.6) ---
 
 export type FixtureStatus =
@@ -25,7 +27,7 @@ export type FixtureStatus =
   | 'LIVE';
 
 export function isLiveStatus(status: FixtureStatus): boolean {
-  return ['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE'].includes(status);
+  return isLive(status);
 }
 
 // --- Coverage (§A.2) ---

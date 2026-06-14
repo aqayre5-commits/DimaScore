@@ -9,6 +9,7 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { RightRailFixture, GoalEvent } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 interface Props {
   match: RightRailFixture;
@@ -21,7 +22,7 @@ interface Props {
   };
 }
 
-const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
 
 export function HomeNextMatch({ match, goals, locale, labels }: Props) {
   const homeName = getTeamDisplayName(match.homeTeam, locale);

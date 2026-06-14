@@ -4,6 +4,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 import type { TeamSnapshot, VenueSnapshot } from './queries-hydrate';
 import { applyComputedStandings } from '@/lib/standings/compute';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 export interface FixtureWithTeams {
   id: number;
@@ -284,7 +285,7 @@ export interface TickerFixture {
 
 export type TickerResult = { mode: 'fixtures'; fixtures: TickerFixture[] } | { mode: 'empty' };
 
-const LIVE_STATUSES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+const LIVE_STATUSES: string[] = [...LIVE_CODES_ARRAY];
 
 const TICKER_SELECT = {
   id: schema.fixtures.id,

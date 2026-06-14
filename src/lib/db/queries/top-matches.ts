@@ -4,6 +4,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 export interface TopMatch {
   id: number;
@@ -27,7 +28,7 @@ export interface TopMatch {
   };
 }
 
-const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
 const FINISHED_CODES = ['FT', 'AET', 'PEN'];
 
 /**

@@ -7,6 +7,7 @@ import { formatMatchTime, formatDateLabel } from '@/lib/utils/date';
 import type { TopMatchDateGroup } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 interface Props {
   groups: TopMatchDateGroup[];
@@ -18,7 +19,7 @@ interface Props {
   };
 }
 
-const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
 
 export function HomeTopMatches({ groups, locale, labels }: Props) {
   if (groups.length === 0) return null;

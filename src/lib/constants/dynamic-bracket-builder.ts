@@ -14,6 +14,7 @@ import type {
   KnockoutPhase,
 } from '@/components/tournament/BracketMatchCell';
 import { ROUND_LABELS } from './wc2026-bracket-builder';
+import { isLive as isLiveStatus } from '@/lib/match-status';
 
 // ── Phase detection ─────────────────────────────────────────────────────────
 
@@ -313,11 +314,7 @@ export function buildDynamicBracket(
             tie.leg1.statusCode === 'AET' ||
             tie.leg1.statusCode === 'PEN');
 
-      const isLive =
-        !isFinished &&
-        ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'].includes(
-          tie.leg2?.statusCode ?? tie.leg1.statusCode,
-        );
+      const isLive = !isFinished && isLiveStatus(tie.leg2?.statusCode ?? tie.leg1.statusCode);
 
       const status: BracketMatch['status'] = isFinished ? 'finished' : isLive ? 'live' : 'upcoming';
 

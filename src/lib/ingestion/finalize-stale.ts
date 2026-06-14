@@ -3,9 +3,14 @@ import { sql } from 'drizzle-orm';
 import type { DataProvider } from '@/lib/data/provider';
 import * as schema from '@/lib/db/schema';
 import { mapFixtureToInsert } from './fixtures';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
-// Statuses that should have resolved once a match is well past kickoff.
-const STALE_CODES = ['NS', '1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+// Statuses a stuck-but-unresolved match can sit in after dropping off the live
+// feed: every in-progress code the poller refreshes (canonical LIVE set, incl.
+// INT) plus SUSP (suspended). A fixture in one of these with a stale `updated_at`
+// has been abandoned by the poller and needs re-fetching. PST/CANC are
+// schedule-managed (not in-play), so they're left to the schedule sync.
+const STALE_LIVE_CODES = [...LIVE_CODES_ARRAY, 'SUSP'];
 
 export interface FinalizeStaleResult {
   stale: number;
@@ -20,17 +25,26 @@ export interface FinalizeStaleResult {
  *
  * The poller only updates fixtures returned by the live feed; when a match ends
  * it drops off that feed, so it's never written to FT and freezes at its last
- * live snapshot ("2H 90'"). This re-fetches fixtures stuck in a live/NS status
- * past kickoff (by ID — the most reliable lookup) and writes their real state.
- * Re-fetching is harmless even if a match is genuinely still live: we write
- * whatever the API currently reports.
+ * live snapshot ("2H 90'"). We detect this two ways and re-fetch by ID (the most
+ * reliable lookup), writing whatever the API currently reports:
+ *
+ * - Live-status fixtures whose `updated_at` is older than `staleAfterMinutes`:
+ *   the poller has stopped touching them, so they're finished. `updated_at` is a
+ *   clean signal — only the poller (and this job) bump it; the schedule sync does
+ *   not. A genuinely live match is refreshed every cycle, so it's never selected.
+ * - `NS` fixtures past kickoff by `staleAfterHours`: these get no poller updates,
+ *   so update-staleness can't apply; kickoff age is the right signal instead.
+ *
+ * Re-fetching is harmless even if a match is genuinely still live: we just write
+ * its current live state back.
  */
 export async function finalizeStaleFixtures(
   provider: DataProvider,
   db: NeonHttpDatabase<typeof schema>,
-  opts: { staleAfterHours?: number; max?: number } = {},
+  opts: { staleAfterHours?: number; staleAfterMinutes?: number; max?: number } = {},
 ): Promise<FinalizeStaleResult> {
   const staleAfterHours = opts.staleAfterHours ?? 3;
+  const staleAfterMinutes = opts.staleAfterMinutes ?? 5;
   const max = opts.max ?? 100;
 
   const staleRows = await db
@@ -42,11 +56,17 @@ export async function finalizeStaleFixtures(
     })
     .from(schema.fixtures)
     .where(
-      sql`${schema.fixtures.statusCode} IN (${sql.join(
-        STALE_CODES.map((c) => sql`${c}`),
-        sql`, `,
-      )})
-          AND ${schema.fixtures.kickoffAt} < NOW() - make_interval(hours => ${staleAfterHours})`,
+      sql`(
+            ${schema.fixtures.statusCode} IN (${sql.join(
+              STALE_LIVE_CODES.map((c) => sql`${c}`),
+              sql`, `,
+            )})
+            AND ${schema.fixtures.updatedAt} < NOW() - make_interval(mins => ${staleAfterMinutes})
+          )
+          OR (
+            ${schema.fixtures.statusCode} = 'NS'
+            AND ${schema.fixtures.kickoffAt} < NOW() - make_interval(hours => ${staleAfterHours})
+          )`,
     )
     .limit(max);
 

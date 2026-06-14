@@ -6,8 +6,9 @@ import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
-const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
+const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
 const TERMINAL_CODES = new Set([
   'FT',
   'AET',

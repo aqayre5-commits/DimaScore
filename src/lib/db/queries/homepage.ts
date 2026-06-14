@@ -5,6 +5,7 @@ import * as schema from '../schema';
 import { ALL_ENTRIES } from '@/lib/constants/competitions-mega-menu';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 export interface HomeFixture {
   id: number;
@@ -50,7 +51,7 @@ export interface TrendingPlayer {
   goals: number;
 }
 
-const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
 const FINISHED_CODES = ['FT', 'AET', 'PEN', 'WO', 'AWD'];
 
 const FRIENDLIES_ID = 10;

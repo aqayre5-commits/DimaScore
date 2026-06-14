@@ -41,6 +41,7 @@ import {
 } from '@/lib/db/queries/league';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 async function getCachedCupData(competitionId: number, seasonYear: number, metadata: CupMetadata) {
   'use cache';
@@ -69,7 +70,7 @@ async function getCachedCupData(competitionId: number, seasonYear: number, metad
 // ── Status sets ──
 
 const TERMINAL_STATUSES = new Set(['FT', 'AET', 'PEN', 'AWD', 'WO', 'CANC', 'ABD', 'PST']);
-const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE']);
+const LIVE_STATUSES = new Set<string>(LIVE_CODES_ARRAY);
 
 function phaseFromRound(round: string | null): TournamentPhase['phase'] {
   if (!round) return 'group-stage';

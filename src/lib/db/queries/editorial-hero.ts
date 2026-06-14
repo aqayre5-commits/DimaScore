@@ -5,6 +5,7 @@ import * as schema from '../schema';
 import { TEAM_IDS, LEAGUE_IDS } from '@/lib/constants/canonical-ids';
 import { getMetadataForCompetition } from '@/lib/constants/tournament-metadata';
 import { getTeamsMap, type TeamSnapshot } from '../queries-hydrate';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 interface HeroFixture {
   id: number;
@@ -30,7 +31,7 @@ export type EditorialHeroData =
   | { mode: 'D'; tournament: string; daysUntil: number; moroccoGroup: string }
   | { mode: 'E' };
 
-const LIVE_STATUSES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+const LIVE_STATUSES: string[] = [...LIVE_CODES_ARRAY];
 
 // ── Main query ──
 

@@ -7,10 +7,11 @@ import { applyComputedStandings } from '@/lib/standings/compute';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { TEAM_IDS } from '@/lib/constants/canonical-ids';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 // ── Status code sets ──
 
-const LIVE_CODES = ['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE'];
+const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
 
 // Featured card must skip the same noise the homepage list filters: fixtures whose teams don't
 // resolve (render "TBD") and youth (U17–U23) entries in the Friendlies feed.

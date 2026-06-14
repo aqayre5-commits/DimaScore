@@ -9,6 +9,7 @@ import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 interface Labels {
   liveGroupStandings: string;
@@ -32,7 +33,7 @@ interface Props {
 
 // In-progress statuses (not finished) — only these are overlaid; finished matches are already in
 // the standings, so applying them too would double-count.
-const LIVE_STATUSES = new Set(['1H', 'HT', '2H', 'ET', 'BT', 'P', 'LIVE', 'INT']);
+const LIVE_STATUSES = new Set<string>(LIVE_CODES_ARRAY);
 const FINISHED_STATUSES = new Set(['FT', 'AET', 'PEN']);
 
 /** 0 = a match is live now, 1 = a match just finished today, 2 = upcoming only. Lower sorts first. */
