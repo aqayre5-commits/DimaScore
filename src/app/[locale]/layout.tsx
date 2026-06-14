@@ -77,10 +77,12 @@ export async function generateMetadata({
     icons: {
       icon: [
         { url: '/favicon.ico', sizes: 'any' },
-        { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
-        { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
+        { url: '/app_profile_icon_sizes/app-profile-192.png', type: 'image/png', sizes: '192x192' },
+        { url: '/app_profile_icon_sizes/app-profile-512.png', type: 'image/png', sizes: '512x512' },
       ],
-      apple: [{ url: '/icon-192.png', type: 'image/png', sizes: '192x192' }],
+      apple: [
+        { url: '/app_profile_icon_sizes/app-profile-180.png', type: 'image/png', sizes: '180x180' },
+      ],
     },
     manifest: '/manifest.webmanifest',
     openGraph: {

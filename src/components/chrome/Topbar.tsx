@@ -89,9 +89,9 @@ export function Topbar() {
         {/* Logo */}
         <Link href={`/${locale}`} className="me-3 inline-flex items-center gap-2 text-lg font-bold">
           <Image
-            src="/master-logo-transparent.png"
+            src="/app_profile_icon_sizes/app-profile-master-transparent.png"
             alt="DimaScore"
-            width={30}
+            width={32}
             height={32}
             className="h-8 w-auto object-contain"
             priority
