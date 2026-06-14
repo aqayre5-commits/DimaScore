@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -86,9 +87,19 @@ export function Topbar() {
         </div>
 
         {/* Logo */}
-        <Link href={`/${locale}`} className="me-3 text-lg font-bold">
-          <span className="text-text-primary">Dima</span>
-          <span className="text-accent-azure">Score</span>
+        <Link href={`/${locale}`} className="me-3 inline-flex items-center gap-2 text-lg font-bold">
+          <Image
+            src="/master-logo-transparent.png"
+            alt="DimaScore"
+            width={26}
+            height={28}
+            className="h-7 w-auto object-contain"
+            priority
+          />
+          <span>
+            <span className="text-text-primary">Dima</span>
+            <span className="text-accent-azure">Score</span>
+          </span>
         </Link>
 
         {/* Desktop nav — 11 direct competition links + More */}
