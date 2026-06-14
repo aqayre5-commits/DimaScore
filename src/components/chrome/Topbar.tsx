@@ -91,9 +91,9 @@ export function Topbar() {
           <Image
             src="/master-logo-transparent.png"
             alt="DimaScore"
-            width={26}
-            height={28}
-            className="h-7 w-auto object-contain"
+            width={30}
+            height={32}
+            className="h-8 w-auto object-contain"
             priority
           />
           <span>
