@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { GroupTable } from './GroupTable';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
-import { isLive } from '@/lib/match-status';
+import { overlayLiveStandings } from '@/lib/standings/overlay-live';
 import type { StandingRow } from '@/lib/db/queries';
 import type { CupMetadata } from '@/lib/constants/tournament-metadata';
 import type { Locale } from '@/lib/i18n/config';
@@ -25,18 +25,9 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
   const t = useTranslations('tournament');
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
-  // Teams whose match is in progress right now (from the shared live poll). Used to flag the
-  // group header + the team rows as live, mirroring the homepage rail.
+  // Shared live poll — used per group to overlay in-progress results onto the table (points tick
+  // live, re-sorted + re-ranked), mirroring the homepage rail.
   const live = useLiveFixtures();
-  const liveTeamIds = useMemo(() => {
-    const ids = new Set<number>();
-    for (const p of live.values()) {
-      if (!isLive(p.statusCode)) continue;
-      if (p.homeTeamId != null) ids.add(p.homeTeamId);
-      if (p.awayTeamId != null) ids.add(p.awayTeamId);
-    }
-    return ids;
-  }, [live]);
 
   const groupLabels = metadata.groups.map((g) => g.label);
   const moroccoGroup = metadata.groups.find((g) => g.isMoroccoGroup);
@@ -88,7 +79,8 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
       {/* Group tables */}
       <div className="space-y-4">
         {visibleGroups.map((label) => {
-          const rows = standingsByGroup.get(label) ?? [];
+          const rawRows = standingsByGroup.get(label) ?? [];
+          const { rows, liveTeamIds } = overlayLiveStandings(rawRows, live.values());
           const isMoroccoGroup = label === moroccoGroup?.label;
 
           return (
