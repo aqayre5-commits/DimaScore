@@ -71,6 +71,7 @@ export interface LiveGroupFixture {
 
 export interface GroupStandingsBlock {
   competitionId: number;
+  seasonYear: number;
   competitionName: Record<string, string>;
   competitionSlug: string;
   competitionLogoUrl: string | null;
@@ -443,7 +444,7 @@ export async function getLiveGroupStandings(
     const groupLabel = normalized.replace(/^Group\s*/i, '');
     const teamId = r.team_id ? Number(r.team_id) : null;
 
-    const blockKey = `${r.competition_id}-${groupLabel}`;
+    const blockKey = `${r.competition_id}-${r.season_year}-${groupLabel}`;
     const teamKey = `${blockKey}::${teamId}`;
     if (teamId != null && seenTeam.has(teamKey)) continue;
     if (teamId != null) seenTeam.add(teamKey);
@@ -452,6 +453,7 @@ export async function getLiveGroupStandings(
     if (!block) {
       block = {
         competitionId: Number(r.competition_id),
+        seasonYear: Number(r.season_year),
         competitionName: r.comp_name,
         competitionSlug: r.comp_slug,
         competitionLogoUrl: resolveCompetitionLogo(Number(r.competition_id), r.comp_logo_url),
@@ -482,11 +484,13 @@ export async function getLiveGroupStandings(
 
   // ── Compute empty group tables from results + attach today's fixtures for the live overlay ──
   const compIds = [...new Set(blocks.map((b) => b.competitionId))];
+  const seasons = [...new Set(blocks.map((b) => b.seasonYear))];
   if (compIds.length > 0) {
     const allFixtures = await db
       .select({
         id: schema.fixtures.id,
         competitionId: schema.fixtures.competitionId,
+        seasonYear: schema.fixtures.seasonYear,
         homeTeamId: schema.fixtures.homeTeamId,
         awayTeamId: schema.fixtures.awayTeamId,
         homeScore: schema.fixtures.homeScore,
@@ -495,22 +499,30 @@ export async function getLiveGroupStandings(
         kickoffAt: schema.fixtures.kickoffAt,
       })
       .from(schema.fixtures)
-      .where(inArray(schema.fixtures.competitionId, compIds))
+      // Scope to the blocks' editions: a competition id alone spans every past edition, whose
+      // results would otherwise leak into the current season's computed group tables.
+      .where(
+        and(
+          inArray(schema.fixtures.competitionId, compIds),
+          inArray(schema.fixtures.seasonYear, seasons),
+        ),
+      )
       .orderBy(asc(schema.fixtures.kickoffAt));
 
-    const fxByComp = new Map<number, typeof allFixtures>();
+    const fxByCompSeason = new Map<string, typeof allFixtures>();
     for (const f of allFixtures) {
-      if (f.competitionId == null) continue;
-      const arr = fxByComp.get(f.competitionId) ?? [];
+      if (f.competitionId == null || f.seasonYear == null) continue;
+      const key = `${f.competitionId}:${f.seasonYear}`;
+      const arr = fxByCompSeason.get(key) ?? [];
       arr.push(f);
-      fxByComp.set(f.competitionId, arr);
+      fxByCompSeason.set(key, arr);
     }
 
     const earliestKickoff = new Map<GroupStandingsBlock, number>();
     for (const b of blocks) {
-      const compFx = fxByComp.get(b.competitionId) ?? [];
+      const compFx = fxByCompSeason.get(`${b.competitionId}:${b.seasonYear}`) ?? [];
       // Server: fill an empty group table from finished results (immune to a stale /standings feed).
-      b.rows = applyComputedStandings(b.rows, compFx);
+      b.rows = applyComputedStandings(b.rows, compFx, b.seasonYear);
       // Client overlay: today's fixtures for this group's teams (live matches layer on top).
       const teamIds = new Set(b.rows.map((r) => r.teamId).filter((x): x is number => x != null));
       const todayFx = compFx.filter(

@@ -151,6 +151,7 @@ export async function getStandings(
       homeScore: schema.fixtures.homeScore,
       awayScore: schema.fixtures.awayScore,
       statusCode: schema.fixtures.statusCode,
+      seasonYear: schema.fixtures.seasonYear,
     })
     .from(schema.fixtures)
     .where(
@@ -161,7 +162,7 @@ export async function getStandings(
     )
     .orderBy(asc(schema.fixtures.kickoffAt));
 
-  return applyComputedStandings(result, fixtures);
+  return applyComputedStandings(result, fixtures, seasonYear);
 }
 
 // ── Batch hydration helpers ──

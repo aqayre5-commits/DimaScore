@@ -7,6 +7,9 @@ export interface ComputeFixture {
   homeScore: number | null;
   awayScore: number | null;
   statusCode: string;
+  /** Edition the fixture belongs to. Required so a past edition can't be attributed
+   *  to the current season's group table (both share teams + competition id). */
+  seasonYear: number | null;
 }
 
 const FINISHED = new Set(['FT', 'AET', 'PEN']);
@@ -40,10 +43,14 @@ function applyOne(row: StandingRow, scored: number, conceded: number) {
  * themselves; fixtures (which carry no group) are attributed by requiring both teams in the group.
  *
  * `fixtures` should be ordered by kickoff ascending so the form string reads oldest→newest.
+ * Only fixtures whose `seasonYear` matches `seasonYear` are counted — the standings rows are for a
+ * single edition, and a competition's team pairings recur across editions, so without this filter a
+ * past edition's result would leak into the current table.
  */
 export function applyComputedStandings(
   rows: StandingRow[],
   fixtures: ComputeFixture[],
+  seasonYear: number,
 ): StandingRow[] {
   const result = rows.map((r) => ({ ...r }));
 
@@ -56,6 +63,7 @@ export function applyComputedStandings(
 
   const finished = fixtures.filter(
     (f) =>
+      f.seasonYear === seasonYear &&
       FINISHED.has(f.statusCode) &&
       f.homeTeamId != null &&
       f.awayTeamId != null &&

@@ -10,6 +10,10 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
 
 ## Entries
 
+- [2026-06-14][phase 13 — WC audit] Knockout bracket (`buildDynamicBracket`) hardening, DORMANT until 2026 WC knockout fixtures populate (currently 0 in DB; WC falls back to the static `wc2026-bracket-builder` so nothing is broken now). Three issues to fix before the round of 32: (1) `buildTies` pairs reversed home/away as a two-leg aggregate — WC is single-leg; pass an `isSingleLeg` flag so legs are never paired (low practical risk since it runs per-phase, but a latent correctness trap). (2) Knockout fixtures created with placeholder/null teams render as `? vs ?` in the dynamic builder (the static bracket shows proper "Winner Group A" slot labels); add TBD-team fallback labels. (3) Verify R32 (16-tie / 8-per-side) grid sizing in `computeGridConfig` vs the bracket component's row assumptions when only R32 fixtures exist. Also the already-noted live-minute-on-bracket-node item.
+
+- [2026-06-14][phase 13 — WC audit] Morocco isn't flagged as its group in the WC 2026 metadata (`tournament-metadata.ts`, all groups `isMoroccoGroup: false`), so the WC page header shows no Morocco highlight. Morocco is in Group C. Polish: mark Group C `isMoroccoGroup: true` for 2026.
+
 <!-- Entries are appended below. Keep them one line each. -->
 - [2026-05-12][phase 0] Deferred §J.0 task 14 (Vercel deploy). Will be picked up when there's a meaningful deployment to test, or as part of Phase 12 launch readiness. v1 Vercel project remains untouched for now.
 - [2026-05-12][phase 1] API_FOOTBALL_KEY must be in .env.local before integration tests can run. User-managed (protected path).
