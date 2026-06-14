@@ -29,6 +29,10 @@
   --accent-violet: #9b59b6;
   --score-live: #ff4757;
   --score-live-bg: #ff475714;
+  /* Brand logo colours. Light theme uses the source hex; dark uses brightened
+     variants of the same hue so they stay legible on the dark surface. */
+  --brand-green: #2aa86e;
+  --brand-red: #f0405a;
 }
 
 /* ─── Light mode (Media tab, About pages) ─── */
@@ -54,6 +58,8 @@
   --accent-violet: #8e44ad;
   --score-live: #e63950;
   --score-live-bg: #e6395014;
+  --brand-green: #003d2b;
+  --brand-red: #c8102e;
 }
 
 /* ─── Tailwind @theme mapping ─── */
@@ -80,6 +86,8 @@
   --color-accent-violet: var(--accent-violet);
   --color-score-live: var(--score-live);
   --color-score-live-bg: var(--score-live-bg);
+  --color-brand-green: var(--brand-green);
+  --color-brand-red: var(--brand-red);
 
   /* Fonts */
   --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;

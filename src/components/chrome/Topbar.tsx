@@ -97,8 +97,8 @@ export function Topbar() {
             priority
           />
           <span>
-            <span className="text-text-primary">Dima</span>
-            <span className="text-accent-azure">Score</span>
+            <span className="text-brand-green">Dima</span>
+            <span className="text-brand-red">Score</span>
           </span>
         </Link>
 
