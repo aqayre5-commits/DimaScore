@@ -254,7 +254,9 @@ export async function getFeaturedMatches(
         eq(schema.standings.competitionId, schema.fixtures.competitionId),
         eq(schema.standings.seasonYear, schema.fixtures.seasonYear),
         eq(schema.standings.teamId, schema.fixtures.homeTeamId),
-        sql`${schema.standings.groupLabel} LIKE 'Group%'`,
+        // Match only the canonical "Group X" row — the duplicate "Group Stage - Group X" and the
+        // bare "Group Stage" catch-all would each emit an extra (mislabelled) fixture row.
+        sql`${schema.standings.groupLabel} LIKE 'Group %' AND ${schema.standings.groupLabel} NOT LIKE 'Group Stage%'`,
       ),
     )
     .where(
