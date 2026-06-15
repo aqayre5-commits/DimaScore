@@ -20,8 +20,8 @@ import {
   getCurrentRound,
   getLeagueFeaturedMatches,
   getLeagueFixtures,
-  getTopScorersForLeague,
-  getTopAssistsForLeague,
+  getResolvedTopScorers,
+  getResolvedTopAssists,
   getTopCardsForLeague,
   getAvailableSeasons,
 } from '@/lib/db/queries/league';
@@ -38,7 +38,7 @@ import { LeaguePlayersTab } from '@/components/league/LeaguePlayersTab';
 import { LeagueTeamsTab } from '@/components/league/LeagueTeamsTab';
 import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-content';
 
-async function getCachedLeagueData(competitionId: number, seasonYear: number) {
+async function getCachedLeagueData(competitionId: number, seasonYear: number, locale: Locale) {
   'use cache';
   cacheLife('minutes');
   const [
@@ -59,8 +59,8 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number) {
     getCurrentRound(db, competitionId, seasonYear),
     getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
     getLeagueFixtures(db, competitionId, seasonYear),
-    getTopScorersForLeague(db, competitionId, seasonYear),
-    getTopAssistsForLeague(db, competitionId, seasonYear),
+    getResolvedTopScorers(db, competitionId, seasonYear, locale),
+    getResolvedTopAssists(db, competitionId, seasonYear, locale),
     getTopCardsForLeague(db, competitionId, seasonYear),
     getInjuriesForCompetition(db, competitionId, seasonYear),
   ]);
@@ -162,7 +162,7 @@ export async function renderLeaguePage(
     topAssists,
     topCards,
     injuries,
-  } = await getCachedLeagueData(competition.id, seasonYear);
+  } = await getCachedLeagueData(competition.id, seasonYear, locale);
 
   const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
   const countryName = getLeagueCountryName(competition.countryCode, locale);

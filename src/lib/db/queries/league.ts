@@ -518,6 +518,44 @@ export async function getEditionTopAssists(
   }));
 }
 
+/**
+ * Top scorers preferring the official `/topscorers` aggregate, but falling back to goal events when
+ * that feed is broken/empty for a season — it sometimes fails to populate (e.g. Botola 2025 had
+ * 4 scorers / max 3 goals while 372 goals were on record in `fixture_events`). Picks whichever
+ * source's leader has more goals (the one that isn't undercounting) and drops 0-goal players so a
+ * sparse aggregate never pads the list. Healthy leagues keep their canonical aggregate.
+ */
+export async function getResolvedTopScorers(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+  locale: string,
+  limit = 10,
+): Promise<TopPlayerRow[]> {
+  const [official, events] = await Promise.all([
+    getTopScorersForLeague(db, competitionId, seasonYear, limit),
+    getEditionTopScorers(db, competitionId, seasonYear, locale, limit),
+  ]);
+  const chosen = (official[0]?.goals ?? 0) >= (events[0]?.goals ?? 0) ? official : events;
+  return chosen.filter((p) => p.goals > 0);
+}
+
+/** Top assists with the same official-then-events fallback as {@link getResolvedTopScorers}. */
+export async function getResolvedTopAssists(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+  locale: string,
+  limit = 10,
+): Promise<TopPlayerRow[]> {
+  const [official, events] = await Promise.all([
+    getTopAssistsForLeague(db, competitionId, seasonYear, limit),
+    getEditionTopAssists(db, competitionId, seasonYear, locale, limit),
+  ]);
+  const chosen = (official[0]?.assists ?? 0) >= (events[0]?.assists ?? 0) ? official : events;
+  return chosen.filter((p) => p.assists > 0);
+}
+
 // ── Top cards ──
 
 export interface TopCardRow {
