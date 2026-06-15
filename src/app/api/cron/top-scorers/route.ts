@@ -32,34 +32,52 @@ export async function GET(request: Request) {
         ),
       );
 
-    const results: { leagueId: number; season: number; scorers: number; assists: number }[] = [];
+    const results: {
+      leagueId: number;
+      season: number;
+      scorers: number;
+      assists: number;
+      error?: string;
+    }[] = [];
 
     for (const row of coverageRows) {
-      let scorersCount = 0;
-      let assistsCount = 0;
+      try {
+        let scorersCount = 0;
+        let assistsCount = 0;
 
-      if (row.topScorers) {
-        const stats = await syncTopScorers(provider, db, {
+        if (row.topScorers) {
+          const stats = await syncTopScorers(provider, db, {
+            leagueId: row.leagueId,
+            season: row.season,
+          });
+          scorersCount = stats.updated;
+        }
+
+        if (row.topAssists) {
+          const stats = await syncTopAssists(provider, db, {
+            leagueId: row.leagueId,
+            season: row.season,
+          });
+          assistsCount = stats.updated;
+        }
+
+        results.push({
           leagueId: row.leagueId,
           season: row.season,
+          scorers: scorersCount,
+          assists: assistsCount,
         });
-        scorersCount = stats.updated;
-      }
-
-      if (row.topAssists) {
-        const stats = await syncTopAssists(provider, db, {
+      } catch (err) {
+        // One league's failure must not abort the rest of the run.
+        console.error(`Cron top-scorers failed for league ${row.leagueId}/${row.season}:`, err);
+        results.push({
           leagueId: row.leagueId,
           season: row.season,
+          scorers: 0,
+          assists: 0,
+          error: err instanceof Error ? err.message : String(err),
         });
-        assistsCount = stats.updated;
       }
-
-      results.push({
-        leagueId: row.leagueId,
-        season: row.season,
-        scorers: scorersCount,
-        assists: assistsCount,
-      });
     }
 
     return NextResponse.json({ ok: true, synced: results.length, results });

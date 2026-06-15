@@ -45,21 +45,30 @@ export async function syncTopScorers(
       const row = mapTopPlayerToInsert(p, params.leagueId, params.season);
       if (!row) continue;
 
-      await tx
-        .insert(schema.playerSeasonStats)
-        .values(row)
-        .onConflictDoUpdate({
-          target: [
-            schema.playerSeasonStats.playerId,
-            schema.playerSeasonStats.teamId,
-            schema.playerSeasonStats.competitionId,
-            schema.playerSeasonStats.seasonYear,
-          ],
-          set: {
-            stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
-          },
-        });
-      updated++;
+      try {
+        await tx
+          .insert(schema.playerSeasonStats)
+          .values(row)
+          .onConflictDoUpdate({
+            target: [
+              schema.playerSeasonStats.playerId,
+              schema.playerSeasonStats.teamId,
+              schema.playerSeasonStats.competitionId,
+              schema.playerSeasonStats.seasonYear,
+            ],
+            set: {
+              stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
+            },
+          });
+        updated++;
+      } catch (err) {
+        // A player/team the API reports but we haven't ingested yet FK-violates; skip it so one
+        // bad row can't abort the rest of the league (and the whole cron run).
+        console.warn(
+          `[top-scorers] skipped player ${row.playerId} (league ${params.leagueId}/${params.season}):`,
+          err instanceof Error ? err.message : err,
+        );
+      }
     }
   });
 
@@ -84,21 +93,29 @@ export async function syncTopAssists(
       if (!row) continue;
 
       // Merge with existing stats if player already has a row (e.g., from topScorers)
-      await tx
-        .insert(schema.playerSeasonStats)
-        .values(row)
-        .onConflictDoUpdate({
-          target: [
-            schema.playerSeasonStats.playerId,
-            schema.playerSeasonStats.teamId,
-            schema.playerSeasonStats.competitionId,
-            schema.playerSeasonStats.seasonYear,
-          ],
-          set: {
-            stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
-          },
-        });
-      updated++;
+      try {
+        await tx
+          .insert(schema.playerSeasonStats)
+          .values(row)
+          .onConflictDoUpdate({
+            target: [
+              schema.playerSeasonStats.playerId,
+              schema.playerSeasonStats.teamId,
+              schema.playerSeasonStats.competitionId,
+              schema.playerSeasonStats.seasonYear,
+            ],
+            set: {
+              stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
+            },
+          });
+        updated++;
+      } catch (err) {
+        // Skip a player/team we haven't ingested yet so one FK failure can't abort the league.
+        console.warn(
+          `[top-assists] skipped player ${row.playerId} (league ${params.leagueId}/${params.season}):`,
+          err instanceof Error ? err.message : err,
+        );
+      }
     }
   });
 
