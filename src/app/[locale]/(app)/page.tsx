@@ -7,6 +7,8 @@ import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
 import { HomeFeaturedCarousel } from '@/components/homepage/HomeFeaturedCarousel';
+import { HomeBrandHero } from '@/components/homepage/HomeBrandHero';
+import { HomeEditorial } from '@/components/homepage/HomeEditorial';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
@@ -35,20 +37,20 @@ const baseUrl = BASE_URL;
 const HOME_META: Record<Locale, { title: string; description: string }> = {
   fr: {
     title:
-      "Football aujourd'hui \u2014 scores en direct, Botola Pro, WC 2026, Atlas Lions | DimaScore",
+      'DimaScore \u2014 Football marocain : scores en direct, calendrier, classements et couverture des matchs',
     description:
-      'Suivez le football marocain et mondial en direct : scores Botola Pro, matchs Atlas Lions, qualifications Coupe du Monde 2026, AFCON, WAFCON, classements et statistiques mises \u00e0 jour en temps r\u00e9el.',
+      "Scores en direct, calendrier, classements et couverture des matchs pour la Botola, les Lions de l'Atlas, les comp\u00e9titions de la CAF et les Marocains de l'\u00e9tranger.",
   },
   en: {
-    title: 'Football today \u2014 live scores, Botola Pro, WC 2026, Atlas Lions | DimaScore',
+    title: 'DimaScore \u2014 Moroccan Football Live Scores, Fixtures, Standings & Match Coverage',
     description:
-      'Follow Moroccan and world football live: Botola Pro scores, Atlas Lions fixtures, World Cup 2026 qualifiers, AFCON, WAFCON, standings and statistics updated in real time.',
+      'Live scores, fixtures, standings and match coverage for Botola, the Atlas Lions, CAF competitions and Moroccan players abroad.',
   },
   ar: {
     title:
-      '\u0643\u0631\u0629 \u0627\u0644\u0642\u062f\u0645 \u0627\u0644\u064a\u0648\u0645 \u2014 \u0646\u062a\u0627\u0626\u062c \u0645\u0628\u0627\u0634\u0631\u0629\u060c \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0627\u0644\u0627\u062d\u062a\u0631\u0627\u0641\u064a\u0629\u060c \u0643\u0623\u0633 \u0627\u0644\u0639\u0627\u0644\u0645 2026\u060c \u0623\u0633\u0648\u062f \u0627\u0644\u0623\u0637\u0644\u0633 | \u0623\u0637\u0644\u0633 \u0643\u064a\u0646\u063a\u0632',
+      '\u062f\u064a\u0645\u0627 \u0633\u0643\u0648\u0631 \u2014 \u0643\u0631\u0629 \u0627\u0644\u0642\u062f\u0645 \u0627\u0644\u0645\u063a\u0631\u0628\u064a\u0629: \u0646\u062a\u0627\u0626\u062c \u0645\u0628\u0627\u0634\u0631\u0629\u060c \u0645\u0628\u0627\u0631\u064a\u0627\u062a\u060c \u062a\u0631\u062a\u064a\u0628 \u0648\u062a\u063a\u0637\u064a\u0629 \u0634\u0627\u0645\u0644\u0629',
     description:
-      '\u062a\u0627\u0628\u0639\u0648\u0627 \u0643\u0631\u0629 \u0627\u0644\u0642\u062f\u0645 \u0627\u0644\u0645\u063a\u0631\u0628\u064a\u0629 \u0648\u0627\u0644\u0639\u0627\u0644\u0645\u064a\u0629 \u0645\u0628\u0627\u0634\u0631\u0629: \u0646\u062a\u0627\u0626\u062c \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0627\u0644\u0627\u062d\u062a\u0631\u0627\u0641\u064a\u0629\u060c \u0645\u0628\u0627\u0631\u064a\u0627\u062a \u0623\u0633\u0648\u062f \u0627\u0644\u0623\u0637\u0644\u0633\u060c \u062a\u0635\u0641\u064a\u0627\u062a \u0643\u0623\u0633 \u0627\u0644\u0639\u0627\u0644\u0645 2026\u060c \u0643\u0623\u0633 \u0623\u0645\u0645 \u0625\u0641\u0631\u064a\u0642\u064a\u0627\u060c \u0643\u0623\u0633 \u0623\u0645\u0645 \u0625\u0641\u0631\u064a\u0642\u064a\u0627 \u0644\u0644\u0633\u064a\u062f\u0627\u062a\u060c \u0627\u0644\u062a\u0631\u062a\u064a\u0628 \u0648\u0627\u0644\u0625\u062d\u0635\u0627\u0626\u064a\u0627\u062a \u0645\u062d\u062f\u062b\u0629 \u0641\u064a \u0627\u0644\u0648\u0642\u062a \u0627\u0644\u0641\u0639\u0644\u064a.',
+      '\u0646\u062a\u0627\u0626\u062c \u0645\u0628\u0627\u0634\u0631\u0629 \u0648\u0645\u0648\u0627\u0639\u064a\u062f \u0627\u0644\u0645\u0628\u0627\u0631\u064a\u0627\u062a \u0648\u0627\u0644\u062a\u0631\u062a\u064a\u0628 \u0648\u062a\u063a\u0637\u064a\u0629 \u0634\u0627\u0645\u0644\u0629 \u0644\u0643\u0631\u0629 \u0627\u0644\u0642\u062f\u0645 \u0627\u0644\u0645\u063a\u0631\u0628\u064a\u0629: \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0627\u0644\u0627\u062d\u062a\u0631\u0627\u0641\u064a\u0629\u060c \u0623\u0633\u0648\u062f \u0627\u0644\u0623\u0637\u0644\u0633\u060c \u0645\u0633\u0627\u0628\u0642\u0627\u062a \u0627\u0644\u0643\u0627\u0641\u060c \u0648\u0627\u0644\u0644\u0627\u0639\u0628\u0648\u0646 \u0627\u0644\u0645\u063a\u0627\u0631\u0628\u0629 \u0627\u0644\u0645\u062d\u062a\u0631\u0641\u0648\u0646 \u0641\u064a \u0627\u0644\u062e\u0627\u0631\u062c.',
   },
 };
 
@@ -180,6 +182,7 @@ export default async function HomePage({ params }: PageProps) {
           {/* Center column */}
           <div className="order-1 min-w-0 xl:order-none xl:col-start-2 xl:row-start-1">
             <div className="space-y-4">
+              <HomeBrandHero locale={typedLocale} />
               <HomeFeaturedCarousel
                 matches={featured}
                 locale={typedLocale}
@@ -207,13 +210,15 @@ export default async function HomePage({ params }: PageProps) {
                 </div>
               )}
 
-              <HomeMatchTabs
-                live={matchesByCategory.live}
-                upcoming={matchesByCategory.upcoming}
-                results={matchesByCategory.results}
-                locale={typedLocale}
-                labels={matchTabLabels}
-              />
+              <div id="matches" className="scroll-mt-24">
+                <HomeMatchTabs
+                  live={matchesByCategory.live}
+                  upcoming={matchesByCategory.upcoming}
+                  results={matchesByCategory.results}
+                  locale={typedLocale}
+                  labels={matchTabLabels}
+                />
+              </div>
 
               {/* Rail data surfaced in the mobile flow (value-ordered); hidden on desktop. */}
               <div className="xl:hidden">
@@ -224,7 +229,8 @@ export default async function HomePage({ params }: PageProps) {
                 <HomeTrendingPlayersStreamed locale={typedLocale} />
               </Suspense>
             </div>
-            <div className="mt-6">
+            <div className="mt-6 space-y-6">
+              <HomeEditorial locale={typedLocale} />
               <AboutCard content={getHomepageAboutContent(typedLocale)} />
             </div>
           </div>

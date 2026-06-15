@@ -159,8 +159,11 @@
     "tomorrow": "Demain"
   },
   "homepage": {
-    "h1": "Football marocain et international en direct",
-    "intro": "DimaScore suit la Botola Pro, l'équipe nationale du Maroc, les qualifications de la Coupe du Monde 2026, AFCON, WAFCON et les meilleures compétitions européennes. Scores en direct, classements et statistiques mises à jour à la minute.",
+    "h1": "Le football marocain, suivi comme il se doit.",
+    "intro": "DimaScore met le football marocain en lumière — de la Botola Pro et la Coupe du Trône aux Lions de l'Atlas, aux compétitions de la CAF et aux Marocains de l'étranger. Suivez les scores en direct, le calendrier, les classements, les effectifs et les détails de match sur une plateforme pensée pour la façon dont les supporters marocains suivent réellement le jeu.",
+    "heroCtaPrimary": "Suivre les matchs en direct",
+    "heroCtaSecondary": "Explorer les compétitions",
+    "editorialCta": "Voir les matchs du jour",
     "emptyState": "Les matchs arrivent bientôt",
     "featuredVideos": "Vidéos à la une",
     "featured": "À la une",
