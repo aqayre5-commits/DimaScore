@@ -5,9 +5,7 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
-import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
 import { HomeFeaturedCarousel } from '@/components/homepage/HomeFeaturedCarousel';
-import { HomeBrandHero } from '@/components/homepage/HomeBrandHero';
 import { HomeEditorial } from '@/components/homepage/HomeEditorial';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
@@ -15,8 +13,6 @@ import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
 import { HomeNextMatch } from '@/components/homepage/HomeNextMatch';
 import { getHomeRailData } from '@/lib/db/queries/home-rail';
 import { HomeTrendingPlayersStreamed } from '@/components/homepage/HomeTrendingPlayersStreamed';
-import { AboutCard } from '@/components/tournament/AboutCard';
-import { getHomepageAboutContent } from '@/lib/constants/homepage-about-content';
 import { db } from '@/lib/db/client';
 import {
   getFeaturedMatches,
@@ -182,7 +178,6 @@ export default async function HomePage({ params }: PageProps) {
           {/* Center column */}
           <div className="order-1 min-w-0 xl:order-none xl:col-start-2 xl:row-start-1">
             <div className="space-y-4">
-              <HomeBrandHero locale={typedLocale} />
               <HomeFeaturedCarousel
                 matches={featured}
                 locale={typedLocale}
@@ -229,9 +224,8 @@ export default async function HomePage({ params }: PageProps) {
                 <HomeTrendingPlayersStreamed locale={typedLocale} />
               </Suspense>
             </div>
-            <div className="mt-6 space-y-6">
+            <div className="mt-6">
               <HomeEditorial locale={typedLocale} />
-              <AboutCard content={getHomepageAboutContent(typedLocale)} />
             </div>
           </div>
 
@@ -244,7 +238,6 @@ export default async function HomePage({ params }: PageProps) {
 
       <WebSiteJsonLd baseUrl={baseUrl} locale={typedLocale} />
       <OrganizationJsonLd baseUrl={baseUrl} />
-      <FaqPageJsonLd faqs={getHomepageAboutContent(typedLocale).faqs} />
     </>
   );
 }

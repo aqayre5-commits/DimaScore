@@ -1,7 +1,6 @@
 /**
- * Homepage editorial brand narrative — the lead story above the factual About/FAQ block.
- * Editorial voice (British English source; native FR; Modern Standard Arabic with football register),
- * distinct from the keyword-dense `homepage-about-content.ts` which does the long-tail SEO work.
+ * Homepage editorial brand narrative — the closing brand story below the live-scores dashboard.
+ * Editorial voice: British English source, native French, Modern Standard Arabic with football register.
  */
 
 import type { Locale } from '@/lib/i18n/config';
