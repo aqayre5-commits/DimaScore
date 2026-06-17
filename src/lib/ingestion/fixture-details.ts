@@ -1,4 +1,4 @@
-import { eq, and, sql, inArray, asc } from 'drizzle-orm';
+import { eq, and, sql, inArray, desc } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type {
@@ -244,7 +244,9 @@ export async function getFixturesMissingDetails(
         sql`${schema.fixtures.detailsSyncedAt} IS NULL`,
       ),
     )
-    .orderBy(asc(schema.fixtures.kickoffAt))
+    // Newest finished fixtures first — a live-scores product needs the latest matchday's events
+    // before any old backfill, so recent results don't sit behind a stale queue.
+    .orderBy(desc(schema.fixtures.kickoffAt))
     .limit(limit);
 
   return rows.map((r) => r.id);
