@@ -438,7 +438,7 @@ export async function getLiveGroupStandings(
   const seenTeam = new Set<string>();
 
   for (const r of allRows.rows as RawRow[]) {
-    const normalized = r.group_label.replace(/^Group Stage\s*-\s*/i, '');
+    const normalized = r.group_label.trim().replace(/^Group Stage\s*-\s*/i, '');
     const low = normalized.toLowerCase();
     if (low.includes('ranking') || low === 'group stage') continue;
     const groupLabel = normalized.replace(/^Group\s*/i, '');

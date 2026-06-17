@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { FixtureWithTeams, StandingRow } from '@/lib/db/queries';
+import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 import type { TopPlayerRow, LeagueCoverageRecord } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import { CupFixturesTab } from './CupFixturesTab';
@@ -30,7 +31,7 @@ export function CupOverviewTab({
   const t = useTranslations('tournament');
   const tL = useTranslations('leaguePage');
 
-  const topStandings = standings.slice(0, 8);
+  const topStandings = dedupeStandingsByTeam(standings).slice(0, 8);
   const compactScorers = topScorers.slice(0, 5);
   const compactAssists = topAssists.slice(0, 5);
 

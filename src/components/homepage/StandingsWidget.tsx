@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { StandingRow } from '@/lib/db/queries';
+import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
@@ -27,7 +28,7 @@ export function StandingsWidget({
   playedLabel,
   pointsLabel,
 }: StandingsWidgetProps) {
-  const top6 = rows.slice(0, 6);
+  const top6 = dedupeStandingsByTeam(rows).slice(0, 6);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">

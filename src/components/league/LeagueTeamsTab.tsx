@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
+import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 
 interface LeagueTeamsTabProps {
   standings: StandingRow[];
@@ -19,8 +20,8 @@ function buildTeamHref(team: StandingRow['team'], locale: Locale): string {
 }
 
 export function LeagueTeamsTab({ standings, locale }: LeagueTeamsTabProps) {
-  // Sort alphabetically by team name
-  const sorted = [...standings].sort((a, b) => {
+  // One card per team — standings can carry duplicate rows per team under variant group labels.
+  const sorted = dedupeStandingsByTeam(standings).sort((a, b) => {
     const nameA = resolveTeamName(a.team, locale);
     const nameB = resolveTeamName(b.team, locale);
     return nameA.localeCompare(nameB);

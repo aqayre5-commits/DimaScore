@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
+import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 
 interface LeagueStandingsTabProps {
   standings: StandingRow[];
@@ -78,7 +79,9 @@ function FormPills({
 export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandingsTabProps) {
   const t = useTranslations('leaguePage');
 
-  const legend = buildLegend(standings);
+  // One row per team — a single-table league must not double a team that has variant group labels.
+  const rows = dedupeStandingsByTeam(standings);
+  const legend = buildLegend(rows);
 
   return (
     <div className="space-y-3">
@@ -102,7 +105,7 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
             </tr>
           </thead>
           <tbody>
-            {standings.map((row) => {
+            {rows.map((row) => {
               const zoneColor = getZoneColor(row.description);
               const teamName =
                 row.team?.name[locale] ?? row.team?.name['en'] ?? row.team?.code ?? '—';

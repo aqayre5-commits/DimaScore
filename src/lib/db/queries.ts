@@ -110,7 +110,7 @@ export async function getStandings(
   // de-duplicate by (group, team) so each team appears once per group.
   const seenStanding = new Set<string>();
   const filtered = rows
-    .map((r) => ({ ...r, groupLabel: r.groupLabel.replace(/^Group Stage\s*-\s*/i, '') }))
+    .map((r) => ({ ...r, groupLabel: r.groupLabel.trim().replace(/^Group Stage\s*-\s*/i, '') }))
     .filter((r) => {
       const g = r.groupLabel.toLowerCase();
       if (g.includes('ranking') || g === 'group stage') return false;
