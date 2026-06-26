@@ -2,7 +2,7 @@ import { db } from '@/lib/db/client';
 import { cacheLife } from 'next/cache';
 import { getStandings, getCurrentSeasons, type StandingRow } from '@/lib/db/queries';
 import {
-  getNextFeaturedMatch,
+  getNextFeaturedMatches,
   getLiveGroupStandings,
   getTopMatchesThisWeek,
   getMoroccanPlayerPerformances,
@@ -70,7 +70,7 @@ export interface HomeRailStandingsLeague {
 }
 
 export interface HomeRailData {
-  nextFeatured: Awaited<ReturnType<typeof getNextFeaturedMatch>>;
+  nextFeaturedCandidates: Awaited<ReturnType<typeof getNextFeaturedMatches>>;
   liveGroupStandings: Awaited<ReturnType<typeof getLiveGroupStandings>>;
   topMatches: Awaited<ReturnType<typeof getTopMatchesThisWeek>>;
   moroccanPerformances: Awaited<ReturnType<typeof getMoroccanPlayerPerformances>>;
@@ -91,14 +91,14 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
   const seasonMap = new Map(currentSeasons.map((s) => [s.competitionId, s.year]));
 
   const [
-    nextFeatured,
+    nextFeaturedCandidates,
     liveGroupStandings,
     topMatches,
     moroccanPerformances,
     topScorersData,
     standingsResults,
   ] = await Promise.all([
-    timedQuery('getNextFeaturedMatch', () => getNextFeaturedMatch(db)),
+    timedQuery('getNextFeaturedMatches', () => getNextFeaturedMatches(db)),
     timedQuery('getLiveGroupStandings', () => getLiveGroupStandings(db)),
     timedQuery('getTopMatchesThisWeek', () => getTopMatchesThisWeek(db)),
     timedQuery('getMoroccanPlayerPerformances', () => getMoroccanPlayerPerformances(db)),
@@ -121,7 +121,7 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
   })).filter((l) => l.rows.length > 0);
 
   return {
-    nextFeatured,
+    nextFeaturedCandidates,
     liveGroupStandings,
     topMatches,
     moroccanPerformances,

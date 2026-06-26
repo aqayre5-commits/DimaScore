@@ -217,67 +217,52 @@ const FEATURED_ORDER = sql`
   ${schema.fixtures.kickoffAt} ASC
 `;
 
-// ── Query 1: Next featured match (live > upcoming by priority) ──
+// ── Query 1: Next featured matches (live > upcoming by priority) ──
 
-export async function getNextFeaturedMatch(
+/**
+ * Returns up to {@link limit} candidate "next featured" matches, ranked by featured-order:
+ * live first, then NS within 48h, then absolute next NS. The client picks the first whose
+ * patched status isn't finished — so when one match ends, the widget auto-advances to the
+ * next instead of getting stuck on a stale cached row.
+ */
+export async function getNextFeaturedMatches(
   db: NeonHttpDatabase<typeof schema>,
-): Promise<{ match: RightRailFixture; goals: GoalEvent[] } | null> {
-  // Try live first
+  limit = 5,
+): Promise<Array<{ match: RightRailFixture; goals: GoalEvent[] }>> {
+  const selectFields = {
+    id: schema.fixtures.id,
+    kickoffAt: schema.fixtures.kickoffAt,
+    statusCode: schema.fixtures.statusCode,
+    minute: schema.fixtures.minute,
+    round: schema.fixtures.round,
+    seasonYear: schema.fixtures.seasonYear,
+    homeTeamId: schema.fixtures.homeTeamId,
+    awayTeamId: schema.fixtures.awayTeamId,
+    homeScore: schema.fixtures.homeScore,
+    awayScore: schema.fixtures.awayScore,
+    compId: schema.competitions.id,
+    compName: schema.competitions.name,
+    compSlug: schema.competitions.slug,
+    compCountryCode: schema.competitions.countryCode,
+    compLogoUrl: schema.competitions.logoUrl,
+    venueName: schema.venues.name,
+    venueCity: schema.venues.city,
+  };
+
   const liveRows = await db
-    .select({
-      id: schema.fixtures.id,
-      kickoffAt: schema.fixtures.kickoffAt,
-      statusCode: schema.fixtures.statusCode,
-      minute: schema.fixtures.minute,
-      round: schema.fixtures.round,
-      seasonYear: schema.fixtures.seasonYear,
-      homeTeamId: schema.fixtures.homeTeamId,
-      awayTeamId: schema.fixtures.awayTeamId,
-      homeScore: schema.fixtures.homeScore,
-      awayScore: schema.fixtures.awayScore,
-      compId: schema.competitions.id,
-      compName: schema.competitions.name,
-      compSlug: schema.competitions.slug,
-      compCountryCode: schema.competitions.countryCode,
-      compLogoUrl: schema.competitions.logoUrl,
-      venueName: schema.venues.name,
-      venueCity: schema.venues.city,
-    })
+    .select(selectFields)
     .from(schema.fixtures)
     .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
     .leftJoin(schema.venues, eq(schema.fixtures.venueId, schema.venues.id))
     .where(and(inArray(schema.fixtures.statusCode, LIVE_CODES), DISPLAYABLE))
     .orderBy(FEATURED_ORDER)
-    .limit(1);
+    .limit(limit);
 
-  let row = liveRows[0];
+  const collected: typeof liveRows = [...liveRows];
 
-  // If no live, get next upcoming — prefer matches within 48h, then fallback
-  if (!row) {
+  if (collected.length < limit) {
     const now = new Date();
     const horizon48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-
-    const selectFields = {
-      id: schema.fixtures.id,
-      kickoffAt: schema.fixtures.kickoffAt,
-      statusCode: schema.fixtures.statusCode,
-      minute: schema.fixtures.minute,
-      round: schema.fixtures.round,
-      seasonYear: schema.fixtures.seasonYear,
-      homeTeamId: schema.fixtures.homeTeamId,
-      awayTeamId: schema.fixtures.awayTeamId,
-      homeScore: schema.fixtures.homeScore,
-      awayScore: schema.fixtures.awayScore,
-      compId: schema.competitions.id,
-      compName: schema.competitions.name,
-      compSlug: schema.competitions.slug,
-      compCountryCode: schema.competitions.countryCode,
-      compLogoUrl: schema.competitions.logoUrl,
-      venueName: schema.venues.name,
-      venueCity: schema.venues.city,
-    };
-
-    // Try within 48h first (captures tomorrow's UCL Final over WC in 2 weeks)
     const nearRows = await db
       .select(selectFields)
       .from(schema.fixtures)
@@ -292,67 +277,72 @@ export async function getNextFeaturedMatch(
         ),
       )
       .orderBy(FEATURED_ORDER)
-      .limit(1);
-
-    row = nearRows[0];
-
-    // Fallback: absolute next match if nothing in 48h
-    if (!row) {
-      const fallbackRows = await db
-        .select(selectFields)
-        .from(schema.fixtures)
-        .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
-        .leftJoin(schema.venues, eq(schema.fixtures.venueId, schema.venues.id))
-        .where(
-          and(
-            eq(schema.fixtures.statusCode, 'NS'),
-            gte(schema.fixtures.kickoffAt, now),
-            DISPLAYABLE,
-          ),
-        )
-        .orderBy(FEATURED_ORDER)
-        .limit(1);
-
-      row = fallbackRows[0];
-    }
+      .limit(limit - collected.length);
+    collected.push(...nearRows);
   }
 
-  if (!row) return null;
+  if (collected.length < limit) {
+    const now = new Date();
+    const fallbackRows = await db
+      .select(selectFields)
+      .from(schema.fixtures)
+      .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+      .leftJoin(schema.venues, eq(schema.fixtures.venueId, schema.venues.id))
+      .where(
+        and(eq(schema.fixtures.statusCode, 'NS'), gte(schema.fixtures.kickoffAt, now), DISPLAYABLE),
+      )
+      .orderBy(FEATURED_ORDER)
+      .limit(limit - collected.length);
+    collected.push(...fallbackRows);
+  }
+
+  // Dedupe by fixture id (a live match could also satisfy NS-window if scheduling is weird).
+  const seen = new Set<number>();
+  const rows = collected.filter((r) => {
+    if (seen.has(r.id)) return false;
+    seen.add(r.id);
+    return true;
+  });
+
+  if (rows.length === 0) return [];
 
   const teamIds = new Set<number>();
-  if (row.homeTeamId != null) teamIds.add(row.homeTeamId);
-  if (row.awayTeamId != null) teamIds.add(row.awayTeamId);
+  for (const r of rows) {
+    if (r.homeTeamId != null) teamIds.add(r.homeTeamId);
+    if (r.awayTeamId != null) teamIds.add(r.awayTeamId);
+  }
   const teamsMap = await hydrateTeams(db, teamIds);
 
-  const match = mapToRightRailFixture(row, teamsMap);
+  const results: Array<{ match: RightRailFixture; goals: GoalEvent[] }> = [];
+  for (const row of rows) {
+    const match = mapToRightRailFixture(row, teamsMap);
+    if (match.round && /group/i.test(match.round)) {
+      match.groupLabel = await resolveGroupLabel(
+        db,
+        row.compId,
+        row.seasonYear,
+        row.homeTeamId,
+        row.awayTeamId,
+      );
+    }
 
-  // Show the real group (e.g. "Group D") for group-stage matches instead of the round.
-  if (match.round && /group/i.test(match.round)) {
-    match.groupLabel = await resolveGroupLabel(
-      db,
-      row.compId,
-      row.seasonYear,
-      row.homeTeamId,
-      row.awayTeamId,
-    );
+    let goals: GoalEvent[] = [];
+    if (LIVE_CODES.includes(row.statusCode)) {
+      const goalRows = await db.execute(
+        sql`SELECT fe.minute, COALESCE(p.name->>'en', p.name->>'fr', 'Unknown') AS player_name
+            FROM fixture_events fe
+            LEFT JOIN players p ON p.id = fe.player_id
+            WHERE fe.fixture_id = ${row.id} AND fe.type = 'Goal'
+            ORDER BY fe.minute ASC`,
+      );
+      goals = (goalRows.rows as { minute: number | null; player_name: string }[])
+        .filter((r) => r.minute != null)
+        .map((r) => ({ minute: Number(r.minute), playerName: r.player_name }));
+    }
+    results.push({ match, goals });
   }
 
-  // Get goals if live
-  let goals: GoalEvent[] = [];
-  if (LIVE_CODES.includes(row.statusCode)) {
-    const goalRows = await db.execute(
-      sql`SELECT fe.minute, COALESCE(p.name->>'en', p.name->>'fr', 'Unknown') AS player_name
-          FROM fixture_events fe
-          LEFT JOIN players p ON p.id = fe.player_id
-          WHERE fe.fixture_id = ${row.id} AND fe.type = 'Goal'
-          ORDER BY fe.minute ASC`,
-    );
-    goals = (goalRows.rows as { minute: number | null; player_name: string }[])
-      .filter((r) => r.minute != null)
-      .map((r) => ({ minute: Number(r.minute), playerName: r.player_name }));
-  }
-
-  return { match, goals };
+  return results;
 }
 
 // ── Query 2: Group standings for competitions with matches today ──

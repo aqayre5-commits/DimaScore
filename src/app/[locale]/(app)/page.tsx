@@ -190,11 +190,10 @@ export default async function HomePage({ params }: PageProps) {
               />
 
               {/* Live Now / next-match card — above the tabs on mobile; desktop shows it in the rail. */}
-              {railData.nextFeatured && (
+              {railData.nextFeaturedCandidates.length > 0 && (
                 <div className="xl:hidden">
                   <HomeNextMatch
-                    match={railData.nextFeatured.match}
-                    goals={railData.nextFeatured.goals}
+                    candidates={railData.nextFeaturedCandidates}
                     locale={typedLocale}
                     labels={{
                       nextMatch: t('nextMatch'),

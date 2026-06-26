@@ -9,11 +9,11 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { RightRailFixture, GoalEvent } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
-import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 
 interface Props {
-  match: RightRailFixture;
-  goals: GoalEvent[];
+  /** Server-ranked candidate list. Client picks first whose patched status isn't finished. */
+  candidates: Array<{ match: RightRailFixture; goals: GoalEvent[] }>;
   locale: Locale;
   labels: {
     nextMatch: string;
@@ -23,14 +23,24 @@ interface Props {
 }
 
 const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
+const FINISHED_CODES = new Set<string>(FINISHED_CODES_ARRAY);
 
-export function HomeNextMatch({ match, goals, locale, labels }: Props) {
+export function HomeNextMatch({ candidates, locale, labels }: Props) {
+  const livePatches = useLiveFixtures();
+
+  // First candidate whose patched status is not finished (i.e. live or still-NS). When a
+  // displayed match ends, the live patch flips it to FT and we auto-advance to the next.
+  const selected = candidates.find(({ match: m }) => {
+    const code = livePatches.get(m.id)?.statusCode ?? m.statusCode;
+    return !FINISHED_CODES.has(code);
+  });
+  if (!selected) return null;
+  const { match, goals } = selected;
+
   const homeName = getTeamDisplayName(match.homeTeam, locale);
   const awayName = getTeamDisplayName(match.awayTeam, locale);
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
-  // Overlay the shared live poll so the widget flips from "next match" to live (and ticks
-  // the minute) when the fixture kicks off, instead of staying on the SSR snapshot.
-  const patch = useLiveFixtures().get(match.id);
+  const patch = livePatches.get(match.id);
   const statusCode = patch?.statusCode ?? match.statusCode;
   const minute = patch?.minute ?? match.minute;
   const homeScore = patch?.homeScore ?? match.homeScore;

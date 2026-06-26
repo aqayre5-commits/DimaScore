@@ -29,7 +29,7 @@ const SEQUENCES: Record<Props['variant'], string[]> = {
 export async function HomeRailWidgets({ data, locale, variant }: Props) {
   const t = await getTranslations({ locale, namespace: 'homepage' });
   const {
-    nextFeatured,
+    nextFeaturedCandidates,
     liveGroupStandings,
     topMatches,
     moroccanPerformances,
@@ -49,18 +49,18 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
   };
 
   const widgets: Record<string, React.ReactNode> = {
-    nextMatch: nextFeatured ? (
-      <HomeNextMatch
-        match={nextFeatured.match}
-        goals={nextFeatured.goals}
-        locale={locale}
-        labels={{
-          nextMatch: t('nextMatch'),
-          liveNow: t('liveNow'),
-          viewMatch: t('viewMatch'),
-        }}
-      />
-    ) : null,
+    nextMatch:
+      nextFeaturedCandidates.length > 0 ? (
+        <HomeNextMatch
+          candidates={nextFeaturedCandidates}
+          locale={locale}
+          labels={{
+            nextMatch: t('nextMatch'),
+            liveNow: t('liveNow'),
+            viewMatch: t('viewMatch'),
+          }}
+        />
+      ) : null,
     liveGroups:
       liveGroupStandings.length > 0 ? (
         <HomeLiveGroupStandings

@@ -18,7 +18,7 @@ import {
   getCompetitionsByIds,
 } from '@/lib/db/queries/homepage';
 import {
-  getNextFeaturedMatch,
+  getNextFeaturedMatches,
   getMoroccanPlayerPerformances,
   getRightRailTopScorers,
 } from '@/lib/db/queries/right-rail';
@@ -138,7 +138,7 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
     trendingPlayers,
     leftRailComps,
     standingsResults,
-    nextFeatured,
+    nextFeaturedCandidates,
     moroccanPerformances,
     topScorersData,
   ] = await Promise.all([
@@ -152,7 +152,7 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
         return getStandings(db, l.compId, year);
       }),
     ),
-    getNextFeaturedMatch(db),
+    getNextFeaturedMatches(db),
     getMoroccanPlayerPerformances(db),
     getRightRailTopScorers(db),
   ]);
@@ -235,10 +235,9 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
       }
       rightRail={
         <div className="space-y-4">
-          {nextFeatured && (
+          {nextFeaturedCandidates.length > 0 && (
             <HomeNextMatch
-              match={nextFeatured.match}
-              goals={nextFeatured.goals}
+              candidates={nextFeaturedCandidates}
               locale={typedLocale}
               labels={{
                 nextMatch: t('nextMatch'),
