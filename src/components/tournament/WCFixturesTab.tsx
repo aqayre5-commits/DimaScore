@@ -11,6 +11,7 @@ import { codeToFlag } from '@/lib/flags';
 import { stripWomenSuffix } from '@/lib/team-display';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -60,6 +61,10 @@ const INITIAL_VISIBLE = 10;
 export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: WCFixturesTabProps) {
   const t = useTranslations('tournament');
 
+  // Poll /api/v1/live to keep scores/minute/status fresh on this tab — without this we render
+  // the SSR snapshot only, which can be ≥1 minute stale (homepage uses the same hook).
+  const livePatches = useLiveFixtures();
+
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => {
     // Land on the view that matches tournament state: live games > upcoming > results.
     // Avoids dropping users at the tournament opener weeks after groups have finished.
@@ -89,12 +94,31 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
     return Array.from(types);
   }, [fixtures]);
 
+  // Overlay live patches on the SSR snapshot before any filter/sort runs.
+  const patchedFixtures = useMemo(() => {
+    if (livePatches.size === 0) return fixtures;
+    return fixtures.map((f) => {
+      const p = livePatches.get(f.id);
+      return p
+        ? {
+            ...f,
+            statusCode: p.statusCode,
+            minute: p.minute,
+            homeScore: p.homeScore,
+            awayScore: p.awayScore,
+            homeScorePen: p.homeScorePen,
+            awayScorePen: p.awayScorePen,
+          }
+        : f;
+    });
+  }, [fixtures, livePatches]);
+
   // Filter fixtures
   const filtered = useMemo(() => {
     // Chronological (soonest first) for all/upcoming/live; reverse only for results,
     // where the most-recent finished match should lead.
     const ascending = statusFilter !== 'results';
-    let result = [...fixtures]
+    let result = [...patchedFixtures]
       .filter((f) => !f.round?.toLowerCase().includes('ranking of third'))
       .sort((a, b) =>
         ascending
@@ -130,14 +154,17 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
     }
 
     return result;
-  }, [fixtures, statusFilter, roundFilter, groupFilter]);
+  }, [patchedFixtures, statusFilter, roundFilter, groupFilter, teamGroupMap]);
 
   const visible = expanded ? filtered : filtered.slice(0, INITIAL_VISIBLE);
   const hasMore = filtered.length > INITIAL_VISIBLE;
 
-  // Only show Live/Results pills when relevant matches exist
-  const hasLive = fixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
-  const hasFinished = fixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
+  // Only show Live/Results pills when relevant matches exist (use patched view so the Live pill
+  // appears as soon as the poll picks up a kickoff).
+  const hasLive = patchedFixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
+  const hasFinished = patchedFixtures.some(
+    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished',
+  );
 
   const statusPills: { key: StatusFilter; label: string; dot?: boolean }[] = [
     { key: 'all', label: t('wcFixturesAll') },
