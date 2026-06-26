@@ -482,6 +482,29 @@ async function main() {
   }
   log(`  ${FIXTURES.length} fixtures upserted`);
 
+  // Right rail gates Top Scorers / Top Assists on this row (per Rule 12). Without it the rail
+  // renders empty. Mirrors the WC 2026 row's flag set. Overwritten when API-Football catches up
+  // and `syncCompetitionsWithSeasons` runs.
+  log('Upserting league_coverage row...');
+  await db.execute(dsql`
+    INSERT INTO league_coverage
+      (league_id, season, events, lineups, statistics_fixtures, statistics_players,
+       standings, players, top_scorers, top_assists, top_cards, injuries, predictions, odds)
+    VALUES (${COMPETITION_ID}, ${SEASON}, true, true, true, true,
+            true, true, true, true, true, false, false, false)
+    ON CONFLICT (league_id, season) DO UPDATE SET
+      events = EXCLUDED.events,
+      lineups = EXCLUDED.lineups,
+      statistics_fixtures = EXCLUDED.statistics_fixtures,
+      statistics_players = EXCLUDED.statistics_players,
+      standings = EXCLUDED.standings,
+      players = EXCLUDED.players,
+      top_scorers = EXCLUDED.top_scorers,
+      top_assists = EXCLUDED.top_assists,
+      top_cards = EXCLUDED.top_cards;
+  `);
+  log('  coverage row upserted');
+
   const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
   log(`WAFCON 2026 manual seed complete in ${elapsed}s`);
 }
