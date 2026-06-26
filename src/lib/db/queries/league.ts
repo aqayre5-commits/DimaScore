@@ -461,7 +461,7 @@ export async function getEditionTopScorers(
     WHERE f.competition_id = ${competitionId}
       AND f.season_year = ${seasonYear}
       AND e.type = 'Goal'
-      AND e.detail IS DISTINCT FROM 'Own Goal'
+      AND e.detail IN ('Normal Goal', 'Penalty')
     GROUP BY p.id, t.id
     ORDER BY goals DESC, p.slug
     LIMIT ${limit}
@@ -500,7 +500,7 @@ export async function getEditionTopAssists(
     WHERE f.competition_id = ${competitionId}
       AND f.season_year = ${seasonYear}
       AND e.type = 'Goal'
-      AND e.detail IS DISTINCT FROM 'Own Goal'
+      AND e.detail IN ('Normal Goal', 'Penalty')
       AND e.assist_player_id IS NOT NULL
     GROUP BY p.id, t.id
     ORDER BY assists DESC, p.slug
