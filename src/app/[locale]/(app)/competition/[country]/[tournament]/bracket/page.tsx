@@ -6,9 +6,10 @@ import { getMetadataForCompetition } from '@/lib/constants/tournament-metadata';
 import { ALL_ENTRIES, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
 import { BracketPageClient } from '@/components/tournament/BracketPageClient';
 import { db } from '@/lib/db/client';
-import { getKnockoutFixtures } from '@/lib/db/queries';
+import { getKnockoutFixtures, getStandings } from '@/lib/db/queries';
 import { getCurrentSeasonYear } from '@/lib/db/queries/league';
 import { buildDynamicBracket } from '@/lib/constants/dynamic-bracket-builder';
+import { buildWc2026BracketWithLive } from '@/lib/constants/wc2026-bracket-builder';
 import { BASE_URL } from '@/lib/constants/site';
 
 interface PageProps {
@@ -102,11 +103,24 @@ export default async function BracketPage({ params, searchParams }: PageProps) {
   const requestedSeason = season ? Number(season) : null;
   const seasonYear = requestedSeason ?? (await getCurrentSeasonYear(db, competitionId));
 
-  // Fetch dynamic bracket data from DB (falls back to static schedule in BracketPageClient).
-  let bracketData: ReturnType<typeof buildDynamicBracket> = null;
+  // WC uses the canonical FIFA tree (BRACKET_POSITIONS) with a live overlay; other cups
+  // (AFCON, WAFCON) use the kickoff-order dynamic builder because they have no published
+  // pre-tournament layout. For WC, kickoff order does NOT match the FIFA bracket sides, so
+  // buildDynamicBracket would scramble which tie sits on which half.
+  let bracketData:
+    | ReturnType<typeof buildDynamicBracket>
+    | {
+        matches: Awaited<ReturnType<typeof buildWc2026BracketWithLive>>['matches'];
+        thirdPlaceMatch: Awaited<ReturnType<typeof buildWc2026BracketWithLive>>['thirdPlaceMatch'];
+        gridConfig?: undefined;
+      } = null;
   if (seasonYear) {
     const knockoutFixtures = await getKnockoutFixtures(db, competitionId, seasonYear);
-    if (knockoutFixtures.length > 0) {
+    if (isWc) {
+      const standings = await getStandings(db, competitionId, seasonYear);
+      const wcData = buildWc2026BracketWithLive(knockoutFixtures, standings, typedLocale);
+      bracketData = { matches: wcData.matches, thirdPlaceMatch: wcData.thirdPlaceMatch };
+    } else if (knockoutFixtures.length > 0) {
       bracketData = buildDynamicBracket(knockoutFixtures, typedLocale);
     }
   }

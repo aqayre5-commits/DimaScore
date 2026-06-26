@@ -12,6 +12,8 @@ import type {
   BracketSide,
   KnockoutPhase,
 } from '@/components/tournament/BracketMatchCell';
+import type { FixtureWithTeams, StandingRow } from '@/lib/db/queries';
+import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { WC_2026_SCHEDULE, type WC2026Match } from './wc2026-schedule';
 
 // ── Bracket position map ──────────────────────────────────────────────────
@@ -291,3 +293,212 @@ export const WC_2026_BRACKETS_BY_LOCALE: Record<Locale, BracketData> = {
   fr: buildWc2026Bracket('fr'),
   ar: buildWc2026Bracket('ar'),
 };
+
+// ── Live overlay onto the static FIFA tree ────────────────────────────────
+// The dynamic kickoff-order builder put WC ties on arbitrary sides because
+// kickoff time has no relationship to the FIFA bracket layout. This overlay
+// keeps the canonical sides/feedsInto from BRACKET_POSITIONS and only enriches
+// each slot with live fixture data when a DB fixture matches the expected
+// (homeTeam, awayTeam) pair derived from group standings.
+
+const LIVE_SET = new Set<string>(LIVE_CODES_ARRAY);
+const FINISHED_SET = new Set<string>(FINISHED_CODES_ARRAY);
+
+/**
+ * Returns the set of team ids that could legally occupy this slot. Group-position slots
+ * (1A–2L) yield a single team. Best-3rd pool slots (3BEFIJ) yield every rank-3 team from
+ * the listed groups — FIFA's "which 3rd advances here" lookup table is opaque, so we accept
+ * any of the pool and let the DB fixture pick the right one. W/RU slots yield the recorded
+ * winner/runner-up of the referenced M-number.
+ */
+function acceptableTeamIds(
+  slot: string,
+  standingsByGroup: Map<string, StandingRow[]>,
+  winners: Map<number, number | null>,
+  runnersUp: Map<number, number | null>,
+): Set<number> {
+  const out = new Set<number>();
+  const gp = slot.match(/^([12])([A-L])$/);
+  if (gp) {
+    const rank = Number(gp[1]);
+    const team = (standingsByGroup.get(gp[2]) ?? []).find((r) => r.rank === rank)?.teamId;
+    if (team != null) out.add(team);
+    return out;
+  }
+  const third = slot.match(/^3([A-L]+)$/);
+  if (third) {
+    for (const g of third[1].split('')) {
+      const team = (standingsByGroup.get(g) ?? []).find((r) => r.rank === 3)?.teamId;
+      if (team != null) out.add(team);
+    }
+    return out;
+  }
+  const w = slot.match(/^W(\d+)$/);
+  if (w) {
+    const id = winners.get(Number(w[1]));
+    if (id != null) out.add(id);
+    return out;
+  }
+  const ru = slot.match(/^RU(\d+)$/);
+  if (ru) {
+    const id = runnersUp.get(Number(ru[1]));
+    if (id != null) out.add(id);
+    return out;
+  }
+  return out;
+}
+
+function localizedName(name: Record<string, string> | undefined, locale: Locale): string | null {
+  if (!name) return null;
+  return name[locale] ?? name.en ?? null;
+}
+
+function overlayMatch(
+  entry: WC2026Match,
+  pos: {
+    phase: KnockoutPhase;
+    side: BracketSide;
+    feedsInto: number | null;
+    loserFeedsInto?: number;
+  },
+  fx: FixtureWithTeams,
+  locale: Locale,
+): BracketMatch {
+  const labels = ROUND_LABELS[locale] ?? ROUND_LABELS.en;
+  const vs = VS_WORD[locale] ?? VS_WORD.en;
+  const homeName = localizedName(fx.homeTeam?.name, locale) ?? entry.homeSlot;
+  const awayName = localizedName(fx.awayTeam?.name, locale) ?? entry.awaySlot;
+  const isFinished = FINISHED_SET.has(fx.statusCode);
+  const isLive = LIVE_SET.has(fx.statusCode);
+  const status: BracketMatch['status'] = isFinished ? 'finished' : isLive ? 'live' : 'upcoming';
+  const dateStr = fx.kickoffAt.toISOString().slice(0, 10);
+
+  return {
+    matchId: `m${entry.fifaMatchNumber}`,
+    phase: pos.phase,
+    matchNumber: entry.fifaMatchNumber,
+    fifaMatchNumber: entry.fifaMatchNumber,
+    homeLabel: homeName,
+    awayLabel: awayName,
+    homeScore: fx.homeScore,
+    awayScore: fx.awayScore,
+    homeScorePen: fx.homeScorePen,
+    awayScorePen: fx.awayScorePen,
+    statusCode: fx.statusCode,
+    kickoffISO: fx.kickoffAt.toISOString(),
+    homeLogoUrl: fx.homeTeam?.logoUrl ?? null,
+    awayLogoUrl: fx.awayTeam?.logoUrl ?? null,
+    status,
+    statusLabel: isFinished ? 'FT' : formatShortDate(dateStr, locale),
+    feedsInto: pos.feedsInto != null ? `m${pos.feedsInto}` : undefined,
+    loserFeedsInto: pos.loserFeedsInto != null ? `m${pos.loserFeedsInto}` : undefined,
+    side: pos.side,
+    venue: fx.venue?.name ?? entry.venue,
+    date: dateStr,
+    roundLabel: labels[pos.phase],
+    ariaLabel: `${homeName} ${vs} ${awayName}`,
+  };
+}
+
+/**
+ * Build the WC 2026 bracket using the canonical FIFA tree (BRACKET_POSITIONS) and
+ * overlay live data from any DB knockout fixture that matches an expected slot pair.
+ * Slots with no matching DB fixture keep the static placeholder ("1F vs 2C", etc.).
+ *
+ * Slot resolution: 1A–2L from group standings; 3XYZ as best 3rd among groups
+ * {X,Y,Z,...} by FIFA tiebreakers (points → GD → GF); WN / RUN by winner / runner-up
+ * of an earlier FIFA M-number, populated as fixtures finish.
+ */
+export function buildWc2026BracketWithLive(
+  knockoutFixtures: FixtureWithTeams[],
+  standings: StandingRow[],
+  locale: Locale,
+): BracketData {
+  const standingsByGroup = new Map<string, StandingRow[]>();
+  for (const s of standings) {
+    if (!standingsByGroup.has(s.groupLabel)) standingsByGroup.set(s.groupLabel, []);
+    standingsByGroup.get(s.groupLabel)!.push(s);
+  }
+
+  const scheduleByM = new Map<number, WC2026Match>();
+  for (const e of WC_2026_SCHEDULE) scheduleByM.set(e.fifaMatchNumber, e);
+
+  const usedFixtureIds = new Set<number>();
+  const winners = new Map<number, number | null>();
+  const runnersUp = new Map<number, number | null>();
+  const enriched = new Map<number, BracketMatch>();
+
+  const positionsByM = new Map<number, (typeof BRACKET_POSITIONS)[number]>();
+  for (const p of BRACKET_POSITIONS) positionsByM.set(p.fifaMatchNumber, p);
+
+  // Walk M-numbers in increasing order so R32 winners populate before R16, etc.
+  const orderedMs = [...positionsByM.keys()].sort((a, b) => a - b);
+  for (const m of orderedMs) {
+    const entry = scheduleByM.get(m);
+    const pos = positionsByM.get(m);
+    if (!entry || !pos) continue;
+
+    const homeSet = acceptableTeamIds(entry.homeSlot, standingsByGroup, winners, runnersUp);
+    const awaySet = acceptableTeamIds(entry.awaySlot, standingsByGroup, winners, runnersUp);
+    const fx =
+      homeSet.size && awaySet.size
+        ? knockoutFixtures.find(
+            (f) =>
+              !usedFixtureIds.has(f.id) &&
+              f.homeTeamId != null &&
+              f.awayTeamId != null &&
+              ((homeSet.has(f.homeTeamId) && awaySet.has(f.awayTeamId)) ||
+                (homeSet.has(f.awayTeamId) && awaySet.has(f.homeTeamId))),
+          )
+        : undefined;
+    if (fx) usedFixtureIds.add(fx.id);
+
+    if (!fx) {
+      enriched.set(m, toBracketMatch(entry, pos, locale));
+      continue;
+    }
+
+    if (FINISHED_SET.has(fx.statusCode) && fx.homeTeamId != null && fx.awayTeamId != null) {
+      const hs = fx.homeScore ?? 0;
+      const as = fx.awayScore ?? 0;
+      let wId: number | null = null;
+      let rId: number | null = null;
+      if (hs > as) {
+        wId = fx.homeTeamId;
+        rId = fx.awayTeamId;
+      } else if (as > hs) {
+        wId = fx.awayTeamId;
+        rId = fx.homeTeamId;
+      } else {
+        const hp = fx.homeScorePen ?? 0;
+        const ap = fx.awayScorePen ?? 0;
+        if (hp > ap) {
+          wId = fx.homeTeamId;
+          rId = fx.awayTeamId;
+        } else if (ap > hp) {
+          wId = fx.awayTeamId;
+          rId = fx.homeTeamId;
+        }
+      }
+      winners.set(m, wId);
+      runnersUp.set(m, rId);
+    }
+
+    enriched.set(m, overlayMatch(entry, pos, fx, locale));
+  }
+
+  const matches: BracketMatch[] = [];
+  for (const pos of BRACKET_POSITIONS) {
+    const m = enriched.get(pos.fifaMatchNumber);
+    if (m) matches.push(m);
+  }
+
+  const thirdEntry = scheduleByM.get(THIRD_PLACE_NUMBER)!;
+  const thirdPlaceMatch = toBracketMatch(
+    thirdEntry,
+    { phase: '3rd', side: 'center', feedsInto: null },
+    locale,
+  );
+
+  return { matches, thirdPlaceMatch };
+}
