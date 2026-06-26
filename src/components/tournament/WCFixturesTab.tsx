@@ -59,7 +59,21 @@ const INITIAL_VISIBLE = 10;
 export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: WCFixturesTabProps) {
   const t = useTranslations('tournament');
 
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => {
+    // Land on the view that matches tournament state: live games > upcoming > results.
+    // Avoids dropping users at the tournament opener weeks after groups have finished.
+    let hasLive = false;
+    let hasUpcoming = false;
+    for (const f of fixtures) {
+      const state = getMatchState(f.statusCode, f.kickoffAt);
+      if (state === 'live') hasLive = true;
+      else if (state === 'upcoming') hasUpcoming = true;
+      if (hasLive) break;
+    }
+    if (hasLive) return 'live';
+    if (hasUpcoming) return 'upcoming';
+    return 'results';
+  });
   const [roundFilter, setRoundFilter] = useState<string>('all');
   const [groupFilter, setGroupFilter] = useState<string>('all');
   const [expanded, setExpanded] = useState(false);
