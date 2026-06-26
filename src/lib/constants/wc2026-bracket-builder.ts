@@ -366,8 +366,10 @@ function overlayMatch(
 ): BracketMatch {
   const labels = ROUND_LABELS[locale] ?? ROUND_LABELS.en;
   const vs = VS_WORD[locale] ?? VS_WORD.en;
-  const homeName = localizedName(fx.homeTeam?.name, locale) ?? entry.homeSlot;
-  const awayName = localizedName(fx.awayTeam?.name, locale) ?? entry.awaySlot;
+  const homeFull = localizedName(fx.homeTeam?.name, locale) ?? entry.homeSlot;
+  const awayFull = localizedName(fx.awayTeam?.name, locale) ?? entry.awaySlot;
+  const homeShort = fx.homeTeam?.code ?? homeFull;
+  const awayShort = fx.awayTeam?.code ?? awayFull;
   const isFinished = FINISHED_SET.has(fx.statusCode);
   const isLive = LIVE_SET.has(fx.statusCode);
   const status: BracketMatch['status'] = isFinished ? 'finished' : isLive ? 'live' : 'upcoming';
@@ -378,8 +380,8 @@ function overlayMatch(
     phase: pos.phase,
     matchNumber: entry.fifaMatchNumber,
     fifaMatchNumber: entry.fifaMatchNumber,
-    homeLabel: homeName,
-    awayLabel: awayName,
+    homeLabel: homeShort,
+    awayLabel: awayShort,
     homeScore: fx.homeScore,
     awayScore: fx.awayScore,
     homeScorePen: fx.homeScorePen,
@@ -396,7 +398,7 @@ function overlayMatch(
     venue: fx.venue?.name ?? entry.venue,
     date: dateStr,
     roundLabel: labels[pos.phase],
-    ariaLabel: `${homeName} ${vs} ${awayName}`,
+    ariaLabel: `${homeFull} ${vs} ${awayFull}`,
   };
 }
 
