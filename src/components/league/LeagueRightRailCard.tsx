@@ -5,6 +5,7 @@ import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTranslations } from 'next-intl/server';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
+import { stripWomenSuffix } from '@/lib/team-display';
 import { getCachedNow } from '@/lib/cached-now';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 import type { FixtureWithTeams } from '@/lib/db/queries';
@@ -142,7 +143,7 @@ export async function LeagueRightRailCard({
                         className="size-3.5 object-contain"
                       />
                     )}
-                    <span className="truncate">{scorer.teamName}</span>
+                    <span className="truncate">{stripWomenSuffix(scorer.teamName)}</span>
                   </div>
                 </div>
                 <div className="text-lg font-bold tabular-nums text-text-primary">

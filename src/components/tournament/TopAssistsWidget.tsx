@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { TopPlayerRow } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
+import { stripWomenSuffix } from '@/lib/team-display';
 
 interface Props {
   players: TopPlayerRow[];
@@ -54,7 +55,9 @@ export function TopAssistsWidget({ players, locale }: Props) {
               >
                 {p.playerName}
               </Link>
-              <p className="truncate text-[10px] text-text-tertiary">{p.teamName}</p>
+              <p className="truncate text-[10px] text-text-tertiary">
+                {stripWomenSuffix(p.teamName)}
+              </p>
             </div>
             <span className="text-sm font-semibold tabular-nums text-text-primary">
               {p.assists}

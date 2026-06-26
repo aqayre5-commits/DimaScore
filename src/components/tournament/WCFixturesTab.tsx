@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { codeToFlag } from '@/lib/flags';
+import { stripWomenSuffix } from '@/lib/team-display';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import type { FixtureWithTeams } from '@/lib/db/queries';
@@ -447,12 +448,12 @@ function TeamBadge({
 
 function resolveFullName(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
   if (!team) return '\u2014';
-  return (
+  return stripWomenSuffix(
     team.name[locale] ??
-    team.name['en'] ??
-    team.shortName[locale] ??
-    team.shortName['en'] ??
-    team.code ??
-    '\u2014'
+      team.name['en'] ??
+      team.shortName[locale] ??
+      team.shortName['en'] ??
+      team.code ??
+      '\u2014',
   );
 }

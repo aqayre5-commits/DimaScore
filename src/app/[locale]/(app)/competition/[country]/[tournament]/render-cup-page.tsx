@@ -272,6 +272,7 @@ export async function renderCupPage(
   const fallbackName =
     { 1: 'FIFA World Cup', 6: 'AFCON', 922: 'WAFCON' }[competitionId] ?? `Cup ${competitionId}`;
   const pageTitle = cupContent?.titles[locale] ?? `${fallbackName} ${seasonYear}`;
+  const pageTitleShort = cupContent?.shortTitles?.[locale];
   const introText = cupContent?.intro[locale] ?? '';
 
   // Morocco context: find Morocco's group and rivals
@@ -438,6 +439,7 @@ export async function renderCupPage(
             metadata={metadata}
             locale={locale}
             pageTitle={pageTitle}
+            pageTitleShort={pageTitleShort}
             introText={introText}
             tournamentPhase={tournamentPhase}
             moroccoGroup={moroccoContext}

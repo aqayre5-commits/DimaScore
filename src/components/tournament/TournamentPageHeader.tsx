@@ -43,6 +43,8 @@ interface TournamentPageHeaderProps {
   metadata: CupMetadata;
   locale: Locale;
   pageTitle: string;
+  /** Optional shorter title shown on mobile (sm:hidden). Falls back to pageTitle. */
+  pageTitleShort?: string;
   introText: string;
   tournamentPhase: TournamentPhase;
   moroccoGroup: { label: string; rivals: RivalTeam[] } | null;
@@ -61,6 +63,7 @@ export function TournamentPageHeader({
   metadata,
   locale,
   pageTitle,
+  pageTitleShort,
   introText,
   tournamentPhase,
   moroccoGroup,
@@ -151,7 +154,8 @@ export function TournamentPageHeader({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h1 className="font-display whitespace-nowrap text-lg font-semibold text-text-primary md:whitespace-normal md:text-3xl">
-                  {pageTitle}
+                  <span className="hidden md:inline">{pageTitle}</span>
+                  <span className="md:hidden">{pageTitleShort ?? pageTitle}</span>
                 </h1>
                 {/* Mobile: host flags only (larger). Desktop: flags + country names. */}
                 <p className="mt-1 text-text-secondary">

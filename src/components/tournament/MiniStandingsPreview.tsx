@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
+import { stripWomenSuffix } from '@/lib/team-display';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -130,12 +131,13 @@ export function MiniStandingsPreview({
                 </thead>
                 <tbody>
                   {groupRows.map((row) => {
-                    const teamName =
+                    const teamName = stripWomenSuffix(
                       row.team?.name[locale] ??
-                      row.team?.name['en'] ??
-                      row.team?.shortName[locale] ??
-                      row.team?.code ??
-                      '\u2014';
+                        row.team?.name['en'] ??
+                        row.team?.shortName[locale] ??
+                        row.team?.code ??
+                        '\u2014',
+                    );
                     const flag =
                       row.team?.isNational && row.team.countryCode
                         ? codeToFlag(row.team.countryCode)

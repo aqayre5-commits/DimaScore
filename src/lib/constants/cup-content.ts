@@ -12,6 +12,8 @@ export interface CupContent {
   meta: Record<Locale, { title: string; description: string }>;
   intro: Record<Locale, string>;
   titles: Record<Locale, string>;
+  /** Optional mobile-only short title. Hero renders this when set on narrow viewports. */
+  shortTitles?: Record<Locale, string>;
   slugs: string[];
   urls: Record<Locale, string>;
   tabHashes: Record<
@@ -340,6 +342,11 @@ const WAFCON_2026: CupContent = {
     ar: 'تقام بطولة كأس أمم إفريقيا للسيدات 2026 في المغرب من 25 يوليو إلى 16 أغسطس 2026. أول نسخة بمشاركة 16 منتخباً (بدلاً من 12). المغرب، البلد المستضيف، سيشارك بعد وصوله لنهائي 2024.',
   },
   titles: {
+    fr: "Coupe d'Afrique des Nations Féminine 2026",
+    en: "Women's Africa Cup of Nations 2026",
+    ar: 'كأس أمم إفريقيا للسيدات 2026',
+  },
+  shortTitles: {
     fr: 'CAN Féminine 2026',
     en: 'WAFCON 2026',
     ar: 'كأس أمم إفريقيا للسيدات 2026',
