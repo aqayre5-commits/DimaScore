@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import { getTeamFlagUrl } from '@/lib/team-display';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -63,11 +64,34 @@ const COMPACT_VISIBLE = 6;
 export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProps) {
   const t = useTranslations('tournament');
 
+  // Poll /api/v1/live for fresh statusCode / minute / scores. Same shared hook every other
+  // live surface uses; react-query dedupes the request across mounts.
+  const livePatches = useLiveFixtures();
+
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [expanded, setExpanded] = useState(false);
 
+  // Overlay live patches on the SSR snapshot before any filter / sort / render runs.
+  const patchedFixtures = useMemo(() => {
+    if (livePatches.size === 0) return fixtures;
+    return fixtures.map((f) => {
+      const p = livePatches.get(f.id);
+      return p
+        ? {
+            ...f,
+            statusCode: p.statusCode,
+            minute: p.minute,
+            homeScore: p.homeScore,
+            awayScore: p.awayScore,
+            homeScorePen: p.homeScorePen,
+            awayScorePen: p.awayScorePen,
+          }
+        : f;
+    });
+  }, [fixtures, livePatches]);
+
   const filtered = useMemo(() => {
-    let result = [...fixtures].sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
+    let result = [...patchedFixtures].sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
 
     if (statusFilter !== 'all') {
       result = result.filter((f) => {
@@ -80,14 +104,16 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
     }
 
     return result;
-  }, [fixtures, statusFilter]);
+  }, [patchedFixtures, statusFilter]);
 
   const limit = compact ? COMPACT_VISIBLE : INITIAL_VISIBLE;
   const visible = expanded ? filtered : filtered.slice(0, limit);
   const hasMore = !compact && filtered.length > limit;
 
-  const hasLive = fixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
-  const hasFinished = fixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
+  const hasLive = patchedFixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
+  const hasFinished = patchedFixtures.some(
+    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished',
+  );
 
   const statusPills: { key: StatusFilter; label: string; dot?: boolean }[] = [
     { key: 'all', label: t('wcFixturesAll') },
