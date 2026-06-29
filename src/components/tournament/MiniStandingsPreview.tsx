@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { stripWomenSuffix } from '@/lib/team-display';
+import { FormPills } from '@/components/shared/FormPills';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -143,9 +144,6 @@ export function MiniStandingsPreview({
                         ? codeToFlag(row.team.countryCode)
                         : null;
                     const isMorocco = row.team?.code === 'MA';
-                    const formChars = row.form
-                      ? row.form.split('').slice(-5)
-                      : ['\u2014', '\u2014', '\u2014', '\u2014', '\u2014'];
 
                     return (
                       <tr
@@ -202,8 +200,11 @@ export function MiniStandingsPreview({
                         >
                           {row.points}
                         </td>
-                        <td className="py-1.5 text-center font-mono text-xs text-text-tertiary">
-                          {formChars.join(' ')}
+                        <td className="py-1.5 text-center">
+                          <FormPills
+                            form={row.form}
+                            formLabels={{ W: t('formWin'), D: t('formDraw'), L: t('formLoss') }}
+                          />
                         </td>
                       </tr>
                     );

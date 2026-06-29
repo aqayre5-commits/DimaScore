@@ -8,6 +8,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
 import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 import { getTeamFlagUrl } from '@/lib/team-display';
+import { FormPills } from '@/components/shared/FormPills';
 
 interface LeagueStandingsTabProps {
   standings: StandingRow[];
@@ -46,35 +47,6 @@ function buildLegend(standings: StandingRow[]): ZoneLegendItem[] {
   }
 
   return items;
-}
-
-function FormPills({
-  form,
-  formLabels,
-}: {
-  form: string | null;
-  formLabels: { W: string; D: string; L: string };
-}) {
-  if (!form) return null;
-
-  const chars = form.split('').slice(-5);
-
-  return (
-    <div className="flex gap-0.5">
-      {chars.map((c, i) => (
-        <span
-          key={i}
-          className={cn(
-            'inline-block size-3 rounded-sm',
-            c === 'W' && 'bg-emerald-500',
-            c === 'D' && 'bg-zinc-500',
-            c === 'L' && 'bg-red-500',
-          )}
-          title={c === 'W' ? formLabels.W : c === 'D' ? formLabels.D : formLabels.L}
-        />
-      ))}
-    </div>
-  );
 }
 
 export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandingsTabProps) {

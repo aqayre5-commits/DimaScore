@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { stripWomenSuffix } from '@/lib/team-display';
+import { FormPills } from '@/components/shared/FormPills';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
@@ -127,9 +128,6 @@ export function GroupTable({
               const isMorocco = row.team?.code === 'MA';
               const isLiveRow = !!liveTeamIds && row.teamId != null && liveTeamIds.has(row.teamId);
               const zoneColor = getZoneColor(row.rank);
-              const formChars = row.form
-                ? row.form.split('').slice(-5)
-                : ['\u2014', '\u2014', '\u2014', '\u2014', '\u2014'];
 
               return (
                 <tr
@@ -211,8 +209,11 @@ export function GroupTable({
                   >
                     {row.points}
                   </td>
-                  <td className="py-2 text-center font-mono text-xs text-text-tertiary">
-                    {formChars.join(' ')}
+                  <td className="py-2 text-center">
+                    <FormPills
+                      form={row.form}
+                      formLabels={{ W: t('formWin'), D: t('formDraw'), L: t('formLoss') }}
+                    />
                   </td>
                 </tr>
               );
