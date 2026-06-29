@@ -21,12 +21,19 @@ interface LeagueLeftRailProps {
   competitionLogos?: Record<number, string | null>;
 }
 
-/** Curated primary sections shown by default (competition ids). */
-const PRIMARY_SECTION_IDS: { labelKey: string; ids: number[] }[] = [
+/** Curated primary sections shown by default. fr/ar lead with Morocco; EN sinks the
+ *  Morocco section below the global-relevance sections per the Option 1 neutrality policy. */
+const PRIMARY_SECTIONS_FR_AR: { labelKey: string; ids: number[] }[] = [
   { labelKey: 'morocco', ids: [200, 201, 822] },
   { labelKey: 'tournaments', ids: [1, 922, 6] },
   { labelKey: 'topLeagues', ids: [39, 140, 78, 135, 61] },
   { labelKey: 'cupsAndContinental', ids: [2, 3, 848] },
+];
+const PRIMARY_SECTIONS_EN: { labelKey: string; ids: number[] }[] = [
+  { labelKey: 'tournaments', ids: [1, 922, 6] },
+  { labelKey: 'topLeagues', ids: [39, 140, 78, 135, 61] },
+  { labelKey: 'cupsAndContinental', ids: [2, 3, 848] },
+  { labelKey: 'morocco', ids: [200, 201, 822] },
 ];
 
 /** Featured national-team quick links. */
@@ -102,26 +109,34 @@ export function LeagueLeftRail({
       ) : null;
     });
 
+  // Locale-aware section ordering — FR/AR lead with Morocco, EN sinks it below.
+  const primarySections = locale === 'en' ? PRIMARY_SECTIONS_EN : PRIMARY_SECTIONS_FR_AR;
+  const teamsSection = (
+    <Section title={t('teams')}>
+      {FEATURED_TEAMS.map((team) => (
+        <TeamLink
+          key={team.slug}
+          href={`/${locale}/equipe/${team.slug}`}
+          flag={codeToFlag(team.code)}
+          label={getCountryLabel(team.key, locale)}
+        />
+      ))}
+    </Section>
+  );
+
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       <nav>
-        {/* Morocco */}
-        <Section title={t('morocco')}>{renderComps(PRIMARY_SECTION_IDS[0].ids)}</Section>
-
-        {/* Teams (national teams) */}
-        <Section title={t('teams')}>
-          {FEATURED_TEAMS.map((team) => (
-            <TeamLink
-              key={team.slug}
-              href={`/${locale}/equipe/${team.slug}`}
-              flag={codeToFlag(team.code)}
-              label={getCountryLabel(team.key, locale)}
-            />
-          ))}
+        {/* First curated section. */}
+        <Section title={t(primarySections[0].labelKey)}>
+          {renderComps(primarySections[0].ids)}
         </Section>
 
-        {/* Remaining curated sections */}
-        {PRIMARY_SECTION_IDS.slice(1).map((section) => (
+        {/* National teams quick-links — always sits after the leading curated section. */}
+        {teamsSection}
+
+        {/* Remaining curated sections. */}
+        {primarySections.slice(1).map((section) => (
           <Section key={section.labelKey} title={t(section.labelKey)}>
             {renderComps(section.ids)}
           </Section>

@@ -112,6 +112,7 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     ),
   ]);
 
+  // Locale-aware order: fr/ar lead with Botola; EN sinks it below the top European leagues.
   const standingsLeagues: HomeRailStandingsLeague[] = HOMEPAGE_LEAGUES.map((l, i) => ({
     compId: l.compId,
     compName: l.label[locale] ?? l.label['en'],
@@ -119,6 +120,15 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     slug: l.slugs,
     rows: standingsResults[i],
   })).filter((l) => l.rows.length > 0);
+
+  if (locale === 'en') {
+    standingsLeagues.sort((a, b) => {
+      // Botola (compId 200) sinks to the bottom on EN; everything else keeps its order.
+      if (a.compId === 200 && b.compId !== 200) return 1;
+      if (b.compId === 200 && a.compId !== 200) return -1;
+      return 0;
+    });
+  }
 
   return {
     nextFeaturedCandidates,
