@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import type { TopScorerEntry } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
