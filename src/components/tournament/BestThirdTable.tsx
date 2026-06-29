@@ -3,6 +3,7 @@ import { codeToFlag } from '@/lib/flags';
 import type { BestThirdRow } from '@/lib/standings/best-third';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
+import { FormPills } from '@/components/shared/FormPills';
 
 interface BestThirdTableProps {
   rows: BestThirdRow[];
@@ -78,9 +79,6 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
                 : null;
             const isMorocco = !preTournament && row.team?.code === 'MA';
             const isQualified = !preTournament && row.crossGroupRank <= qualifiedCount;
-            const formChars = row.form
-              ? row.form.split('').slice(-5)
-              : ['\u2014', '\u2014', '\u2014', '\u2014', '\u2014'];
 
             return (
               <tr
@@ -145,8 +143,12 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
                 >
                   {row.points}
                 </td>
-                <td className="py-2 text-center font-mono text-xs text-text-tertiary">
-                  {formChars.join(' ')}
+                <td className="py-2 text-center">
+                  <FormPills
+                    form={row.form}
+                    formLabels={{ W: t('formWin'), D: t('formDraw'), L: t('formLoss') }}
+                    count={row.played ?? 5}
+                  />
                 </td>
               </tr>
             );

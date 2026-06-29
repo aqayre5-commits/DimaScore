@@ -204,6 +204,7 @@ export function MiniStandingsPreview({
                           <FormPills
                             form={row.form}
                             formLabels={{ W: t('formWin'), D: t('formDraw'), L: t('formLoss') }}
+                            count={row.played ?? 5}
                           />
                         </td>
                       </tr>
