@@ -67,10 +67,10 @@ export async function generateMetadata({
     title: 'DimaScore',
     description:
       locale === 'ar'
-        ? 'كرة القدم المغربية وما بعدها'
+        ? 'نتائج كرة القدم مباشرة — المغرب والعالم'
         : locale === 'en'
-          ? 'Moroccan football and beyond'
-          : 'Le football marocain et au-delà',
+          ? 'Live football scores — Morocco and the world'
+          : 'Scores de football en direct — le Maroc et le monde',
     alternates: {
       languages,
     },
