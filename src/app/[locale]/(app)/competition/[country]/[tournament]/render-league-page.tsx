@@ -299,7 +299,7 @@ export async function renderLeaguePage(
         rightRail={
           <LeagueRightRailCard
             featuredMatches={featuredMatches.slice(1)}
-            topScorers={topScorers.slice(0, 3)}
+            topScorers={coverage?.topScorers ? topScorers.slice(0, 3) : []}
             locale={locale}
             competitionName={competitionName}
           />
