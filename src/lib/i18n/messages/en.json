@@ -124,7 +124,6 @@
     "legalNotice": "Legal notice",
     "privacyPolicy": "Privacy policy",
     "contact": "Contact",
-    "loi0908": "This site complies with Law 09-08 on the protection of personal data.",
     "copyright": "© {year} DimaScore. All rights reserved.",
     "competitions": "Competitions",
     "resources": "Resources",
@@ -159,11 +158,6 @@
     "tomorrow": "Tomorrow"
   },
   "homepage": {
-    "h1": "The Moroccan game, followed properly.",
-    "intro": "DimaScore brings Moroccan football into focus — from Botola Pro and the Coupe du Trône to the Atlas Lions, CAF competitions and Moroccan players abroad. Follow live scores, fixtures, standings, squads and match details on a platform built around the way Moroccan fans actually follow the game.",
-    "heroCtaPrimary": "Follow live matches",
-    "heroCtaSecondary": "Explore competitions",
-    "editorialCta": "See today's matches",
     "emptyState": "Matches coming soon",
     "featuredVideos": "Featured videos",
     "featured": "Featured",

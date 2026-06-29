@@ -249,10 +249,9 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Sub-footer — Loi 09-08 + copyright */}
+      {/* Sub-footer — copyright */}
       <div className="border-t border-border-subtle">
-        <div className="mx-auto flex max-w-[1280px] flex-col items-center gap-1 px-4 py-3 text-center sm:flex-row sm:justify-between sm:text-start">
-          <p className="text-xs text-text-tertiary">{t('loi0908')}</p>
+        <div className="mx-auto flex max-w-[1280px] items-center justify-center px-4 py-3">
           <p className="text-xs text-text-tertiary">{t('copyright', { year })}</p>
         </div>
       </div>

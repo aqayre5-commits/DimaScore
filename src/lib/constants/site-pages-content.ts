@@ -157,7 +157,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         },
         {
           q: 'Does DimaScore show betting odds?',
-          a: 'No. We never display odds. Any predictions are editorial opinion, in line with Law 09-08 and our brand standards.',
+          a: "No. We never display odds. Any predictions are editorial opinion — DimaScore's view of the match, never a wager.",
         },
         {
           q: 'Which competitions do you cover?',
@@ -295,7 +295,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         },
         {
           q: 'DimaScore affiche-t-il des cotes de paris ?',
-          a: 'Non. Nous n’affichons jamais de cotes. Les pronostics relèvent d’une opinion éditoriale, conformément à la loi 09-08 et à nos standards de marque.',
+          a: 'Non. Nous n’affichons jamais de cotes. Les pronostics sont une opinion éditoriale — l’avis de DimaScore sur le match, jamais un pari.',
         },
         {
           q: 'Quelles compétitions couvrez-vous ?',
@@ -427,7 +427,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         },
         {
           q: 'هل يعرض ديماسكور حصص الرهان؟',
-          a: 'لا. لا نعرض الحصص إطلاقًا. أيّ توقّعات هي رأي تحريري، بما يتوافق مع القانون 09-08 ومعايير علامتنا.',
+          a: 'لا. لا نعرض الحصص إطلاقًا. التوقّعات رأي تحريري — وجهة نظر ديماسكور في المباراة، وليست رهانًا.',
         },
         {
           q: 'ما المنافسات التي تغطّونها؟',
