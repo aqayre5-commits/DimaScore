@@ -269,12 +269,19 @@ export default async function TeamPage({ params }: PageProps) {
         />
       ),
     },
-    {
-      key: 'statistics',
-      hash: hashes.statistics,
-      labelKey: 'statistics',
-      content: <TeamStatistics data={teamSeasonStats} locale={typedLocale} />,
-    },
+    // Statistics tab only when there's data. Empty teamSeasonStats means either the team's
+    // leagues have league_coverage.statistics_fixtures=false (Algeria L1, Tunisia L1) or no
+    // matches have been played yet — in both cases an empty Stats tab is worse than no tab.
+    ...(Object.keys(teamSeasonStats.statsByCompSeason).length > 0
+      ? [
+          {
+            key: 'statistics',
+            hash: hashes.statistics,
+            labelKey: 'statistics',
+            content: <TeamStatistics data={teamSeasonStats} locale={typedLocale} />,
+          },
+        ]
+      : []),
     {
       key: 'squad',
       hash: hashes.squad,
