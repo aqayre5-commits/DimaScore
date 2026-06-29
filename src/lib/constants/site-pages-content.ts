@@ -45,27 +45,28 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
     about: {
       title: 'About DimaScore',
       description:
-        'DimaScore is a Morocco-focused football data and media platform — Botola Pro, the Atlas Lions, World Cup 2026, AFCON, WAFCON and more.',
+        'Live football scores, fixtures, and stats across the major competitions — with deep coverage of Moroccan football.',
       sections: [
         {
-          heading: 'Our mission',
+          heading: 'DimaScore — live football, with Morocco at the heart of it',
           body: [
-            'DimaScore brings Moroccan and international football together in one fast, reliable place: live scores, fixtures, standings, squads and editorial coverage — in Arabic, French and English.',
-            "We focus on the competitions Moroccan fans care about most, from the Botola Pro to the Atlas Lions' road through World Cup 2026.",
+            "DimaScore covers the world of football: live scores and fixtures across the major competitions — the World Cup, AFCON, WAFCON, the Champions League, and Europe's top leagues — refreshed in seconds, every match.",
+            'Built in Morocco, DimaScore goes deeper than anyone on Moroccan football. Full Botola Pro and Coupe du Trône coverage, the Atlas Lions across AFCON and World Cup cycles, and a dedicated rail tracking Moroccan players abroad.',
+            'No betting. No ads. Multilingual: French, English, Arabic.',
           ],
         },
         {
-          heading: 'What we cover',
+          heading: 'What you get',
           body: [
-            'Live scores and match details across domestic and international competitions.',
-            'Team and player pages, standings, top scorers and tournament squads.',
-            "Editorial predictions and analysis — presented as DimaScore's own view, never as betting odds.",
+            'Live scores and match details — refreshed every 15 seconds when a match is in progress.',
+            'Team and player pages, standings, top scorers, tournament squads, and knockout brackets.',
+            "Editorial predictions and analysis — DimaScore's own view, never betting odds.",
           ],
         },
         {
           heading: 'Our data',
           body: [
-            'Match, team and player data is aggregated from official and licensed providers and refreshed continuously. Coverage depth varies by competition.',
+            'Match, team and player data is aggregated from licensed providers and refreshed continuously. Coverage depth varies by competition.',
           ],
         },
       ],
@@ -178,27 +179,28 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
     about: {
       title: 'À propos de DimaScore',
       description:
-        'DimaScore est une plateforme de données et de médias dédiée au football marocain — Botola Pro, Lions de l’Atlas, Coupe du Monde 2026, CAN, CAN féminine et plus encore.',
+        'Scores, calendriers et statistiques de football en direct sur les grandes compétitions — avec une couverture approfondie du football marocain.',
       sections: [
         {
-          heading: 'Notre mission',
+          heading: 'DimaScore — le football en direct, avec le Maroc au cœur',
           body: [
-            'DimaScore réunit le football marocain et international en un seul endroit rapide et fiable : scores en direct, calendriers, classements, effectifs et contenus éditoriaux — en arabe, français et anglais.',
-            'Nous nous concentrons sur les compétitions qui comptent le plus pour les supporters marocains, de la Botola Pro au parcours des Lions de l’Atlas vers la Coupe du Monde 2026.',
+            'DimaScore couvre tout le football : scores et calendriers en direct sur les grandes compétitions — Coupe du Monde, CAN, CAN féminine, Ligue des Champions, et les grands championnats européens — actualisés en quelques secondes, chaque match.',
+            'Construit au Maroc, DimaScore va plus loin que personne sur le football marocain. Couverture complète de la Botola Pro et de la Coupe du Trône, suivi des Lions de l’Atlas sur la CAN et la Coupe du Monde, et un fil dédié aux joueurs marocains à l’étranger.',
+            'Sans paris, sans publicité. Multilingue : français, anglais, arabe.',
           ],
         },
         {
-          heading: 'Ce que nous couvrons',
+          heading: 'Ce que vous obtenez',
           body: [
-            'Scores en direct et détails des matchs des compétitions nationales et internationales.',
-            'Pages des équipes et des joueurs, classements, meilleurs buteurs et effectifs des tournois.',
-            'Pronostics et analyses éditoriaux — présentés comme l’avis de DimaScore, jamais comme des cotes de paris.',
+            'Scores en direct et détails des matchs — actualisés toutes les 15 secondes pendant qu’un match est en cours.',
+            'Pages d’équipes et de joueurs, classements, meilleurs buteurs, effectifs et tableaux à élimination directe.',
+            'Pronostics et analyses éditoriaux — l’avis de DimaScore, jamais des cotes de paris.',
           ],
         },
         {
           heading: 'Nos données',
           body: [
-            'Les données des matchs, des équipes et des joueurs proviennent de fournisseurs officiels et sous licence, et sont actualisées en continu. La profondeur de la couverture varie selon la compétition.',
+            'Les données des matchs, équipes et joueurs proviennent de fournisseurs sous licence et sont actualisées en continu. La profondeur de la couverture varie selon la compétition.',
           ],
         },
       ],
@@ -315,27 +317,28 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
     about: {
       title: 'عن ديماسكور',
       description:
-        'ديماسكور منصّة بيانات وإعلام كروية تركّز على المغرب — البطولة الاحترافية، أسود الأطلس، كأس العالم 2026، كأس أمم إفريقيا وكأس أمم إفريقيا للسيدات وغيرها.',
+        'نتائج وجداول وإحصاءات كروية مباشرة على أبرز المنافسات — مع تغطية معمّقة للكرة المغربية.',
       sections: [
         {
-          heading: 'مهمّتنا',
+          heading: 'ديماسكور — كرة القدم مباشرة، والمغرب في صميمها',
           body: [
-            'يجمع ديماسكور الكرة المغربية والعالمية في مكان واحد سريع وموثوق: نتائج مباشرة، ومواعيد المباريات، والترتيب، والتشكيلات، والمحتوى التحريري — بالعربية والفرنسية والإنجليزية.',
-            'نركّز على المنافسات الأقرب إلى الجمهور المغربي، من البطولة الاحترافية إلى مشوار أسود الأطلس نحو كأس العالم 2026.',
+            'يغطي ديماسكور كرة القدم في العالم: نتائج وجداول مباشرة على أبرز المنافسات — كأس العالم، كأس أمم إفريقيا، كأس أمم إفريقيا للسيدات، دوري أبطال أوروبا، وأبرز الدوريات الأوروبية — محدَّثة في ثوانٍ، مباراة بمباراة.',
+            'صُمم في المغرب، يذهب ديماسكور أعمق من أي منصة أخرى في تغطية الكرة المغربية. تغطية كاملة للبطولة الاحترافية وكأس العرش، متابعة أسود الأطلس في كأس إفريقيا وكأس العالم، وقسم خاص باللاعبين المغاربة في الخارج.',
+            'دون رهانات، دون إعلانات. متعدد اللغات: العربية، الفرنسية، الإنجليزية.',
           ],
         },
         {
-          heading: 'ما الذي نغطّيه',
+          heading: 'ما الذي تحصل عليه',
           body: [
-            'النتائج المباشرة وتفاصيل المباريات في المنافسات المحلية والدولية.',
-            'صفحات الفرق واللاعبين، والترتيب، والهدّافين، وتشكيلات البطولات.',
-            'التوقّعات والتحليلات التحريرية — تُقدَّم بوصفها رأي ديماسكور، وليست أبدًا حصصًا للرهان.',
+            'نتائج مباشرة وتفاصيل المباريات — محدَّثة كل 15 ثانية أثناء المباراة.',
+            'صفحات الفرق واللاعبين، الترتيب، الهدّافون، التشكيلات، وجداول الأدوار الإقصائية.',
+            'التوقّعات والتحليلات التحريرية — رأي ديماسكور، وليست حصصًا للرهان.',
           ],
         },
         {
           heading: 'بياناتنا',
           body: [
-            'تُجمع بيانات المباريات والفرق واللاعبين من مزوّدين رسميين ومرخَّصين وتُحدَّث باستمرار. ويختلف عمق التغطية حسب المنافسة.',
+            'تُجمع بيانات المباريات والفرق واللاعبين من مزوّدين مرخَّصين وتُحدَّث باستمرار. ويختلف عمق التغطية حسب المنافسة.',
           ],
         },
       ],
