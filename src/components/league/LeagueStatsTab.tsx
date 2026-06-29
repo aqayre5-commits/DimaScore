@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { TopPlayerRow, TopCardRow, LeagueCoverageRecord } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
 import { TeamLogo } from '@/components/shared/Logo';
+import { PlayerPhotoCircle } from '@/components/shared/PlayerPhotoCircle';
 
 interface LeagueStatsTabProps {
   coverage: LeagueCoverageRecord | null;
@@ -108,21 +108,7 @@ function PlayerTable({
                 <td className="px-2 py-2 text-center tabular-nums text-text-tertiary">{i + 1}</td>
                 <td className="px-2 py-2">
                   <div className="flex items-center gap-2">
-                    {p.playerPhoto ? (
-                      <Image
-                        src={p.playerPhoto}
-                        alt=""
-                        className="size-6 rounded-full object-cover"
-                        width={24}
-                        height={24}
-                      />
-                    ) : (
-                      <div className="flex size-6 items-center justify-center rounded-full bg-bg-surface-2">
-                        <span className="text-[10px] text-text-tertiary">
-                          {p.playerName.charAt(0)}
-                        </span>
-                      </div>
-                    )}
+                    <PlayerPhotoCircle src={p.playerPhoto} name={p.playerName} size="sm" />
                     <Link
                       href={`/${locale}/joueur/${p.playerSlug}`}
                       className="truncate text-sm font-medium text-text-primary hover:text-accent hover:underline"
@@ -194,21 +180,7 @@ function CardsTable({
                 <td className="px-2 py-2 text-center tabular-nums text-text-tertiary">{i + 1}</td>
                 <td className="px-2 py-2">
                   <div className="flex items-center gap-2">
-                    {p.playerPhoto ? (
-                      <Image
-                        src={p.playerPhoto}
-                        alt=""
-                        className="size-6 rounded-full object-cover"
-                        width={24}
-                        height={24}
-                      />
-                    ) : (
-                      <div className="flex size-6 items-center justify-center rounded-full bg-bg-surface-2">
-                        <span className="text-[10px] text-text-tertiary">
-                          {p.playerName.charAt(0)}
-                        </span>
-                      </div>
-                    )}
+                    <PlayerPhotoCircle src={p.playerPhoto} name={p.playerName} size="sm" />
                     <Link
                       href={`/${locale}/joueur/${p.playerSlug}`}
                       className="truncate text-sm font-medium text-text-primary hover:text-accent hover:underline"

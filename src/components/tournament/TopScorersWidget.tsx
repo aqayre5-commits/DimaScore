@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
-import Image from 'next/image';
 import Link from 'next/link';
+import { PlayerPhotoCircle } from '@/components/shared/PlayerPhotoCircle';
 import type { TopPlayerRow } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import { stripWomenSuffix } from '@/lib/team-display';
@@ -35,19 +35,7 @@ export function TopScorersWidget({ players, locale }: Props) {
         {players.map((p, i) => (
           <div key={p.playerId} className="flex items-center gap-3 px-4 py-2">
             <span className="w-5 text-xs tabular-nums text-text-tertiary">{i + 1}</span>
-            {p.playerPhoto ? (
-              <Image
-                src={p.playerPhoto}
-                alt=""
-                className="size-7 rounded-full object-cover"
-                width={28}
-                height={28}
-              />
-            ) : (
-              <div className="flex size-7 items-center justify-center rounded-full bg-bg-surface-2">
-                <span className="text-[10px] text-text-tertiary">{p.playerName.charAt(0)}</span>
-              </div>
-            )}
+            <PlayerPhotoCircle src={p.playerPhoto} name={p.playerName} />
             <div className="min-w-0 flex-1">
               <Link
                 href={`/${locale}/joueur/${p.playerSlug}`}
