@@ -265,7 +265,7 @@ export const fixtures = pgTable(
     index('fixtures_kickoff_at_idx').on(t.kickoffAt),
     index('fixtures_live_status_idx')
       .on(t.statusCode)
-      .where(sql`status_code IN ('1H','HT','2H','ET','BT','P','LIVE')`),
+      .where(sql`status_code IN ('1H','HT','2H','ET','BT','P','LIVE','INT')`),
     index('fixtures_competition_season_round_idx').on(t.competitionId, t.seasonYear, t.roundNumber),
     index('fixtures_home_team_id_idx').on(t.homeTeamId),
     index('fixtures_away_team_id_idx').on(t.awayTeamId),

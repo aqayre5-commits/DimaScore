@@ -1,0 +1,2 @@
+DROP INDEX IF EXISTS "fixtures_live_status_idx";--> statement-breakpoint
+CREATE INDEX "fixtures_live_status_idx" ON "fixtures" USING btree ("status_code") WHERE status_code IN ('1H','HT','2H','ET','BT','P','LIVE','INT');
