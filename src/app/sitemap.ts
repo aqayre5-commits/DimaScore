@@ -37,14 +37,12 @@ function entry(
 // of age — old non-featured league fixtures are excluded to keep crawl budget off the deep archive.
 const SITEMAP_MATCH_FILTER = sql`(kickoff_at >= NOW() - INTERVAL '12 months' OR competition_id IN (1, 6, 922, 200, 201, 822))`;
 
-// Curated competition priority for crawlers — global relevance order, locale-agnostic.
-// (User-visible Morocco-first ordering lives in the mega menu, not in the sitemap, which is
-// consumed by international search engines that don't know our editorial slant.)
+// Curated competition priority — World Cup first, then Morocco, then headline comps; rest at 0.8.
 const COMPETITION_TIERS: { priority: number; ids: number[] }[] = [
   { priority: 1.0, ids: [1] }, // World Cup 2026
-  { priority: 0.9, ids: [6, 922] }, // AFCON, WAFCON (continental)
+  { priority: 0.95, ids: [200, 201, 822] }, // Morocco — Botola Pro, Botola 2, Coupe du Trône
+  { priority: 0.9, ids: [6, 922] }, // AFCON, WAFCON
   { priority: 0.85, ids: [2, 3, 848, 39, 140, 78, 135, 61] }, // UEFA cups + top European leagues
-  { priority: 0.8, ids: [200, 201, 822] }, // Morocco — Botola Pro, Botola 2, Coupe du Trône
 ];
 
 /** Morocco national team — surfaced into the priority block (also present in the teams list). */

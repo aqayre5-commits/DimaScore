@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { TEAM_IDS, LEAGUE_IDS } from '@/lib/constants/canonical-ids';
+import { getMetadataForCompetition } from '@/lib/constants/tournament-metadata';
 import { getTeamsMap, type TeamSnapshot } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
@@ -25,7 +26,9 @@ interface HeroFixture {
 
 export type EditorialHeroData =
   | { mode: 'A'; fixture: HeroFixture }
+  | { mode: 'B'; fixture: HeroFixture; daysUntil: number }
   | { mode: 'C'; fixture: HeroFixture }
+  | { mode: 'D'; tournament: string; daysUntil: number; moroccoGroup: string }
   | { mode: 'E' };
 
 const LIVE_STATUSES: string[] = [...LIVE_CODES_ARRAY];
@@ -34,15 +37,8 @@ const LIVE_STATUSES: string[] = [...LIVE_CODES_ARRAY];
 
 /**
  * Resolve editorial hero data for the homepage.
- * Priority: A (live Morocco) > C (Botola highlight) > E (fallback).
- * Max 2 queries (short-circuits on first match).
- *
- * Mode A surfaces a live Morocco fixture when one is on — card-density priority that's
- * appropriate for a brand surface like the hero, no editorial copy. The dedicated Morocco
- * angle (Lions Abroad, /edition/maroc, mega menu Morocco section) handles ongoing Morocco
- * context everywhere else. Modes B (Atlas Lions <=7d) and D (WC 2026 Morocco-group
- * countdown) were removed under the Option 1 neutrality policy: D was also dormant
- * post-WC-kickoff; B pushed editorial-style "Atlas Lions in N days" copy onto the EN hero.
+ * Priority: A (live Morocco) > B (Atlas Lions <=7d) > C (Botola highlight) > D (milestone) > E (fallback)
+ * Max 3 queries (short-circuits on first match).
  */
 export async function getEditorialHeroData(
   db: NeonHttpDatabase<typeof schema>,
@@ -78,8 +74,46 @@ export async function getEditorialHeroData(
     return { mode: 'A', fixture };
   }
 
-  // Mode C: Botola Pro highlight (next upcoming Botola fixture)
+  // Mode B: Atlas Lions match within 7 days
   const now = new Date();
+  const sevenDaysOut = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  const upcomingAtlasLions = await db
+    .select({
+      id: schema.fixtures.id,
+      kickoffAt: schema.fixtures.kickoffAt,
+      statusCode: schema.fixtures.statusCode,
+      minute: schema.fixtures.minute,
+      homeTeamId: schema.fixtures.homeTeamId,
+      awayTeamId: schema.fixtures.awayTeamId,
+      homeScore: schema.fixtures.homeScore,
+      awayScore: schema.fixtures.awayScore,
+      compId: schema.competitions.id,
+      compName: schema.competitions.name,
+      compSlug: schema.competitions.slug,
+    })
+    .from(schema.fixtures)
+    .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+    .where(
+      and(
+        eq(schema.fixtures.statusCode, 'NS'),
+        sql`(${schema.fixtures.homeTeamId} = ${TEAM_IDS.MOROCCO_MEN} OR ${schema.fixtures.awayTeamId} = ${TEAM_IDS.MOROCCO_MEN})`,
+        sql`${schema.fixtures.kickoffAt} > ${now.toISOString()}`,
+        sql`${schema.fixtures.kickoffAt} <= ${sevenDaysOut.toISOString()}`,
+      ),
+    )
+    .orderBy(asc(schema.fixtures.kickoffAt))
+    .limit(1);
+
+  if (upcomingAtlasLions.length > 0) {
+    const fixture = await hydrateHeroRow(db, upcomingAtlasLions[0]);
+    const daysUntil = Math.ceil(
+      (upcomingAtlasLions[0].kickoffAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    return { mode: 'B', fixture, daysUntil };
+  }
+
+  // Mode C: Botola Pro highlight (next upcoming Botola fixture)
   const botolaHighlight = await db
     .select({
       id: schema.fixtures.id,
@@ -109,6 +143,17 @@ export async function getEditorialHeroData(
   if (botolaHighlight.length > 0) {
     const fixture = await hydrateHeroRow(db, botolaHighlight[0]);
     return { mode: 'C', fixture };
+  }
+
+  // Mode D: Tournament milestone (WC 2026 within 90 days)
+  const wc2026 = getMetadataForCompetition(LEAGUE_IDS.WORLD_CUP);
+  if (wc2026 && wc2026.type === 'cup') {
+    const kickoff = new Date(wc2026.kickoffDate);
+    const daysUntil = Math.ceil((kickoff.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysUntil > 0 && daysUntil <= 90) {
+      const moroccoGroup = wc2026.groups.find((g) => g.isMoroccoGroup)?.label ?? 'C';
+      return { mode: 'D', tournament: 'WC 2026', daysUntil, moroccoGroup };
+    }
   }
 
   // Mode E: Fallback

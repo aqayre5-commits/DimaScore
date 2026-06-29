@@ -37,7 +37,7 @@ const WC_2026: CupContent = {
     en: {
       title: 'FIFA World Cup 2026 — Fixtures, groups, standings and knockout | DimaScore',
       description:
-        'Follow the FIFA World Cup 2026 live: 104-match schedule, 12 groups, standings per group, knockout bracket.',
+        'Follow the FIFA World Cup 2026 live: 104-match schedule, 12 groups, standings per group, knockout bracket. Morocco in Group C with Brazil, Haiti, and Scotland.',
     },
     ar: {
       title: 'كأس العالم 2026 — الجدول، المجموعات، الترتيب ومرحلة الإقصاء | ديماسكور',
@@ -338,7 +338,7 @@ const WAFCON_2026: CupContent = {
   },
   intro: {
     fr: 'La CAN Féminine 2026 (WAFCON) se déroulera au Maroc du 25 juillet au 16 août 2026. Première édition à 16 équipes (élargie de 12). Le Maroc, pays hôte, défendra ses couleurs après une finale perdue en 2024.',
-    en: "Women's Africa Cup of Nations 2026 (WAFCON), hosted in Morocco from 25 July to 16 August 2026. The first edition with 16 teams (expanded from 12). Follow the group-stage schedule, standings, and knockout bracket live.",
+    en: 'WAFCON 2026 takes place in Morocco from 25 July to 16 August 2026. The first edition with 16 teams (expanded from 12). Morocco, as hosts, will compete after reaching the 2024 final.',
     ar: 'تقام بطولة كأس أمم إفريقيا للسيدات 2026 في المغرب من 25 يوليو إلى 16 أغسطس 2026. أول نسخة بمشاركة 16 منتخباً (بدلاً من 12). المغرب، البلد المستضيف، سيشارك بعد وصوله لنهائي 2024.',
   },
   titles: {

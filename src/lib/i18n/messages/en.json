@@ -704,7 +704,10 @@
   "editorialHero": {
     "label": "Editorial highlight",
     "live": "LIVE",
+    "daysShort": "{days}d",
     "botolaHighlight": "Botola Pro",
+    "modeD": "World Cup 2026 starts in {days} days",
+    "moroccoInGroup": "Morocco in Group {group}",
     "modeE": "Atlas Lions — Arab Cup 2025 champions"
   },
   "styleGuide": {

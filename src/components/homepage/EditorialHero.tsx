@@ -87,6 +87,33 @@ function resolveContent(
       };
     }
 
+    case 'B': {
+      const { fixture, daysUntil } = data;
+      const home = getTeamDisplayName(fixture.homeTeam, locale);
+      const away = getTeamDisplayName(fixture.awayTeam, locale);
+      const compName = getLocalizedCompetitionName(
+        { id: fixture.competitionId, name: fixture.competitionName, slug: fixture.competitionSlug },
+        locale,
+      );
+      const kickoffTime = formatMatchTime(fixture.kickoffAt, locale);
+      return {
+        content: (
+          <div className="flex items-center gap-3 overflow-hidden">
+            <span className="shrink-0 text-base">&#9917;</span>
+            <h2 className="truncate text-sm font-semibold text-text-primary">
+              {home} – {away}
+            </h2>
+            <p className="hidden truncate text-xs text-text-secondary sm:block">
+              {compName} · {kickoffTime} · {t('daysShort', { days: daysUntil })}
+            </p>
+          </div>
+        ),
+        href: `/${locale}/match/${fixture.id}`,
+        matchId: String(fixture.id),
+        preview: heroPreview(fixture),
+      };
+    }
+
     case 'C': {
       const { fixture } = data;
       const home = getTeamDisplayName(fixture.homeTeam, locale);
@@ -107,6 +134,24 @@ function resolveContent(
         href: `/${locale}/match/${fixture.id}`,
         matchId: String(fixture.id),
         preview: heroPreview(fixture),
+      };
+    }
+
+    case 'D': {
+      const { daysUntil, moroccoGroup } = data;
+      return {
+        content: (
+          <div className="flex items-center gap-3 overflow-hidden">
+            <span className="shrink-0 text-base">&#127942;</span>
+            <h2 className="truncate text-sm font-semibold text-text-primary">
+              {t('modeD', { days: daysUntil })}
+            </h2>
+            <p className="hidden truncate text-xs text-text-secondary sm:block">
+              {t('moroccoInGroup', { group: moroccoGroup })}
+            </p>
+          </div>
+        ),
+        href: WC_2026_PATHS[locale],
       };
     }
 

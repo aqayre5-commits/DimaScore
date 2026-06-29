@@ -9,7 +9,7 @@ import { ChevronDown, Menu } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
 import {
-  getMegaMenuSections,
+  MEGA_MENU_SECTIONS,
   getTopNavEntries,
   buildCompetitionHref,
 } from '@/lib/constants/competitions-mega-menu';
@@ -21,7 +21,6 @@ import { MobileDrawer } from './MobileDrawer';
 function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void }) {
   const t = useTranslations('megaMenu');
   const ref = useRef<HTMLDivElement>(null);
-  const sections = getMegaMenuSections(locale);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -39,7 +38,7 @@ function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void
       className="absolute start-0 end-0 top-full z-50 border-b border-border-subtle bg-bg-surface shadow-lg"
     >
       <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-6 px-6 py-5 md:grid-cols-3">
-        {sections.map((section) => {
+        {MEGA_MENU_SECTIONS.map((section) => {
           const visibleEntries = section.entries.filter((e) => e.isCurrentlyVisible);
           if (visibleEntries.length === 0) return null;
           return (
@@ -74,7 +73,7 @@ export function Topbar() {
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
-  const topNavEntries = getTopNavEntries(locale);
+  const topNavEntries = getTopNavEntries();
 
   return (
     <nav

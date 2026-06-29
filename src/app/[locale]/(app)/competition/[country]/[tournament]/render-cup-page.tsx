@@ -279,16 +279,14 @@ export async function renderCupPage(
   const pageTitleShort = cupContent?.shortTitles?.[locale];
   const introText = cupContent?.intro[locale] ?? '';
 
-  // Morocco context strip in the page header: surfaced only on locales where the audience
-  // expects a Morocco-first frame (fr/ar). EN visitors get the neutral hero per the
-  // Option 1 neutrality policy.
+  // Morocco context: find Morocco's group and rivals
   const moroccoGroup = metadata.groups.find((g) => g.isMoroccoGroup);
   let moroccoContext: {
     label: string;
     rivals: Array<{ code: string; name: Record<string, string> }>;
   } | null = null;
 
-  if (moroccoGroup && locale !== 'en') {
+  if (moroccoGroup) {
     const groupStandings = standings.filter((s) => s.groupLabel === moroccoGroup.label);
     const rivals = groupStandings
       .filter((s) => s.team?.code !== 'MA')

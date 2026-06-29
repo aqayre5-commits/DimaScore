@@ -333,15 +333,8 @@ export { ALL_ENTRIES };
 // Top nav — 8 direct competition links shown in the navbar
 // ---------------------------------------------------------------------------
 
-/** Competition IDs shown as direct links in the top nav bar. The fr/ar default lead with
- *  Botola (Morocco-first frame for that audience); the EN variant leads with global
- *  competitions per the Option 1 neutrality policy. Underlying set is identical. */
-const TOP_NAV_IDS_FR_AR = [200, 1, 6, 2, 39, 140, 61, 78, 135, 922, 12] as const;
-const TOP_NAV_IDS_EN = [1, 6, 922, 12, 2, 39, 140, 78, 135, 61, 200] as const;
-
-/** Locale-agnostic flat list — used for generateStaticParams and any caller that needs
- *  the set (not the order). Stable for ISR/route generation. */
-export const TOP_NAV_COMPETITION_IDS = TOP_NAV_IDS_FR_AR;
+/** Competition IDs shown as direct links in the top nav bar, in display order. */
+export const TOP_NAV_COMPETITION_IDS = [200, 1, 6, 2, 39, 140, 61, 78, 135, 922, 12] as const;
 
 /** Label keys for top nav items (used by Topbar to render short labels). */
 const TOP_NAV_LABEL_KEYS: Record<number, string> = {
@@ -358,12 +351,9 @@ const TOP_NAV_LABEL_KEYS: Record<number, string> = {
   12: 'cafChampionsLeague',
 };
 
-/** Returns the 11 top-nav entries in display order. Pass a locale to get the locale-aware
- *  ordering (EN = global-first, fr/ar = Morocco-first). Default keeps the legacy fr/ar order
- *  so callers that don't have a locale (e.g. server-static fallbacks) stay stable. */
-export function getTopNavEntries(locale?: Locale): MegaMenuEntry[] {
-  const ids = locale === 'en' ? TOP_NAV_IDS_EN : TOP_NAV_IDS_FR_AR;
-  return ids.map((id) => {
+/** Returns the 11 top-nav entries in display order. */
+export function getTopNavEntries(): MegaMenuEntry[] {
+  return TOP_NAV_COMPETITION_IDS.map((id) => {
     const labelKey = TOP_NAV_LABEL_KEYS[id];
     return ALL_ENTRIES.find((e) => e.competitionId === id && e.labelKey === labelKey)!;
   });
@@ -389,9 +379,6 @@ function entriesFor(labelKeys: string[]): MegaMenuEntry[] {
 /**
  * Mega-menu sections for the "More" dropdown.
  * Excludes the 8 top-nav competitions. Grouped into 6 logical sections.
- *
- * The default order (fr/ar) leads with the Morocco section. EN consumers should call
- * {@link getMegaMenuSections}('en') to get the global-first reordering.
  */
 export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
   {
@@ -447,16 +434,6 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
     ]),
   },
 ];
-
-/** Locale-aware mega-menu section ordering. EN sinks the Morocco section below the
- *  global-relevance sections (africa, wcQualifiers, europe, arabTurkish, morocco, womens);
- *  fr/ar keep the default Morocco-first ordering. */
-export function getMegaMenuSections(locale: Locale): MegaMenuSection[] {
-  if (locale !== 'en') return MEGA_MENU_SECTIONS;
-  const byTitle = new Map(MEGA_MENU_SECTIONS.map((s) => [s.titleKey, s]));
-  const order = ['africa', 'wcQualifiers', 'europe', 'arabTurkish', 'morocco', 'womens'];
-  return order.map((k) => byTitle.get(k)!).filter(Boolean);
-}
 
 // ---------------------------------------------------------------------------
 // Lookup helpers

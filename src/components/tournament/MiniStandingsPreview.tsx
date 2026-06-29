@@ -36,9 +36,6 @@ export function MiniStandingsPreview({
   const t = useTranslations('tournament');
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
-  // Option 1 neutrality: Morocco visual highlighting is hidden on EN.
-  const highlightMorocco = locale !== 'en';
-
   // Group standings by normalized label
   const standingsByGroup = new Map<string, StandingRow[]>();
   for (const row of standings) {
@@ -63,7 +60,6 @@ export function MiniStandingsPreview({
           {groupLabels.map((label) => (
             <option key={label} value={label}>
               {t('groupLabel', { label })}
-              {highlightMorocco && label === defaultGroup ? ' \u2605' : ''}
             </option>
           ))}
         </select>
@@ -72,8 +68,7 @@ export function MiniStandingsPreview({
       {/* Group cards */}
       {visibleGroups.map((groupLabel) => {
         const groupRows = standingsByGroup.get(groupLabel) ?? [];
-        const isMoroccoGroup =
-          highlightMorocco && moroccoGroupLabel != null && groupLabel === moroccoGroupLabel;
+        const isMoroccoGroup = moroccoGroupLabel != null && groupLabel === moroccoGroupLabel;
         const groupHash = `group-${groupLabel.toLowerCase()}`;
 
         return (
@@ -91,7 +86,6 @@ export function MiniStandingsPreview({
                 )}
               >
                 {t('groupLabel', { label: groupLabel })}
-                {isMoroccoGroup && ' \u2605'}
               </div>
             </div>
 
@@ -147,7 +141,7 @@ export function MiniStandingsPreview({
                       row.team?.isNational && row.team.countryCode
                         ? codeToFlag(row.team.countryCode)
                         : null;
-                    const isMorocco = highlightMorocco && row.team?.code === 'MA';
+                    const isMorocco = row.team?.code === 'MA';
 
                     return (
                       <tr

@@ -32,9 +32,7 @@ export function OverviewTab({
   standingsHash,
 }: OverviewTabProps) {
   const moroccoGroup = metadata.groups.find((g) => g.isMoroccoGroup);
-  // Option 1 neutrality: anchor on Morocco's group only for fr/ar; EN gets the first group.
-  const defaultGroup =
-    (locale !== 'en' ? moroccoGroup?.label : null) ?? metadata.groups[0]?.label ?? 'A';
+  const defaultGroup = moroccoGroup?.label ?? metadata.groups[0]?.label ?? 'A';
   const groupLabels = metadata.groups.map((g) => g.label);
 
   // Build team → group mapping from standings

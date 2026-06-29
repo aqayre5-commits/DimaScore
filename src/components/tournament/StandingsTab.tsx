@@ -30,9 +30,7 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
   const live = useLiveFixtures();
 
   const groupLabels = metadata.groups.map((g) => g.label);
-  // Option 1 neutrality: Morocco group highlighting / ★ badge is hidden on EN.
-  const highlightMorocco = locale !== 'en';
-  const moroccoGroup = highlightMorocco ? metadata.groups.find((g) => g.isMoroccoGroup) : undefined;
+  const moroccoGroup = metadata.groups.find((g) => g.isMoroccoGroup);
 
   // Group standings by groupLabel
   const standingsByGroup = new Map<string, StandingRow[]>();
@@ -73,7 +71,6 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
             )}
           >
             {label}
-            {label === moroccoGroup?.label && ' \u2605'}
           </button>
         ))}
       </div>
@@ -83,7 +80,7 @@ export function StandingsTab({ standings, metadata, locale }: StandingsTabProps)
         {visibleGroups.map((label) => {
           const rawRows = standingsByGroup.get(label) ?? [];
           const { rows, liveTeamIds } = overlayLiveStandings(rawRows, live.values());
-          const isMoroccoGroup = highlightMorocco && label === moroccoGroup?.label;
+          const isMoroccoGroup = label === moroccoGroup?.label;
 
           return (
             <GroupTable

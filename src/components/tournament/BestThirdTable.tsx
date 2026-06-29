@@ -18,8 +18,6 @@ interface BestThirdTableProps {
 export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableProps) {
   const t = useTranslations('tournament');
   const preTournament = rows.every((r) => r.played === 0);
-  // Option 1 neutrality: Morocco row highlighting is hidden on EN.
-  const highlightMorocco = locale !== 'en';
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border-subtle bg-bg-surface">
@@ -79,7 +77,7 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
               : row.team?.isNational && row.team.countryCode
                 ? codeToFlag(row.team.countryCode)
                 : null;
-            const isMorocco = highlightMorocco && !preTournament && row.team?.code === 'MA';
+            const isMorocco = !preTournament && row.team?.code === 'MA';
             const isQualified = !preTournament && row.crossGroupRank <= qualifiedCount;
 
             return (

@@ -38,10 +38,6 @@ export function GroupTable({
 }: GroupTableProps) {
   const t = useTranslations('tournament');
 
-  // Option 1 neutrality: Morocco visual highlighting is hidden on EN.
-  const highlightMorocco = locale !== 'en';
-  const showMoroccoGroup = isMoroccoGroup && highlightMorocco;
-
   const groupHasLive =
     !!liveTeamIds && rows.some((r) => r.teamId != null && liveTeamIds.has(r.teamId));
 
@@ -62,11 +58,10 @@ export function GroupTable({
         <h3
           className={cn(
             'text-xs font-semibold',
-            showMoroccoGroup ? 'text-accent-azure' : 'text-text-primary',
+            isMoroccoGroup ? 'text-accent-azure' : 'text-text-primary',
           )}
         >
           {t('groupLabel', { label: groupLabel })}
-          {showMoroccoGroup && <span className="ml-1">&#9733;</span>}
         </h3>
         {groupHasLive && (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-score-live/10 px-1.5 py-0.5 text-[10px] font-bold text-score-live">
@@ -129,7 +124,7 @@ export function GroupTable({
                 row.team?.isNational && row.team.countryCode
                   ? codeToFlag(row.team.countryCode)
                   : null;
-              const isMorocco = highlightMorocco && row.team?.code === 'MA';
+              const isMorocco = row.team?.code === 'MA';
               const isLiveRow = !!liveTeamIds && row.teamId != null && liveTeamIds.has(row.teamId);
               const zoneColor = getZoneColor(row.rank);
 
