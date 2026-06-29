@@ -805,38 +805,80 @@ export async function getRightRailTopScorers(
 ): Promise<{ competitionName: Record<string, string>; scorers: TopScorerEntry[] }> {
   // Priority order: Botola Pro (200) > WC (1) > AFCON (6) > UCL (2) > PL (39)
   const priorityComps = [200, 1, 6, 2, 39];
+  const compsList = sql.join(
+    priorityComps.map((id) => sql`${id}`),
+    sql`, `,
+  );
 
-  // Single query: fetch top scorers across all priority competitions at once
+  // Dual-source query: pulls top-N from both player_season_stats (the official /topscorers feed)
+  // and fixture_events (goals derived from match events) per priority competition. We then pick,
+  // per comp, whichever source has the larger leader — covering cases where the /topscorers feed
+  // is sparse or stale (Botola Pro 2025 returned 4 scorers / max 3 goals while fixture_events had
+  // 372 goals). Mirrors what getResolvedTopScorers does for league/cup pages.
   const rows = await db.execute(
-    sql`SELECT
-          pss.competition_id,
-          pss.player_id,
-          COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
-          p.slug AS player_slug,
-          p.photo_url,
-          COALESCE(t.name->>'en', 'Unknown') AS team_name,
-          t.logo_url AS team_logo_url,
-          (pss.stats->>'goals')::int AS goals,
-          c.name AS comp_name,
-          ROW_NUMBER() OVER (PARTITION BY pss.competition_id ORDER BY (pss.stats->>'goals')::int DESC) AS rn
-        FROM player_season_stats pss
-        JOIN seasons s ON s.competition_id = pss.competition_id
-          AND s.year = pss.season_year
-          AND s.is_current = true
-        JOIN players p ON p.id = pss.player_id
-        LEFT JOIN teams t ON t.id = pss.team_id
-        JOIN competitions c ON c.id = pss.competition_id
-        WHERE pss.competition_id IN (${sql.join(
-          priorityComps.map((id) => sql`${id}`),
-          sql`, `,
-        )})
-          AND (pss.stats->>'goals')::int > 0
-        ORDER BY pss.competition_id, goals DESC`,
+    sql`WITH pss_top AS (
+          SELECT 'pss'::text AS source,
+                 pss.competition_id,
+                 pss.player_id,
+                 COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
+                 p.slug AS player_slug,
+                 p.photo_url,
+                 COALESCE(t.name->>'en', 'Unknown') AS team_name,
+                 t.logo_url AS team_logo_url,
+                 (pss.stats->>'goals')::int AS goals,
+                 c.name AS comp_name,
+                 ROW_NUMBER() OVER (
+                   PARTITION BY pss.competition_id
+                   ORDER BY (pss.stats->>'goals')::int DESC
+                 ) AS rn
+          FROM player_season_stats pss
+          JOIN seasons s ON s.competition_id = pss.competition_id
+            AND s.year = pss.season_year
+            AND s.is_current = true
+          JOIN players p ON p.id = pss.player_id
+          LEFT JOIN teams t ON t.id = pss.team_id
+          JOIN competitions c ON c.id = pss.competition_id
+          WHERE pss.competition_id IN (${compsList})
+            AND (pss.stats->>'goals')::int > 0
+        ),
+        events_top AS (
+          SELECT 'events'::text AS source,
+                 f.competition_id,
+                 e.player_id,
+                 COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
+                 p.slug AS player_slug,
+                 p.photo_url,
+                 COALESCE(t.name->>'en', 'Unknown') AS team_name,
+                 t.logo_url AS team_logo_url,
+                 COUNT(*)::int AS goals,
+                 c.name AS comp_name,
+                 ROW_NUMBER() OVER (
+                   PARTITION BY f.competition_id
+                   ORDER BY COUNT(*) DESC
+                 ) AS rn
+          FROM fixture_events e
+          JOIN fixtures f ON f.id = e.fixture_id
+          JOIN seasons s ON s.competition_id = f.competition_id
+            AND s.year = f.season_year
+            AND s.is_current = true
+          JOIN players p ON p.id = e.player_id
+          LEFT JOIN teams t ON t.id = e.team_id
+          JOIN competitions c ON c.id = f.competition_id
+          WHERE f.competition_id IN (${compsList})
+            AND e.type = 'Goal'
+            AND e.detail IN ('Normal Goal', 'Penalty')
+          GROUP BY f.competition_id, e.player_id, p.name, p.slug, p.photo_url, t.id, t.name, t.logo_url, c.name
+        )
+        SELECT * FROM pss_top WHERE rn <= ${limit}
+        UNION ALL
+        SELECT * FROM events_top WHERE rn <= ${limit}
+        ORDER BY competition_id, source, rn`,
   );
 
   if (rows.rows.length === 0) return { competitionName: {}, scorers: [] };
 
   type RawRow = {
+    source: 'pss' | 'events';
     competition_id: string;
     player_id: string;
     player_name: string;
@@ -849,24 +891,37 @@ export async function getRightRailTopScorers(
     rn: string;
   };
 
-  // Group by competition, pick first priority comp that has results
-  const byComp = new Map<number, { compName: Record<string, string>; scorers: RawRow[] }>();
-  for (const r of rows.rows as RawRow[]) {
-    if (Number(r.rn) > limit) continue;
-    const compId = Number(r.competition_id);
-    if (!byComp.has(compId)) {
-      byComp.set(compId, { compName: r.comp_name, scorers: [] });
+  // Bucket per (compId, source).
+  const buckets = new Map<
+    number,
+    {
+      compName: Record<string, string>;
+      pss: RawRow[];
+      events: RawRow[];
     }
-    byComp.get(compId)!.scorers.push(r);
+  >();
+  for (const r of rows.rows as RawRow[]) {
+    const compId = Number(r.competition_id);
+    let bucket = buckets.get(compId);
+    if (!bucket) {
+      bucket = { compName: r.comp_name, pss: [], events: [] };
+      buckets.set(compId, bucket);
+    }
+    if (r.source === 'pss') bucket.pss.push(r);
+    else bucket.events.push(r);
   }
 
+  // Walk priorities; per comp pick the source with the higher leader. Skip empty comps.
   for (const compId of priorityComps) {
-    const entry = byComp.get(compId);
-    if (!entry || entry.scorers.length === 0) continue;
-
+    const bucket = buckets.get(compId);
+    if (!bucket) continue;
+    const pssLeader = bucket.pss[0]?.goals ?? '0';
+    const eventsLeader = bucket.events[0]?.goals ?? '0';
+    if (Number(pssLeader) === 0 && Number(eventsLeader) === 0) continue;
+    const chosen = Number(eventsLeader) > Number(pssLeader) ? bucket.events : bucket.pss;
     return {
-      competitionName: entry.compName,
-      scorers: entry.scorers.map((r) => ({
+      competitionName: bucket.compName,
+      scorers: chosen.map((r) => ({
         playerId: Number(r.player_id),
         playerName: r.player_name,
         playerSlug: r.player_slug,
