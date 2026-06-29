@@ -2,8 +2,7 @@ import type { Locale } from '@/lib/i18n/config';
 import type { CupMetadata } from '@/lib/constants/tournament-metadata';
 import type { StandingRow } from '@/lib/db/queries';
 import type { LeagueCoverageRecord, TopPlayerRow } from '@/lib/db/queries/league';
-import { TopScorersWidget } from './TopScorersWidget';
-import { TopAssistsWidget } from './TopAssistsWidget';
+import { RankedPlayersList } from './RankedPlayersList';
 
 interface RightRailProps {
   metadata: CupMetadata;
@@ -23,8 +22,12 @@ interface RightRailProps {
 export function RightRail({ locale, coverage, topScorers, topAssists }: RightRailProps) {
   return (
     <div className="space-y-4">
-      {coverage?.topScorers && <TopScorersWidget players={topScorers} locale={locale} />}
-      {coverage?.topAssists && <TopAssistsWidget players={topAssists} locale={locale} />}
+      {coverage?.topScorers && (
+        <RankedPlayersList players={topScorers} locale={locale} stat="goals" />
+      )}
+      {coverage?.topAssists && (
+        <RankedPlayersList players={topAssists} locale={locale} stat="assists" />
+      )}
     </div>
   );
 }

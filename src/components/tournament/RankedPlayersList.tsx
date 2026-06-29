@@ -1,35 +1,45 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { PlayerPhotoCircle } from '@/components/shared/PlayerPhotoCircle';
+import { stripWomenSuffix } from '@/lib/team-display';
 import type { TopPlayerRow } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
-import { stripWomenSuffix } from '@/lib/team-display';
 
 interface Props {
   players: TopPlayerRow[];
   locale: Locale;
+  /** Which stat field on the row to render in the trailing badge. */
+  stat: 'goals' | 'assists';
 }
 
+const STAT_META = {
+  goals: { id: 'top-scorers', titleKey: 'topScorers' as const },
+  assists: { id: 'top-assists', titleKey: 'topAssists' as const },
+};
+
 /**
- * Right-rail Widget 1 — Top scorers. Renders the ranked list once stats exist, otherwise a compact
- * "available once the tournament begins" placeholder. Coverage-gated by the parent (RightRail).
+ * Right-rail ranked-player widget — used for Top Scorers and Top Assists. Coverage-gated by
+ * the parent (RightRail). Renders a "no data yet" placeholder when players is empty so the
+ * surface still shows the header during the pre-tournament window.
  */
-export function TopScorersWidget({ players, locale }: Props) {
+export function RankedPlayersList({ players, locale, stat }: Props) {
   const t = useTranslations('tournament');
+  const { id, titleKey } = STAT_META[stat];
+  const title = t(titleKey);
 
   if (players.length === 0) {
     return (
-      <div id="top-scorers" className="rounded-lg border border-border-subtle bg-bg-surface p-4">
-        <h3 className="text-sm font-semibold text-text-primary">{t('topScorers')}</h3>
+      <div id={id} className="rounded-lg border border-border-subtle bg-bg-surface p-4">
+        <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
         <p className="mt-1 text-xs text-text-tertiary">{t('noDataPreTournament')}</p>
       </div>
     );
   }
 
   return (
-    <div id="top-scorers" className="rounded-lg border border-border-subtle bg-bg-surface">
+    <div id={id} className="rounded-lg border border-border-subtle bg-bg-surface">
       <div className="border-b border-border-subtle px-4 py-2.5">
-        <h3 className="text-sm font-semibold text-text-primary">{t('topScorers')}</h3>
+        <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
       </div>
       <div className="divide-y divide-border-subtle">
         {players.map((p, i) => (
@@ -47,7 +57,7 @@ export function TopScorersWidget({ players, locale }: Props) {
                 {stripWomenSuffix(p.teamName)}
               </p>
             </div>
-            <span className="text-sm font-semibold tabular-nums text-text-primary">{p.goals}</span>
+            <span className="text-sm font-semibold tabular-nums text-text-primary">{p[stat]}</span>
           </div>
         ))}
       </div>
