@@ -5,7 +5,7 @@ import * as schema from '../schema';
 import { ALL_ENTRIES } from '@/lib/constants/competitions-mega-menu';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
-import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { LIVE_CODES_ARRAY, SCORED_STATUSES_ARRAY } from '@/lib/match-status';
 
 export interface HomeFixture {
   id: number;
@@ -52,7 +52,9 @@ export interface TrendingPlayer {
 }
 
 const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
-const FINISHED_CODES = ['FT', 'AET', 'PEN', 'WO', 'AWD'];
+// Statuses that produced an official scored result — narrower than FINISHED_CODES_ARRAY
+// because we exclude CANC + ABD (no winner). Used to filter scored matches for the homepage.
+const FINISHED_CODES: string[] = [...SCORED_STATUSES_ARRAY];
 
 const FRIENDLIES_ID = 10;
 const YOUTH_NAME_RE = /\bU-?\d{2}\b/;
@@ -385,10 +387,14 @@ export async function getTeamForm(
     sql`, `,
   );
 
+  const scoredList = sql.join(
+    SCORED_STATUSES_ARRAY.map((c) => sql`${c}`),
+    sql`, `,
+  );
   const rows = await db.execute(
     sql`SELECT f.home_team_id, f.away_team_id, f.home_score, f.away_score
         FROM fixtures f
-        WHERE f.status_code IN ('FT', 'AET', 'PEN', 'WO', 'AWD')
+        WHERE f.status_code IN (${scoredList})
           AND (f.home_team_id IN (${idList}) OR f.away_team_id IN (${idList}))
         ORDER BY f.kickoff_at DESC
         LIMIT ${teamIds.length * limit * 2}`,

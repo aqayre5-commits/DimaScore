@@ -7,7 +7,7 @@ import { applyComputedStandings } from '@/lib/standings/compute';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { TEAM_IDS } from '@/lib/constants/canonical-ids';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
-import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { LIVE_CODES_ARRAY, SCORED_STATUSES_ARRAY } from '@/lib/match-status';
 
 // ── Status code sets ──
 
@@ -27,7 +27,8 @@ const DISPLAYABLE = sql`
     )
   )
 `;
-const FINISHED_CODES = ['FT', 'AET', 'PEN', 'WO', 'AWD'];
+// Statuses that produced an official scored result (excludes CANC + ABD where no winner).
+const FINISHED_CODES: string[] = [...SCORED_STATUSES_ARRAY];
 
 export interface RightRailFixture {
   id: number;

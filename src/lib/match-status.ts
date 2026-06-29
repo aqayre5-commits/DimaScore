@@ -9,6 +9,12 @@ export type MatchState = 'live' | 'finished' | 'upcoming';
 /** Exported arrays for SQL IN-clause reuse */
 export const LIVE_CODES_ARRAY = ['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE', 'INT'] as const;
 export const FINISHED_CODES_ARRAY = ['FT', 'AET', 'PEN', 'WO', 'AWD', 'CANC', 'ABD'] as const;
+/**
+ * Subset of FINISHED that produced a meaningful sporting result and should count toward
+ * standings / scorer aggregations. Excludes CANC + ABD (no winner determined).
+ * WO + AWD ARE included because forfeits and awarded results both yield an official score.
+ */
+export const SCORED_STATUSES_ARRAY = ['FT', 'AET', 'PEN', 'WO', 'AWD'] as const;
 
 const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
 const FINISHED_CODES = new Set<string>(FINISHED_CODES_ARRAY);
