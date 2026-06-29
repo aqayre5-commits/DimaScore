@@ -10,6 +10,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { getTeamFlagUrl } from '@/lib/team-display';
 
 interface Labels {
   liveGroupStandings: string;
@@ -201,7 +202,7 @@ function GroupCard({
                     <div className="flex items-center gap-1.5">
                       {row.team?.logoUrl ? (
                         <TeamLogo
-                          src={row.team.logoUrl}
+                          src={getTeamFlagUrl(row.team)}
                           size={16}
                           className="size-4 shrink-0 object-contain"
                         />

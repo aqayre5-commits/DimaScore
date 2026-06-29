@@ -6,6 +6,7 @@ import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 import type { TopPlayerRow, LeagueCoverageRecord } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import { CupFixturesTab } from './CupFixturesTab';
+import { getTeamFlagUrl } from '@/lib/team-display';
 
 interface CupOverviewTabProps {
   fixtures: FixtureWithTeams[];
@@ -71,9 +72,9 @@ export function CupOverviewTab({
                     </td>
                     <td className="py-2">
                       <div className="flex items-center gap-2">
-                        {row.team?.logoUrl && (
+                        {getTeamFlagUrl(row.team) && (
                           <Image
-                            src={row.team.logoUrl}
+                            src={getTeamFlagUrl(row.team)!}
                             alt=""
                             width={16}
                             height={16}

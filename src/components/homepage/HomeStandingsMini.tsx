@@ -4,6 +4,7 @@ import { getCountrySlug } from '@/lib/constants/country-slugs';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
+import { getTeamFlagUrl } from '@/lib/team-display';
 
 interface Props {
   compName: string;
@@ -65,7 +66,7 @@ export function HomeStandingsMini({ compName, countryKey, slug, rows, locale, la
                     <div className="flex items-center gap-1.5">
                       {row.team?.logoUrl ? (
                         <TeamLogo
-                          src={row.team.logoUrl}
+                          src={getTeamFlagUrl(row.team)}
                           size={16}
                           className="size-4 shrink-0 object-contain"
                         />

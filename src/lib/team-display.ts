@@ -21,9 +21,9 @@ export function stripWomenSuffix(name: string | null | undefined): string {
  */
 export function getTeamFlagUrl(
   team: {
-    logoUrl: string | null;
-    isNational: boolean | null;
-    countryCode: string | null;
+    logoUrl?: string | null;
+    isNational?: boolean | null;
+    countryCode?: string | null;
   } | null,
 ): string | null {
   if (!team) return null;

@@ -7,6 +7,7 @@ import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
 import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
+import { getTeamFlagUrl } from '@/lib/team-display';
 
 interface LeagueStandingsTabProps {
   standings: StandingRow[];
@@ -128,9 +129,9 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
                   {/* Team */}
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-2">
-                      {row.team?.logoUrl ? (
+                      {getTeamFlagUrl(row.team) ? (
                         <TeamLogo
-                          src={row.team.logoUrl}
+                          src={getTeamFlagUrl(row.team)}
                           size={20}
                           className="size-5 object-contain"
                         />

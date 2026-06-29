@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { TeamLogo } from '@/components/shared/Logo';
 import { codeToFlag } from '@/lib/flags';
+import { getTeamFlagUrl } from '@/lib/team-display';
 import { getMatchState } from '@/lib/match-status';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import { cn } from '@/lib/utils';
@@ -111,8 +112,12 @@ function TeamRow({
 
   return (
     <div className="flex items-center gap-3 px-4 py-3">
-      {team?.logoUrl ? (
-        <TeamLogo src={team.logoUrl} size={28} className="size-7 shrink-0 rounded object-contain" />
+      {getTeamFlagUrl(team) ? (
+        <TeamLogo
+          src={getTeamFlagUrl(team)}
+          size={28}
+          className="size-7 shrink-0 rounded object-contain"
+        />
       ) : flag ? (
         <span className="text-xl leading-none">{flag}</span>
       ) : (

@@ -6,6 +6,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { codeToFlag } from '@/lib/flags';
 import { slugify } from '@/lib/ingestion/slug';
 import Image from 'next/image';
+import { getTeamFlagUrl } from '@/lib/team-display';
 
 interface TeamPageHeaderProps {
   team: TeamDetail;
@@ -35,9 +36,9 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
     <div className="h-full overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15">
       <div className="flex h-full items-stretch gap-5 p-2">
         {/* Team logo — fills vertical space */}
-        {team.logoUrl ? (
+        {getTeamFlagUrl(team) ? (
           <Image
-            src={team.logoUrl}
+            src={getTeamFlagUrl(team)!}
             alt={name}
             className="hidden h-full max-h-[140px] w-auto shrink-0 object-contain object-center md:block"
             width={140}
@@ -52,9 +53,9 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
           </div>
         )}
         {/* Mobile-only logo — fills card height */}
-        {team.logoUrl ? (
+        {getTeamFlagUrl(team) ? (
           <Image
-            src={team.logoUrl}
+            src={getTeamFlagUrl(team)!}
             alt={name}
             className="h-full max-h-[104px] w-auto shrink-0 self-stretch object-contain object-center md:hidden"
             width={104}

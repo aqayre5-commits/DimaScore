@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
+import { getTeamFlagUrl } from '@/lib/team-display';
 
 interface TeamStandingsSectionProps {
   standings: StandingRow[];
@@ -89,9 +90,9 @@ export function TeamStandingsSection({
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-2">
-                          {row.team?.logoUrl && (
+                          {getTeamFlagUrl(row.team) && (
                             <Image
-                              src={row.team.logoUrl}
+                              src={getTeamFlagUrl(row.team)!}
                               alt=""
                               width={18}
                               height={18}

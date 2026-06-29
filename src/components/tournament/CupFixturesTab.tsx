@@ -9,6 +9,7 @@ import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
+import { getTeamFlagUrl } from '@/lib/team-display';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -327,10 +328,11 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
 
 function TeamBadge({ team, big = false }: { team: FixtureWithTeams['homeTeam']; big?: boolean }) {
   const box = big ? 'size-6' : 'size-5';
-  if (team?.logoUrl) {
+  const flagOrLogo = getTeamFlagUrl(team);
+  if (flagOrLogo) {
     return (
       <Image
-        src={team.logoUrl}
+        src={flagOrLogo}
         alt=""
         width={big ? 24 : 20}
         height={big ? 24 : 20}

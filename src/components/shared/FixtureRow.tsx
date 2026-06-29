@@ -3,6 +3,7 @@
 import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
+import { getTeamFlagUrl } from '@/lib/team-display';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import { MatchLink } from '@/components/shared/MatchLink';
@@ -237,10 +238,11 @@ function TeamBadge({
   big?: boolean;
 }) {
   const box = big ? 'size-6' : 'size-5';
-  if (team?.logoUrl) {
+  const flagOrLogo = getTeamFlagUrl(team);
+  if (flagOrLogo) {
     return (
       <TeamLogo
-        src={team.logoUrl}
+        src={flagOrLogo}
         size={big ? 24 : 20}
         className={`${box} shrink-0 object-contain`}
       />

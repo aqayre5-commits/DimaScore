@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { codeToFlag } from '@/lib/flags';
-import { stripWomenSuffix } from '@/lib/team-display';
+import { stripWomenSuffix, getTeamFlagUrl } from '@/lib/team-display';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
@@ -456,10 +456,11 @@ function TeamBadge({
   big?: boolean;
 }) {
   const box = big ? 'size-6' : 'size-5';
-  if (team?.logoUrl) {
+  const flagOrLogo = getTeamFlagUrl(team);
+  if (flagOrLogo) {
     return (
       <Image
-        src={team.logoUrl}
+        src={flagOrLogo}
         alt=""
         width={big ? 24 : 20}
         height={big ? 24 : 20}

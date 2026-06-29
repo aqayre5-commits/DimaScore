@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { CompetitionTeamTile } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
+import { getTeamFlagUrl } from '@/lib/team-display';
 
 interface TeamCompetitionTeamsProps {
   teams: CompetitionTeamTile[];
@@ -53,9 +54,9 @@ export function TeamCompetitionTeams({
                 isHighlighted ? 'ring-2 ring-inset ring-accent-azure/60 bg-accent-azure/[0.06]' : ''
               }`}
             >
-              {team.logoUrl ? (
+              {getTeamFlagUrl(team) ? (
                 <Image
-                  src={team.logoUrl}
+                  src={getTeamFlagUrl(team)!}
                   alt=""
                   width={40}
                   height={40}
