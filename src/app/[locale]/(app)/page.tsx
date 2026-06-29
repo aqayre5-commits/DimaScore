@@ -6,7 +6,6 @@ import { BASE_URL } from '@/lib/constants/site';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { HomeFeaturedCarousel } from '@/components/homepage/HomeFeaturedCarousel';
-import { HomeEditorial } from '@/components/homepage/HomeEditorial';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
@@ -222,9 +221,6 @@ export default async function HomePage({ params }: PageProps) {
               <Suspense>
                 <HomeTrendingPlayersStreamed locale={typedLocale} />
               </Suspense>
-            </div>
-            <div className="mt-6">
-              <HomeEditorial locale={typedLocale} />
             </div>
           </div>
 
