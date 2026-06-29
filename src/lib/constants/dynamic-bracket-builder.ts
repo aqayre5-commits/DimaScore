@@ -347,6 +347,9 @@ export function buildDynamicBracket(
 
       matches.push({
         matchId: tie.id,
+        // Cell live-poll subscribes via this id. Only set for single-leg ties — overlaying
+        // one leg's live score onto an aggregate two-leg display would be wrong.
+        fixtureId: tie.leg2 ? undefined : tie.leg1.id,
         phase: tie.phase,
         matchNumber: tie.leg1.id,
         homeLabel: tie.team1Code,
@@ -385,6 +388,7 @@ export function buildDynamicBracket(
     const isFin = f.statusCode === 'FT' || f.statusCode === 'AET' || f.statusCode === 'PEN';
     thirdPlaceMatch = {
       matchId: 'tie-3rd-0',
+      fixtureId: f.id,
       phase: '3rd',
       matchNumber: f.id,
       homeLabel: resolveCode(f.homeTeam),

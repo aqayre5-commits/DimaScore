@@ -377,6 +377,7 @@ function overlayMatch(
 
   return {
     matchId: `m${entry.fifaMatchNumber}`,
+    fixtureId: fx.id,
     phase: pos.phase,
     matchNumber: entry.fifaMatchNumber,
     fifaMatchNumber: entry.fifaMatchNumber,

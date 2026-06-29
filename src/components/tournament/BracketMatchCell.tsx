@@ -1,5 +1,9 @@
+'use client';
+
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 
 // ── Shared bracket types (re-exported for sibling components) ──────────────
 
@@ -8,6 +12,8 @@ export type BracketSide = 'left' | 'right' | 'center';
 
 export interface BracketMatch {
   matchId: string;
+  /** Raw fixture id from the DB. When set, BracketMatchCell overlays the shared 15s live poll. */
+  fixtureId?: number;
   phase: KnockoutPhase;
   matchNumber: number;
   fifaMatchNumber?: number;
@@ -54,7 +60,30 @@ interface BracketMatchCellProps {
  * Radix Tooltip shows the localized expanded form of the FIFA slot
  * codes on hover/focus (e.g. "Winner of M97 vs Winner of M98").
  */
-export function BracketMatchCell({ match, className }: BracketMatchCellProps) {
+const LIVE_SET = new Set<string>(LIVE_CODES_ARRAY);
+const FINISHED_SET = new Set<string>(FINISHED_CODES_ARRAY);
+
+export function BracketMatchCell({ match: m, className }: BracketMatchCellProps) {
+  // Overlay the shared 15s live poll when this cell carries a real DB fixture id (set by the
+  // bracket builders for ties whose fixture exists). Static placeholder slots (W74 vs W77,
+  // 1A vs 3CDEF, …) have no fixtureId and render the SSR snapshot directly.
+  const patch = useLiveFixtures().get(m.fixtureId ?? -1);
+  const statusCode = patch?.statusCode ?? m.statusCode;
+  const homeScore = patch?.homeScore ?? m.homeScore;
+  const awayScore = patch?.awayScore ?? m.awayScore;
+  const homeScorePen = patch?.homeScorePen ?? m.homeScorePen;
+  const awayScorePen = patch?.awayScorePen ?? m.awayScorePen;
+  const status: BracketMatch['status'] = patch
+    ? statusCode && FINISHED_SET.has(statusCode)
+      ? 'finished'
+      : statusCode && LIVE_SET.has(statusCode)
+        ? 'live'
+        : m.status
+    : m.status;
+  const match: BracketMatch = patch
+    ? { ...m, statusCode, homeScore, awayScore, homeScorePen, awayScorePen, status }
+    : m;
+
   const showScores = match.status === 'finished' || match.status === 'live';
 
   const cell = (
