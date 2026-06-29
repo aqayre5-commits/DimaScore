@@ -91,6 +91,10 @@ async function getCachedCupData(
 
 // ── Status sets ──
 
+// Terminal = FINISHED_CODES_ARRAY plus PST. PST (postponed) is treated as terminal here for
+// tournament-phase derivation: a postponed fixture has no live state and won't advance the
+// tournament, so phase computation needs to look past it. Don't import FINISHED_CODES_ARRAY
+// directly here because the canonical set excludes PST.
 const TERMINAL_STATUSES = new Set(['FT', 'AET', 'PEN', 'AWD', 'WO', 'CANC', 'ABD', 'PST']);
 const LIVE_STATUSES = new Set<string>(LIVE_CODES_ARRAY);
 

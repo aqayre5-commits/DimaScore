@@ -18,6 +18,9 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { Locale } from '@/lib/i18n/config';
 import type { FixtureStatus } from '@/lib/data/types';
 
+// Terminal for the ticker = FINISHED_CODES_ARRAY plus PST. Postponed fixtures never go
+// live so the ticker can treat them as final-state for filtering. Kept local because the
+// canonical FINISHED_CODES_ARRAY excludes PST (its semantics are "scored result" elsewhere).
 const TERMINAL_STATUSES = new Set(['FT', 'AET', 'PEN', 'PST', 'CANC', 'ABD', 'AWD', 'WO']);
 
 type ScorePatch = {
