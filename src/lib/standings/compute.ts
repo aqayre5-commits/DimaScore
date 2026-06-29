@@ -1,4 +1,5 @@
 import type { StandingRow } from '@/lib/db/queries';
+import { applyResult } from './apply-result';
 
 /** Minimal fixture shape needed to aggregate a group table. */
 export interface ComputeFixture {
@@ -13,22 +14,6 @@ export interface ComputeFixture {
 }
 
 const FINISHED = new Set(['FT', 'AET', 'PEN']);
-
-function applyOne(row: StandingRow, scored: number, conceded: number) {
-  row.played = (row.played ?? 0) + 1;
-  row.goalsFor = (row.goalsFor ?? 0) + scored;
-  row.goalsAgainst = (row.goalsAgainst ?? 0) + conceded;
-  row.goalDiff = (row.goalDiff ?? 0) + (scored - conceded);
-  if (scored > conceded) {
-    row.won = (row.won ?? 0) + 1;
-    row.points = (row.points ?? 0) + 3;
-  } else if (scored < conceded) {
-    row.lost = (row.lost ?? 0) + 1;
-  } else {
-    row.drawn = (row.drawn ?? 0) + 1;
-    row.points = (row.points ?? 0) + 1;
-  }
-}
 
 /**
  * Fallback group-standings computation. When a group's API standings don't yet reflect all of its
@@ -106,8 +91,8 @@ export function applyComputedStandings(
     for (const f of groupFinished) {
       const home = byTeam.get(f.homeTeamId!)!;
       const away = byTeam.get(f.awayTeamId!)!;
-      applyOne(home, f.homeScore!, f.awayScore!);
-      applyOne(away, f.awayScore!, f.homeScore!);
+      applyResult(home, f.homeScore!, f.awayScore!);
+      applyResult(away, f.awayScore!, f.homeScore!);
       const hr = f.homeScore! > f.awayScore! ? 'W' : f.homeScore! < f.awayScore! ? 'L' : 'D';
       (form.get(f.homeTeamId!) ?? form.set(f.homeTeamId!, []).get(f.homeTeamId!)!).push(hr);
       const ar = hr === 'W' ? 'L' : hr === 'L' ? 'W' : 'D';

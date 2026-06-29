@@ -11,6 +11,7 @@ import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { getTeamFlagUrl } from '@/lib/team-display';
+import { applyResult } from '@/lib/standings/apply-result';
 
 interface Labels {
   liveGroupStandings: string;
@@ -47,22 +48,6 @@ function groupTier(group: GroupStandingsBlock, live: ReturnType<typeof useLiveFi
     else if (FINISHED_STATUSES.has(status)) anyFinished = true;
   }
   return anyLive ? 0 : anyFinished ? 1 : 2;
-}
-
-function applyResult(row: StandingRow, scored: number, conceded: number) {
-  row.played = (row.played ?? 0) + 1;
-  row.goalsFor = (row.goalsFor ?? 0) + scored;
-  row.goalsAgainst = (row.goalsAgainst ?? 0) + conceded;
-  row.goalDiff = (row.goalDiff ?? 0) + (scored - conceded);
-  if (scored > conceded) {
-    row.won = (row.won ?? 0) + 1;
-    row.points = (row.points ?? 0) + 3;
-  } else if (scored < conceded) {
-    row.lost = (row.lost ?? 0) + 1;
-  } else {
-    row.drawn = (row.drawn ?? 0) + 1;
-    row.points = (row.points ?? 0) + 1;
-  }
 }
 
 /**
