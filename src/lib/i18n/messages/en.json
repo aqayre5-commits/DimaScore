@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "DimaScore",
-    "tagline": "Moroccan football and beyond"
+    "tagline": "Live football — Morocco and the world"
   },
   "nav": {
     "home": "Home",
@@ -120,7 +120,7 @@
     "morocco": "Morocco"
   },
   "footer": {
-    "tagline": "Moroccan football and beyond",
+    "tagline": "Live football — Morocco and the world",
     "legalNotice": "Legal notice",
     "privacyPolicy": "Privacy policy",
     "contact": "Contact",

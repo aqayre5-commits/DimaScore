@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "DimaScore",
-    "tagline": "Le football marocain et au-delà"
+    "tagline": "Football en direct — le Maroc et le monde"
   },
   "nav": {
     "home": "Accueil",
@@ -120,7 +120,7 @@
     "morocco": "Maroc"
   },
   "footer": {
-    "tagline": "Le football marocain et au-delà",
+    "tagline": "Football en direct — le Maroc et le monde",
     "legalNotice": "Mentions légales",
     "privacyPolicy": "Politique de confidentialité",
     "contact": "Contact",
