@@ -53,7 +53,10 @@ interface PageProps {
 
 function parseFixtureId(raw: string): number | null {
   const id = Number(raw);
-  return Number.isFinite(id) && id > 0 ? id : null;
+  // Upper bound caps pathological inputs (e.g. /match/999999999999999) before they hit
+  // the DB. API-Football fixture ids are <10M today; 2B leaves comfortable headroom while
+  // staying inside Postgres int4 range.
+  return Number.isFinite(id) && Number.isInteger(id) && id > 0 && id < 2_000_000_000 ? id : null;
 }
 
 async function getCachedMatchData(fixtureId: number) {
