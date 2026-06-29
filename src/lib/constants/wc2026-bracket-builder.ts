@@ -426,6 +426,26 @@ export function buildWc2026BracketWithLive(
   const scheduleByM = new Map<number, WC2026Match>();
   for (const e of WC_2026_SCHEDULE) scheduleByM.set(e.fifaMatchNumber, e);
 
+  // Index every team we can see across the loaded knockout fixtures. Used to resolve a
+  // singleton-set slot (e.g. W73 → Canada after R32 finishes) into a real team label even
+  // when the next-round fixture hasn't been drawn yet.
+  type TeamSnapshot = NonNullable<FixtureWithTeams['homeTeam']>;
+  const teamsById = new Map<number, TeamSnapshot>();
+  for (const f of knockoutFixtures) {
+    if (f.homeTeam) teamsById.set(f.homeTeam.id, f.homeTeam);
+    if (f.awayTeam) teamsById.set(f.awayTeam.id, f.awayTeam);
+  }
+
+  function singleResolvedTeam(teamSet: Set<number>): TeamSnapshot | null {
+    if (teamSet.size !== 1) return null;
+    const id = teamSet.values().next().value;
+    return id != null ? (teamsById.get(id) ?? null) : null;
+  }
+
+  function teamLabel(team: TeamSnapshot): string {
+    return team.code ?? localizedName(team.name, locale) ?? '?';
+  }
+
   const usedFixtureIds = new Set<number>();
   const winners = new Map<number, number | null>();
   const runnersUp = new Map<number, number | null>();
@@ -457,6 +477,31 @@ export function buildWc2026BracketWithLive(
     if (fx) usedFixtureIds.add(fx.id);
 
     if (!fx) {
+      // Even without a DB fixture for this M, if either slot resolved to a single team
+      // (e.g. the W73 / RU101 slot maps to the recorded winner of an earlier R32), swap
+      // the static slot code for the actual team label so the bracket reflects qualified
+      // teams as they advance.
+      const homeResolved = singleResolvedTeam(homeSet);
+      const awayResolved = singleResolvedTeam(awaySet);
+      if (homeResolved || awayResolved) {
+        const base = toBracketMatch(entry, pos, locale);
+        const homeFull = homeResolved
+          ? (localizedName(homeResolved.name, locale) ?? teamLabel(homeResolved))
+          : entry.homeSlot;
+        const awayFull = awayResolved
+          ? (localizedName(awayResolved.name, locale) ?? teamLabel(awayResolved))
+          : entry.awaySlot;
+        const vs = VS_WORD[locale] ?? VS_WORD.en;
+        enriched.set(m, {
+          ...base,
+          homeLabel: homeResolved ? teamLabel(homeResolved) : entry.homeSlot,
+          awayLabel: awayResolved ? teamLabel(awayResolved) : entry.awaySlot,
+          homeLogoUrl: homeResolved?.logoUrl ?? base.homeLogoUrl ?? null,
+          awayLogoUrl: awayResolved?.logoUrl ?? base.awayLogoUrl ?? null,
+          ariaLabel: `${homeFull} ${vs} ${awayFull}`,
+        });
+        continue;
+      }
       enriched.set(m, toBracketMatch(entry, pos, locale));
       continue;
     }
