@@ -8,6 +8,7 @@ import type { TopMatchDateGroup } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 
 interface Props {
   groups: TopMatchDateGroup[];
@@ -22,6 +23,10 @@ interface Props {
 const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
 
 export function HomeTopMatches({ groups, locale, labels }: Props) {
+  // Poll /api/v1/live so scores/minute/status reflect the current state instead of the
+  // SSR snapshot. Shared react-query key dedupes with every other live-poll surface.
+  const livePatches = useLiveFixtures();
+
   if (groups.length === 0) return null;
 
   return (
@@ -45,17 +50,22 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
 
             {/* Fixtures */}
             {group.fixtures.map((f) => {
-              const isLive = LIVE_CODES.includes(f.statusCode);
+              const patch = livePatches.get(f.id);
+              const statusCode = patch?.statusCode ?? f.statusCode;
+              const minute = patch?.minute ?? f.minute;
+              const homeScore = patch?.homeScore ?? f.homeScore;
+              const awayScore = patch?.awayScore ?? f.awayScore;
+              const isLive = LIVE_CODES.includes(statusCode);
               const homeName = getTeamDisplayName(f.homeTeam, locale);
               const awayName = getTeamDisplayName(f.awayTeam, locale);
               const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
               const preview = previewFromFixtureRow({
                 homeTeam: f.homeTeam,
                 awayTeam: f.awayTeam,
-                homeScore: f.homeScore,
-                awayScore: f.awayScore,
-                statusCode: f.statusCode,
-                minute: f.minute,
+                homeScore,
+                awayScore,
+                statusCode,
+                minute,
                 kickoffAt: f.kickoffAt,
                 competition: { name: f.competition.name, slug: f.competition.slug },
               });
@@ -74,7 +84,7 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                     {isLive ? (
                       <span className="flex items-center gap-1 font-bold text-score-live">
                         <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-                        {f.statusCode === 'HT' ? 'HT' : `${f.minute ?? ''}'`}
+                        {statusCode === 'HT' ? 'HT' : `${minute ?? ''}'`}
                       </span>
                     ) : (
                       <span className="text-text-secondary" suppressHydrationWarning>
@@ -127,10 +137,10 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                   {isLive && (
                     <div className="flex shrink-0 flex-col items-end gap-0.5">
                       <span className="text-xs font-bold tabular-nums text-text-primary">
-                        {f.homeScore ?? '-'}
+                        {homeScore ?? '-'}
                       </span>
                       <span className="text-xs font-bold tabular-nums text-text-primary">
-                        {f.awayScore ?? '-'}
+                        {awayScore ?? '-'}
                       </span>
                     </div>
                   )}
