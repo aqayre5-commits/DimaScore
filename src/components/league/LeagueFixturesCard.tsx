@@ -7,6 +7,7 @@ import { FixtureRow } from '@/components/shared/FixtureRow';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { RoundInfo } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 
 interface LeagueFixturesCardProps {
   fixtures: FixtureWithTeams[];
@@ -60,9 +61,30 @@ export function LeagueFixturesCard({
   const [selectedRound, setSelectedRound] = useState(defaultRound);
   const [dateFilter, setDateFilter] = useState<string>('all');
 
+  // Shared 15s live poll. Overlay onto the SSR snapshot before filter/group runs so the live
+  // pill, scores, and round-selector counts all reflect the current match state.
+  const livePatches = useLiveFixtures();
+  const patchedFixtures = useMemo(() => {
+    if (livePatches.size === 0) return fixtures;
+    return fixtures.map((f) => {
+      const p = livePatches.get(f.id);
+      return p
+        ? {
+            ...f,
+            statusCode: p.statusCode,
+            minute: p.minute,
+            homeScore: p.homeScore,
+            awayScore: p.awayScore,
+            homeScorePen: p.homeScorePen,
+            awayScorePen: p.awayScorePen,
+          }
+        : f;
+    });
+  }, [fixtures, livePatches]);
+
   const roundFixtures = useMemo(
-    () => fixtures.filter((f) => f.roundNumber === selectedRound),
-    [fixtures, selectedRound],
+    () => patchedFixtures.filter((f) => f.roundNumber === selectedRound),
+    [patchedFixtures, selectedRound],
   );
 
   const dateGroups = useMemo(() => groupByDate(roundFixtures, locale), [roundFixtures, locale]);
