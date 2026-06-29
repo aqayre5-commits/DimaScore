@@ -5,7 +5,7 @@ import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTranslations } from 'next-intl/server';
 import { formatMatchTime } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
-import { stripWomenSuffix } from '@/lib/team-display';
+import { stripWomenSuffix, getTeamFlagUrl } from '@/lib/team-display';
 import { getCachedNow } from '@/lib/cached-now';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 import type { FixtureWithTeams } from '@/lib/db/queries';
@@ -24,11 +24,11 @@ interface LeagueRightRailCardProps {
 
 function resolveTeamCode(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
   if (!team) return '\u2014';
-  return (
+  return stripWomenSuffix(
     team.code ??
-    team.shortName[locale] ??
-    team.shortName['en'] ??
-    (team.name[locale] ?? team.name['en'] ?? '\u2014').slice(0, 3).toUpperCase()
+      team.shortName[locale] ??
+      team.shortName['en'] ??
+      (team.name[locale] ?? team.name['en'] ?? '\u2014').slice(0, 3).toUpperCase(),
   );
 }
 
@@ -194,9 +194,9 @@ function CompactMatch({
     >
       {/* Home */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        {homeTeam?.logoUrl ? (
+        {getTeamFlagUrl(homeTeam) ? (
           <Image
-            src={homeTeam.logoUrl}
+            src={getTeamFlagUrl(homeTeam)!}
             alt=""
             width={16}
             height={16}
@@ -226,9 +226,9 @@ function CompactMatch({
       {/* Away */}
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
         <span className="truncate text-xs font-medium text-text-primary">{awayCode}</span>
-        {awayTeam?.logoUrl ? (
+        {getTeamFlagUrl(awayTeam) ? (
           <Image
-            src={awayTeam.logoUrl}
+            src={getTeamFlagUrl(awayTeam)!}
             alt=""
             width={16}
             height={16}

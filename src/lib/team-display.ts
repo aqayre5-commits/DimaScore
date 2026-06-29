@@ -10,3 +10,25 @@ export function stripWomenSuffix(name: string | null | undefined): string {
   if (!name) return '';
   return name.replace(/\s+\(?W\)?$/, '');
 }
+
+/**
+ * Resolve a renderable flag/logo URL for a team. Prefers the team's own logo (API-Football
+ * teams have one), falls back to the country flag on the same media host for national teams
+ * that lack a logo (our placeholder women's teams, or anything not yet ingested). Returns
+ * null when neither is available — caller decides on a placeholder.
+ *
+ * Uses media.api-sports.io which is already in the Next.js image allowlist.
+ */
+export function getTeamFlagUrl(
+  team: {
+    logoUrl: string | null;
+    isNational: boolean | null;
+    countryCode: string | null;
+  } | null,
+): string | null {
+  if (!team) return null;
+  if (team.logoUrl) return team.logoUrl;
+  if (team.isNational && team.countryCode)
+    return `https://media.api-sports.io/flags/${team.countryCode.toLowerCase()}.svg`;
+  return null;
+}

@@ -8,6 +8,7 @@ import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import { getMatchState } from '@/lib/match-status';
 import { KickoffCountdown } from '@/components/shared/KickoffCountdown';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { stripWomenSuffix, getTeamFlagUrl } from '@/lib/team-display';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -18,11 +19,11 @@ interface FeaturedMatchCardProps {
 
 function resolveTeamCode(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
   if (!team) return '—';
-  return (
+  return stripWomenSuffix(
     team.code ??
-    team.shortName[locale] ??
-    team.shortName['en'] ??
-    (team.name[locale] ?? team.name['en'] ?? '—').slice(0, 3).toUpperCase()
+      team.shortName[locale] ??
+      team.shortName['en'] ??
+      (team.name[locale] ?? team.name['en'] ?? '—').slice(0, 3).toUpperCase(),
   );
 }
 
@@ -95,9 +96,9 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
         <div className="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2">
           {/* Home */}
           <div className="flex flex-col items-center justify-center gap-1.5 text-center">
-            {homeTeam?.logoUrl ? (
+            {getTeamFlagUrl(homeTeam) ? (
               <Image
-                src={homeTeam.logoUrl}
+                src={getTeamFlagUrl(homeTeam)!}
                 alt=""
                 width={40}
                 height={40}
@@ -148,9 +149,9 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
 
           {/* Away */}
           <div className="flex flex-col items-center justify-center gap-1.5 text-center">
-            {awayTeam?.logoUrl ? (
+            {getTeamFlagUrl(awayTeam) ? (
               <Image
-                src={awayTeam.logoUrl}
+                src={getTeamFlagUrl(awayTeam)!}
                 alt=""
                 width={40}
                 height={40}
