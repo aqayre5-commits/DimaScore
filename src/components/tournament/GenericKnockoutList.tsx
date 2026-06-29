@@ -1,5 +1,9 @@
+'use client';
+
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { FixtureRow } from '@/components/shared/FixtureRow';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -43,7 +47,27 @@ const ROUND_LABEL_KEYS: Record<string, string> = {
 export function GenericKnockoutList({ fixtures, locale }: GenericKnockoutListProps) {
   const t = useTranslations('tournament');
 
-  if (fixtures.length === 0) {
+  // Overlay 15s live poll so knockout-stage scores tick on this surface too.
+  const livePatches = useLiveFixtures();
+  const patchedFixtures = useMemo(() => {
+    if (livePatches.size === 0) return fixtures;
+    return fixtures.map((f) => {
+      const p = livePatches.get(f.id);
+      return p
+        ? {
+            ...f,
+            statusCode: p.statusCode,
+            minute: p.minute,
+            homeScore: p.homeScore,
+            awayScore: p.awayScore,
+            homeScorePen: p.homeScorePen,
+            awayScorePen: p.awayScorePen,
+          }
+        : f;
+    });
+  }, [fixtures, livePatches]);
+
+  if (patchedFixtures.length === 0) {
     return (
       <p className="py-8 text-center text-sm text-text-tertiary">{t('noDataPreTournament')}</p>
     );
@@ -51,7 +75,7 @@ export function GenericKnockoutList({ fixtures, locale }: GenericKnockoutListPro
 
   // Group by round name
   const byRound = new Map<string, FixtureWithTeams[]>();
-  for (const f of fixtures) {
+  for (const f of patchedFixtures) {
     const round = f.round ?? t('unknownRound');
     if (!byRound.has(round)) byRound.set(round, []);
     byRound.get(round)!.push(f);

@@ -1,5 +1,9 @@
+'use client';
+
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { FixtureRow } from '@/components/shared/FixtureRow';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -48,11 +52,31 @@ function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
 export function CupFixturesByRound({ fixtures, locale }: CupFixturesByRoundProps) {
   const t = useTranslations('tournament');
 
-  if (fixtures.length === 0) {
+  // Overlay 15s live poll so knockout-day scores/minute/status tick on this surface.
+  const livePatches = useLiveFixtures();
+  const patchedFixtures = useMemo(() => {
+    if (livePatches.size === 0) return fixtures;
+    return fixtures.map((f) => {
+      const p = livePatches.get(f.id);
+      return p
+        ? {
+            ...f,
+            statusCode: p.statusCode,
+            minute: p.minute,
+            homeScore: p.homeScore,
+            awayScore: p.awayScore,
+            homeScorePen: p.homeScorePen,
+            awayScorePen: p.awayScorePen,
+          }
+        : f;
+    });
+  }, [fixtures, livePatches]);
+
+  if (patchedFixtures.length === 0) {
     return <p className="py-8 text-center text-sm text-text-tertiary">{t('noMatches')}</p>;
   }
 
-  const dateGroups = groupByDate(fixtures, locale);
+  const dateGroups = groupByDate(patchedFixtures, locale);
 
   return (
     <div className="overflow-hidden rounded-lg border border-border-subtle bg-bg-surface">

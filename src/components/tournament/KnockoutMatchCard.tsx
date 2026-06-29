@@ -1,7 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import { TeamLogo } from '@/components/shared/Logo';
 import { codeToFlag } from '@/lib/flags';
 import { getTeamFlagUrl } from '@/lib/team-display';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { getMatchState } from '@/lib/match-status';
 import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
 import { cn } from '@/lib/utils';
@@ -19,7 +22,20 @@ interface KnockoutMatchCardProps {
  * text status panel (same card background) — kickoff time (upcoming), a pulsing live indicator
  * (live), or FT / AET [+ Pen] (finished) — with the date beneath. No tint, icon, or venue.
  */
-export function KnockoutMatchCard({ fixture: f, locale }: KnockoutMatchCardProps) {
+export function KnockoutMatchCard({ fixture: raw, locale }: KnockoutMatchCardProps) {
+  // 15s live poll overlay — keeps the knockout card in sync with the homepage / match page.
+  const patch = useLiveFixtures().get(raw.id);
+  const f = patch
+    ? {
+        ...raw,
+        statusCode: patch.statusCode,
+        minute: patch.minute,
+        homeScore: patch.homeScore,
+        awayScore: patch.awayScore,
+        homeScorePen: patch.homeScorePen,
+        awayScorePen: patch.awayScorePen,
+      }
+    : raw;
   const state = getMatchState(f.statusCode, f.kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
