@@ -1,3 +1,5 @@
+'use client';
+
 import type { DayFixture } from '@/lib/db/queries/fixtures-by-day';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { formatMatchTime } from '@/lib/utils/date';
@@ -6,6 +8,7 @@ import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromDayFixture } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
+import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 
 interface MatchRowProps {
   fixture: DayFixture;
@@ -14,7 +17,22 @@ interface MatchRowProps {
   competition?: { name: Record<string, string>; slug: string } | null;
 }
 
-export function MatchRow({ fixture, locale, enablePrefetch, competition }: MatchRowProps) {
+export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: MatchRowProps) {
+  // Overlay the shared 15s live poll so scores/minute/status track the real match state
+  // without a page reload (FixtureListClient ancestor doesn't subscribe today).
+  const patch = useLiveFixtures().get(f.id);
+  const fixture: DayFixture = patch
+    ? {
+        ...f,
+        statusCode: patch.statusCode,
+        minute: patch.minute,
+        homeScore: patch.homeScore,
+        awayScore: patch.awayScore,
+        homeScorePen: patch.homeScorePen,
+        awayScorePen: patch.awayScorePen,
+      }
+    : f;
+
   const state = getMatchState(fixture.statusCode, fixture.kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
