@@ -15,6 +15,9 @@ const VERSION_POLL_MS = 5 * 60_000;
 const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
 // Halves where the match clock runs — safe to advance the minute locally between polls.
 const RUNNING_CODES = new Set<string>(['1H', '2H', 'ET']);
+// Natural end of each running half — local extrapolation parks at the boundary instead of
+// inventing minutes past it (a stale "2H 90" patch must never climb to 98').
+const HALF_CAP: Record<string, number> = { '1H': 45, '2H': 90, ET: 120 };
 
 interface LivePayload {
   fixtures: LiveFixturePatch[];
@@ -69,10 +72,13 @@ export function useLiveFixtures(): Map<number, LiveFixturePatch> {
     const fixtures = data?.fixtures;
     if (fixtures) {
       for (const f of fixtures) {
-        const minute =
-          elapsedMin > 0 && f.minute != null && RUNNING_CODES.has(f.statusCode)
-            ? f.minute + elapsedMin
-            : f.minute;
+        let minute = f.minute;
+        if (elapsedMin > 0 && f.minute != null && RUNNING_CODES.has(f.statusCode)) {
+          const cap = HALF_CAP[f.statusCode];
+          const advanced = f.minute + elapsedMin;
+          // Never below the server value; extrapolation stops at the half boundary.
+          minute = cap != null ? Math.max(f.minute, Math.min(advanced, cap)) : advanced;
+        }
         map.set(f.id, minute === f.minute ? f : { ...f, minute });
       }
     }
