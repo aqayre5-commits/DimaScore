@@ -77,7 +77,13 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
         {isLive && (
           <span className="flex items-center gap-1 rounded-full bg-score-live/10 px-2 py-0.5 text-[11px] font-bold text-score-live">
             <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-            {statusCode === 'HT' ? 'HT' : `${minute ?? ''}'`}
+            {statusCode === 'HT'
+              ? 'HT'
+              : minute != null
+                ? `${minute}'`
+                : statusCode === 'P'
+                  ? 'PEN'
+                  : statusCode}
           </span>
         )}
       </div>

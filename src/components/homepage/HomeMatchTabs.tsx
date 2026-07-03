@@ -80,7 +80,13 @@ function MatchRow({
   );
   const statusNode = isLive ? (
     <span className="text-sm font-bold tabular-nums text-score-live">
-      {fixture.statusCode === 'HT' ? 'HT' : `${fixture.minute ?? ''}'`}
+      {fixture.statusCode === 'HT'
+        ? 'HT'
+        : fixture.minute != null
+          ? `${fixture.minute}'`
+          : fixture.statusCode === 'P'
+            ? 'PEN'
+            : fixture.statusCode}
     </span>
   ) : isFinished ? (
     <span className="flex flex-col items-center leading-tight">

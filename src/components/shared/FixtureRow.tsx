@@ -85,7 +85,9 @@ export function FixtureRow({
   const statusLabel = isLive
     ? statusCode === 'HT'
       ? t('halfTime')
-      : statusCode
+      : statusCode === 'P'
+        ? 'PEN'
+        : statusCode
     : isFinished
       ? statusCode === 'AET'
         ? t('extraTime')

@@ -60,7 +60,13 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
         {isLive ? (
           <span className="flex items-center justify-center gap-1 text-xs font-bold text-score-live">
             <span className="live-pulse size-1.5 rounded-full bg-score-live" />
-            {fixture.statusCode === 'HT' ? 'HT' : `${fixture.minute ?? ''}'`}
+            {fixture.statusCode === 'HT'
+              ? 'HT'
+              : fixture.minute != null
+                ? `${fixture.minute}'`
+                : fixture.statusCode === 'P'
+                  ? 'PEN'
+                  : fixture.statusCode}
           </span>
         ) : isFinished ? (
           <span className="text-xs text-text-tertiary">

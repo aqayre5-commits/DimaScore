@@ -381,7 +381,7 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
         <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight">
           {isLive ? (
             <span className="text-sm font-bold tabular-nums text-score-live">
-              {statusCode === 'HT' ? 'HT' : statusCode}
+              {statusCode === 'HT' ? 'HT' : statusCode === 'P' ? 'PEN' : statusCode}
             </span>
           ) : isFinished ? (
             <>
