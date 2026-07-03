@@ -54,7 +54,8 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
             {group.fixtures.map((f) => {
               const patch = livePatches.get(f.id);
               const statusCode = patch?.statusCode ?? f.statusCode;
-              const minute = patch?.minute ?? f.minute;
+              // Patch presence is authoritative: take its minute even when null (BT/HT/P).
+              const minute = patch ? patch.minute : f.minute;
               const homeScore = patch?.homeScore ?? f.homeScore;
               const awayScore = patch?.awayScore ?? f.awayScore;
               const isLive = LIVE_CODES.includes(statusCode);

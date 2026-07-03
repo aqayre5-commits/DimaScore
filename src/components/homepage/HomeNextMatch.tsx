@@ -51,7 +51,9 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
   const patch = livePatches.get(match.id);
   const statusCode = effectiveStatus(match);
-  const minute = patch?.minute ?? match.minute;
+  // Patch presence is authoritative: its minute is taken even when null (BT/HT/P phases),
+  // otherwise a stale server-prop minute leaks into the badge (e.g. "122'" during the break).
+  const minute = patch ? patch.minute : match.minute;
   const homeScore = patch?.homeScore ?? match.homeScore;
   const awayScore = patch?.awayScore ?? match.awayScore;
   const isLive = LIVE_CODES.includes(statusCode);
