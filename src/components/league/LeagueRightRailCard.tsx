@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTranslations } from 'next-intl/server';
-import { formatMatchTime } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { stripWomenSuffix, getTeamFlagUrl } from '@/lib/team-display';
 import { getCachedNow } from '@/lib/cached-now';
@@ -174,7 +174,7 @@ function CompactMatch({
   const _state = getMatchState(statusCode, kickoffAt, now);
   const isFinished = _state === 'finished';
   const isLive = _state === 'live';
-  const kickoffTime = formatMatchTime(kickoffAt, locale);
+  const kickoffTime = <LocalTime date={kickoffAt} locale={locale} format="time" />;
 
   const preview = previewFromFixtureRow({
     homeTeam,

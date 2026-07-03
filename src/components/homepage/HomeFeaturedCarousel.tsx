@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { formatFeaturedDate } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
@@ -203,9 +203,7 @@ function CarouselSlide({
       {/* Competition + Group/Round */}
       <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
         {compName}
-        {(match.groupLabel || match.round) && (
-          <span className="text-text-tertiary"> · {match.groupLabel ?? match.round}</span>
-        )}
+        {match.contextLabel && <span className="text-text-tertiary"> · {match.contextLabel}</span>}
       </p>
 
       {/* Teams row */}
@@ -263,7 +261,7 @@ function CarouselSlide({
                 className="text-xs font-medium tracking-wide text-text-tertiary"
                 suppressHydrationWarning
               >
-                {formatFeaturedDate(match.kickoffAt, locale)}
+                <LocalTime date={match.kickoffAt} locale={locale} format="featured" />
               </p>
             </>
           )}

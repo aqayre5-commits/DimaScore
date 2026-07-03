@@ -34,13 +34,24 @@ export function FixtureListClient({ sections, locale, todayStr, labels }: Fixtur
 
   const dates = useMemo(() => generateDates(todayStr), [todayStr]);
 
+  // Strip dates are noon-UTC-anchored calendar keys — format them in UTC so the label
+  // always matches the key and SSR/client output is identical (no hydration mismatch).
   const dayFormatter = useMemo(
-    () => new Intl.DateTimeFormat(locale, { weekday: 'short' }),
+    () => new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' }),
     [locale],
   );
-  const numFormatter = useMemo(() => new Intl.DateTimeFormat(locale, { day: 'numeric' }), [locale]);
+  const numFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, { day: 'numeric', timeZone: 'UTC' }),
+    [locale],
+  );
   const fullDateFormatter = useMemo(
-    () => new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }),
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        timeZone: 'UTC',
+      }),
     [locale],
   );
 

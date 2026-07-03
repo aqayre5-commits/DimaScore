@@ -4,8 +4,8 @@ import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { Play } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { formatKickoff } from '@/lib/utils/date';
-import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { LocalTime } from '@/components/shared/LocalTime';
+import { useLiveFixtures, useLiveFeedReady } from '@/hooks/useLiveFixtures';
 import type { RightRailFixture, GoalEvent } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
@@ -27,13 +27,22 @@ const FINISHED_CODES = new Set<string>(FINISHED_CODES_ARRAY);
 
 export function HomeNextMatch({ candidates, locale, labels }: Props) {
   const livePatches = useLiveFixtures();
+  const feedReady = useLiveFeedReady();
 
-  // First candidate whose patched status is not finished (i.e. live or still-NS). When a
+  // Server-rendered candidates can be arbitrarily stale (long-lived tab, cached HTML).
+  // Once the live feed has answered it is authoritative: a fixture it doesn't return is
+  // not live — treat a server-"live" candidate without a patch as finished rather than
+  // trusting the snapshot.
+  const effectiveStatus = (m: RightRailFixture): string => {
+    const patch = livePatches.get(m.id);
+    if (patch) return patch.statusCode;
+    if (feedReady && LIVE_CODES.includes(m.statusCode)) return 'FT';
+    return m.statusCode;
+  };
+
+  // First candidate whose effective status is not finished (i.e. live or still-NS). When a
   // displayed match ends, the live patch flips it to FT and we auto-advance to the next.
-  const selected = candidates.find(({ match: m }) => {
-    const code = livePatches.get(m.id)?.statusCode ?? m.statusCode;
-    return !FINISHED_CODES.has(code);
-  });
+  const selected = candidates.find(({ match: m }) => !FINISHED_CODES.has(effectiveStatus(m)));
   if (!selected) return null;
   const { match, goals } = selected;
 
@@ -41,7 +50,7 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
   const awayName = getTeamDisplayName(match.awayTeam, locale);
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
   const patch = livePatches.get(match.id);
-  const statusCode = patch?.statusCode ?? match.statusCode;
+  const statusCode = effectiveStatus(match);
   const minute = patch?.minute ?? match.minute;
   const homeScore = patch?.homeScore ?? match.homeScore;
   const awayScore = patch?.awayScore ?? match.awayScore;
@@ -86,13 +95,13 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
             />
           )}
           <span className="truncate">{compName}</span>
-          {(match.groupLabel ?? match.round) && <span> · {match.groupLabel ?? match.round}</span>}
+          {match.contextLabel && <span> · {match.contextLabel}</span>}
         </div>
 
         {/* Kickoff time for upcoming */}
         {!isLive && (
           <div className="mt-2 text-center text-xs text-text-secondary" suppressHydrationWarning>
-            {formatKickoff(match.kickoffAt, locale)}
+            <LocalTime date={match.kickoffAt} locale={locale} format="kickoff" />
           </div>
         )}
 

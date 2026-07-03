@@ -2,7 +2,7 @@
 
 import type { DayFixture } from '@/lib/db/queries/fixtures-by-day';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { formatMatchTime } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromDayFixture } from '@/lib/match-header-preview';
@@ -68,7 +68,7 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
           </span>
         ) : (
           <span className="text-xs tabular-nums text-text-secondary">
-            {formatMatchTime(fixture.kickoffAt, locale as Locale)}
+            <LocalTime date={fixture.kickoffAt} locale={locale as Locale} format="time" />
           </span>
         )}
       </div>

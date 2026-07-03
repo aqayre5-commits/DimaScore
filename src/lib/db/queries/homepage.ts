@@ -6,6 +6,7 @@ import { ALL_ENTRIES } from '@/lib/constants/competitions-mega-menu';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { LIVE_CODES_ARRAY, SCORED_STATUSES_ARRAY } from '@/lib/match-status';
+import { resolveContextLabel } from './right-rail';
 
 export interface HomeFixture {
   id: number;
@@ -14,6 +15,8 @@ export interface HomeFixture {
   minute: number | null;
   round: string | null;
   groupLabel: string | null;
+  /** Adaptive short label for the featured-match card context line — see resolveContextLabel. */
+  contextLabel: string | null;
   homeTeamId: number | null;
   awayTeamId: number | null;
   homeScore: number | null;
@@ -111,13 +114,16 @@ function mapFixtureRow(
   },
   teamsMap: Map<number, TeamSnapshot>,
 ): HomeFixture {
+  const normalizedRound = normalizeRound(r.round);
+  const groupLabel = r.groupLabel ?? null;
   return {
     id: r.id,
     kickoffAt: r.kickoffAt,
     statusCode: r.statusCode,
     minute: r.minute,
-    round: normalizeRound(r.round),
-    groupLabel: r.groupLabel ?? null,
+    round: normalizedRound,
+    groupLabel,
+    contextLabel: resolveContextLabel(normalizedRound, groupLabel),
     homeTeamId: r.homeTeamId,
     awayTeamId: r.awayTeamId,
     homeScore: r.homeScore,

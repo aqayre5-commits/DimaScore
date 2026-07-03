@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { formatMatchTime } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import type { NextFixture } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -80,12 +80,16 @@ function NextFixtureRow({
   const opponentName = fixture.opponentName[locale] ?? fixture.opponentName['en'] ?? 'TBD';
   const compName = fixture.competitionName[locale] ?? fixture.competitionName['en'] ?? '';
 
-  const dateStr = new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'short',
-  }).format(fixture.kickoffAt);
+  const dateStr = (
+    <LocalTime
+      date={fixture.kickoffAt}
+      locale={locale}
+      format="date"
+      dateOptions={{ day: 'numeric', month: 'short' }}
+    />
+  );
 
-  const timeStr = formatMatchTime(fixture.kickoffAt, locale);
+  const timeStr = <LocalTime date={fixture.kickoffAt} locale={locale} format="time" />;
 
   const matchup = fixture.isHome
     ? `${teamName} vs ${opponentName}`

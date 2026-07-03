@@ -7,7 +7,8 @@ import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatMatchTime } from '@/lib/utils/date';
+import { SITE_TZ } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { getTeamFlagUrl } from '@/lib/team-display';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
@@ -28,7 +29,14 @@ function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
   const seen = new Map<string, number>();
 
   for (const f of fixtures) {
-    const dateKey = f.kickoffAt.toISOString().slice(0, 10);
+    // Day key + label pinned to the site timezone — deterministic across SSR/hydration
+    // and consistent with each other at midnight boundaries.
+    const dateKey = new Intl.DateTimeFormat('en-CA', {
+      timeZone: SITE_TZ,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(f.kickoffAt);
     const idx = seen.get(dateKey);
     if (idx != null) {
       groups[idx].fixtures.push(f);
@@ -38,6 +46,7 @@ function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
+        timeZone: SITE_TZ,
       }).format(f.kickoffAt);
       seen.set(dateKey, groups.length);
       groups.push({ key: dateKey, label, fixtures: [f] });
@@ -197,7 +206,7 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
   const isLive = state === 'live';
   const isFinished = state === 'finished';
   const hasScore = homeScore != null && awayScore != null;
-  const time = formatMatchTime(kickoffAt, locale);
+  const time = <LocalTime date={kickoffAt} locale={locale} format="time" />;
 
   const homeName = resolveFullName(homeTeam, locale);
   const awayName = resolveFullName(awayTeam, locale);

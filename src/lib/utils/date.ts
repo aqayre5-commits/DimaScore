@@ -7,16 +7,24 @@ export const INTL_LOCALE: Record<Locale, string> = {
 };
 
 /**
+ * The site's editorial timezone. Server output formats kickoff times in this zone
+ * (deterministic SSR, correct for the Moroccan audience); client surfaces re-format
+ * in the viewer's local zone after mount via <LocalTime>.
+ */
+export const SITE_TZ = 'Africa/Casablanca';
+
+/**
  * Format a match kickoff time for display.
  *
- * Uses the browser's local timezone (DB stores UTC, Intl converts automatically).
+ * DB stores UTC; Intl converts to `timeZone`, or the runtime's local zone when omitted.
  * Always 24-hour format for consistency across all locales.
  */
-export function formatMatchTime(date: Date, locale: Locale): string {
+export function formatMatchTime(date: Date, locale: Locale, timeZone?: string): string {
   return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone,
   }).format(new Date(date));
 }
 
@@ -27,19 +35,24 @@ export function formatMatchDate(
   date: Date,
   locale: Locale,
   options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'long' },
+  timeZone?: string,
 ): string {
-  return new Intl.DateTimeFormat(INTL_LOCALE[locale], options).format(new Date(date));
+  return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
+    ...options,
+    ...(timeZone ? { timeZone } : {}),
+  }).format(new Date(date));
 }
 
 /**
  * Format a short date (e.g., "14 Jun", "14 juin").
  */
-export function formatShortDate(dateStr: string, locale: Locale): string {
+export function formatShortDate(dateStr: string, locale: Locale, timeZone?: string): string {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
   return new Intl.DateTimeFormat(INTL_LOCALE[locale], {
     day: 'numeric',
     month: 'short',
+    timeZone,
   }).format(d);
 }
 
@@ -54,9 +67,23 @@ export function formatSeason(year: number): string {
 /**
  * Format a date-key string (YYYY-MM-DD) as a readable label.
  * Returns `todayLabel` if the key matches today's date.
+ *
+ * "Today" is decided in the site timezone (matching the server-side day bucketing),
+ * not the viewer's — deterministic across SSR and hydration, no mismatch.
  */
-export function formatDateLabel(dateKey: string, locale: Locale, todayLabel: string): string {
-  const todayKey = new Date().toISOString().slice(0, 10);
+export function formatDateLabel(
+  dateKey: string,
+  locale: Locale,
+  todayLabel: string,
+  timeZone: string = SITE_TZ,
+): string {
+  // en-CA yields YYYY-MM-DD, matching the date-key shape.
+  const todayKey = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
   if (dateKey === todayKey) return todayLabel;
 
   const d = new Date(dateKey + 'T12:00:00Z');
@@ -72,25 +99,26 @@ export function formatDateLabel(dateKey: string, locale: Locale, todayLabel: str
  * Returns "—" for null/invalid input.
  */
 export function formatMonthYear(dateStr: string | null): string {
-  if (!dateStr) return '\u2014';
+  if (!dateStr) return '—';
   const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return '\u2014';
+  if (isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 }
 
 /**
  * Format a featured-match date+time string (e.g., "SAT 14 JUNE · 21:00").
  */
-export function formatFeaturedDate(date: Date, locale: Locale): string {
+export function formatFeaturedDate(date: Date, locale: Locale, timeZone?: string): string {
   const intlLocale = INTL_LOCALE[locale];
   const d = new Date(date);
-  const weekday = new Intl.DateTimeFormat(intlLocale, { weekday: 'short' }).format(d);
-  const day = new Intl.DateTimeFormat(intlLocale, { day: 'numeric' }).format(d);
-  const month = new Intl.DateTimeFormat(intlLocale, { month: 'long' }).format(d);
+  const weekday = new Intl.DateTimeFormat(intlLocale, { weekday: 'short', timeZone }).format(d);
+  const day = new Intl.DateTimeFormat(intlLocale, { day: 'numeric', timeZone }).format(d);
+  const month = new Intl.DateTimeFormat(intlLocale, { month: 'long', timeZone }).format(d);
   const time = new Intl.DateTimeFormat(intlLocale, {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
+    timeZone,
   }).format(d);
 
   return `${weekday} ${day} ${month} · ${time}`.toUpperCase();
@@ -99,19 +127,21 @@ export function formatFeaturedDate(date: Date, locale: Locale): string {
 /**
  * Format a kickoff date+time (e.g., "Sat 14 Jun · 21:00").
  */
-export function formatKickoff(date: Date, locale: Locale): string {
+export function formatKickoff(date: Date, locale: Locale, timeZone?: string): string {
   const intlLocale = INTL_LOCALE[locale];
   return (
     new Intl.DateTimeFormat(intlLocale, {
       weekday: 'short',
       day: 'numeric',
       month: 'short',
+      timeZone,
     }).format(date) +
     ' · ' +
     new Intl.DateTimeFormat(intlLocale, {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
+      timeZone,
     }).format(date)
   );
 }

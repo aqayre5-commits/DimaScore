@@ -5,7 +5,7 @@ import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { formatMatchTime } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
@@ -84,7 +84,7 @@ function MatchRow({
     <span className="text-xs font-medium text-text-tertiary">FT</span>
   ) : (
     <span className="text-sm tabular-nums text-text-secondary">
-      {formatMatchTime(fixture.kickoffAt, locale as Locale)}
+      <LocalTime date={fixture.kickoffAt} locale={locale as Locale} format="time" />
     </span>
   );
 

@@ -5,7 +5,8 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
 import { getMatchState, isLive as isLiveStatus } from '@/lib/match-status';
-import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
+import { formatMatchDate, SITE_TZ } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -60,12 +61,14 @@ export function TeamMatchesList({ fixtures, locale }: TeamMatchesListProps) {
   // Group the visible fixtures by display date (one header per calendar day).
   const groups: { header: string; matches: FixtureWithCompetition[] }[] = [];
   for (const f of visible) {
-    const header = formatMatchDate(f.kickoffAt, locale, {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).toUpperCase();
+    // Day-group headers are pinned to the site timezone — deterministic across
+    // SSR/hydration and consistent with the server-side day bucketing.
+    const header = formatMatchDate(
+      f.kickoffAt,
+      locale,
+      { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' },
+      SITE_TZ,
+    ).toUpperCase();
     const last = groups[groups.length - 1];
     if (last && last.header === header) last.matches.push(f);
     else groups.push({ header, matches: [f] });
@@ -162,7 +165,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
       {/* ── Desktop: horizontal (UNCHANGED) ── */}
       <div className="hidden items-center gap-2 px-3 py-3 md:flex">
         <div className="w-11 shrink-0 text-center text-xs tabular-nums text-text-tertiary">
-          {formatMatchTime(f.kickoffAt, locale)}
+          <LocalTime date={f.kickoffAt} locale={locale} format="time" />
         </div>
 
         <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
@@ -295,7 +298,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
               </span>
             ) : (
               <span className="text-sm tabular-nums text-text-secondary" suppressHydrationWarning>
-                {formatMatchTime(f.kickoffAt, locale)}
+                <LocalTime date={f.kickoffAt} locale={locale} format="time" />
               </span>
             )}
             {isDone &&

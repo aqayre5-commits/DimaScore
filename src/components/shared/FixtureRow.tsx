@@ -4,7 +4,7 @@ import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
 import { useTranslations } from 'next-intl';
 import { codeToFlag } from '@/lib/flags';
 import { getTeamFlagUrl } from '@/lib/team-display';
-import { formatMatchTime } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
@@ -65,7 +65,7 @@ export function FixtureRow({
   const homeWon = isFinished && hasScore && (homeScore ?? 0) > (awayScore ?? 0);
   const awayWon = isFinished && hasScore && (awayScore ?? 0) > (homeScore ?? 0);
 
-  const time = formatMatchTime(kickoffAt, locale);
+  const time = <LocalTime date={kickoffAt} locale={locale} format="time" />;
 
   const homeName = resolveFullName(homeTeam, locale);
   const awayName = resolveFullName(awayTeam, locale);

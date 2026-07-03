@@ -5,7 +5,7 @@ import { codeToFlag } from '@/lib/flags';
 import type { MatchDetail } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
-import { formatMatchTime } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 
 interface MatchInfoCardProps {
   match: MatchDetail;
@@ -22,14 +22,16 @@ export function MatchInfoCard({ match, locale, competitionHref }: MatchInfoCardP
   );
 
   const kickoff = match.kickoffAt;
-  const dateStr = new Intl.DateTimeFormat(locale, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(kickoff);
+  const dateStr = (
+    <LocalTime
+      date={kickoff}
+      locale={locale}
+      format="date"
+      dateOptions={{ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }}
+    />
+  );
 
-  const timeStr = formatMatchTime(kickoff, locale);
+  const timeStr = <LocalTime date={kickoff} locale={locale} format="time" />;
 
   const venue = match.venue;
   const stadiumStr = venue ? [venue.name, venue.city].filter(Boolean).join(', ') : null;

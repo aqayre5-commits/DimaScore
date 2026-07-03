@@ -8,6 +8,7 @@ import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { RoundInfo } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { SITE_TZ } from '@/lib/utils/date';
 
 interface LeagueFixturesCardProps {
   fixtures: FixtureWithTeams[];
@@ -33,7 +34,14 @@ function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
   const seen = new Map<string, number>();
 
   for (const f of fixtures) {
-    const dateKey = f.kickoffAt.toISOString().slice(0, 10);
+    // Day key + label pinned to the site timezone — deterministic across SSR/hydration
+    // and consistent with each other at midnight boundaries.
+    const dateKey = new Intl.DateTimeFormat('en-CA', {
+      timeZone: SITE_TZ,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(f.kickoffAt);
     const idx = seen.get(dateKey);
     if (idx != null) {
       groups[idx].fixtures.push(f);
@@ -42,6 +50,7 @@ function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
         weekday: 'short',
         day: 'numeric',
         month: 'short',
+        timeZone: SITE_TZ,
       }).format(f.kickoffAt);
       seen.set(dateKey, groups.length);
       groups.push({ dateKey, label, fixtures: [f] });

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { useTranslations } from 'next-intl';
-import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { KickoffCountdown } from '@/components/shared/KickoffCountdown';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
@@ -27,16 +27,6 @@ function resolveTeamCode(team: FixtureWithTeams['homeTeam'], locale: Locale): st
   );
 }
 
-function formatHeaderDate(date: Date, locale: Locale): string {
-  const formatted = formatMatchDate(date, locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
-  const time = formatMatchTime(date, locale);
-  return `${formatted.toUpperCase()} · ${time}`;
-}
-
 export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
   const t = useTranslations('leaguePage');
   const { homeTeam, awayTeam, kickoffAt, venue } = fixture;
@@ -55,8 +45,6 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
   const state = getMatchState(statusCode, kickoffAt);
   const isFinished = state === 'finished';
   const isLive = state === 'live';
-
-  const headerDate = formatHeaderDate(kickoffAt, locale);
 
   const preview = previewFromFixtureRow({
     homeTeam,
@@ -88,7 +76,14 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
         {/* Date + time header */}
         <div className="px-4 pt-2 pb-1 text-center">
           <span className="text-xs tabular-nums text-text-tertiary" suppressHydrationWarning>
-            {headerDate}
+            <LocalTime
+              date={kickoffAt}
+              locale={locale}
+              format="date"
+              dateOptions={{ weekday: 'short', day: 'numeric', month: 'short' }}
+              className="uppercase"
+            />{' '}
+            · <LocalTime date={kickoffAt} locale={locale} format="time" />
           </span>
         </div>
 

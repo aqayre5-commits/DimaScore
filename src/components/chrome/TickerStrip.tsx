@@ -10,7 +10,7 @@ import { codeToFlag } from '@/lib/flags';
 import { isLiveStatus } from '@/lib/data/types';
 import type { TickerFixture } from '@/lib/db/queries';
 import { getCompactTeamLabel } from '@/lib/utils/team-name';
-import { formatMatchTime } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import { useQueryClient } from '@tanstack/react-query';
@@ -120,7 +120,7 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
           className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary"
           suppressHydrationWarning
         >
-          {formatMatchTime(fixture.kickoffAt, locale)}
+          <LocalTime date={fixture.kickoffAt} locale={locale} format="time" />
         </span>
       )}
 
@@ -173,7 +173,7 @@ function TickerCellsInert({ fixtures, locale }: TickerStripProps) {
                   className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary"
                   suppressHydrationWarning
                 >
-                  {formatMatchTime(fixture.kickoffAt, locale)}
+                  <LocalTime date={fixture.kickoffAt} locale={locale} format="time" />
                 </span>
               )}
               <TeamCell team={fixture.awayTeam} locale={locale} reverse />

@@ -38,6 +38,14 @@ export interface RightRailFixture {
   round: string | null;
   /** Real group (e.g. "Group A") for group-stage matches, resolved from standings; else null. */
   groupLabel: string | null;
+  /**
+   * Short context label rendered after the competition name on featured-match cards (hero,
+   * HomeNextMatch, etc.). Adapts by tournament shape: 'Group A' for group stage, 'R32'/'QF'/
+   * 'SF'/'F'/'3rd' for knockout, 'MD 14' for league rounds, null when round can't be
+   * classified (friendlies, oddly-named qualifiers). Replaces the brittle
+   * `groupLabel ?? round` fallback that mis-rendered 'Group F' for R32 matches.
+   */
+  contextLabel: string | null;
   homeTeamId: number | null;
   awayTeamId: number | null;
   homeScore: number | null;
@@ -115,6 +123,50 @@ export interface TopScorerEntry {
 
 // ── Helpers ──
 
+/**
+ * Adaptive short label for the "COMP · STAGE" line on featured-match cards. Rules:
+ *   - Resolved group label wins ("Group A") — accurate during group stage and never wrong.
+ *   - Knockout rounds → canonical short codes (R32, R16, QF, SF, F, 3rd).
+ *   - Round-robin league matchday → "MD N".
+ *   - Unclassifiable (friendlies, qualifier-format quirks) → null so the card renders comp
+ *     name only with no trailing segment.
+ *
+ * NOTE: returns strings as-is in English short form; rendering surfaces are free to translate
+ * "Group X" or "MD N" via i18n if they care. Knockout codes (R32/QF/SF/F) are commonly used
+ * in their English form across locales.
+ */
+export function resolveContextLabel(
+  round: string | null,
+  groupLabel: string | null,
+): string | null {
+  // Decide what the round itself says — knockout / matchday / explicit-group / unknown.
+  // Crucially we IGNORE a stray groupLabel when the round is a knockout: standings joins
+  // can attach a team's old group (e.g. "Group F" for Netherlands) to a R32 fixture
+  // because fixtures store no group field — that's the bug this resolver fixes.
+  if (round) {
+    const r = round.trim();
+    const roundOf = r.match(/^Round of (\d+)$/i);
+    if (roundOf) return `R${roundOf[1]}`;
+    if (/^Quarter[-\s]?finals?$/i.test(r)) return 'QF';
+    if (/^Semi[-\s]?finals?$/i.test(r)) return 'SF';
+    if (/^Final$/i.test(r)) return 'F';
+    if (/^3rd Place( Final)?$|^3rd place$/i.test(r)) return '3rd';
+    const matchday = r.match(/Regular Season\s*-\s*(\d+)/i);
+    if (matchday) return `MD ${matchday[1]}`;
+    // Group-stage round shapes — prefer the resolved groupLabel ("Group A" from
+    // standings) over scraping the round string, because the round string can be
+    // unreliable ("Group Stage" with no letter).
+    if (/group/i.test(r)) {
+      if (groupLabel) return groupLabel;
+      const grp =
+        r.match(/Group(?:\s+Stage)?\s*-\s*Group\s+([A-Z])/i) ?? r.match(/^Group\s+([A-Z])$/i);
+      if (grp) return `Group ${grp[1]}`;
+      return null;
+    }
+  }
+  return null;
+}
+
 function mapToRightRailFixture(
   r: {
     id: number;
@@ -137,13 +189,15 @@ function mapToRightRailFixture(
   },
   teamsMap: Map<number, TeamSnapshot>,
 ): RightRailFixture {
+  const groupLabel = r.groupLabel ?? null;
   return {
     id: r.id,
     kickoffAt: r.kickoffAt,
     statusCode: r.statusCode,
     minute: r.minute,
     round: r.round,
-    groupLabel: r.groupLabel ?? null,
+    groupLabel,
+    contextLabel: resolveContextLabel(r.round, groupLabel),
     homeTeamId: r.homeTeamId,
     awayTeamId: r.awayTeamId,
     homeScore: r.homeScore,
@@ -325,6 +379,8 @@ export async function getNextFeaturedMatches(
         row.homeTeamId,
         row.awayTeamId,
       );
+      // Re-derive contextLabel now that the real group label is resolved.
+      match.contextLabel = resolveContextLabel(match.round, match.groupLabel);
     }
 
     let goals: GoalEvent[] = [];

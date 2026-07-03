@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useLiveMatch } from '@/components/match/MatchLiveUpdater';
-import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import type { Locale } from '@/lib/i18n/config';
 
 const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
@@ -82,10 +82,15 @@ export function LiveScoreDisplay({
             className="text-sm font-semibold tabular-nums text-text-primary"
             suppressHydrationWarning
           >
-            {formatMatchTime(kickoff, locale)}
+            <LocalTime date={kickoff} locale={locale} format="time" />
           </p>
           <p className="text-xs text-text-secondary" suppressHydrationWarning>
-            {formatMatchDate(kickoff, locale, { day: 'numeric', month: 'short', year: 'numeric' })}
+            <LocalTime
+              date={kickoff}
+              locale={locale}
+              format="date"
+              dateOptions={{ day: 'numeric', month: 'short', year: 'numeric' }}
+            />
           </p>
         </>
       )}

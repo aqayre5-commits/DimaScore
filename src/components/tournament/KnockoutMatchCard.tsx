@@ -6,7 +6,7 @@ import { codeToFlag } from '@/lib/flags';
 import { getTeamFlagUrl } from '@/lib/team-display';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { getMatchState } from '@/lib/match-status';
-import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { cn } from '@/lib/utils';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { TeamSnapshot } from '@/lib/db/queries-hydrate';
@@ -42,12 +42,15 @@ export function KnockoutMatchCard({ fixture: raw, locale }: KnockoutMatchCardPro
   const showScore = (isLive || isFinished) && f.homeScore != null && f.awayScore != null;
   const hasPens = f.homeScorePen != null && f.awayScorePen != null;
 
-  const timeStr = formatMatchTime(f.kickoffAt, locale);
-  const dateStr = formatMatchDate(f.kickoffAt, locale, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
+  const timeStr = <LocalTime date={f.kickoffAt} locale={locale} format="time" />;
+  const dateStr = (
+    <LocalTime
+      date={f.kickoffAt}
+      locale={locale}
+      format="date"
+      dateOptions={{ weekday: 'short', month: 'short', day: 'numeric' }}
+    />
+  );
   const ftLabel = f.statusCode === 'AET' ? 'AET' : 'FT';
 
   return (

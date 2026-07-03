@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { formatMatchTime, formatMatchDate } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import type { BracketMatch } from './BracketMatchCell';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -37,11 +37,18 @@ export function BracketCardNode({
   const ftLabel = 'FT';
 
   const kickoff = match.kickoffISO ? new Date(match.kickoffISO) : null;
-  const timeStr = kickoff ? formatMatchTime(kickoff, locale) : '';
+  const timeStr = kickoff ? <LocalTime date={kickoff} locale={locale} format="time" /> : '';
   // Short date (no weekday) so it fits the compact status panel.
-  const dateStr = kickoff
-    ? formatMatchDate(kickoff, locale, { month: 'short', day: 'numeric' })
-    : (match.date ?? '');
+  const dateStr = kickoff ? (
+    <LocalTime
+      date={kickoff}
+      locale={locale}
+      format="date"
+      dateOptions={{ month: 'short', day: 'numeric' }}
+    />
+  ) : (
+    (match.date ?? '')
+  );
 
   return (
     <div

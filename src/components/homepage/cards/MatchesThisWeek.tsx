@@ -4,7 +4,8 @@ import { asc, and, eq, gte, lt } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import * as schema from '@/lib/db/schema';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { formatMatchTime } from '@/lib/utils/date';
+import { SITE_TZ } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
@@ -90,8 +91,11 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
             { id: row.compId, name: row.compName, slug: row.compSlug },
             locale,
           );
-          const dayLabel = row.kickoffAt.toLocaleDateString(locale, { weekday: 'short' });
-          const timeLabel = formatMatchTime(row.kickoffAt, locale);
+          const dayLabel = row.kickoffAt.toLocaleDateString(locale, {
+            weekday: 'short',
+            timeZone: SITE_TZ,
+          });
+          const timeLabel = <LocalTime date={row.kickoffAt} locale={locale} format="time" />;
           const homeName = getTeamDisplayName(home, locale);
           const awayName = getTeamDisplayName(away, locale);
           const preview = previewFromFixtureRow({

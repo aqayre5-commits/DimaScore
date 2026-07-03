@@ -3,7 +3,8 @@
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { formatMatchTime, formatDateLabel } from '@/lib/utils/date';
+import { formatDateLabel } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import type { TopMatchDateGroup } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
@@ -88,7 +89,7 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                       </span>
                     ) : (
                       <span className="text-text-secondary" suppressHydrationWarning>
-                        {formatMatchTime(f.kickoffAt, locale)}
+                        <LocalTime date={f.kickoffAt} locale={locale} format="time" />
                       </span>
                     )}
                   </div>
