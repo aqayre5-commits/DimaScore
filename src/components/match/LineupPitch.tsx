@@ -68,6 +68,15 @@ const PADDING_Y = 0;
 // Gap from the center line so attackers from both teams don't overlap
 const CENTER_GAP = 28;
 
+// Portrait (mobile) pitch — taller than a straight transpose so rows breathe and player
+// photos can be larger (Sofascore-style spacing). Columns keep the landscape spread (405);
+// depth is scaled up from each 312 landscape half to 390.
+const V_W = H;
+const V_HALF = 390;
+const V_H = V_HALF * 2;
+const V_SCALE = V_HALF / HALF_W;
+const PLAYER_R_V = 26;
+
 const POS_LABEL_KEY: Record<string, string> = {
   G: 'goalkeeper',
   D: 'defender',
@@ -260,13 +269,13 @@ export function LineupPitch({
           away below (GK at bottom edge). Same computed positions, axes transposed. */}
       <div className="overflow-hidden md:hidden">
         <svg
-          viewBox={`0 0 ${H} ${W}`}
+          viewBox={`0 0 ${V_W} ${V_H}`}
           className="w-full"
           role="img"
           aria-label={`${homeTeamName} vs ${awayTeamName} ${t('lineups').toLowerCase()}`}
         >
           {/* Pitch background */}
-          <rect x="0" y="0" width={H} height={W} className="fill-[#1a8a3e]" />
+          <rect x="0" y="0" width={V_W} height={V_H} className="fill-[#1a8a3e]" />
 
           {/* Pitch markings */}
           <PitchMarkingsVertical />
@@ -276,24 +285,26 @@ export function LineupPitch({
             <PlayerDot
               key={player.id}
               x={y}
-              y={x}
+              y={x * V_SCALE}
               player={player}
               variant="home"
               badges={badgeMap.get(player.id)}
               clipKey="v"
+              r={PLAYER_R_V}
             />
           ))}
 
-          {/* Away team (bottom half, offset by HALF_W on the vertical axis) */}
+          {/* Away team (bottom half, offset by V_HALF on the vertical axis) */}
           {awayPositions.map(({ player, x, y }) => (
             <PlayerDot
               key={player.id}
               x={y}
-              y={x + HALF_W}
+              y={x * V_SCALE + V_HALF}
               player={player}
               variant="away"
               badges={badgeMap.get(player.id)}
               clipKey="v"
+              r={PLAYER_R_V}
             />
           ))}
         </svg>
@@ -369,17 +380,17 @@ function PitchMarkings() {
 }
 
 /** Transposed markings for the portrait pitch (mobile): halfway line horizontal,
- *  home goal at the top edge, away goal at the bottom. Canvas is H wide × W tall. */
+ *  home goal at the top edge, away goal at the bottom. Canvas is V_W wide × V_H tall. */
 function PitchMarkingsVertical() {
-  const cx = H / 2;
-  const cy = W / 2;
+  const cx = V_W / 2;
+  const cy = V_H / 2;
 
   return (
     <g stroke="white" strokeOpacity="0.3" strokeWidth="1.5" fill="none">
       {/* Outline */}
-      <rect x="10" y="10" width={H - 20} height={W - 20} rx="2" />
+      <rect x="10" y="10" width={V_W - 20} height={V_H - 20} rx="2" />
       {/* Halfway line (horizontal) */}
-      <line x1="10" y1={cy} x2={H - 10} y2={cy} />
+      <line x1="10" y1={cy} x2={V_W - 10} y2={cy} />
       {/* Center circle */}
       <circle cx={cx} cy={cy} r="45" />
       <circle cx={cx} cy={cy} r="2" fill="white" fillOpacity="0.3" />
@@ -387,8 +398,8 @@ function PitchMarkingsVertical() {
       <rect x={cx - 70} y="10" width="140" height="58" />
       <rect x={cx - 28} y="10" width="56" height="20" />
       {/* Bottom penalty area (away goal) */}
-      <rect x={cx - 70} y={W - 68} width="140" height="58" />
-      <rect x={cx - 28} y={W - 30} width="56" height="20" />
+      <rect x={cx - 70} y={V_H - 68} width="140" height="58" />
+      <rect x={cx - 28} y={V_H - 30} width="56" height="20" />
     </g>
   );
 }
@@ -402,6 +413,7 @@ function PlayerDot({
   variant,
   badges,
   clipKey,
+  r = PLAYER_R,
 }: {
   x: number;
   y: number;
@@ -410,6 +422,8 @@ function PlayerDot({
   badges?: BadgeType[];
   /** Namespaces the photo clipPath id — the landscape and portrait SVGs are both in the DOM. */
   clipKey: string;
+  /** Player circle radius — the portrait pitch renders larger dots. */
+  r?: number;
 }) {
   const isHome = variant === 'home';
   const clipId = `clip-${clipKey}-${player.id}`;
@@ -420,30 +434,30 @@ function PlayerDot({
         <>
           <defs>
             <clipPath id={clipId}>
-              <circle cx={x} cy={y} r={PLAYER_R} />
+              <circle cx={x} cy={y} r={r} />
             </clipPath>
           </defs>
           <circle
             cx={x}
             cy={y}
-            r={PLAYER_R}
+            r={r}
             fill={isHome ? 'white' : '#1e293b'}
             stroke={isHome ? 'white' : 'rgba(255,255,255,0.6)'}
             strokeWidth="2"
           />
           <image
             href={player.photoUrl}
-            x={x - PLAYER_R}
-            y={y - PLAYER_R}
-            width={PLAYER_R * 2}
-            height={PLAYER_R * 2}
+            x={x - r}
+            y={y - r}
+            width={r * 2}
+            height={r * 2}
             clipPath={`url(#${clipId})`}
             preserveAspectRatio="xMidYMid slice"
           />
           <circle
             cx={x}
             cy={y}
-            r={PLAYER_R}
+            r={r}
             fill="none"
             stroke={isHome ? 'white' : 'rgba(255,255,255,0.6)'}
             strokeWidth="2"
@@ -454,7 +468,7 @@ function PlayerDot({
           <circle
             cx={x}
             cy={y}
-            r={PLAYER_R}
+            r={r}
             className={isHome ? 'fill-white' : 'fill-[#1e293b]'}
             stroke={isHome ? '#1e293b' : 'white'}
             strokeWidth="1.5"
@@ -471,10 +485,10 @@ function PlayerDot({
         </>
       )}
       {/* Event badges */}
-      {badges && badges.length > 0 && <EventBadges x={x} y={y} badges={badges} />}
+      {badges && badges.length > 0 && <EventBadges x={x} y={y} r={r} badges={badges} />}
       <text
         x={x}
-        y={y + PLAYER_R + 13}
+        y={y + r + 13}
         textAnchor="middle"
         dominantBaseline="central"
         className="fill-white text-[9px] font-medium"
@@ -488,13 +502,23 @@ function PlayerDot({
 
 const BADGE_R = 7;
 
-function EventBadges({ x, y, badges }: { x: number; y: number; badges: BadgeType[] }) {
+function EventBadges({
+  x,
+  y,
+  r,
+  badges,
+}: {
+  x: number;
+  y: number;
+  r: number;
+  badges: BadgeType[];
+}) {
   // Position badges at bottom-right of the player circle, stacking leftward
   return (
     <>
       {badges.map((badge, i) => {
-        const bx = x + PLAYER_R - 4 - i * (BADGE_R * 2 + 2);
-        const by = y + PLAYER_R - 4;
+        const bx = x + r - 4 - i * (BADGE_R * 2 + 2);
+        const by = y + r - 4;
         return <SingleBadge key={badge} cx={bx} cy={by} badge={badge} />;
       })}
     </>
