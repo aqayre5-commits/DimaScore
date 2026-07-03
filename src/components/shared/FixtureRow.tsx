@@ -38,8 +38,7 @@ interface FixtureRowProps {
 /**
  * Shared fixture row used across competition, team, and match list views.
  *
- * Desktop (md+): horizontal — HOME [flag][name] … score … [name][flag] AWAY. Unchanged.
- * Mobile (<md): stacked — optional competition header, then teams home-over-away with full names
+ * Single layout at all breakpoints: optional competition header, then teams home-over-away with full names
  * and per-team scores on the left, a vertical divider, and time/status on the right (the date
  * lives in the group header, so it isn't repeated here). Loser dimmed.
  */
@@ -104,57 +103,8 @@ export function FixtureRow({
       ariaLabel={`${homeName} vs ${awayName}`}
       className="block rounded-md text-base transition-colors hover:bg-bg-surface-2"
     >
-      {/* ── Desktop: horizontal (UNCHANGED) ── */}
-      <div className="hidden items-center gap-2 py-2 md:flex">
-        <div className="w-12 shrink-0 text-center">
-          {isLive ? (
-            <span className="flex items-center justify-center gap-1 text-xs font-semibold text-score-live">
-              <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-              {statusLabel}
-            </span>
-          ) : isFinished ? (
-            <span className="text-xs text-text-tertiary">{statusLabel}</span>
-          ) : (
-            <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
-              {time}
-            </span>
-          )}
-        </div>
-
-        <div className="flex min-w-0 flex-1 items-center gap-1.5">
-          <TeamBadge team={homeTeam} flag={homeFlag} />
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
-            {homeName}
-          </span>
-        </div>
-
-        <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight tabular-nums">
-          {hasScore ? (
-            <span
-              className={`text-base font-semibold ${isLive ? 'text-score-live' : 'text-text-primary'}`}
-            >
-              {homeScore} - {awayScore}
-            </span>
-          ) : (
-            <span className="text-xs text-text-tertiary">- : -</span>
-          )}
-          {showPenScore && (
-            <span className="whitespace-nowrap text-[10px] font-semibold uppercase text-text-tertiary">
-              {t('penalties')} {homeScorePen}-{awayScorePen}
-            </span>
-          )}
-        </div>
-
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
-            {awayName}
-          </span>
-          <TeamBadge team={awayTeam} flag={awayFlag} />
-        </div>
-      </div>
-
-      {/* ── Mobile: competition header (multi-comp lists only) + teams · divider · meta ── */}
-      <div className="md:hidden">
+      {/* ── Single layout (all breakpoints): competition header (multi-comp lists only) + teams · divider · meta ── */}
+      <div>
         {competition && (
           <div className="flex items-center gap-1.5 pt-1.5 text-xs text-text-tertiary">
             {competition.logoUrl && (

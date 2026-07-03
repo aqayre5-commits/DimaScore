@@ -256,7 +256,7 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
               </div>
               <div className="divide-y divide-border-subtle">
                 {group.fixtures.map((f) => (
-                  <WCMatchRow key={f.id} fixture={f} locale={locale} teamGroupMap={teamGroupMap} />
+                  <WCMatchRow key={f.id} fixture={f} locale={locale} />
                 ))}
               </div>
             </div>
@@ -278,16 +278,8 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
   );
 }
 
-function WCMatchRow({
-  fixture,
-  locale,
-  teamGroupMap,
-}: {
-  fixture: FixtureWithTeams;
-  locale: Locale;
-  teamGroupMap: Record<number, string>;
-}) {
-  const { homeTeam, awayTeam, kickoffAt, statusCode, homeScore, awayScore, venue } = fixture;
+function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Locale }) {
+  const { homeTeam, awayTeam, kickoffAt, statusCode, homeScore, awayScore } = fixture;
   const { homeScorePen, awayScorePen } = fixture;
   const state = getMatchState(statusCode, kickoffAt);
   const isLive = state === 'live';
@@ -307,12 +299,6 @@ function WCMatchRow({
   const homeWon = isFinished && hasScore && homeScore! > awayScore!;
   const awayWon = isFinished && hasScore && awayScore! > homeScore!;
 
-  // Resolve group label — only show when both teams are in the same group (group stage match)
-  const homeGroup = fixture.homeTeamId != null ? teamGroupMap[fixture.homeTeamId] : null;
-  const awayGroup = fixture.awayTeamId != null ? teamGroupMap[fixture.awayTeamId] : null;
-  const groupLabel = homeGroup && homeGroup === awayGroup ? `Group ${homeGroup}` : null;
-  const venueName = venue?.name ?? venue?.city ?? null;
-
   const preview = previewFromFixtureRow({
     homeTeam,
     awayTeam,
@@ -329,75 +315,8 @@ function WCMatchRow({
       preview={preview}
       className="block transition-colors hover:bg-accent-azure/5"
     >
-      {/* \u2500\u2500 Desktop: horizontal (with Group \u00B7 Venue) \u2500\u2500 */}
-      <div className="hidden items-center gap-3 px-4 py-2.5 md:flex">
-        <div className="w-12 shrink-0 text-center">
-          {isLive ? (
-            <span className="flex items-center justify-center gap-1 text-xs font-semibold text-score-live">
-              <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-              {statusCode === 'HT' ? 'HT' : statusCode}
-            </span>
-          ) : isFinished ? (
-            <span className="text-xs text-text-tertiary">{finishedLabel}</span>
-          ) : (
-            <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
-              {time}
-            </span>
-          )}
-        </div>
-
-        <div className="flex min-w-0 flex-1 items-center gap-1.5">
-          <TeamBadge team={homeTeam} flag={homeFlag} />
-          <span
-            className={cn(
-              'truncate text-sm',
-              homeWon ? 'font-semibold text-text-primary' : 'text-text-secondary',
-            )}
-          >
-            {homeName}
-          </span>
-        </div>
-
-        <div className="flex shrink-0 flex-col items-center text-center">
-          {hasScore ? (
-            <span
-              className={cn(
-                'text-sm font-bold tabular-nums',
-                isLive ? 'text-score-live' : 'text-text-primary',
-              )}
-            >
-              {homeScore} - {awayScore}
-            </span>
-          ) : (
-            <span className="text-xs text-text-tertiary">vs</span>
-          )}
-          {showPens && (
-            <span className="text-[10px] font-semibold tabular-nums text-text-tertiary">
-              PEN {homeScorePen}-{awayScorePen}
-            </span>
-          )}
-          {(groupLabel || venueName) && (
-            <span className="max-w-[180px] truncate text-[10px] text-text-tertiary">
-              {[groupLabel, venueName].filter(Boolean).join(' \u00B7 ')}
-            </span>
-          )}
-        </div>
-
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
-          <span
-            className={cn(
-              'truncate text-sm',
-              awayWon ? 'font-semibold text-text-primary' : 'text-text-secondary',
-            )}
-          >
-            {awayName}
-          </span>
-          <TeamBadge team={awayTeam} flag={awayFlag} />
-        </div>
-      </div>
-
-      {/* \u2500\u2500 Mobile: teams + per-team scores \u00b7 divider \u00b7 time/status \u2500\u2500 */}
-      <div className="flex items-stretch gap-3 px-4 py-2.5 md:hidden">
+      {/* \u2500\u2500 Single layout (all breakpoints): teams + per-team scores \u00b7 divider \u00b7 time/status \u2500\u2500 */}
+      <div className="flex items-stretch gap-3 px-4 py-2.5">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex items-center gap-2.5">
             <TeamBadge team={homeTeam} flag={homeFlag} big />

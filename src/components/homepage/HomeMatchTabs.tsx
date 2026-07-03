@@ -108,53 +108,8 @@ function MatchRow({
       ariaLabel={`${homeName} vs ${awayName}`}
       className="block px-4 py-3 transition-colors hover:bg-accent-azure/10"
     >
-      {/* ── Desktop: time left · teams · per-team scores right (UNCHANGED) ── */}
-      <div className="hidden items-center gap-3 md:flex">
-        <div className="w-12 shrink-0 text-center">{statusNode}</div>
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex items-center gap-2.5">
-            {homeBadge}
-            <span
-              className={`truncate text-base ${awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
-            >
-              {homeName}
-            </span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            {awayBadge}
-            <span
-              className={`truncate text-base ${homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
-            >
-              {awayName}
-            </span>
-          </div>
-        </div>
-        <div className="w-8 shrink-0 text-center text-base font-bold tabular-nums">
-          {hasScore ? (
-            <div className="space-y-2">
-              <div
-                className={
-                  isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'
-                }
-              >
-                {fixture.homeScore}
-              </div>
-              <div
-                className={
-                  isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'
-                }
-              >
-                {fixture.awayScore}
-              </div>
-            </div>
-          ) : (
-            <span className="text-xs font-semibold text-text-tertiary">VS</span>
-          )}
-        </div>
-      </div>
-
-      {/* ── Mobile: teams + per-team scores · divider · time/status ── */}
-      <div className="flex items-stretch gap-3 md:hidden">
+      {/* ── Single layout (all breakpoints): teams + per-team scores · divider · time/status ── */}
+      <div className="flex items-stretch gap-3">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex items-center gap-2.5">
             {homeBadge}

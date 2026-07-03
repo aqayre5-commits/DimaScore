@@ -141,81 +141,14 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
   const homeWon = isDone && showScore && (f.homeScore ?? 0) > (f.awayScore ?? 0);
   const awayWon = isDone && showScore && (f.awayScore ?? 0) > (f.homeScore ?? 0);
 
-  let subLabel = '';
-  if (isLive) subLabel = isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE';
-  else if (isDone) {
-    if (f.statusCode === 'PEN') {
-      subLabel =
-        f.homeScorePen != null && f.awayScorePen != null
-          ? `PEN ${f.homeScorePen}-${f.awayScorePen}`
-          : 'PEN';
-    } else if (f.statusCode === 'AET') {
-      subLabel = 'AET';
-    } else {
-      subLabel = 'FT';
-    }
-  }
-
   const compName = f.competition
     ? (f.competition.name[locale] ?? f.competition.name['en'] ?? '')
     : '';
 
   return (
     <a href={`/${locale}/match/${f.id}`} className="block transition-colors hover:bg-bg-surface-2">
-      {/* ── Desktop: horizontal (UNCHANGED) ── */}
-      <div className="hidden items-center gap-2 px-3 py-3 md:flex">
-        <div className="w-11 shrink-0 text-center text-xs tabular-nums text-text-tertiary">
-          <LocalTime date={f.kickoffAt} locale={locale} format="time" />
-        </div>
-
-        <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
-          {f.homeTeam?.logoUrl && (
-            <Image
-              src={f.homeTeam.logoUrl}
-              alt=""
-              width={24}
-              height={24}
-              className="size-6 shrink-0 object-contain"
-            />
-          )}
-          <span className="truncate text-sm text-text-primary">{teamName(f.homeTeam, locale)}</span>
-        </div>
-
-        <div className="flex w-16 shrink-0 flex-col items-center justify-center leading-tight">
-          {showScore ? (
-            <span
-              className={`text-sm font-bold tabular-nums ${isLive ? 'text-accent-crimson' : 'text-text-primary'}`}
-            >
-              {f.homeScore} - {f.awayScore}
-            </span>
-          ) : (
-            <span className="text-xs font-medium text-text-tertiary">vs</span>
-          )}
-          {subLabel && (
-            <span className="whitespace-nowrap text-[10px] uppercase tracking-wide text-text-quaternary">
-              {subLabel}
-            </span>
-          )}
-        </div>
-
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-          <span className="truncate text-end text-sm text-text-primary">
-            {teamName(f.awayTeam, locale)}
-          </span>
-          {f.awayTeam?.logoUrl && (
-            <Image
-              src={f.awayTeam.logoUrl}
-              alt=""
-              width={24}
-              height={24}
-              className="size-6 shrink-0 object-contain"
-            />
-          )}
-        </div>
-      </div>
-
-      {/* ── Mobile: competition header (multi-comp) + teams · divider · meta ── */}
-      <div className="px-3 md:hidden">
+      {/* ── Single layout (all breakpoints): competition header (multi-comp) + teams · divider · meta ── */}
+      <div className="px-3">
         {compName && (
           <div className="flex items-center gap-1.5 pt-2 text-xs text-text-tertiary">
             {f.competition?.logoUrl && (
