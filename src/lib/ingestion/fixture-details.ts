@@ -22,7 +22,7 @@ function mapEvent(fixtureId: number, e: NormalizedFixtureEvent) {
     extraMinute: e.time?.extra ?? null,
     type: e.type,
     detail: e.detail,
-    comments: ((e as unknown as Record<string, unknown>).comments as string) ?? null,
+    comments: e.comments ?? null,
   };
 }
 
@@ -250,4 +250,33 @@ export async function getFixturesMissingDetails(
     .limit(limit);
 
   return rows.map((r) => r.id);
+}
+
+/**
+ * Recent shootout fixtures whose events were synced before the shootout kicks were
+ * published upstream: status PEN, detailsSyncedAt already set, but no penalty events
+ * at minute ≥119. The post-FT sync sets detailsSyncedAt once, so without this sweep
+ * such fixtures keep a permanent hole in their timeline (e.g. Netherlands–Morocco WC R32).
+ * Bounded to the last 48h — historical healing is a one-off backfill, not the cron's job.
+ */
+export async function getPenFixturesMissingShootout(
+  db: NeonHttpDatabase<typeof schema>,
+  limit = 10,
+): Promise<number[]> {
+  const rows = await db.execute(
+    sql`SELECT f.id FROM fixtures f
+        WHERE f.status_code = 'PEN'
+          AND f.details_synced_at IS NOT NULL
+          AND f.kickoff_at > NOW() - INTERVAL '48 hours'
+          AND NOT EXISTS (
+            SELECT 1 FROM fixture_events fe
+            WHERE fe.fixture_id = f.id
+              AND fe.minute >= 119
+              AND fe.detail ILIKE '%penalty%'
+          )
+        ORDER BY f.kickoff_at DESC
+        LIMIT ${limit}`,
+  );
+
+  return (rows.rows as { id: number }[]).map((r) => Number(r.id));
 }

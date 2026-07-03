@@ -186,6 +186,7 @@ function normalizeFixtureEvent(raw: RawFixtureEvent): NormalizedFixtureEvent {
     assist: raw.assist,
     type: raw.type,
     detail: raw.detail,
+    comments: raw.comments ?? null,
   };
 }
 

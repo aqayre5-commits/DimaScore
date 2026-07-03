@@ -234,6 +234,8 @@ export interface NormalizedFixtureEvent {
   assist: { id: number | null; name: string | null };
   type: string;
   detail: string;
+  /** Upstream annotation — notably "Penalty Shootout" on shootout kicks. */
+  comments: string | null;
 }
 
 export interface NormalizedFixtureLineup {

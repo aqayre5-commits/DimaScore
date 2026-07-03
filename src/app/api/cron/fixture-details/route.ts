@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
 import { getDataProvider } from '@/lib/data';
 import { verifyCronSecret } from '@/lib/cron/auth';
-import { syncFixtureDetails, getFixturesMissingDetails } from '@/lib/ingestion/fixture-details';
+import {
+  syncFixtureDetails,
+  getFixturesMissingDetails,
+  getPenFixturesMissingShootout,
+} from '@/lib/ingestion/fixture-details';
 
 export async function GET(request: Request) {
   if (!verifyCronSecret(request)) {
@@ -11,7 +15,10 @@ export async function GET(request: Request) {
 
   try {
     const provider = getDataProvider();
-    const fixtureIds = await getFixturesMissingDetails(db, 50);
+    const missingDetails = await getFixturesMissingDetails(db, 50);
+    // Shootout fixtures synced before the kicks were published upstream get one more pass.
+    const missingShootout = await getPenFixturesMissingShootout(db, 10);
+    const fixtureIds = [...new Set([...missingDetails, ...missingShootout])];
 
     if (fixtureIds.length === 0) {
       return NextResponse.json({ ok: true, message: 'No fixtures missing details', processed: 0 });
