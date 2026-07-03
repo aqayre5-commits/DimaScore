@@ -59,6 +59,8 @@ function MatchRow({
   });
 
   const hasScore = fixture.homeScore != null && fixture.awayScore != null;
+  const showPens =
+    fixture.statusCode === 'PEN' && fixture.homeScorePen != null && fixture.awayScorePen != null;
   const homeWon = isFinished && hasScore && (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0);
   const awayWon = isFinished && hasScore && (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0);
 
@@ -85,13 +87,9 @@ function MatchRow({
       <span className="text-xs font-medium text-text-tertiary">
         {fixture.statusCode === 'AET' ? 'AET' : 'FT'}
       </span>
-      {fixture.statusCode === 'PEN' &&
-        fixture.homeScorePen != null &&
-        fixture.awayScorePen != null && (
-          <span className="mt-0.5 text-[9px] font-semibold tabular-nums text-text-tertiary">
-            PEN {fixture.homeScorePen}-{fixture.awayScorePen}
-          </span>
-        )}
+      {showPens && (
+        <span className="mt-0.5 text-[9px] font-semibold tabular-nums text-text-tertiary">PEN</span>
+      )}
     </span>
   ) : (
     <span className="text-sm tabular-nums text-text-secondary">
@@ -123,6 +121,12 @@ function MatchRow({
                 className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'}`}
               >
                 {fixture.homeScore}
+                {showPens && (
+                  <span className="text-xs font-semibold text-text-tertiary">
+                    {' '}
+                    ({fixture.homeScorePen})
+                  </span>
+                )}
               </span>
             )}
           </div>
@@ -138,6 +142,12 @@ function MatchRow({
                 className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'}`}
               >
                 {fixture.awayScore}
+                {showPens && (
+                  <span className="text-xs font-semibold text-text-tertiary">
+                    {' '}
+                    ({fixture.awayScorePen})
+                  </span>
+                )}
               </span>
             )}
           </div>

@@ -130,6 +130,12 @@ export function FixtureRow({
                   className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'}`}
                 >
                   {homeScore}
+                  {showPenScore && (
+                    <span className="text-xs font-semibold text-text-tertiary">
+                      {' '}
+                      ({homeScorePen})
+                    </span>
+                  )}
                 </span>
               )}
             </div>
@@ -145,6 +151,12 @@ export function FixtureRow({
                   className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'}`}
                 >
                   {awayScore}
+                  {showPenScore && (
+                    <span className="text-xs font-semibold text-text-tertiary">
+                      {' '}
+                      ({awayScorePen})
+                    </span>
+                  )}
                 </span>
               )}
             </div>
@@ -166,7 +178,7 @@ export function FixtureRow({
             )}
             {showPenScore && (
               <span className="mt-0.5 text-[9px] font-semibold uppercase text-text-tertiary">
-                {t('penalties')} {homeScorePen}-{awayScorePen}
+                {t('penalties')}
               </span>
             )}
           </div>

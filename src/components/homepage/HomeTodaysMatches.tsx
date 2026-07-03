@@ -100,9 +100,7 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                           {statusCode === 'AET' ? 'AET' : 'FT'}
                         </span>
                         {showPens && (
-                          <span className="text-[9px] font-semibold text-text-tertiary">
-                            PEN {homeScorePen}-{awayScorePen}
-                          </span>
+                          <span className="text-[9px] font-semibold text-text-tertiary">PEN</span>
                         )}
                       </span>
                     ) : (
@@ -157,9 +155,21 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                     <div className="flex shrink-0 flex-col items-end gap-0.5">
                       <span className="text-xs font-bold tabular-nums text-text-primary">
                         {homeScore ?? '-'}
+                        {showPens && (
+                          <span className="font-semibold text-text-tertiary">
+                            {' '}
+                            ({homeScorePen})
+                          </span>
+                        )}
                       </span>
                       <span className="text-xs font-bold tabular-nums text-text-primary">
                         {awayScore ?? '-'}
+                        {showPens && (
+                          <span className="font-semibold text-text-tertiary">
+                            {' '}
+                            ({awayScorePen})
+                          </span>
+                        )}
                       </span>
                     </div>
                   )}

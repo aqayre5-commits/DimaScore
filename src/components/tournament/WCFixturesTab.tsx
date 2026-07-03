@@ -338,6 +338,12 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
                 )}
               >
                 {homeScore}
+                {showPens && (
+                  <span className="text-xs font-semibold text-text-tertiary">
+                    {' '}
+                    ({homeScorePen})
+                  </span>
+                )}
               </span>
             )}
           </div>
@@ -359,6 +365,12 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
                 )}
               >
                 {awayScore}
+                {showPens && (
+                  <span className="text-xs font-semibold text-text-tertiary">
+                    {' '}
+                    ({awayScorePen})
+                  </span>
+                )}
               </span>
             )}
           </div>
@@ -375,9 +387,7 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
             <>
               <span className="text-xs font-medium text-text-tertiary">{finishedLabel}</span>
               {showPens && (
-                <span className="mt-0.5 text-[9px] font-semibold tabular-nums text-text-tertiary">
-                  PEN {homeScorePen}-{awayScorePen}
-                </span>
+                <span className="mt-0.5 text-[9px] font-semibold text-text-tertiary">PEN</span>
               )}
             </>
           ) : (

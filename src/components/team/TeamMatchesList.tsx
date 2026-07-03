@@ -138,6 +138,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
   const isLive = state === 'live';
   const isDone = state === 'finished';
   const showScore = (isLive || isDone) && f.homeScore != null && f.awayScore != null;
+  const showPens = f.statusCode === 'PEN' && f.homeScorePen != null && f.awayScorePen != null;
   const homeWon = isDone && showScore && (f.homeScore ?? 0) > (f.awayScore ?? 0);
   const awayWon = isDone && showScore && (f.awayScore ?? 0) > (f.homeScore ?? 0);
 
@@ -188,6 +189,12 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
                   className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : awayWon ? 'text-text-tertiary' : 'text-text-primary'}`}
                 >
                   {f.homeScore}
+                  {showPens && (
+                    <span className="text-xs font-semibold text-text-tertiary">
+                      {' '}
+                      ({f.homeScorePen})
+                    </span>
+                  )}
                 </span>
               )}
             </div>
@@ -213,6 +220,12 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
                   className={`text-base font-bold tabular-nums ${isLive ? 'text-score-live' : homeWon ? 'text-text-tertiary' : 'text-text-primary'}`}
                 >
                   {f.awayScore}
+                  {showPens && (
+                    <span className="text-xs font-semibold text-text-tertiary">
+                      {' '}
+                      ({f.awayScorePen})
+                    </span>
+                  )}
                 </span>
               )}
             </div>
@@ -234,14 +247,11 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
                 <LocalTime date={f.kickoffAt} locale={locale} format="time" />
               </span>
             )}
-            {isDone &&
-              f.statusCode === 'PEN' &&
-              f.homeScorePen != null &&
-              f.awayScorePen != null && (
-                <span className="mt-0.5 text-[9px] font-semibold uppercase text-text-tertiary">
-                  PEN {f.homeScorePen}-{f.awayScorePen}
-                </span>
-              )}
+            {isDone && showPens && (
+              <span className="mt-0.5 text-[9px] font-semibold uppercase text-text-tertiary">
+                PEN
+              </span>
+            )}
           </div>
         </div>
       </div>
