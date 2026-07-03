@@ -214,8 +214,8 @@ export function LineupPitch({
 
   return (
     <div>
-      {/* SVG Pitch — horizontal/landscape, full width */}
-      <div className="overflow-hidden">
+      {/* SVG Pitch — horizontal/landscape on md+, home left / away right */}
+      <div className="hidden overflow-hidden md:block">
         <svg
           viewBox={`0 0 ${W} ${H}`}
           className="w-full"
@@ -237,6 +237,7 @@ export function LineupPitch({
               player={player}
               variant="home"
               badges={badgeMap.get(player.id)}
+              clipKey="h"
             />
           ))}
 
@@ -249,6 +250,50 @@ export function LineupPitch({
               player={player}
               variant="away"
               badges={badgeMap.get(player.id)}
+              clipKey="h"
+            />
+          ))}
+        </svg>
+      </div>
+
+      {/* SVG Pitch — vertical/portrait below md: teams stacked, home on top (GK at top edge),
+          away below (GK at bottom edge). Same computed positions, axes transposed. */}
+      <div className="overflow-hidden md:hidden">
+        <svg
+          viewBox={`0 0 ${H} ${W}`}
+          className="w-full"
+          role="img"
+          aria-label={`${homeTeamName} vs ${awayTeamName} ${t('lineups').toLowerCase()}`}
+        >
+          {/* Pitch background */}
+          <rect x="0" y="0" width={H} height={W} className="fill-[#1a8a3e]" />
+
+          {/* Pitch markings */}
+          <PitchMarkingsVertical />
+
+          {/* Home team (top half) */}
+          {homePositions.map(({ player, x, y }) => (
+            <PlayerDot
+              key={player.id}
+              x={y}
+              y={x}
+              player={player}
+              variant="home"
+              badges={badgeMap.get(player.id)}
+              clipKey="v"
+            />
+          ))}
+
+          {/* Away team (bottom half, offset by HALF_W on the vertical axis) */}
+          {awayPositions.map(({ player, x, y }) => (
+            <PlayerDot
+              key={player.id}
+              x={y}
+              y={x + HALF_W}
+              player={player}
+              variant="away"
+              badges={badgeMap.get(player.id)}
+              clipKey="v"
             />
           ))}
         </svg>
@@ -323,6 +368,31 @@ function PitchMarkings() {
   );
 }
 
+/** Transposed markings for the portrait pitch (mobile): halfway line horizontal,
+ *  home goal at the top edge, away goal at the bottom. Canvas is H wide × W tall. */
+function PitchMarkingsVertical() {
+  const cx = H / 2;
+  const cy = W / 2;
+
+  return (
+    <g stroke="white" strokeOpacity="0.3" strokeWidth="1.5" fill="none">
+      {/* Outline */}
+      <rect x="10" y="10" width={H - 20} height={W - 20} rx="2" />
+      {/* Halfway line (horizontal) */}
+      <line x1="10" y1={cy} x2={H - 10} y2={cy} />
+      {/* Center circle */}
+      <circle cx={cx} cy={cy} r="45" />
+      <circle cx={cx} cy={cy} r="2" fill="white" fillOpacity="0.3" />
+      {/* Top penalty area (home goal) */}
+      <rect x={cx - 70} y="10" width="140" height="58" />
+      <rect x={cx - 28} y="10" width="56" height="20" />
+      {/* Bottom penalty area (away goal) */}
+      <rect x={cx - 70} y={W - 68} width="140" height="58" />
+      <rect x={cx - 28} y={W - 30} width="56" height="20" />
+    </g>
+  );
+}
+
 const PLAYER_R = 22;
 
 function PlayerDot({
@@ -331,15 +401,18 @@ function PlayerDot({
   player,
   variant,
   badges,
+  clipKey,
 }: {
   x: number;
   y: number;
   player: LineupPlayer;
   variant: 'home' | 'away';
   badges?: BadgeType[];
+  /** Namespaces the photo clipPath id — the landscape and portrait SVGs are both in the DOM. */
+  clipKey: string;
 }) {
   const isHome = variant === 'home';
-  const clipId = `clip-${player.id}`;
+  const clipId = `clip-${clipKey}-${player.id}`;
 
   return (
     <g>
