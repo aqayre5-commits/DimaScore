@@ -48,6 +48,9 @@ export function useLiveFixtures(): Map<number, LiveFixturePatch> {
       return anyLive ? ACTIVE_MS : IDLE_MS;
     },
     refetchIntervalInBackground: false,
+    // Catch up immediately on return-to-tab — the interval pauses while hidden, and the
+    // global QueryProvider default disables focus refetches.
+    refetchOnWindowFocus: 'always',
     staleTime: 0,
   });
 
@@ -88,8 +91,28 @@ export function useUpdateAvailable(): boolean {
     queryFn: fetchLiveFixtures,
     refetchInterval: VERSION_POLL_MS,
     refetchIntervalInBackground: false,
+    // A tab returning from days in the background should learn about a new deploy
+    // (and any live matches) immediately, not at the next 5-minute tick.
+    refetchOnWindowFocus: 'always',
     staleTime: 0,
   });
   const serverBuildId = data?.buildId;
   return serverBuildId != null && serverBuildId !== BUILD_ID;
+}
+
+/**
+ * True once the shared live-fixtures query has resolved at least once this session.
+ * Lets surfaces treat the feed as authoritative: a fixture whose server-rendered status
+ * is live but which is absent from a successful payload is not live anymore (the feed
+ * only returns live + last-4h-finished fixtures). Observes the same query — no extra
+ * network beyond the shared poll.
+ */
+export function useLiveFeedReady(): boolean {
+  const { isSuccess } = useQuery({
+    queryKey: ['live-fixtures'],
+    queryFn: fetchLiveFixtures,
+    refetchOnWindowFocus: 'always',
+    staleTime: 0,
+  });
+  return isSuccess;
 }

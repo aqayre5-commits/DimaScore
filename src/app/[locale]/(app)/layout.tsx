@@ -4,6 +4,7 @@ import { Topbar } from '@/components/chrome/Topbar';
 import { Footer } from '@/components/chrome/Footer';
 import { MobileBottomTabBar } from '@/components/chrome/MobileBottomTabBar';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { VisibilityRefresh } from '@/components/providers/VisibilityRefresh';
 import type { Locale } from '@/lib/i18n/config';
 
 export default async function AppLayout({
@@ -18,6 +19,7 @@ export default async function AppLayout({
 
   return (
     <QueryProvider>
+      <VisibilityRefresh />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent-azure focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-bg-canvas"
