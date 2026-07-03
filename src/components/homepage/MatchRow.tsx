@@ -64,7 +64,7 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
           </span>
         ) : isFinished ? (
           <span className="text-xs text-text-tertiary">
-            {fixture.statusCode === 'AET' ? 'AET' : fixture.statusCode === 'PEN' ? 'PEN' : 'FT'}
+            {fixture.statusCode === 'AET' ? 'AET' : 'FT'}
           </span>
         ) : (
           <span className="text-xs tabular-nums text-text-secondary">

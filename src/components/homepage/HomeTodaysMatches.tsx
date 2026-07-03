@@ -97,11 +97,11 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                     ) : isFinished ? (
                       <span className="flex flex-col leading-tight">
                         <span className="font-medium text-text-tertiary">
-                          {statusCode === 'AET' ? 'AET' : statusCode === 'PEN' ? 'PEN' : 'FT'}
+                          {statusCode === 'AET' ? 'AET' : 'FT'}
                         </span>
                         {showPens && (
                           <span className="text-[9px] font-semibold text-text-tertiary">
-                            {homeScorePen}-{awayScorePen}
+                            PEN {homeScorePen}-{awayScorePen}
                           </span>
                         )}
                       </span>

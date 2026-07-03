@@ -89,9 +89,7 @@ export function FixtureRow({
     : isFinished
       ? statusCode === 'AET'
         ? t('extraTime')
-        : statusCode === 'PEN'
-          ? 'PEN'
-          : t('fullTime')
+        : t('fullTime')
       : null;
 
   return (

@@ -83,13 +83,13 @@ function MatchRow({
   ) : isFinished ? (
     <span className="flex flex-col items-center leading-tight">
       <span className="text-xs font-medium text-text-tertiary">
-        {fixture.statusCode === 'AET' ? 'AET' : fixture.statusCode === 'PEN' ? 'PEN' : 'FT'}
+        {fixture.statusCode === 'AET' ? 'AET' : 'FT'}
       </span>
       {fixture.statusCode === 'PEN' &&
         fixture.homeScorePen != null &&
         fixture.awayScorePen != null && (
           <span className="mt-0.5 text-[9px] font-semibold tabular-nums text-text-tertiary">
-            {fixture.homeScorePen}-{fixture.awayScorePen}
+            PEN {fixture.homeScorePen}-{fixture.awayScorePen}
           </span>
         )}
     </span>

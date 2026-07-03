@@ -286,7 +286,9 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
   const isFinished = state === 'finished';
   const hasScore = homeScore != null && awayScore != null;
   const showPens = statusCode === 'PEN' && homeScorePen != null && awayScorePen != null;
-  const finishedLabel = statusCode === 'AET' ? 'AET' : statusCode === 'PEN' ? 'PEN' : 'FT';
+  // Shootout rows read "FT" with "PEN x-y" stacked beneath — the official 120' result stays
+  // the headline, the shootout is the annotation.
+  const finishedLabel = statusCode === 'AET' ? 'AET' : 'FT';
   const time = <LocalTime date={kickoffAt} locale={locale} format="time" />;
 
   const homeName = resolveFullName(homeTeam, locale);
@@ -374,7 +376,7 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
               <span className="text-xs font-medium text-text-tertiary">{finishedLabel}</span>
               {showPens && (
                 <span className="mt-0.5 text-[9px] font-semibold tabular-nums text-text-tertiary">
-                  {homeScorePen}-{awayScorePen}
+                  PEN {homeScorePen}-{awayScorePen}
                 </span>
               )}
             </>
