@@ -202,10 +202,13 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
 
 function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Locale }) {
   const { homeTeam, awayTeam, kickoffAt, statusCode, homeScore, awayScore, venue } = fixture;
+  const { homeScorePen, awayScorePen } = fixture;
   const state = getMatchState(statusCode, kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
   const hasScore = homeScore != null && awayScore != null;
+  const showPens = statusCode === 'PEN' && homeScorePen != null && awayScorePen != null;
+  const finishedLabel = statusCode === 'AET' ? 'AET' : statusCode === 'PEN' ? 'PEN' : 'FT';
   const time = <LocalTime date={kickoffAt} locale={locale} format="time" />;
 
   const homeName = resolveFullName(homeTeam, locale);
@@ -241,7 +244,7 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
               {statusCode === 'HT' ? 'HT' : statusCode}
             </span>
           ) : isFinished ? (
-            <span className="text-xs text-text-tertiary">FT</span>
+            <span className="text-xs text-text-tertiary">{finishedLabel}</span>
           ) : (
             <span className="text-xs tabular-nums text-text-secondary" suppressHydrationWarning>
               {time}
@@ -273,6 +276,11 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
             </span>
           ) : (
             <span className="text-xs text-text-tertiary">vs</span>
+          )}
+          {showPens && (
+            <span className="text-[10px] font-semibold tabular-nums text-text-tertiary">
+              PEN {homeScorePen}-{awayScorePen}
+            </span>
           )}
           {(roundLabel || venueName) && (
             <span className="max-w-[180px] truncate text-[10px] text-text-tertiary">
@@ -349,7 +357,14 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
               {statusCode === 'HT' ? 'HT' : statusCode}
             </span>
           ) : isFinished ? (
-            <span className="text-xs font-medium text-text-tertiary">FT</span>
+            <>
+              <span className="text-xs font-medium text-text-tertiary">{finishedLabel}</span>
+              {showPens && (
+                <span className="mt-0.5 text-[9px] font-semibold tabular-nums text-text-tertiary">
+                  {homeScorePen}-{awayScorePen}
+                </span>
+              )}
+            </>
           ) : (
             <span className="text-sm tabular-nums text-text-secondary" suppressHydrationWarning>
               {time}

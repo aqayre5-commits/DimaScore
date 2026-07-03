@@ -249,7 +249,15 @@ function UCLMatchCard({ match }: { match: BracketMatch }) {
             Aggregate: {match.homeScore ?? '–'} - {match.awayScore ?? '–'}
           </span>
         ) : showScores && isSingleLeg ? (
-          <span>FT</span>
+          <span>
+            FT
+            {match.homeScorePen != null && match.awayScorePen != null && (
+              <span className="font-semibold">
+                {' '}
+                · PEN {match.homeScorePen}-{match.awayScorePen}
+              </span>
+            )}
+          </span>
         ) : (
           <span>{match.statusLabel}</span>
         )}

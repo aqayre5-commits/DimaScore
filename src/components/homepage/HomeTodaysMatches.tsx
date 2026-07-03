@@ -8,7 +8,7 @@ import { LocalTime } from '@/components/shared/LocalTime';
 import type { TopMatchDateGroup } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import { TeamLogo } from '@/components/shared/Logo';
-import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 
 interface Props {
@@ -22,6 +22,7 @@ interface Props {
 }
 
 const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
+const FINISHED_CODES: string[] = [...FINISHED_CODES_ARRAY];
 
 export function HomeTopMatches({ groups, locale, labels }: Props) {
   // Poll /api/v1/live so scores/minute/status reflect the current state instead of the
@@ -57,6 +58,12 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
               const homeScore = patch?.homeScore ?? f.homeScore;
               const awayScore = patch?.awayScore ?? f.awayScore;
               const isLive = LIVE_CODES.includes(statusCode);
+              // Server data only contains live + upcoming rows, so a finished state (and its
+              // pen scores) can only arrive via the live patch.
+              const isFinished = FINISHED_CODES.includes(statusCode);
+              const homeScorePen = patch?.homeScorePen ?? null;
+              const awayScorePen = patch?.awayScorePen ?? null;
+              const showPens = statusCode === 'PEN' && homeScorePen != null && awayScorePen != null;
               const homeName = getTeamDisplayName(f.homeTeam, locale);
               const awayName = getTeamDisplayName(f.awayTeam, locale);
               const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
@@ -86,6 +93,17 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                       <span className="flex items-center gap-1 font-bold text-score-live">
                         <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
                         {statusCode === 'HT' ? 'HT' : `${minute ?? ''}'`}
+                      </span>
+                    ) : isFinished ? (
+                      <span className="flex flex-col leading-tight">
+                        <span className="font-medium text-text-tertiary">
+                          {statusCode === 'AET' ? 'AET' : statusCode === 'PEN' ? 'PEN' : 'FT'}
+                        </span>
+                        {showPens && (
+                          <span className="text-[9px] font-semibold text-text-tertiary">
+                            {homeScorePen}-{awayScorePen}
+                          </span>
+                        )}
                       </span>
                     ) : (
                       <span className="text-text-secondary" suppressHydrationWarning>
@@ -134,8 +152,8 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                     )}
                   </div>
 
-                  {/* Live scores */}
-                  {isLive && (
+                  {/* Live / final scores */}
+                  {(isLive || isFinished) && (
                     <div className="flex shrink-0 flex-col items-end gap-0.5">
                       <span className="text-xs font-bold tabular-nums text-text-primary">
                         {homeScore ?? '-'}

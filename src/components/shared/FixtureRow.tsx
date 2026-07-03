@@ -91,7 +91,7 @@ export function FixtureRow({
       ? statusCode === 'AET'
         ? t('extraTime')
         : statusCode === 'PEN'
-          ? ''
+          ? 'PEN'
           : t('fullTime')
       : null;
 
