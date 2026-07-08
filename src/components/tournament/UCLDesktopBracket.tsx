@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/lib/i18n/config';
 import type { BracketMatch, KnockoutPhase } from './BracketMatchCell';
@@ -102,6 +103,8 @@ function groupByPhase(matches: BracketMatch[]): Map<KnockoutPhase, BracketMatch[
 // ── Match card ──────────────────────────────────────────────────────────────
 
 function UCLMatchCard({ match }: { match: BracketMatch }) {
+  const t = useTranslations('tournament');
+  const tm = useTranslations('matchDetail');
   const showScores = match.status === 'finished' || match.status === 'live';
   const hasTwoLegs = match.homeLeg1Score != null && match.homeLeg2Score != null;
   const isSingleLeg = match.phase === 'final';
@@ -128,8 +131,12 @@ function UCLMatchCard({ match }: { match: BracketMatch }) {
       {showScores && hasTwoLegs && (
         <div className="flex items-center border-b border-border-subtle bg-bg-surface-2 px-2 py-0.5">
           <div className="flex-1" />
-          <span className="w-7 text-center text-[10px] font-semibold text-text-tertiary">M1</span>
-          <span className="w-7 text-center text-[10px] font-semibold text-text-tertiary">M2</span>
+          <span className="w-7 text-center text-[10px] font-semibold text-text-tertiary">
+            {t('leg1')}
+          </span>
+          <span className="w-7 text-center text-[10px] font-semibold text-text-tertiary">
+            {t('leg2')}
+          </span>
         </div>
       )}
 
@@ -246,15 +253,15 @@ function UCLMatchCard({ match }: { match: BracketMatch }) {
         )}
         {showScores && hasTwoLegs ? (
           <span>
-            Aggregate: {match.homeScore ?? '–'} - {match.awayScore ?? '–'}
+            {t('aggregate')}: {match.homeScore ?? '–'} - {match.awayScore ?? '–'}
           </span>
         ) : showScores && isSingleLeg ? (
           <span>
-            FT
+            {tm('fullTime')}
             {match.homeScorePen != null && match.awayScorePen != null && (
               <span className="font-semibold">
                 {' '}
-                · PEN {match.homeScorePen}-{match.awayScorePen}
+                · {tm('penalties')} {match.homeScorePen}-{match.awayScorePen}
               </span>
             )}
           </span>

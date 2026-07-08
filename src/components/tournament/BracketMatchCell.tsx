@@ -88,6 +88,17 @@ export function BracketMatchCell({ match: m, className }: BracketMatchCellProps)
 
   const showScores = match.status === 'finished' || match.status === 'live';
 
+  // Finished ties: localize the footer from the status code (the builder emits raw 'FT'/'agg').
+  // Upcoming/live keep the builder's statusLabel (a already-localized date).
+  const footerLabel =
+    match.status === 'finished'
+      ? match.statusCode === 'AET'
+        ? t('extraTime')
+        : match.statusCode === 'PEN'
+          ? t('penalties')
+          : t('fullTime')
+      : match.statusLabel;
+
   const cell = (
     <div
       data-match-id={match.matchId}
@@ -115,9 +126,9 @@ export function BracketMatchCell({ match: m, className }: BracketMatchCellProps)
       )}
 
       {/* Footer: status + venue (rendered only when data exists) */}
-      {match.statusLabel && (
+      {footerLabel && (
         <p className="mt-1 truncate text-xs text-text-tertiary">
-          {match.statusLabel}
+          {footerLabel}
           {match.venue && ` · ${match.venue}`}
         </p>
       )}
