@@ -85,12 +85,12 @@ export default async function BracketPage({ params, searchParams }: PageProps) {
 
   const entry = resolveEntry(tournament, typedLocale);
   if (!entry || !BRACKET_COMPETITION_IDS.has(entry.competitionId)) {
-    return <div className="p-8 text-center text-text-tertiary">Bracket not available.</div>;
+    return <div className="p-8 text-center text-text-tertiary">{tT('bracketNotAvailable')}</div>;
   }
   const competitionId = entry.competitionId;
   const metadata = getMetadataForCompetition(competitionId);
   if (!metadata || metadata.type !== 'cup') {
-    return <div className="p-8 text-center text-text-tertiary">Bracket not available.</div>;
+    return <div className="p-8 text-center text-text-tertiary">{tT('bracketNotAvailable')}</div>;
   }
 
   const isWc = competitionId === 1;

@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { BracketMatch } from './BracketMatchCell';
@@ -28,13 +31,15 @@ export function BracketCardNode({
   locale: Locale;
   mirrored?: boolean;
 }) {
+  const t = useTranslations('matchDetail');
   const isLive = match.status === 'live';
   const isFinished = match.status === 'finished';
   const isPlaceholder = match.status === 'placeholder';
   const showScore = isLive || isFinished;
   const hasPens = match.homeScorePen != null && match.awayScorePen != null;
-  // AET folded into FT per spec — all finished ties read FT; PEN still stacks beneath on shootouts.
-  const ftLabel = 'FT';
+  // Finished label: AET ties read the extra-time label, everything else full-time; on shootouts
+  // the PEN score line still stacks beneath (matching the fixture-list FT-over-PEN convention).
+  const finishedLabel = match.statusCode === 'AET' ? t('extraTime') : t('fullTime');
 
   const kickoff = match.kickoffISO ? new Date(match.kickoffISO) : null;
   const timeStr = kickoff ? <LocalTime date={kickoff} locale={locale} format="time" /> : '';
@@ -90,13 +95,15 @@ export function BracketCardNode({
         {isLive ? (
           <span className="flex items-center gap-1.5 text-xs font-bold text-score-live">
             <span className="size-2 animate-pulse rounded-full bg-score-live" />
-            {match.statusCode === 'HT' ? 'HT' : 'LIVE'}
+            {match.statusCode === 'HT' ? t('halfTime') : t('live')}
           </span>
         ) : isFinished ? (
           <span className="leading-tight">
-            <span className="block text-xs font-bold text-text-primary">{ftLabel}</span>
+            <span className="block text-xs font-bold text-text-primary">{finishedLabel}</span>
             {hasPens && (
-              <span className="block text-xs font-semibold uppercase text-text-tertiary">PEN</span>
+              <span className="block text-xs font-semibold uppercase text-text-tertiary">
+                {t('penalties')}
+              </span>
             )}
           </span>
         ) : isPlaceholder ? (

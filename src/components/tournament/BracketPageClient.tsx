@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { WC_2026_BRACKETS_BY_LOCALE } from '@/lib/constants/wc2026-bracket-builder';
 import { KnockoutBracket } from './KnockoutBracket';
 import { DynamicKnockoutBracket } from './DynamicKnockoutBracket';
@@ -19,7 +20,7 @@ interface BracketPageClientProps {
  * pre-tournament fallback); AFCON (6) / WAFCON (922) use the linear DynamicKnockoutBracket — the
  * same components shown in each competition's Knockout tab, rendered full-width.
  */
-export function BracketPageClient({
+export async function BracketPageClient({
   locale,
   competitionId,
   matches,
@@ -39,7 +40,8 @@ export function BracketPageClient({
   }
 
   if (!matches || !gridConfig) {
-    return <div className="p-8 text-center text-text-tertiary">Bracket not available.</div>;
+    const t = await getTranslations({ locale, namespace: 'tournament' });
+    return <div className="p-8 text-center text-text-tertiary">{t('bracketNotAvailable')}</div>;
   }
 
   return (

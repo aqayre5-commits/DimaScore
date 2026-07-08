@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
@@ -64,6 +65,7 @@ const LIVE_SET = new Set<string>(LIVE_CODES_ARRAY);
 const FINISHED_SET = new Set<string>(FINISHED_CODES_ARRAY);
 
 export function BracketMatchCell({ match: m, className }: BracketMatchCellProps) {
+  const t = useTranslations('matchDetail');
   // Overlay the shared 15s live poll when this cell carries a real DB fixture id (set by the
   // bracket builders for ties whose fixture exists). Static placeholder slots (W74 vs W77,
   // 1A vs 3CDEF, …) have no fixtureId and render the SSR snapshot directly.
@@ -107,7 +109,7 @@ export function BracketMatchCell({ match: m, className }: BracketMatchCellProps)
       ) : (
         <div className="truncate text-xs">
           <span className="font-medium text-text-primary">{match.homeLabel}</span>
-          <span className="mx-1 text-text-tertiary">vs</span>
+          <span className="mx-1 text-text-tertiary">{t('vs')}</span>
           <span className="font-medium text-text-primary">{match.awayLabel}</span>
         </div>
       )}
