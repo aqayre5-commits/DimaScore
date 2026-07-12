@@ -63,7 +63,7 @@ const TAB_HASHES: Record<
 
 // ── Cached data ──
 
-async function getCachedTeamData(teamSlug: string) {
+async function getCachedTeamData(teamSlug: string, locale: string) {
   'use cache';
   cacheLife('minutes');
   const team = await getTeamBySlug(db, teamSlug);
@@ -91,7 +91,7 @@ async function getCachedTeamData(teamSlug: string) {
     getTeamFormResults(db, team.id),
     getTeamPrimaryCompetition(db, team.id),
     getTeamKeyPlayers(db, team.id),
-    getTeamTournamentScorers(db, team.id),
+    getTeamTournamentScorers(db, team.id, locale),
     team.isNational ? getTeamWorldCupResults(db, team.id) : Promise.resolve([]),
   ]);
 
@@ -117,7 +117,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locale, slug: rawSlug } = await params;
   const typedLocale = locale as Locale;
   const teamSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
-  const data = await getCachedTeamData(teamSlug);
+  const data = await getCachedTeamData(teamSlug, locale);
   const team = data?.team;
 
   if (!team) {
@@ -163,7 +163,7 @@ export default async function TeamPage({ params }: PageProps) {
   const teamSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
 
   const [data, tBc, tTeam] = await Promise.all([
-    getCachedTeamData(teamSlug),
+    getCachedTeamData(teamSlug, locale),
     getTranslations({ locale, namespace: 'breadcrumb' }),
     getTranslations({ locale, namespace: 'teamPage' }),
   ]);

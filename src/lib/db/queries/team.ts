@@ -431,6 +431,7 @@ function mapScorerRows(
 export async function getTeamTournamentScorers(
   db: NeonHttpDatabase<typeof schema>,
   teamId: number,
+  locale: string,
   limit = 5,
 ): Promise<TournamentScorers | null> {
   // Competition + season of the team's nearest upcoming/live fixture.
@@ -451,23 +452,39 @@ export async function getTeamTournamentScorers(
   if (nameRow.rows.length === 0) return null;
   const competitionName = (nameRow.rows[0] as { name: Record<string, string> }).name;
 
+  // Computed from this edition's goal events (fixture_events), the same accurate source the
+  // competition page uses (getEditionTopScorers/getEditionTopAssists), scoped to this team.
+  // Own goals excluded; penalties count. Names/teams come from the localized players/teams tables.
   const scorerRows = await db.execute(
-    sql`SELECT player_id, stats->>'playerName' AS name, stats->>'playerPhoto' AS photo,
-               stats->>'teamName' AS team_name, stats->>'teamLogo' AS team_logo,
-               (stats->>'goals')::int AS value
-        FROM player_season_stats
-        WHERE competition_id = ${compId} AND season_year = ${season} AND team_id = ${teamId}
-          AND COALESCE((stats->>'goals')::int, 0) > 0
-        ORDER BY (stats->>'goals')::int DESC LIMIT ${limit}`,
+    sql`SELECT p.id AS player_id, p.photo_url AS photo,
+               COALESCE(p.name->>${locale}, p.name->>'en') AS name,
+               COALESCE(t.name->>${locale}, t.name->>'en') AS team_name, t.logo_url AS team_logo,
+               COUNT(*)::int AS value
+        FROM fixture_events e
+        JOIN fixtures f ON f.id = e.fixture_id
+        JOIN players p ON p.id = e.player_id
+        LEFT JOIN teams t ON t.id = e.team_id
+        WHERE f.competition_id = ${compId} AND f.season_year = ${season} AND e.team_id = ${teamId}
+          AND e.type = 'Goal' AND e.detail IN ('Normal Goal', 'Penalty')
+        GROUP BY p.id, t.id
+        ORDER BY value DESC, p.slug
+        LIMIT ${limit}`,
   );
   const assistRows = await db.execute(
-    sql`SELECT player_id, stats->>'playerName' AS name, stats->>'playerPhoto' AS photo,
-               stats->>'teamName' AS team_name, stats->>'teamLogo' AS team_logo,
-               (stats->>'assists')::int AS value
-        FROM player_season_stats
-        WHERE competition_id = ${compId} AND season_year = ${season} AND team_id = ${teamId}
-          AND COALESCE((stats->>'assists')::int, 0) > 0
-        ORDER BY (stats->>'assists')::int DESC LIMIT ${limit}`,
+    sql`SELECT p.id AS player_id, p.photo_url AS photo,
+               COALESCE(p.name->>${locale}, p.name->>'en') AS name,
+               COALESCE(t.name->>${locale}, t.name->>'en') AS team_name, t.logo_url AS team_logo,
+               COUNT(*)::int AS value
+        FROM fixture_events e
+        JOIN fixtures f ON f.id = e.fixture_id
+        JOIN players p ON p.id = e.assist_player_id
+        LEFT JOIN teams t ON t.id = e.team_id
+        WHERE f.competition_id = ${compId} AND f.season_year = ${season} AND e.team_id = ${teamId}
+          AND e.type = 'Goal' AND e.detail IN ('Normal Goal', 'Penalty')
+          AND e.assist_player_id IS NOT NULL
+        GROUP BY p.id, t.id
+        ORDER BY value DESC, p.slug
+        LIMIT ${limit}`,
   );
 
   return {
