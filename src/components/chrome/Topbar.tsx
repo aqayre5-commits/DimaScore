@@ -82,7 +82,7 @@ export function Topbar() {
     >
       <div className="mx-auto flex h-12 max-w-[1280px] items-center gap-0.5 px-4">
         {/* Mobile hamburger */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <MobileDrawer />
         </div>
 
