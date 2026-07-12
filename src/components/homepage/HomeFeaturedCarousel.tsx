@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { stripWomenSuffix, getTeamFlagUrl } from '@/lib/team-display';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
@@ -189,8 +189,8 @@ function CarouselSlide({
   labels: Props['labels'];
   isFirst: boolean;
 }) {
-  const homeName = getTeamDisplayName(match.homeTeam, locale);
-  const awayName = getTeamDisplayName(match.awayTeam, locale);
+  const homeName = stripWomenSuffix(getTeamDisplayName(match.homeTeam, locale));
+  const awayName = stripWomenSuffix(getTeamDisplayName(match.awayTeam, locale));
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
   const { days, hours, minutes } = useCountdown(match.kickoffAt);
 
