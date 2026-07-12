@@ -434,19 +434,36 @@ export async function getTeamTournamentScorers(
   locale: string,
   limit = 5,
 ): Promise<TournamentScorers | null> {
-  // Competition + season of the team's nearest upcoming/live fixture.
-  const fx = await db.execute(
-    sql`SELECT competition_id, season_year FROM fixtures
-        WHERE (home_team_id = ${teamId} OR away_team_id = ${teamId})
-          AND status_code NOT IN ('FT','AET','PEN','PST','CANC','ABD','AWD','WO')
-          AND kickoff_at >= NOW() - interval '3 hours'
-        ORDER BY kickoff_at ASC LIMIT 1`,
+  // Prefer the team's curated tournament (e.g. World Cup 2026) — the same signal the Squad tab
+  // uses (getTeamTournamentSquad) — so national teams show their tournament scorers even when
+  // their next fixture is a different competition (e.g. Morocco's upcoming AFCON qualifiers).
+  // Fall back to the nearest upcoming/live fixture for teams without a curated squad (clubs →
+  // their league).
+  let compId: number;
+  let season: number;
+  const squad = await db.execute(
+    sql`SELECT competition_id, season_year FROM tournament_squads
+        WHERE team_id = ${teamId}
+        ORDER BY season_year DESC LIMIT 1`,
   );
-  if (fx.rows.length === 0) return null;
-  const fxRow = fx.rows[0] as { competition_id: string | null; season_year: string | null };
-  if (fxRow.competition_id == null || fxRow.season_year == null) return null;
-  const compId = Number(fxRow.competition_id);
-  const season = Number(fxRow.season_year);
+  if (squad.rows.length > 0) {
+    const sq = squad.rows[0] as { competition_id: string | number; season_year: string | number };
+    compId = Number(sq.competition_id);
+    season = Number(sq.season_year);
+  } else {
+    const fx = await db.execute(
+      sql`SELECT competition_id, season_year FROM fixtures
+          WHERE (home_team_id = ${teamId} OR away_team_id = ${teamId})
+            AND status_code NOT IN ('FT','AET','PEN','PST','CANC','ABD','AWD','WO')
+            AND kickoff_at >= NOW() - interval '3 hours'
+          ORDER BY kickoff_at ASC LIMIT 1`,
+    );
+    if (fx.rows.length === 0) return null;
+    const fxRow = fx.rows[0] as { competition_id: string | null; season_year: string | null };
+    if (fxRow.competition_id == null || fxRow.season_year == null) return null;
+    compId = Number(fxRow.competition_id);
+    season = Number(fxRow.season_year);
+  }
 
   const nameRow = await db.execute(sql`SELECT name FROM competitions WHERE id = ${compId} LIMIT 1`);
   if (nameRow.rows.length === 0) return null;
