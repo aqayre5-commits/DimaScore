@@ -194,7 +194,7 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
           href={`/${locale}/match/${match.id}`}
           preview={preview}
           prefetchIntent
-          className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors ${
+          className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors sm:mx-auto sm:max-w-sm ${
             isLive
               ? 'bg-accent-green text-white hover:bg-accent-green-deep'
               : 'border border-accent-azure/30 bg-accent-azure/10 text-accent-azure hover:bg-accent-azure/20'

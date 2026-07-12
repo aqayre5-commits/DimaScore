@@ -319,7 +319,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
                     setDateOffset(0);
                     setExpanded(false);
                   }}
-                  className={`flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                     active
                       ? 'bg-accent-azure text-white shadow-sm'
                       : 'text-text-secondary hover:text-text-primary'

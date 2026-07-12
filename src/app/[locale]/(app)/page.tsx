@@ -168,7 +168,7 @@ export default async function HomePage({ params }: PageProps) {
   return (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <div className="flex flex-col gap-4 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-6">
+        <div className="mx-auto flex max-w-4xl flex-col gap-4 xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-6">
           {/* Left rail — competition nav. Desktop only: the drawer + bottom tab bar cover mobile. */}
           <aside className="hidden xl:col-start-1 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
             <LeagueLeftRail locale={typedLocale} competitionLogos={competitionLogos} />

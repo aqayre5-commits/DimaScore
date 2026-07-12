@@ -32,7 +32,7 @@ export function InnerPageShell({
   if (rightRailTop) {
     return (
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <div className="flex flex-col gap-2.5 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:items-start xl:gap-2.5">
+        <div className="mx-auto flex max-w-4xl flex-col gap-2.5 xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:items-start xl:gap-2.5">
           {/* Row 1: Page header (cols 1-2) + right rail top (col 3) */}
           {pageHeader && (
             <div className="order-0 xl:order-none xl:col-span-2 xl:col-start-1 xl:row-start-1 xl:self-stretch">
@@ -68,7 +68,7 @@ export function InnerPageShell({
     <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
       {pageHeader && <div className="mb-2.5">{pageHeader}</div>}
 
-      <div className="flex flex-col gap-2.5 xl:grid xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-2.5">
+      <div className="mx-auto flex max-w-4xl flex-col gap-2.5 xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-2.5">
         {/* Left rail — sticky below header stack */}
         <aside className="order-2 xl:order-none xl:col-start-1 xl:row-start-1 xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
           {leftRail}

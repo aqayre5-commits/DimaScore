@@ -18,7 +18,7 @@ const SearchModal = dynamic(() => import('./SearchModal').then((m) => m.SearchMo
 const tabClass = 'flex flex-col items-center gap-0.5 px-3 py-1';
 
 /**
- * Mobile bottom tab bar — Home / WC26 / Search / Settings. Fixed bottom, md:hidden.
+ * Mobile bottom tab bar — Home / WC26 / Search / Settings. Fixed bottom, lg:hidden.
  * Search opens the same modal as the desktop header; Settings opens a sheet with the
  * theme + language controls.
  */
@@ -37,35 +37,37 @@ export function MobileBottomTabBar() {
   return (
     <nav
       aria-label="Mobile navigation"
-      className="fixed inset-x-0 bottom-0 z-40 flex min-h-14 items-center justify-around border-t border-border-subtle bg-bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex min-h-14 items-center border-t border-border-subtle bg-bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
-      <Link
-        href={`/${locale}`}
-        className={cn(tabClass, isHome ? 'text-accent-azure' : 'text-text-tertiary')}
-      >
-        <Home className="size-5" />
-        <span className="text-xs font-medium">{t('home')}</span>
-      </Link>
+      <div className="mx-auto flex w-full max-w-md items-center justify-around">
+        <Link
+          href={`/${locale}`}
+          className={cn(tabClass, isHome ? 'text-accent-azure' : 'text-text-tertiary')}
+        >
+          <Home className="size-5" />
+          <span className="text-xs font-medium">{t('home')}</span>
+        </Link>
 
-      <Link
-        href={wcHref}
-        className={cn(tabClass, isWc ? 'text-accent-azure' : 'text-text-tertiary')}
-      >
-        <Trophy className="size-5" />
-        <span className="text-xs font-medium">{t('wc26')}</span>
-      </Link>
+        <Link
+          href={wcHref}
+          className={cn(tabClass, isWc ? 'text-accent-azure' : 'text-text-tertiary')}
+        >
+          <Trophy className="size-5" />
+          <span className="text-xs font-medium">{t('wc26')}</span>
+        </Link>
 
-      <button
-        type="button"
-        onClick={() => setSearchOpen(true)}
-        aria-label={t('search')}
-        className={cn(tabClass, 'text-text-tertiary')}
-      >
-        <Search className="size-5" />
-        <span className="text-xs font-medium">{t('search')}</span>
-      </button>
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          aria-label={t('search')}
+          className={cn(tabClass, 'text-text-tertiary')}
+        >
+          <Search className="size-5" />
+          <span className="text-xs font-medium">{t('search')}</span>
+        </button>
 
-      <SettingsSheet />
+        <SettingsSheet />
+      </div>
 
       {searchOpen && <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />}
     </nav>
