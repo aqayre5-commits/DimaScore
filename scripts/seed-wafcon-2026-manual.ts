@@ -106,15 +106,15 @@ const PLACEHOLDER_TEAMS: Array<{
     arName: 'الكاميرون (سيدات)',
     countryCode: 'CM',
   },
-  // Cape Verde 'CV' isn't in our countries table (existing CPV men's team also has country_code=null);
-  // leave null until a countries-table backfill lands rather than block the seed.
+  // Cape Verde 'CV' is seeded into the countries table by fix-cape-verde-country.ts
+  // (also links the men's team 1533), so the FK resolves and the flag renders.
   {
     id: TEAM_CPV,
     slug: 'cape-verde-w',
     enName: 'Cape Verde W',
     frName: 'Cap-Vert F',
     arName: 'الرأس الأخضر (سيدات)',
-    countryCode: null,
+    countryCode: 'CV',
   },
 ];
 

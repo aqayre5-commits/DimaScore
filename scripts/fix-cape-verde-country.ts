@@ -13,7 +13,8 @@ import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 
 const DRY = process.argv.includes('--dry-run');
-const TEAM_ID = 1533;
+// 1533 = men's "Cape Verde Islands"; -7 = women's "Cape Verde W" (WAFCON placeholder).
+const TEAM_IDS = [1533, -7];
 const CODE = 'CV';
 
 async function main(): Promise<void> {
@@ -39,22 +40,24 @@ async function main(): Promise<void> {
     }
   }
 
-  // 2. Point Cape Verde (team 1533) at it.
-  const [team] = await db
-    .select({ countryCode: schema.teams.countryCode })
-    .from(schema.teams)
-    .where(eq(schema.teams.id, TEAM_ID));
+  // 2. Point the Cape Verde teams (men's 1533 + women's -7) at it.
+  for (const teamId of TEAM_IDS) {
+    const [team] = await db
+      .select({ countryCode: schema.teams.countryCode })
+      .from(schema.teams)
+      .where(eq(schema.teams.id, teamId));
 
-  if (!team) {
-    console.error(`[cv] team ${TEAM_ID} not found`);
-    process.exit(1);
-  }
-  if (team.countryCode === CODE) {
-    console.log(`[cv] team ${TEAM_ID} country_code already '${CODE}'`);
-  } else {
-    console.log(`[cv] team ${TEAM_ID} country_code: ${team.countryCode ?? 'null'} → ${CODE}`);
-    if (!DRY) {
-      await db.update(schema.teams).set({ countryCode: CODE }).where(eq(schema.teams.id, TEAM_ID));
+    if (!team) {
+      console.error(`[cv] team ${teamId} not found`);
+      process.exit(1);
+    }
+    if (team.countryCode === CODE) {
+      console.log(`[cv] team ${teamId} country_code already '${CODE}'`);
+    } else {
+      console.log(`[cv] team ${teamId} country_code: ${team.countryCode ?? 'null'} → ${CODE}`);
+      if (!DRY) {
+        await db.update(schema.teams).set({ countryCode: CODE }).where(eq(schema.teams.id, teamId));
+      }
     }
   }
 
