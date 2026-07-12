@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { getTeamFlagUrl } from '@/lib/team-display';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
@@ -211,9 +212,9 @@ function CarouselSlide({
         {/* Home team */}
         <div className="flex w-[160px] flex-col items-center">
           <div className="flex h-[96px] items-center justify-center">
-            {match.homeTeam?.logoUrl ? (
+            {getTeamFlagUrl(match.homeTeam) ? (
               <Image
-                src={match.homeTeam.logoUrl}
+                src={getTeamFlagUrl(match.homeTeam)!}
                 alt=""
                 className="h-[96px] w-[96px] object-contain"
                 width={96}
@@ -270,9 +271,9 @@ function CarouselSlide({
         {/* Away team */}
         <div className="flex w-[160px] flex-col items-center">
           <div className="flex h-[96px] items-center justify-center">
-            {match.awayTeam?.logoUrl ? (
+            {getTeamFlagUrl(match.awayTeam) ? (
               <Image
-                src={match.awayTeam.logoUrl}
+                src={getTeamFlagUrl(match.awayTeam)!}
                 alt=""
                 className="h-[96px] w-[96px] object-contain"
                 width={96}
