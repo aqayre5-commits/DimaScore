@@ -32,30 +32,30 @@ export function InnerPageShell({
   if (rightRailTop) {
     return (
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <div className="mx-auto flex max-w-4xl flex-col gap-2.5 xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:items-start xl:gap-2.5">
+        <div className="mx-auto flex max-w-4xl flex-col gap-2.5 lg:grid lg:max-w-[930px] lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:items-start xl:gap-2.5">
           {/* Row 1: Page header (cols 1-2) + right rail top (col 3) */}
           {pageHeader && (
-            <div className="order-0 xl:order-none xl:col-span-2 xl:col-start-1 xl:row-start-1 xl:self-stretch">
+            <div className="order-0 lg:col-start-1 lg:row-start-1 lg:self-stretch xl:order-none xl:col-span-2 xl:col-start-1 xl:row-start-1 xl:self-stretch">
               {pageHeader}
             </div>
           )}
-          <div className="order-3 hidden xl:order-none xl:col-start-3 xl:row-start-1 xl:flex xl:flex-col xl:self-stretch">
+          <div className="order-3 hidden lg:col-start-2 lg:row-start-1 lg:flex lg:flex-col lg:self-stretch xl:order-none xl:col-start-3 xl:row-start-1 xl:flex xl:flex-col xl:self-stretch">
             {rightRailTop}
           </div>
 
           {/* Row 2: Left rail */}
-          <aside className="order-2 xl:order-none xl:col-start-1 xl:row-start-2 xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
+          <aside className="order-2 lg:hidden xl:order-none xl:col-start-1 xl:row-start-2 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
             {leftRail}
           </aside>
 
           {/* Row 2: Center column */}
-          <div className="order-1 min-w-0 xl:order-none xl:col-start-2 xl:row-start-2">
+          <div className="order-1 min-w-0 lg:col-start-1 lg:row-start-2 lg:order-none xl:order-none xl:col-start-2 xl:row-start-2">
             {center}
             {belowCenter && <div className="mt-2.5">{belowCenter}</div>}
           </div>
 
           {/* Row 2: Right rail — sticky, scrollable */}
-          <aside className="order-3 hidden xl:order-none xl:col-start-3 xl:row-start-2 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
+          <aside className="order-3 hidden lg:col-start-2 lg:row-start-2 lg:block lg:sticky lg:top-[104px] lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto xl:order-none xl:col-start-3 xl:row-start-2">
             {rightRail}
           </aside>
         </div>
@@ -68,20 +68,20 @@ export function InnerPageShell({
     <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
       {pageHeader && <div className="mb-2.5">{pageHeader}</div>}
 
-      <div className="mx-auto flex max-w-4xl flex-col gap-2.5 xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-2.5">
+      <div className="mx-auto flex max-w-4xl flex-col gap-2.5 lg:grid lg:max-w-[930px] lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto] lg:items-start xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-2.5">
         {/* Left rail — sticky below header stack */}
-        <aside className="order-2 xl:order-none xl:col-start-1 xl:row-start-1 xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
+        <aside className="order-2 lg:hidden xl:order-none xl:col-start-1 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
           {leftRail}
         </aside>
 
         {/* Center column — first in DOM for mobile via order */}
-        <div className="order-1 min-w-0 xl:order-none xl:col-start-2 xl:row-start-1">
+        <div className="order-1 min-w-0 lg:col-start-1 lg:row-start-1 lg:order-none xl:order-none xl:col-start-2 xl:row-start-1">
           {center}
           {belowCenter && <div className="mt-2.5">{belowCenter}</div>}
         </div>
 
         {/* Right rail — sticky, scrollable, reaches footer */}
-        <aside className="order-3 hidden xl:order-none xl:col-start-3 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
+        <aside className="order-3 hidden lg:col-start-2 lg:row-start-1 lg:block lg:sticky lg:top-[104px] lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto xl:order-none xl:col-start-3 xl:row-start-1">
           {rightRail}
         </aside>
       </div>

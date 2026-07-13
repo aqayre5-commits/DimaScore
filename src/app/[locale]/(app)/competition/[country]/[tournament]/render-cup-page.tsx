@@ -492,9 +492,9 @@ export async function renderCupPage(
         }
         belowCenter={
           <>
-            {/* Mobile-only: surface the right-rail featured matches (hidden xl:block rail). */}
+            {/* Mobile/tablet-only: surface the right-rail featured matches (lg+ shows the rail). */}
             {cupFeaturedMatches.length > 0 && (
-              <div className="xl:hidden">
+              <div className="lg:hidden">
                 <LeagueRightRailCard
                   featuredMatches={cupFeaturedMatches}
                   locale={locale}

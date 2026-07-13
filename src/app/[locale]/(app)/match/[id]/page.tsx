@@ -228,7 +228,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
   };
 
   // Rendered twice: in the right rail (desktop) and, via belowCenter, as an
-  // xl:hidden block so mobile (where the rail is hidden) still gets match info + H2H.
+  // lg:hidden block so mobile/tablet (where the rail is hidden) still gets match info + H2H.
   const matchSidebar = (
     <MatchClientRightRail
       matchId={matchId}
@@ -294,7 +294,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
           </div>
         }
         rightRail={matchSidebar}
-        belowCenter={<div className="xl:hidden">{matchSidebar}</div>}
+        belowCenter={<div className="lg:hidden">{matchSidebar}</div>}
       />
     </>
   );

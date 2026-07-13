@@ -255,7 +255,7 @@ export async function renderGenericCupPage(
           <>
             {/* Mobile-only: surface the right-rail featured matches (hidden xl:block rail). */}
             {genericFeaturedMatches.length > 0 && (
-              <div className="xl:hidden">
+              <div className="lg:hidden">
                 <LeagueRightRailCard
                   featuredMatches={genericFeaturedMatches}
                   locale={locale}

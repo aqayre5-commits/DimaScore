@@ -332,9 +332,9 @@ export default async function TeamPage({ params }: PageProps) {
         }
         center={
           <>
-            {/* Mobile-only Next/Last band above the tabs (desktop shows it in rightRailTop) */}
+            {/* Mobile/tablet-only Next/Last band above the tabs (lg+ shows it in rightRailTop) */}
             {upcomingFixture && (
-              <div className="mb-2.5 xl:hidden">
+              <div className="mb-2.5 lg:hidden">
                 <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
               </div>
             )}
@@ -351,7 +351,7 @@ export default async function TeamPage({ params }: PageProps) {
         belowCenter={
           <>
             {/* Mobile-only: the desktop right-rail cards, surfaced below the tabs */}
-            <div className="mb-2.5 space-y-2.5 xl:hidden">
+            <div className="mb-2.5 space-y-2.5 lg:hidden">
               {secondFixture && <FeaturedMatchCard fixture={secondFixture} locale={typedLocale} />}
               <KeyPlayersCard players={keyPlayers} locale={typedLocale} />
               <TournamentScorersCard data={tournamentScorers} locale={typedLocale} />

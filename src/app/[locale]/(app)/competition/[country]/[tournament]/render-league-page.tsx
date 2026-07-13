@@ -308,7 +308,7 @@ export async function renderLeaguePage(
           <>
             {/* Mobile-only: surface the right-rail featured matches (hidden xl:block rail). */}
             {featuredMatches.length > 0 && (
-              <div className="xl:hidden">
+              <div className="lg:hidden">
                 <LeagueRightRailCard
                   featuredMatches={featuredMatches}
                   locale={locale}
