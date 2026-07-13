@@ -121,14 +121,14 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
         <>
           <button
             onClick={() => goTo(idx === 0 ? matches.length - 1 : idx - 1)}
-            className="absolute start-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary"
+            className="absolute start-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary sm:block"
             aria-label="Previous"
           >
             <ChevronLeft className="size-5" />
           </button>
           <button
             onClick={() => goTo(idx === matches.length - 1 ? 0 : idx + 1)}
-            className="absolute end-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary"
+            className="absolute end-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary sm:block"
             aria-label="Next"
           >
             <ChevronRight className="size-5" />
