@@ -3,8 +3,7 @@ import type { StandingRow } from '@/lib/db/queries';
 import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 
 interface StandingsWidgetProps {
   heading: string;
@@ -57,19 +56,14 @@ export function StandingsWidget({
                   <td className="py-1.5 text-center tabular-nums text-text-tertiary">{row.rank}</td>
                   <td className="py-1.5">
                     <div className="flex items-center gap-1.5">
-                      {getTeamFlagUrl(row.team) ? (
-                        <Image
-                          src={getTeamFlagUrl(row.team)!}
-                          alt=""
-                          className="h-4 w-4 shrink-0 object-contain"
-                          width={16}
-                          height={16}
-                        />
-                      ) : (
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-                          {row.team?.code?.slice(0, 2) ?? '??'}
-                        </span>
-                      )}
+                      <Flag
+                        countryCode={row.team?.countryCode}
+                        logoUrl={row.team?.logoUrl}
+                        isNational={row.team?.isNational}
+                        size={16}
+                        label={row.team?.code}
+                        className="shrink-0"
+                      />
                       <span className="truncate text-text-primary">
                         {getTeamDisplayName(row.team, locale)}
                       </span>

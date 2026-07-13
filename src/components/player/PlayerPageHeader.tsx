@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import { RatingSparkline } from '@/components/shared/FormSparkline';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import type { PlayerDetail } from '@/lib/db/queries/player';
@@ -78,7 +78,6 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
   const t = useTranslations('playerPage');
   const name = resolvePlayerName(player, locale);
   const age = computeAge(player.birthDate);
-  const flag = player.nationalityCode ? codeToFlag(player.nationalityCode) : null;
   const nationalityName = player.nationalityCode
     ? (getLeagueCountryName(player.nationalityCode, locale) ?? player.nationalityCode)
     : null;
@@ -148,7 +147,9 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
               >
                 {positionLabel(player.position, t)}
               </span>
-              {flag && <span>{flag}</span>}
+              {player.nationalityCode && (
+                <Flag countryCode={player.nationalityCode} size={14} className="inline-block" />
+              )}
               {nationalityName && <span>{nationalityName}</span>}
               {age != null && (
                 <>

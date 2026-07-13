@@ -9,7 +9,8 @@ import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
-import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
+import { CompetitionLogo } from '@/components/shared/Logo';
+import { Flag } from '@/components/shared/Flag';
 import { useMounted } from '@/hooks/useMounted';
 import { useLiveFixtures, type LiveFixturePatch } from '@/hooks/useLiveFixtures';
 
@@ -64,19 +65,25 @@ function MatchRow({
   const homeWon = isFinished && hasScore && (fixture.homeScore ?? 0) > (fixture.awayScore ?? 0);
   const awayWon = isFinished && hasScore && (fixture.awayScore ?? 0) > (fixture.homeScore ?? 0);
 
-  const homeBadge = fixture.homeTeam?.logoUrl ? (
-    <TeamLogo src={fixture.homeTeam.logoUrl} size={24} className="size-6 shrink-0 object-contain" />
-  ) : (
-    <span className="flex size-6 shrink-0 items-center justify-center rounded bg-bg-surface-2 text-[9px] font-bold text-text-tertiary">
-      {homeName.slice(0, 2)}
-    </span>
+  const homeBadge = (
+    <Flag
+      countryCode={fixture.homeTeam?.countryCode}
+      logoUrl={fixture.homeTeam?.logoUrl}
+      isNational={fixture.homeTeam?.isNational}
+      size={24}
+      label={homeName}
+      className="shrink-0"
+    />
   );
-  const awayBadge = fixture.awayTeam?.logoUrl ? (
-    <TeamLogo src={fixture.awayTeam.logoUrl} size={24} className="size-6 shrink-0 object-contain" />
-  ) : (
-    <span className="flex size-6 shrink-0 items-center justify-center rounded bg-bg-surface-2 text-[9px] font-bold text-text-tertiary">
-      {awayName.slice(0, 2)}
-    </span>
+  const awayBadge = (
+    <Flag
+      countryCode={fixture.awayTeam?.countryCode}
+      logoUrl={fixture.awayTeam?.logoUrl}
+      isNational={fixture.awayTeam?.isNational}
+      size={24}
+      label={awayName}
+      className="shrink-0"
+    />
   );
   const statusNode = isLive ? (
     <span className="text-sm font-bold tabular-nums text-score-live">

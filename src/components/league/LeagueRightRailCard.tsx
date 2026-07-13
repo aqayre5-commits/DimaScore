@@ -5,7 +5,8 @@ import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTranslations } from 'next-intl/server';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
-import { stripWomenSuffix, getTeamFlagUrl } from '@/lib/team-display';
+import { stripWomenSuffix } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 import { getCachedNow } from '@/lib/cached-now';
 import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 import type { FixtureWithTeams } from '@/lib/db/queries';
@@ -194,17 +195,14 @@ function CompactMatch({
     >
       {/* Home */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        {getTeamFlagUrl(homeTeam) ? (
-          <Image
-            src={getTeamFlagUrl(homeTeam)!}
-            alt=""
-            width={16}
-            height={16}
-            className="size-4 shrink-0 object-contain"
-          />
-        ) : (
-          <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />
-        )}
+        <Flag
+          countryCode={homeTeam?.countryCode}
+          logoUrl={homeTeam?.logoUrl}
+          isNational={homeTeam?.isNational}
+          size={16}
+          label={homeCode}
+          className="shrink-0"
+        />
         <span className="truncate text-xs font-medium text-text-primary">{homeCode}</span>
       </div>
 
@@ -226,17 +224,14 @@ function CompactMatch({
       {/* Away */}
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
         <span className="truncate text-xs font-medium text-text-primary">{awayCode}</span>
-        {getTeamFlagUrl(awayTeam) ? (
-          <Image
-            src={getTeamFlagUrl(awayTeam)!}
-            alt=""
-            width={16}
-            height={16}
-            className="size-4 shrink-0 object-contain"
-          />
-        ) : (
-          <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />
-        )}
+        <Flag
+          countryCode={awayTeam?.countryCode}
+          logoUrl={awayTeam?.logoUrl}
+          isNational={awayTeam?.isNational}
+          size={16}
+          label={awayCode}
+          className="shrink-0"
+        />
       </div>
     </MatchLink>
   );

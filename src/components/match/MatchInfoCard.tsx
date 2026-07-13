@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Calendar, Clock, MapPin, Users, Shield, Scale } from 'lucide-react';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import type { MatchDetail } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
@@ -45,13 +45,11 @@ export function MatchInfoCard({ match, locale, competitionHref }: MatchInfoCardP
       icon: Shield,
       label: t('competition'),
       value: (() => {
-        const flag = match.competition.countryCode
-          ? codeToFlag(match.competition.countryCode)
-          : null;
-        const label = flag ? (
-          <>
-            <span className="text-lg">{flag}</span> {compName}
-          </>
+        const label = match.competition.countryCode ? (
+          <span className="inline-flex items-center gap-1.5">
+            <Flag countryCode={match.competition.countryCode} size={16} />
+            {compName}
+          </span>
         ) : (
           compName
         );

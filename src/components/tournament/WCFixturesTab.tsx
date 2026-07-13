@@ -7,8 +7,8 @@ import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { codeToFlag } from '@/lib/flags';
-import { stripWomenSuffix, getTeamFlagUrl } from '@/lib/team-display';
+import { stripWomenSuffix } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 import { SITE_TZ } from '@/lib/utils/date';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
@@ -293,10 +293,6 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
 
   const homeName = resolveFullName(homeTeam, locale);
   const awayName = resolveFullName(awayTeam, locale);
-  const homeFlag =
-    homeTeam?.isNational && homeTeam.countryCode ? codeToFlag(homeTeam.countryCode) : null;
-  const awayFlag =
-    awayTeam?.isNational && awayTeam.countryCode ? codeToFlag(awayTeam.countryCode) : null;
 
   const homeWon = isFinished && hasScore && homeScore! > awayScore!;
   const awayWon = isFinished && hasScore && awayScore! > homeScore!;
@@ -321,7 +317,7 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
       <div className="flex items-stretch gap-3 px-4 py-2.5">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex items-center gap-2.5">
-            <TeamBadge team={homeTeam} flag={homeFlag} big />
+            <TeamBadge team={homeTeam} big />
             <span
               className={cn(
                 'min-w-0 flex-1 truncate text-base',
@@ -348,7 +344,7 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
             )}
           </div>
           <div className="flex items-center gap-2.5">
-            <TeamBadge team={awayTeam} flag={awayFlag} big />
+            <TeamBadge team={awayTeam} big />
             <span
               className={cn(
                 'min-w-0 flex-1 truncate text-base',
@@ -401,32 +397,17 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
   );
 }
 
-function TeamBadge({
-  team,
-  flag,
-  big = false,
-}: {
-  team: FixtureWithTeams['homeTeam'];
-  flag: string | null;
-  big?: boolean;
-}) {
-  const box = big ? 'size-6' : 'size-5';
-  const flagOrLogo = getTeamFlagUrl(team);
-  if (flagOrLogo) {
-    return (
-      <Image
-        src={flagOrLogo}
-        alt=""
-        width={big ? 24 : 20}
-        height={big ? 24 : 20}
-        className={`${box} shrink-0 object-contain`}
-      />
-    );
-  }
-  if (flag) {
-    return <span className={`shrink-0 leading-none ${big ? 'text-lg' : 'text-sm'}`}>{flag}</span>;
-  }
-  return <span className={`inline-block ${box} shrink-0 rounded bg-bg-surface-2`} />;
+function TeamBadge({ team, big = false }: { team: FixtureWithTeams['homeTeam']; big?: boolean }) {
+  return (
+    <Flag
+      countryCode={team?.countryCode}
+      logoUrl={team?.logoUrl}
+      isNational={team?.isNational}
+      size={big ? 24 : 20}
+      label={team?.code}
+      className="shrink-0"
+    />
+  );
 }
 
 function resolveFullName(team: FixtureWithTeams['homeTeam'], locale: Locale): string {

@@ -9,6 +9,7 @@ import { useLiveFixtures, useLiveFeedReady } from '@/hooks/useLiveFixtures';
 import type { RightRailFixture, GoalEvent } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
+import { Flag } from '@/components/shared/Flag';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 
 interface Props {
@@ -117,19 +118,13 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
         <div className="mt-3 flex items-center justify-center gap-3">
           {/* Home */}
           <div className="flex flex-1 flex-col items-center gap-1.5 min-w-0">
-            {match.homeTeam?.logoUrl ? (
-              <Image
-                src={match.homeTeam.logoUrl}
-                alt=""
-                className="size-9 object-contain"
-                width={36}
-                height={36}
-              />
-            ) : (
-              <div className="flex size-9 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
-                {homeName[0]}
-              </div>
-            )}
+            <Flag
+              countryCode={match.homeTeam?.countryCode}
+              logoUrl={match.homeTeam?.logoUrl}
+              isNational={match.homeTeam?.isNational}
+              size={36}
+              label={homeName}
+            />
             <span className="w-full truncate text-center text-[11px] font-medium text-text-primary">
               {homeName}
             </span>
@@ -148,19 +143,13 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
 
           {/* Away */}
           <div className="flex flex-1 flex-col items-center gap-1.5 min-w-0">
-            {match.awayTeam?.logoUrl ? (
-              <Image
-                src={match.awayTeam.logoUrl}
-                alt=""
-                className="size-9 object-contain"
-                width={36}
-                height={36}
-              />
-            ) : (
-              <div className="flex size-9 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
-                {awayName[0]}
-              </div>
-            )}
+            <Flag
+              countryCode={match.awayTeam?.countryCode}
+              logoUrl={match.awayTeam?.logoUrl}
+              isNational={match.awayTeam?.isNational}
+              size={36}
+              label={awayName}
+            />
             <span className="w-full truncate text-center text-[11px] font-medium text-text-primary">
               {awayName}
             </span>

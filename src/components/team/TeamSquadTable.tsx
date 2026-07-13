@@ -1,5 +1,4 @@
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
 import type { SquadPlayer } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';

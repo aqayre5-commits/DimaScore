@@ -1,9 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { TeamLogo } from '@/components/shared/Logo';
-import { codeToFlag } from '@/lib/flags';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { getMatchState } from '@/lib/match-status';
 import { LocalTime } from '@/components/shared/LocalTime';
@@ -127,21 +125,17 @@ function TeamRow({
 }) {
   const name = team?.name[locale] ?? team?.name['en'] ?? team?.code ?? '—';
   const code = team?.code ?? name.slice(0, 3).toUpperCase();
-  const flag = team?.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
 
   return (
     <div className="flex items-center gap-3 px-4 py-3">
-      {getTeamFlagUrl(team) ? (
-        <TeamLogo
-          src={getTeamFlagUrl(team)}
-          size={28}
-          className="size-7 shrink-0 rounded object-contain"
-        />
-      ) : flag ? (
-        <span className="text-xl leading-none">{flag}</span>
-      ) : (
-        <span className="size-7 shrink-0 rounded bg-bg-surface-2" />
-      )}
+      <Flag
+        countryCode={team?.countryCode}
+        logoUrl={team?.logoUrl}
+        isNational={team?.isNational}
+        size={28}
+        label={code}
+        className="shrink-0"
+      />
       <span className="text-sm font-bold tabular-nums text-text-primary">{code}</span>
       <span className="ml-auto flex items-baseline tabular-nums">
         <span

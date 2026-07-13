@@ -2,8 +2,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 
 interface TeamStandingsSectionProps {
   standings: StandingRow[];
@@ -90,15 +89,14 @@ export function TeamStandingsSection({
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex items-center gap-2">
-                          {getTeamFlagUrl(row.team) && (
-                            <Image
-                              src={getTeamFlagUrl(row.team)!}
-                              alt=""
-                              width={18}
-                              height={18}
-                              className="size-[18px] shrink-0 object-contain"
-                            />
-                          )}
+                          <Flag
+                            countryCode={row.team?.countryCode}
+                            logoUrl={row.team?.logoUrl}
+                            isNational={row.team?.isNational}
+                            size={18}
+                            label={row.team?.code}
+                            className="shrink-0"
+                          />
                           <span
                             className={cn(
                               'truncate text-text-primary',

@@ -1,9 +1,8 @@
 'use client';
 
-import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
+import { CompetitionLogo } from '@/components/shared/Logo';
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { MatchLink } from '@/components/shared/MatchLink';
@@ -68,10 +67,6 @@ export function FixtureRow({
 
   const homeName = resolveFullName(homeTeam, locale);
   const awayName = resolveFullName(awayTeam, locale);
-  const homeFlag =
-    homeTeam?.isNational && homeTeam.countryCode ? codeToFlag(homeTeam.countryCode) : null;
-  const awayFlag =
-    awayTeam?.isNational && awayTeam.countryCode ? codeToFlag(awayTeam.countryCode) : null;
 
   const preview = previewFromFixtureRow({
     homeTeam,
@@ -121,7 +116,7 @@ export function FixtureRow({
         <div className="flex items-stretch gap-3 py-2">
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex items-center gap-2.5">
-              <TeamBadge team={homeTeam} flag={homeFlag} big />
+              <TeamBadge team={homeTeam} big />
               <span
                 className={`min-w-0 flex-1 truncate text-base ${awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
               >
@@ -142,7 +137,7 @@ export function FixtureRow({
               )}
             </div>
             <div className="flex items-center gap-2.5">
-              <TeamBadge team={awayTeam} flag={awayFlag} big />
+              <TeamBadge team={awayTeam} big />
               <span
                 className={`min-w-0 flex-1 truncate text-base ${homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
               >
@@ -190,30 +185,17 @@ export function FixtureRow({
   );
 }
 
-function TeamBadge({
-  team,
-  flag,
-  big = false,
-}: {
-  team: FixtureTeam | null;
-  flag: string | null;
-  big?: boolean;
-}) {
-  const box = big ? 'size-6' : 'size-5';
-  const flagOrLogo = getTeamFlagUrl(team);
-  if (flagOrLogo) {
-    return (
-      <TeamLogo
-        src={flagOrLogo}
-        size={big ? 24 : 20}
-        className={`${box} shrink-0 object-contain`}
-      />
-    );
-  }
-  if (flag) {
-    return <span className={`shrink-0 leading-none ${big ? 'text-lg' : 'text-sm'}`}>{flag}</span>;
-  }
-  return <span className={`inline-block ${box} shrink-0 rounded bg-bg-surface-2`} />;
+function TeamBadge({ team, big = false }: { team: FixtureTeam | null; big?: boolean }) {
+  return (
+    <Flag
+      countryCode={team?.countryCode}
+      logoUrl={team?.logoUrl}
+      isNational={team?.isNational}
+      size={big ? 24 : 20}
+      label={team?.code}
+      className="shrink-0"
+    />
+  );
 }
 
 /** Full localized name: name[locale] → name['en'] → shortName[locale] → shortName['en'] → code → '—' */

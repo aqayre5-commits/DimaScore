@@ -7,7 +7,7 @@ import { getMatchState } from '@/lib/match-status';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromDayFixture } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
-import { TeamLogo } from '@/components/shared/Logo';
+import { Flag } from '@/components/shared/Flag';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 
 interface MatchRowProps {
@@ -84,17 +84,14 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
         <span className={`overflow-hidden text-ellipsis whitespace-nowrap text-base ${nameCls}`}>
           {homeLabel}
         </span>
-        {fixture.homeTeam?.logoUrl ? (
-          <TeamLogo
-            src={fixture.homeTeam.logoUrl}
-            size={16}
-            className="h-4 w-4 shrink-0 object-contain"
-          />
-        ) : (
-          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-            {fixture.homeTeam?.code?.slice(0, 2) ?? '—'}
-          </span>
-        )}
+        <Flag
+          countryCode={fixture.homeTeam?.countryCode}
+          logoUrl={fixture.homeTeam?.logoUrl}
+          isNational={fixture.homeTeam?.isNational}
+          size={16}
+          label={fixture.homeTeam?.code}
+          className="shrink-0"
+        />
       </div>
 
       {/* Score (+ pen score beneath) or vs */}
@@ -117,17 +114,14 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
 
       {/* Away team */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        {fixture.awayTeam?.logoUrl ? (
-          <TeamLogo
-            src={fixture.awayTeam.logoUrl}
-            size={16}
-            className="h-4 w-4 shrink-0 object-contain"
-          />
-        ) : (
-          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-            {fixture.awayTeam?.code?.slice(0, 2) ?? '—'}
-          </span>
-        )}
+        <Flag
+          countryCode={fixture.awayTeam?.countryCode}
+          logoUrl={fixture.awayTeam?.logoUrl}
+          isNational={fixture.awayTeam?.isNational}
+          size={16}
+          label={fixture.awayTeam?.code}
+          className="shrink-0"
+        />
         <span className={`overflow-hidden text-ellipsis whitespace-nowrap text-base ${nameCls}`}>
           {awayLabel}
         </span>

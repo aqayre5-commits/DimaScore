@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import { stripWomenSuffix } from '@/lib/team-display';
 import { FormPills } from '@/components/shared/FormPills';
 import type { StandingRow } from '@/lib/db/queries';
@@ -120,10 +120,6 @@ export function GroupTable({
                   row.team?.code ??
                   '\u2014',
               );
-              const flag =
-                row.team?.isNational && row.team.countryCode
-                  ? codeToFlag(row.team.countryCode)
-                  : null;
               const isMorocco = row.team?.code === 'MA';
               const isLiveRow = !!liveTeamIds && row.teamId != null && liveTeamIds.has(row.teamId);
               const zoneColor = getZoneColor(row.rank);
@@ -147,7 +143,14 @@ export function GroupTable({
                   </td>
                   <td className="py-2">
                     <span className="flex items-center gap-2">
-                      {flag && <span className="shrink-0 text-base leading-none">{flag}</span>}
+                      <Flag
+                        countryCode={row.team?.countryCode}
+                        logoUrl={row.team?.logoUrl}
+                        isNational={row.team?.isNational}
+                        size={16}
+                        label={row.team?.code}
+                        className="shrink-0"
+                      />
                       {row.team?.slug ? (
                         <Link
                           href={`/${locale}/equipe/${row.team.slug}`}

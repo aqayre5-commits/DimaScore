@@ -5,8 +5,7 @@ import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
 import type { LeagueCoverageRecord, TopPlayerRow, TopCardRow } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 import { PlayerPhotoCircle } from '@/components/shared/PlayerPhotoCircle';
 
 interface LeagueRightRailProps {
@@ -165,17 +164,13 @@ function MiniStandingsWidget({
                   <td className="py-1.5 text-center tabular-nums text-text-tertiary">{row.rank}</td>
                   <td className="py-1.5">
                     <div className="flex items-center gap-1.5">
-                      {getTeamFlagUrl(row.team) ? (
-                        <Image
-                          src={getTeamFlagUrl(row.team)!}
-                          alt=""
-                          className="size-4 object-contain"
-                          width={16}
-                          height={16}
-                        />
-                      ) : (
-                        <div className="size-4 rounded bg-bg-surface-2" />
-                      )}
+                      <Flag
+                        countryCode={row.team?.countryCode}
+                        logoUrl={row.team?.logoUrl}
+                        isNational={row.team?.isNational}
+                        size={16}
+                        label={row.team?.code}
+                      />
                       {row.team?.slug ? (
                         <Link
                           href={`/${locale}/equipe/${row.team.slug}`}

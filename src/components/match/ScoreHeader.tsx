@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { LiveScoreDisplay } from '@/components/match/LiveScoreDisplay';
 import type { MatchDetail } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
 
 export interface GoalScorer {
   playerName: string;
@@ -44,15 +43,6 @@ export function ScoreHeader({
   const homeGoals = goalScorers.filter((g) => g.teamId === homeTeamId);
   const awayGoals = goalScorers.filter((g) => g.teamId === awayTeamId);
 
-  const homeFlag =
-    match.homeTeam?.isNational && match.homeTeam.countryCode
-      ? codeToFlag(match.homeTeam.countryCode)
-      : null;
-  const awayFlag =
-    match.awayTeam?.isNational && match.awayTeam.countryCode
-      ? codeToFlag(match.awayTeam.countryCode)
-      : null;
-
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15">
       {/* Competition + round */}
@@ -87,32 +77,26 @@ export function ScoreHeader({
                 prefetch={false}
                 className="flex flex-col items-center gap-2 hover:opacity-80"
               >
-                {homeFlag && <span className="text-4xl leading-none">{homeFlag}</span>}
-                {!homeFlag && match.homeTeam?.logoUrl && (
-                  <Image
-                    src={match.homeTeam.logoUrl}
-                    alt=""
-                    className="size-14 object-contain"
-                    width={56}
-                    height={56}
-                  />
-                )}
+                <Flag
+                  countryCode={match.homeTeam?.countryCode}
+                  logoUrl={match.homeTeam?.logoUrl}
+                  isNational={match.homeTeam?.isNational}
+                  size={56}
+                  label={homeName}
+                />
                 <span className="text-base font-semibold text-text-primary hover:text-accent hover:underline">
                   {homeName}
                 </span>
               </Link>
             ) : (
               <>
-                {homeFlag && <span className="text-4xl leading-none">{homeFlag}</span>}
-                {!homeFlag && match.homeTeam?.logoUrl && (
-                  <Image
-                    src={match.homeTeam.logoUrl}
-                    alt=""
-                    className="size-14 object-contain"
-                    width={56}
-                    height={56}
-                  />
-                )}
+                <Flag
+                  countryCode={match.homeTeam?.countryCode}
+                  logoUrl={match.homeTeam?.logoUrl}
+                  isNational={match.homeTeam?.isNational}
+                  size={56}
+                  label={homeName}
+                />
                 <span className="text-base font-semibold text-text-primary">{homeName}</span>
               </>
             )}
@@ -144,32 +128,26 @@ export function ScoreHeader({
                 prefetch={false}
                 className="flex flex-col items-center gap-2 hover:opacity-80"
               >
-                {awayFlag && <span className="text-4xl leading-none">{awayFlag}</span>}
-                {!awayFlag && match.awayTeam?.logoUrl && (
-                  <Image
-                    src={match.awayTeam.logoUrl}
-                    alt=""
-                    className="size-14 object-contain"
-                    width={56}
-                    height={56}
-                  />
-                )}
+                <Flag
+                  countryCode={match.awayTeam?.countryCode}
+                  logoUrl={match.awayTeam?.logoUrl}
+                  isNational={match.awayTeam?.isNational}
+                  size={56}
+                  label={awayName}
+                />
                 <span className="text-base font-semibold text-text-primary hover:text-accent hover:underline">
                   {awayName}
                 </span>
               </Link>
             ) : (
               <>
-                {awayFlag && <span className="text-4xl leading-none">{awayFlag}</span>}
-                {!awayFlag && match.awayTeam?.logoUrl && (
-                  <Image
-                    src={match.awayTeam.logoUrl}
-                    alt=""
-                    className="size-14 object-contain"
-                    width={56}
-                    height={56}
-                  />
-                )}
+                <Flag
+                  countryCode={match.awayTeam?.countryCode}
+                  logoUrl={match.awayTeam?.logoUrl}
+                  isNational={match.awayTeam?.isNational}
+                  size={56}
+                  label={awayName}
+                />
                 <span className="text-base font-semibold text-text-primary">{awayName}</span>
               </>
             )}

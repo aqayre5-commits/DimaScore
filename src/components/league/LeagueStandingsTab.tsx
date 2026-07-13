@@ -5,9 +5,8 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
-import { TeamLogo } from '@/components/shared/Logo';
 import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 import { FormPills } from '@/components/shared/FormPills';
 
 interface LeagueStandingsTabProps {
@@ -101,15 +100,13 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
                   {/* Team */}
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-2">
-                      {getTeamFlagUrl(row.team) ? (
-                        <TeamLogo
-                          src={getTeamFlagUrl(row.team)}
-                          size={20}
-                          className="size-5 object-contain"
-                        />
-                      ) : (
-                        <div className="size-5 rounded bg-bg-surface-2" />
-                      )}
+                      <Flag
+                        countryCode={row.team?.countryCode}
+                        logoUrl={row.team?.logoUrl}
+                        isNational={row.team?.isNational}
+                        size={20}
+                        label={row.team?.code}
+                      />
                       {row.team?.slug ? (
                         <Link
                           href={`/${locale}/equipe/${row.team.slug}`}

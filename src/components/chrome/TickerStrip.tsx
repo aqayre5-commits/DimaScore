@@ -4,9 +4,8 @@ import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromTickerFixture } from '@/lib/match-header-preview';
-import { TeamLogo } from '@/components/shared/Logo';
 import { Pause, Play } from 'lucide-react';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import { isLiveStatus } from '@/lib/data/types';
 import type { TickerFixture } from '@/lib/db/queries';
 import { getCompactTeamLabel } from '@/lib/utils/team-name';
@@ -59,14 +58,17 @@ function TeamCell({
 }) {
   if (!team) return <span className="text-sm text-text-tertiary">&mdash;</span>;
 
-  const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
   const code = getCompactTeamLabel(team, locale);
 
-  const logo = flag ? (
-    <span className="text-base leading-none">{flag}</span>
-  ) : team.logoUrl ? (
-    <TeamLogo src={team.logoUrl} size={16} className="size-4 object-contain" />
-  ) : null;
+  const logo = (
+    <Flag
+      countryCode={team.countryCode}
+      logoUrl={team.logoUrl}
+      isNational={team.isNational}
+      size={16}
+      label={code}
+    />
+  );
 
   const name = <span className="text-sm font-medium text-text-primary">{code}</span>;
 

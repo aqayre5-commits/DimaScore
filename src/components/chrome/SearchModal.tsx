@@ -9,7 +9,7 @@ import type { SearchResults } from '@/lib/db/queries/search';
 import { buildCompetitionHrefById } from '@/lib/constants/competitions-mega-menu';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 
 interface SearchModalProps {
   open: boolean;
@@ -204,17 +204,13 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       active={idx === activeIndex}
                       onClick={() => navigate(`/${locale}/equipe/${team.slug}`)}
                     >
-                      {getTeamFlagUrl(team) ? (
-                        <Image
-                          src={getTeamFlagUrl(team)!}
-                          alt=""
-                          className="size-6 object-contain"
-                          width={24}
-                          height={24}
-                        />
-                      ) : (
-                        <div className="size-6 rounded bg-bg-surface-2" />
-                      )}
+                      <Flag
+                        countryCode={team?.countryCode}
+                        logoUrl={team?.logoUrl}
+                        isNational={team?.isNational}
+                        size={24}
+                        label={name}
+                      />
                       <span className="text-sm font-medium text-text-primary">{name}</span>
                       {team.countryCode && (
                         <span className="text-xs text-text-tertiary">{team.countryCode}</span>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import type { CoachDetail } from '@/lib/db/queries/coach';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
@@ -32,7 +32,6 @@ export function CoachPageHeader({ coach, locale }: CoachPageHeaderProps) {
   const displayName =
     coach.firstname && coach.lastname ? `${coach.firstname} ${coach.lastname}` : coach.name;
   const age = computeAge(coach.birthDate);
-  const flag = coach.nationalityCode ? codeToFlag(coach.nationalityCode) : null;
   const teamName = resolveTeamName(coach.currentTeam, locale);
 
   return (
@@ -66,7 +65,9 @@ export function CoachPageHeader({ coach, locale }: CoachPageHeaderProps) {
             <span className="inline-block rounded bg-bg-surface-2 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-text-secondary">
               {t('manager')}
             </span>
-            {flag && <span>{flag}</span>}
+            {coach.nationalityCode && (
+              <Flag countryCode={coach.nationalityCode} size={14} className="inline-block" />
+            )}
             {coach.nationalityCode && <span>{coach.nationalityCode}</span>}
             {age != null && (
               <>

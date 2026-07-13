@@ -1,10 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { qk } from '@/lib/query-keys';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { LiveScoreDisplay } from '@/components/match/LiveScoreDisplay';
@@ -91,21 +90,16 @@ function PreviewHeader({ preview, locale }: { preview: MatchHeaderPreview; local
 
 function TeamSlot({ team, locale }: { team: MatchHeaderPreviewTeam | null; locale: Locale }) {
   const name = team ? getTeamDisplayName(team, locale) : 'TBD';
-  const flag = team?.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
 
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
-      {flag && <span className="text-4xl leading-none">{flag}</span>}
-      {!flag && team?.logoUrl && (
-        <Image
-          src={team.logoUrl}
-          alt=""
-          className="size-14 object-contain"
-          width={56}
-          height={56}
-        />
-      )}
-      {!flag && !team?.logoUrl && <div className="size-14 rounded-full bg-bg-surface-2" />}
+      <Flag
+        countryCode={team?.countryCode}
+        logoUrl={team?.logoUrl}
+        isNational={team?.isNational}
+        size={56}
+        label={name}
+      />
       <span className="text-base font-semibold text-text-primary">{name}</span>
     </div>
   );

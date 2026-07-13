@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import type { BestThirdRow } from '@/lib/standings/best-third';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
@@ -72,11 +72,6 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
                 row.team?.shortName[locale] ??
                 row.team?.code ??
                 '\u2014');
-            const flag = preTournament
-              ? null
-              : row.team?.isNational && row.team.countryCode
-                ? codeToFlag(row.team.countryCode)
-                : null;
             const isMorocco = !preTournament && row.team?.code === 'MA';
             const isQualified = !preTournament && row.crossGroupRank <= qualifiedCount;
 
@@ -105,7 +100,16 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
                 <td className="py-2 text-center text-text-secondary">{row.group}</td>
                 <td className="py-2">
                   <span className="flex items-center gap-1.5">
-                    {flag && <span className="shrink-0 text-sm leading-none">{flag}</span>}
+                    {!preTournament && (
+                      <Flag
+                        countryCode={row.team?.countryCode}
+                        logoUrl={row.team?.logoUrl}
+                        isNational={row.team?.isNational}
+                        size={14}
+                        label={row.team?.code}
+                        className="shrink-0"
+                      />
+                    )}
                     <span
                       className={cn(
                         'overflow-hidden text-ellipsis whitespace-nowrap',

@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import type { HistoricalWinner } from '@/lib/constants/tournament-metadata';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -54,7 +54,7 @@ export function HistoricalWinners({ winners, teamNames, locale }: HistoricalWinn
             <span className="w-10 shrink-0 tabular-nums text-text-tertiary">{w.year}</span>
             <span className="shrink-0">🏆</span>
             <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
-              <span className="shrink-0 text-base leading-none">{codeToFlag(w.teamCode)}</span>
+              <Flag countryCode={w.teamCode} size={16} label={w.teamCode} className="shrink-0" />
               <span className="overflow-hidden text-ellipsis whitespace-nowrap text-text-primary">
                 {teamNames[w.teamCode] ?? w.teamCode}
               </span>

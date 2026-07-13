@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
@@ -49,7 +49,6 @@ function positionFullLabel(position: string | null, t: ReturnType<typeof useTran
 
 export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
   const t = useTranslations('playerPage');
-  const flag = player.nationalityCode ? codeToFlag(player.nationalityCode) : null;
   const age = computeAge(player.birthDate);
   const clubName = player.currentTeam
     ? (player.currentTeam.name[locale] ?? player.currentTeam.name['en'] ?? '—')
@@ -64,7 +63,9 @@ export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
       label: t('nationality'),
       value: (
         <span className="flex items-center gap-1.5">
-          {flag && <span>{flag}</span>}
+          {player.nationalityCode && (
+            <Flag countryCode={player.nationalityCode} size={14} className="inline-block" />
+          )}
           <span>{nationalityName}</span>
         </span>
       ),

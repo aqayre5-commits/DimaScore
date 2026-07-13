@@ -2,8 +2,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 
 interface CupGroupsSummaryProps {
   standings: StandingRow[];
@@ -55,17 +54,13 @@ export function CupGroupsSummary({ standings, locale }: CupGroupsSummaryProps) {
                     <span className="w-4 text-[10px] tabular-nums text-text-tertiary">
                       {row.rank}
                     </span>
-                    {getTeamFlagUrl(row.team) ? (
-                      <Image
-                        src={getTeamFlagUrl(row.team)!}
-                        alt=""
-                        className="size-3.5 object-contain"
-                        width={12}
-                        height={12}
-                      />
-                    ) : (
-                      <div className="size-3.5 rounded bg-bg-surface-2" />
-                    )}
+                    <Flag
+                      countryCode={row.team?.countryCode}
+                      logoUrl={row.team?.logoUrl}
+                      isNational={row.team?.isNational}
+                      size={14}
+                      label={row.team?.code}
+                    />
                     {row.team?.slug ? (
                       <Link
                         href={`/${locale}/equipe/${row.team.slug}`}

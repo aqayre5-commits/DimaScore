@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Image from 'next/image';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { useTranslations } from 'next-intl';
@@ -10,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { SITE_TZ } from '@/lib/utils/date';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
@@ -319,20 +318,16 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
 }
 
 function TeamBadge({ team, big = false }: { team: FixtureWithTeams['homeTeam']; big?: boolean }) {
-  const box = big ? 'size-6' : 'size-5';
-  const flagOrLogo = getTeamFlagUrl(team);
-  if (flagOrLogo) {
-    return (
-      <Image
-        src={flagOrLogo}
-        alt=""
-        width={big ? 24 : 20}
-        height={big ? 24 : 20}
-        className={`${box} shrink-0 object-contain`}
-      />
-    );
-  }
-  return <span className={`inline-block ${box} shrink-0 rounded bg-bg-surface-2`} />;
+  return (
+    <Flag
+      countryCode={team?.countryCode}
+      logoUrl={team?.logoUrl}
+      isNational={team?.isNational}
+      size={big ? 24 : 20}
+      label={team?.code}
+      className="shrink-0"
+    />
+  );
 }
 
 function resolveFullName(team: FixtureWithTeams['homeTeam'], locale: Locale): string {

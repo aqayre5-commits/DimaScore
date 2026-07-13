@@ -3,8 +3,7 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
-import { TeamLogo } from '@/components/shared/Logo';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 
 interface Props {
   compName: string;
@@ -64,17 +63,14 @@ export function HomeStandingsMini({ compName, countryKey, slug, rows, locale, la
                   <td className="py-2 text-center tabular-nums text-text-tertiary">{row.rank}</td>
                   <td className="py-2">
                     <div className="flex items-center gap-1.5">
-                      {row.team?.logoUrl ? (
-                        <TeamLogo
-                          src={getTeamFlagUrl(row.team)}
-                          size={16}
-                          className="size-4 shrink-0 object-contain"
-                        />
-                      ) : (
-                        <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 text-[7px] font-bold text-text-tertiary">
-                          {row.team?.code?.slice(0, 2) ?? '??'}
-                        </span>
-                      )}
+                      <Flag
+                        countryCode={row.team?.countryCode}
+                        logoUrl={row.team?.logoUrl}
+                        isNational={row.team?.isNational}
+                        size={16}
+                        label={row.team?.code}
+                        className="shrink-0"
+                      />
                       <span className="truncate text-text-primary">
                         {getTeamDisplayName(row.team, locale)}
                       </span>

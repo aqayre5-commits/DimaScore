@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { useTranslations } from 'next-intl';
@@ -8,7 +7,8 @@ import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { KickoffCountdown } from '@/components/shared/KickoffCountdown';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
-import { stripWomenSuffix, getTeamFlagUrl } from '@/lib/team-display';
+import { stripWomenSuffix } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -91,19 +91,13 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
         <div className="grid flex-1 grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-2">
           {/* Home */}
           <div className="flex flex-col items-center justify-center gap-1.5 text-center">
-            {getTeamFlagUrl(homeTeam) ? (
-              <Image
-                src={getTeamFlagUrl(homeTeam)!}
-                alt=""
-                width={40}
-                height={40}
-                className="size-10 object-contain"
-              />
-            ) : (
-              <div className="flex size-10 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
-                {homeCode}
-              </div>
-            )}
+            <Flag
+              countryCode={homeTeam?.countryCode}
+              logoUrl={homeTeam?.logoUrl}
+              isNational={homeTeam?.isNational}
+              size={40}
+              label={homeCode}
+            />
             <span className="max-w-full truncate text-xs font-semibold text-text-primary">
               {homeCode}
             </span>
@@ -144,19 +138,13 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
 
           {/* Away */}
           <div className="flex flex-col items-center justify-center gap-1.5 text-center">
-            {getTeamFlagUrl(awayTeam) ? (
-              <Image
-                src={getTeamFlagUrl(awayTeam)!}
-                alt=""
-                width={40}
-                height={40}
-                className="size-10 object-contain"
-              />
-            ) : (
-              <div className="flex size-10 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
-                {awayCode}
-              </div>
-            )}
+            <Flag
+              countryCode={awayTeam?.countryCode}
+              logoUrl={awayTeam?.logoUrl}
+              isNational={awayTeam?.isNational}
+              size={40}
+              label={awayCode}
+            />
             <span className="max-w-full truncate text-xs font-semibold text-text-primary">
               {awayCode}
             </span>

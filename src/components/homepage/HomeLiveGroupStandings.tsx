@@ -7,10 +7,10 @@ import { buildCompetitionHrefById } from '@/lib/constants/competitions-mega-menu
 import type { GroupStandingsBlock } from '@/lib/db/queries/right-rail';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
-import { TeamLogo, CompetitionLogo } from '@/components/shared/Logo';
+import { CompetitionLogo } from '@/components/shared/Logo';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { Flag } from '@/components/shared/Flag';
 import { applyResult } from '@/lib/standings/apply-result';
 
 interface Labels {
@@ -185,15 +185,14 @@ function GroupCard({
                 <tr key={row.teamId ?? row.rank} className="text-text-primary">
                   <td className="py-1.5 pl-2">
                     <div className="flex items-center gap-1.5">
-                      {row.team?.logoUrl ? (
-                        <TeamLogo
-                          src={getTeamFlagUrl(row.team)}
-                          size={16}
-                          className="size-4 shrink-0 object-contain"
-                        />
-                      ) : (
-                        <span className="inline-block size-4 shrink-0 rounded bg-bg-surface-2" />
-                      )}
+                      <Flag
+                        countryCode={row.team?.countryCode}
+                        logoUrl={row.team?.logoUrl}
+                        isNational={row.team?.isNational}
+                        size={16}
+                        label={row.team?.code}
+                        className="shrink-0"
+                      />
                       <span className="truncate font-medium">{teamName}</span>
                       {isLiveRow && (
                         <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-score-live" />

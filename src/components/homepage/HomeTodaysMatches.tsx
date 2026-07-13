@@ -7,7 +7,7 @@ import { formatDateLabel } from '@/lib/utils/date';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { TopMatchDateGroup } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
-import { TeamLogo } from '@/components/shared/Logo';
+import { Flag } from '@/components/shared/Flag';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 
@@ -120,27 +120,25 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                   {/* Teams + competition badge */}
                   <div className="flex flex-1 min-w-0 flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
-                      {f.homeTeam?.logoUrl ? (
-                        <TeamLogo
-                          src={f.homeTeam.logoUrl}
-                          size={12}
-                          className="size-3.5 shrink-0 object-contain"
-                        />
-                      ) : (
-                        <span className="inline-block size-3.5 shrink-0 rounded bg-bg-surface-2" />
-                      )}
+                      <Flag
+                        countryCode={f.homeTeam?.countryCode}
+                        logoUrl={f.homeTeam?.logoUrl}
+                        isNational={f.homeTeam?.isNational}
+                        size={14}
+                        label={homeName}
+                        className="shrink-0"
+                      />
                       <span className="truncate text-xs text-text-secondary">{homeName}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      {f.awayTeam?.logoUrl ? (
-                        <TeamLogo
-                          src={f.awayTeam.logoUrl}
-                          size={12}
-                          className="size-3.5 shrink-0 object-contain"
-                        />
-                      ) : (
-                        <span className="inline-block size-3.5 shrink-0 rounded bg-bg-surface-2" />
-                      )}
+                      <Flag
+                        countryCode={f.awayTeam?.countryCode}
+                        logoUrl={f.awayTeam?.logoUrl}
+                        isNational={f.awayTeam?.isNational}
+                        size={14}
+                        label={awayName}
+                        className="shrink-0"
+                      />
                       <span className="truncate text-xs text-text-secondary">{awayName}</span>
                     </div>
                   </div>

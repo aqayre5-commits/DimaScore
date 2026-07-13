@@ -10,7 +10,7 @@ import {
   type MegaMenuEntry,
 } from '@/lib/constants/competitions-mega-menu';
 import { getCountryLabel } from '@/lib/constants/country-slugs';
-import { codeToFlag } from '@/lib/flags';
+import { Flag } from '@/components/shared/Flag';
 import type { Locale } from '@/lib/i18n/config';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
@@ -114,7 +114,7 @@ export function LeagueLeftRail({
             <TeamLink
               key={team.slug}
               href={`/${locale}/equipe/${team.slug}`}
-              flag={codeToFlag(team.code)}
+              code={team.code}
               label={getCountryLabel(team.key, locale)}
             />
           ))}
@@ -176,21 +176,13 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function TeamLink({ href, flag, label }: { href: string; flag: string; label: string }) {
+function TeamLink({ href, code, label }: { href: string; code: string; label: string }) {
   return (
     <Link
       href={href}
       className="flex items-center gap-3 border-l-2 border-transparent px-4 py-2 transition-colors hover:bg-accent-azure/5 hover:text-accent-azure"
     >
-      {flag ? (
-        <span className="flex size-5 shrink-0 items-center justify-center text-base leading-none">
-          {flag}
-        </span>
-      ) : (
-        <div className="flex size-5 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">
-          {label.slice(0, 2)}
-        </div>
-      )}
+      <Flag countryCode={code} size={20} label={label} className="shrink-0" />
       <p className="min-w-0 flex-1 truncate text-sm text-text-primary">{label}</p>
     </Link>
   );
