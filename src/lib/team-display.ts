@@ -32,3 +32,22 @@ export function getTeamFlagUrl(
     return `https://media.api-sports.io/flags/${team.countryCode.toLowerCase()}.svg`;
   return null;
 }
+
+/**
+ * Country-flag-FIRST resolver (mirrors the <Flag> component's precedence): national teams always
+ * render the 4:3 country flag, ignoring any square crest, so flags stay uniform in a 4:3 box.
+ * Clubs fall back to their crest. Use where a national-team flag renders in a 4:3 box (e.g. the
+ * homepage hero); prefer getTeamFlagUrl only when a square crest is wanted.
+ */
+export function getNationalFlagUrl(
+  team: {
+    logoUrl?: string | null;
+    isNational?: boolean | null;
+    countryCode?: string | null;
+  } | null,
+): string | null {
+  if (!team) return null;
+  if (team.isNational && team.countryCode)
+    return `https://media.api-sports.io/flags/${team.countryCode.toLowerCase()}.svg`;
+  return team.logoUrl ?? null;
+}

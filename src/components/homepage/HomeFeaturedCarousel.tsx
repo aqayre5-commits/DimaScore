@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { stripWomenSuffix, getTeamFlagUrl } from '@/lib/team-display';
+import { stripWomenSuffix, getNationalFlagUrl } from '@/lib/team-display';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
@@ -212,9 +212,9 @@ function CarouselSlide({
         {/* Home team */}
         <div className="flex min-w-0 flex-1 flex-col items-center sm:w-[160px] sm:flex-none">
           <div className="flex h-12 items-center justify-center sm:h-[72px]">
-            {getTeamFlagUrl(match.homeTeam) ? (
+            {getNationalFlagUrl(match.homeTeam) ? (
               <Image
-                src={getTeamFlagUrl(match.homeTeam)!}
+                src={getNationalFlagUrl(match.homeTeam)!}
                 alt=""
                 className="h-12 w-16 rounded-sm object-contain ring-1 ring-border-subtle/40 sm:h-[72px] sm:w-24"
                 width={96}
@@ -271,9 +271,9 @@ function CarouselSlide({
         {/* Away team */}
         <div className="flex min-w-0 flex-1 flex-col items-center sm:w-[160px] sm:flex-none">
           <div className="flex h-12 items-center justify-center sm:h-[72px]">
-            {getTeamFlagUrl(match.awayTeam) ? (
+            {getNationalFlagUrl(match.awayTeam) ? (
               <Image
-                src={getTeamFlagUrl(match.awayTeam)!}
+                src={getNationalFlagUrl(match.awayTeam)!}
                 alt=""
                 className="h-12 w-16 rounded-sm object-contain ring-1 ring-border-subtle/40 sm:h-[72px] sm:w-24"
                 width={96}
