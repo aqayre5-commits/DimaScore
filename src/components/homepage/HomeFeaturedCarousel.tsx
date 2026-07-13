@@ -210,19 +210,19 @@ function CarouselSlide({
       {/* Teams row */}
       <div className="flex w-full items-center justify-center gap-3">
         {/* Home team */}
-        <div className="flex w-[160px] flex-col items-center">
-          <div className="flex h-[96px] items-center justify-center">
+        <div className="flex min-w-0 flex-1 flex-col items-center sm:w-[160px] sm:flex-none">
+          <div className="flex h-12 items-center justify-center sm:h-[72px]">
             {getTeamFlagUrl(match.homeTeam) ? (
               <Image
                 src={getTeamFlagUrl(match.homeTeam)!}
                 alt=""
-                className="h-[96px] w-[96px] object-contain"
+                className="h-12 w-16 rounded-sm object-contain ring-1 ring-border-subtle/40 sm:h-[72px] sm:w-24"
                 width={96}
-                height={96}
+                height={72}
                 {...(isFirst ? { priority: true } : {})}
               />
             ) : (
-              <div className="flex size-20 items-center justify-center rounded-full bg-bg-surface-2 text-xl font-bold text-text-tertiary">
+              <div className="flex h-12 w-16 items-center justify-center rounded-sm bg-bg-surface-2 text-lg font-bold text-text-tertiary ring-1 ring-border-subtle/40 sm:h-[72px] sm:w-24">
                 {homeName[0]}
               </div>
             )}
@@ -269,19 +269,19 @@ function CarouselSlide({
         </div>
 
         {/* Away team */}
-        <div className="flex w-[160px] flex-col items-center">
-          <div className="flex h-[96px] items-center justify-center">
+        <div className="flex min-w-0 flex-1 flex-col items-center sm:w-[160px] sm:flex-none">
+          <div className="flex h-12 items-center justify-center sm:h-[72px]">
             {getTeamFlagUrl(match.awayTeam) ? (
               <Image
                 src={getTeamFlagUrl(match.awayTeam)!}
                 alt=""
-                className="h-[96px] w-[96px] object-contain"
+                className="h-12 w-16 rounded-sm object-contain ring-1 ring-border-subtle/40 sm:h-[72px] sm:w-24"
                 width={96}
-                height={96}
+                height={72}
                 {...(isFirst ? { priority: true } : {})}
               />
             ) : (
-              <div className="flex size-20 items-center justify-center rounded-full bg-bg-surface-2 text-xl font-bold text-text-tertiary">
+              <div className="flex h-12 w-16 items-center justify-center rounded-sm bg-bg-surface-2 text-lg font-bold text-text-tertiary ring-1 ring-border-subtle/40 sm:h-[72px] sm:w-24">
                 {awayName[0]}
               </div>
             )}
