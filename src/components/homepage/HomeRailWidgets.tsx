@@ -130,7 +130,7 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       {SEQUENCES[variant].map((key) =>
         widgets[key] ? <Fragment key={key}>{widgets[key]}</Fragment> : null,
       )}

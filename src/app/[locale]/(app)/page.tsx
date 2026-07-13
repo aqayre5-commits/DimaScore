@@ -168,15 +168,15 @@ export default async function HomePage({ params }: PageProps) {
   return (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
-        <div className="mx-auto flex max-w-4xl flex-col gap-4 xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-6">
+        <div className="mx-auto flex max-w-4xl flex-col gap-2.5 lg:grid lg:max-w-[930px] lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto] lg:items-start xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-2.5">
           {/* Left rail — competition nav. Desktop only: the drawer + bottom tab bar cover mobile. */}
           <aside className="hidden xl:col-start-1 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
             <LeagueLeftRail locale={typedLocale} competitionLogos={competitionLogos} />
           </aside>
 
           {/* Center column */}
-          <div className="order-1 min-w-0 xl:order-none xl:col-start-2 xl:row-start-1">
-            <div className="space-y-4">
+          <div className="order-1 min-w-0 lg:order-none lg:col-start-1 lg:row-start-1 xl:col-start-2 xl:row-start-1">
+            <div className="space-y-2.5">
               <HomeFeaturedCarousel
                 matches={featured}
                 locale={typedLocale}
@@ -190,7 +190,7 @@ export default async function HomePage({ params }: PageProps) {
 
               {/* Live Now / next-match card — above the tabs on mobile; desktop shows it in the rail. */}
               {railData.nextFeaturedCandidates.length > 0 && (
-                <div className="xl:hidden">
+                <div className="lg:hidden">
                   <HomeNextMatch
                     candidates={railData.nextFeaturedCandidates}
                     locale={typedLocale}
@@ -214,7 +214,7 @@ export default async function HomePage({ params }: PageProps) {
               </div>
 
               {/* Rail data surfaced in the mobile flow (value-ordered); hidden on desktop. */}
-              <div className="xl:hidden">
+              <div className="lg:hidden">
                 <HomeRailWidgets data={railData} locale={typedLocale} variant="mobile" />
               </div>
 
@@ -224,8 +224,8 @@ export default async function HomePage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Right rail — desktop only (mobile gets the value-ordered block above) */}
-          <aside className="hidden xl:col-start-3 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
+          {/* Right rail — shown from lg (tablet 2-col) and desktop (mobile gets the value-ordered block above) */}
+          <aside className="hidden lg:col-start-2 lg:row-start-1 lg:block lg:sticky lg:top-[104px] lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto xl:col-start-3 xl:row-start-1">
             <HomeRailWidgets data={railData} locale={typedLocale} variant="desktop" />
           </aside>
         </div>
