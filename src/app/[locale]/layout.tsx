@@ -7,6 +7,7 @@ import { routing } from '@/lib/i18n/routing';
 import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
 import type { Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
+import { MetaPixel } from '@/components/analytics/MetaPixel';
 import '../globals.css';
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -150,6 +151,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
         </NextIntlClientProvider>
+        <MetaPixel />
       </body>
     </html>
   );
