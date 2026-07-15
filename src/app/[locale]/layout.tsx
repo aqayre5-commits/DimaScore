@@ -7,6 +7,7 @@ import { routing } from '@/lib/i18n/routing';
 import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
 import type { Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
+import { Suspense } from 'react';
 import { MetaPixel } from '@/components/analytics/MetaPixel';
 import '../globals.css';
 
@@ -151,7 +152,9 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
         </NextIntlClientProvider>
-        <MetaPixel />
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
       </body>
     </html>
   );
