@@ -5,6 +5,7 @@ import * as schema from '@/lib/db/schema';
 import { runWrites } from '@/lib/db/client';
 import type { SyncStats } from './types';
 import { parseRoundNumber } from './round';
+import { slugify } from './slug';
 
 // ─── Mapper (exported for testing) ───
 
@@ -40,7 +41,7 @@ export function mapFixtureToInsert(f: NormalizedFixture) {
 export async function syncFixtures(
   provider: DataProvider,
   db: NeonHttpDatabase<typeof schema>,
-  params: { leagueId: number; season: number },
+  params: { leagueId: number; season: number; isWomen?: boolean },
 ): Promise<SyncStats> {
   const fixtures = await provider.getFixtures({
     league: params.leagueId,
@@ -51,6 +52,24 @@ export async function syncFixtures(
 
   await runWrites(async (tx) => {
     for (const f of fixtures) {
+      // Upsert stub team rows before the fixture. The fixture payload carries id/name/logo, which
+      // covers every NOT NULL column on `teams`. Without this, a club that has never been through
+      // `syncTeams` (e.g. a promoted side at season rollover) has no `teams` row and the UI renders
+      // the opponent as "—". onConflictDoNothing so the richer `syncTeams` data is never clobbered.
+      for (const t of [f.homeTeam, f.awayTeam]) {
+        await tx
+          .insert(schema.teams)
+          .values({
+            id: t.id,
+            slug: `${slugify(t.name)}-${t.id}`,
+            name: { en: t.name } as Record<string, string>,
+            shortName: { en: t.name } as Record<string, string>,
+            logoUrl: t.logo,
+            isWomen: params.isWomen ?? false,
+          })
+          .onConflictDoNothing({ target: schema.teams.id });
+      }
+
       // Upsert venue as side-effect (match venue)
       if (f.venue.id) {
         await tx

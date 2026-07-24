@@ -2,6 +2,7 @@
   "regions": ["fra1"],
   "crons": [
     { "path": "/api/cron/reference-data", "schedule": "0 3 * * *" },
+    { "path": "/api/cron/teams", "schedule": "15 3 * * *" },
     { "path": "/api/cron/fixtures-schedule", "schedule": "0,30 * * * *" },
     { "path": "/api/cron/standings", "schedule": "15,45 * * * *" },
     { "path": "/api/cron/top-scorers", "schedule": "0 5 * * *" },
