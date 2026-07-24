@@ -413,10 +413,44 @@ export async function getCurrentSeasons(db: NeonHttpDatabase<typeof schema>): Pr
     )
     .where(eq(schema.seasons.isCurrent, true));
 
-  return rows.map((r) => ({
+  const current = rows.map((r) => ({
     competitionId: r.competitionId,
     year: r.year,
     isWomen: r.isWomen ?? false,
     hasStandingsCoverage: r.hasStandingsCoverage ?? false,
   }));
+
+  // Fallback for the changeover gap: upstream sometimes flags *no* season current for a league
+  // (old one ended, new one not yet published). Without this the fixtures/standings/top-scorers
+  // crons silently skip that competition entirely until the new season is flagged.
+  //
+  // Bounded to competitions with fixtures in the last 60 days (or scheduled ahead) so we resurrect
+  // a league mid-rollover without dragging in long-dead competitions still sitting in `fixtures`.
+  const currentIds = new Set(current.map((c) => c.competitionId));
+  const gapRows = await db.execute(sql`
+    SELECT f.competition_id,
+           MAX(f.season_year)          AS year,
+           bool_or(c.is_women)         AS is_women,
+           bool_or(lc.standings)       AS has_standings_coverage
+    FROM fixtures f
+    JOIN competitions c ON c.id = f.competition_id
+    LEFT JOIN league_coverage lc
+           ON lc.league_id = f.competition_id AND lc.season = f.season_year
+    WHERE f.competition_id NOT IN (SELECT competition_id FROM seasons WHERE is_current = true)
+      AND f.kickoff_at > NOW() - interval '60 days'
+    GROUP BY f.competition_id
+  `);
+
+  for (const r of gapRows.rows as Record<string, unknown>[]) {
+    const competitionId = Number(r.competition_id);
+    if (!Number.isFinite(competitionId) || currentIds.has(competitionId)) continue;
+    current.push({
+      competitionId,
+      year: Number(r.year),
+      isWomen: Boolean(r.is_women),
+      hasStandingsCoverage: Boolean(r.has_standings_coverage),
+    });
+  }
+
+  return current;
 }

@@ -90,13 +90,28 @@ export async function getCurrentSeasonYear(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number,
 ): Promise<number | null> {
-  const rows = await db
+  // Newest-first: if a partial sync ever leaves two seasons flagged current, prefer the later one
+  // rather than whatever the planner happens to return (which could pin the site to last season).
+  const current = await db
     .select({ year: schema.seasons.year })
     .from(schema.seasons)
     .where(and(eq(schema.seasons.competitionId, competitionId), eq(schema.seasons.isCurrent, true)))
+    .orderBy(desc(schema.seasons.year))
     .limit(1);
 
-  return rows[0]?.year ?? null;
+  if (current[0]) return current[0].year;
+
+  // Fallback — upstream routinely leaves a league with *no* current season during the changeover
+  // (old one ended, new one not yet flagged). Without this the page renders "coming soon" despite a
+  // full season of data sitting in the DB.
+  const latestWithFixtures = await db
+    .select({ year: schema.fixtures.seasonYear })
+    .from(schema.fixtures)
+    .where(eq(schema.fixtures.competitionId, competitionId))
+    .orderBy(desc(schema.fixtures.seasonYear))
+    .limit(1);
+
+  return latestWithFixtures[0]?.year ?? null;
 }
 
 export async function getAvailableSeasons(
