@@ -103,8 +103,15 @@ function buildTies(phase: KnockoutPhase, fixtures: FixtureWithTeams[]): Tie[] {
       }
     }
 
+    // A leg is decided only when it has final scores and isn't still live.
+    const legDecided = (f: FixtureWithTeams | null): boolean =>
+      f != null && f.homeScore != null && f.awayScore != null && !isLiveStatus(f.statusCode);
+    // Two-leg tie: not decided until BOTH legs finish. Single-leg tie (no return): leg 1 decides.
+    // Without this a 2–0 first leg would prematurely advance that team before leg 2 is played.
+    const tieComplete = leg2 ? legDecided(f1) && legDecided(leg2) : legDecided(f1);
+
     let winnerId: number | null = null;
-    if (agg1 != null && agg2 != null) {
+    if (tieComplete && agg1 != null && agg2 != null) {
       if (agg1 > agg2) winnerId = t1h;
       else if (agg2 > agg1) winnerId = t1a;
       // Tied on aggregate — away goals or penalties; we can't determine from scores alone
