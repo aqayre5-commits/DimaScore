@@ -25,6 +25,7 @@ import {
   getResolvedTopScorers,
   getResolvedTopAssists,
   getAvailableSeasons,
+  getCompetitionTeams,
 } from '@/lib/db/queries/league';
 import { getInjuriesForCompetition } from '@/lib/db/queries/injuries';
 import { InjuriesTab } from '@/components/league/InjuriesTab';
@@ -48,6 +49,7 @@ async function getCachedGenericCupData(competitionId: number, seasonYear: number
     topScorers,
     topAssists,
     genericFeaturedMatches,
+    competitionTeams,
   ] = await Promise.all([
     getStandings(db, competitionId, seasonYear),
     getKnockoutFixtures(db, competitionId, seasonYear),
@@ -57,6 +59,7 @@ async function getCachedGenericCupData(competitionId: number, seasonYear: number
     getResolvedTopScorers(db, competitionId, seasonYear, locale, 5),
     getResolvedTopAssists(db, competitionId, seasonYear, locale, 5),
     getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
+    getCompetitionTeams(db, competitionId, seasonYear),
   ]);
   return {
     standings,
@@ -67,6 +70,7 @@ async function getCachedGenericCupData(competitionId: number, seasonYear: number
     topScorers,
     topAssists,
     genericFeaturedMatches,
+    competitionTeams,
   };
 }
 
@@ -123,6 +127,7 @@ export async function renderGenericCupPage(
     topScorers,
     topAssists,
     genericFeaturedMatches,
+    competitionTeams,
   } = await getCachedGenericCupData(competition.id, seasonYear, locale);
 
   const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
@@ -220,7 +225,7 @@ export async function renderGenericCupPage(
             countryName={countryName}
             introText={null}
             availableSeasons={availableSeasons}
-            teamsCount={new Set(standings.map((s) => s.teamId).filter(Boolean)).size}
+            teamsCount={competitionTeams.length}
             matchesCount={mainFixturesCount}
           />
         }

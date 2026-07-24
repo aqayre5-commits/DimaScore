@@ -24,6 +24,7 @@ import {
   getResolvedTopAssists,
   getTopCardsForLeague,
   getAvailableSeasons,
+  getCompetitionTeams,
 } from '@/lib/db/queries/league';
 import { getInjuriesForCompetition } from '@/lib/db/queries/injuries';
 import { InjuriesTab } from '@/components/league/InjuriesTab';
@@ -52,6 +53,7 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number, lo
     topAssists,
     topCards,
     injuries,
+    competitionTeams,
   ] = await Promise.all([
     getLeagueCoverage(db, competitionId, seasonYear),
     getStandings(db, competitionId, seasonYear),
@@ -63,6 +65,7 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number, lo
     getResolvedTopAssists(db, competitionId, seasonYear, locale),
     getTopCardsForLeague(db, competitionId, seasonYear),
     getInjuriesForCompetition(db, competitionId, seasonYear),
+    getCompetitionTeams(db, competitionId, seasonYear),
   ]);
   return {
     coverage,
@@ -75,6 +78,7 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number, lo
     topAssists,
     topCards,
     injuries,
+    competitionTeams,
   };
 }
 
@@ -162,6 +166,7 @@ export async function renderLeaguePage(
     topAssists,
     topCards,
     injuries,
+    competitionTeams,
   } = await getCachedLeagueData(competition.id, seasonYear, locale);
 
   const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
@@ -253,7 +258,7 @@ export async function renderLeaguePage(
       hash: hashes.teams,
       labelKey: 'teams',
       icon: 'shield',
-      content: <LeagueTeamsTab standings={standings} locale={locale} />,
+      content: <LeagueTeamsTab teams={competitionTeams} standings={standings} locale={locale} />,
     },
   ];
 
@@ -272,7 +277,7 @@ export async function renderLeaguePage(
             countryName={countryName}
             introText={introText}
             availableSeasons={availableSeasons}
-            teamsCount={new Set(standings.map((s) => s.teamId).filter(Boolean)).size}
+            teamsCount={competitionTeams.length}
             matchesCount={fixtures.length}
             totalRounds={rounds.length}
             currentRound={currentRound}

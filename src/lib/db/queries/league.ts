@@ -2,7 +2,7 @@ import { eq, and, asc, desc, sql, inArray } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { FixtureWithTeams } from '../queries';
-import { hydrateFixtures } from '../queries-hydrate';
+import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 
 // ── Types ──
@@ -605,4 +605,47 @@ export async function getTopCardsForLeague(
       redCards: Number(s.redCards) || 0,
     };
   });
+}
+
+/**
+ * Teams participating in a competition+season, derived from the season's **fixtures** (unioned with
+ * any standings rows).
+ *
+ * Team identity must never come from `standings` alone: pre-season a league has a full fixture list
+ * but an empty or partial standings table, which produced a wrong "N Teams" count (e.g. "6 Teams"
+ * for a 20-team league) and a blank Teams tab.
+ *
+ * Ids are resolved through `getTeamsMap`, so an id with no `teams` row is omitted rather than
+ * rendered as "—". Sorted by English name for a stable grid order.
+ */
+export async function getCompetitionTeams(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+) {
+  const res = await db.execute(sql`
+    SELECT DISTINCT team_id FROM (
+      SELECT home_team_id AS team_id FROM fixtures
+        WHERE competition_id = ${competitionId} AND season_year = ${seasonYear}
+      UNION
+      SELECT away_team_id AS team_id FROM fixtures
+        WHERE competition_id = ${competitionId} AND season_year = ${seasonYear}
+      UNION
+      SELECT team_id FROM standings
+        WHERE competition_id = ${competitionId} AND season_year = ${seasonYear}
+    ) ids
+    WHERE team_id IS NOT NULL
+  `);
+
+  const teamIds = (res.rows as { team_id: string | number | null }[])
+    .map((r) => Number(r.team_id))
+    .filter((id) => Number.isFinite(id));
+
+  if (teamIds.length === 0) return [];
+
+  const teamsMap = await getTeamsMap(db, teamIds);
+  return teamIds
+    .map((id) => teamsMap.get(id))
+    .filter((t): t is NonNullable<typeof t> => t != null)
+    .sort((a, b) => (a.name['en'] ?? '').localeCompare(b.name['en'] ?? ''));
 }
