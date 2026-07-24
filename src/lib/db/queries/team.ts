@@ -439,12 +439,31 @@ export async function getTeamTournamentScorers(
   // their next fixture is a different competition (e.g. Morocco's upcoming AFCON qualifiers).
   // Fall back to the nearest upcoming/live fixture for teams without a curated squad (clubs →
   // their league).
+  //
+  // Anchor to the newest squad season that actually HAS goal events: at season rollover a
+  // pre-season squad row lands for an edition with zero events, and picking it purely by
+  // season_year would blank a populated scorer card while the real data sits one edition back.
+  // `has_events DESC, season_year DESC` = newest-with-data, else newest (a legitimate empty state).
   let compId: number;
   let season: number;
   const squad = await db.execute(
-    sql`SELECT competition_id, season_year FROM tournament_squads
-        WHERE team_id = ${teamId}
-        ORDER BY season_year DESC LIMIT 1`,
+    sql`WITH squad_seasons AS (
+          SELECT DISTINCT competition_id, season_year
+          FROM tournament_squads
+          WHERE team_id = ${teamId}
+        )
+        SELECT s.competition_id, s.season_year,
+               EXISTS (
+                 SELECT 1 FROM fixture_events e
+                 JOIN fixtures f ON f.id = e.fixture_id
+                 WHERE f.competition_id = s.competition_id
+                   AND f.season_year = s.season_year
+                   AND e.team_id = ${teamId}
+                   AND e.type = 'Goal'
+               ) AS has_events
+        FROM squad_seasons s
+        ORDER BY has_events DESC, s.season_year DESC
+        LIMIT 1`,
   );
   if (squad.rows.length > 0) {
     const sq = squad.rows[0] as { competition_id: string | number; season_year: string | number };
