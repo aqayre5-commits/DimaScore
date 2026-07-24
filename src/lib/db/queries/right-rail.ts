@@ -8,6 +8,7 @@ import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { TEAM_IDS } from '@/lib/constants/canonical-ids';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY, SCORED_STATUSES_ARRAY } from '@/lib/match-status';
+import { toSiteDateKey } from '@/lib/utils/date';
 
 // ── Status code sets ──
 
@@ -754,7 +755,7 @@ export async function getTopMatchesThisWeek(
   // Group by date
   const groupMap = new Map<string, TopMatchDateGroup>();
   for (const r of mapped) {
-    const dateKey = r.kickoffAt.toISOString().slice(0, 10);
+    const dateKey = toSiteDateKey(r.kickoffAt);
     let group = groupMap.get(dateKey);
     if (!group) {
       group = { dateKey, fixtures: [] };

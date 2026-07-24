@@ -4,6 +4,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
+import { toSiteDateKey } from '@/lib/utils/date';
 
 export interface DayFixture {
   id: number;
@@ -186,7 +187,7 @@ export async function getFixturesMultiDay(
   const dayMap = new Map<string, Map<number, CompetitionGroup>>();
 
   for (const r of rows) {
-    const dateKey = r.kickoffAt.toISOString().slice(0, 10);
+    const dateKey = toSiteDateKey(r.kickoffAt);
 
     let compMap = dayMap.get(dateKey);
     if (!compMap) {

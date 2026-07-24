@@ -71,19 +71,28 @@ export function formatSeason(year: number): string {
  * "Today" is decided in the site timezone (matching the server-side day bucketing),
  * not the viewer's — deterministic across SSR and hydration, no mismatch.
  */
+/**
+ * Calendar-day key (`YYYY-MM-DD`) for an instant, in the site timezone. Use this for day-grouping
+ * so groups line up with the "today" test in `formatDateLabel` — grouping by UTC instead
+ * (`toISOString().slice(0,10)`) mis-buckets any kickoff near the UTC/local midnight boundary.
+ */
+export function toSiteDateKey(date: Date, timeZone: string = SITE_TZ): string {
+  // en-CA yields YYYY-MM-DD.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
 export function formatDateLabel(
   dateKey: string,
   locale: Locale,
   todayLabel: string,
   timeZone: string = SITE_TZ,
 ): string {
-  // en-CA yields YYYY-MM-DD, matching the date-key shape.
-  const todayKey = new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
+  const todayKey = toSiteDateKey(new Date(), timeZone);
   if (dateKey === todayKey) return todayLabel;
 
   const d = new Date(dateKey + 'T12:00:00Z');
