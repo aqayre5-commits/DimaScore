@@ -35,7 +35,11 @@ export function TeamMatchesList({ fixtures, locale }: TeamMatchesListProps) {
   const t = useTranslations('teamPage');
 
   const buckets: Record<State, FixtureWithCompetition[]> = { upcoming: [], live: [], finished: [] };
-  for (const f of fixtures) buckets[getMatchState(f.statusCode, f.kickoffAt)].push(f);
+  for (const f of fixtures) {
+    const s = getMatchState(f.statusCode, f.kickoffAt);
+    // Postponed/suspended/cancelled/abandoned have no result — group with pending/upcoming.
+    buckets[s === 'interrupted' ? 'upcoming' : s].push(f);
+  }
   buckets.upcoming.sort((a, b) => a.kickoffAt.getTime() - b.kickoffAt.getTime());
   buckets.finished.sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
 

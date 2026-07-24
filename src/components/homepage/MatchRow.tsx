@@ -3,7 +3,8 @@
 import type { DayFixture } from '@/lib/db/queries/fixtures-by-day';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { LocalTime } from '@/components/shared/LocalTime';
-import { getMatchState } from '@/lib/match-status';
+import { getMatchState, getMatchStatusLabelKey } from '@/lib/match-status';
+import { useTranslations } from 'next-intl';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromDayFixture } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
@@ -33,9 +34,12 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
       }
     : f;
 
+  const t = useTranslations('matchDetail');
   const state = getMatchState(fixture.statusCode, fixture.kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
+  const isInterrupted = state === 'interrupted';
+  const interruptedKey = getMatchStatusLabelKey(fixture.statusCode);
   const showPenScore =
     fixture.statusCode === 'PEN' && fixture.homeScorePen != null && fixture.awayScorePen != null;
 
@@ -101,6 +105,10 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
             className={`text-sm font-semibold ${isLive ? 'text-score-live' : 'text-text-primary'}`}
           >
             {fixture.homeScore} - {fixture.awayScore}
+          </span>
+        ) : isInterrupted ? (
+          <span className="text-[10px] font-medium leading-tight text-text-tertiary">
+            {interruptedKey ? t(interruptedKey) : 'vs'}
           </span>
         ) : (
           <span className="text-xs text-text-tertiary">{isFinished ? '–' : 'vs'}</span>

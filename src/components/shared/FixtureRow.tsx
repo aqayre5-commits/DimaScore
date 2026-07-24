@@ -4,7 +4,7 @@ import { CompetitionLogo } from '@/components/shared/Logo';
 import { useTranslations } from 'next-intl';
 import { Flag } from '@/components/shared/Flag';
 import { LocalTime } from '@/components/shared/LocalTime';
-import { getMatchState } from '@/lib/match-status';
+import { getMatchState, getMatchStatusLabelKey } from '@/lib/match-status';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
@@ -58,6 +58,8 @@ export function FixtureRow({
   const state = getMatchState(statusCode, kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
+  const isInterrupted = state === 'interrupted';
+  const interruptedKey = getMatchStatusLabelKey(statusCode);
   const hasScore = homeScore != null && awayScore != null;
   const showPenScore = statusCode === 'PEN' && homeScorePen != null && awayScorePen != null;
   const homeWon = isFinished && hasScore && (homeScore ?? 0) > (awayScore ?? 0);
@@ -164,6 +166,10 @@ export function FixtureRow({
           <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight">
             {isLive ? (
               <span className="text-sm font-bold tabular-nums text-score-live">{statusLabel}</span>
+            ) : isInterrupted ? (
+              <span className="text-[10px] font-medium leading-tight text-text-tertiary">
+                {interruptedKey ? t(interruptedKey) : t('fullTime')}
+              </span>
             ) : isFinished ? (
               <span className="text-xs font-medium text-text-tertiary">
                 {statusLabel || t('fullTime')}
