@@ -262,7 +262,9 @@ const WAFCON_2024: CupMetadata = {
  */
 const WAFCON_2026: CupMetadata = {
   competitionId: 922,
-  editionYear: 2026,
+  // Real API-Football data lives under season 2025 (the source's edition year for the
+  // Jul 2026 tournament). Adopted as canonical; the placeholder season 2026 was removed.
+  editionYear: 2025,
   type: 'cup',
   format: 'groups_and_knockout',
   groupsCount: 4,
@@ -306,7 +308,7 @@ const METADATA_BY_SEASON: Map<string, TournamentMetadata> = new Map([
   ['6:2025', AFCON_2025],
   ['922:2022', WAFCON_2022],
   ['922:2024', WAFCON_2024],
-  ['922:2026', WAFCON_2026],
+  ['922:2025', WAFCON_2026],
 ]);
 
 /** Look up tournament metadata by competition ID (returns latest/upcoming edition). */

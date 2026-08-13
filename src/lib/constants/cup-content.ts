@@ -443,7 +443,7 @@ const CUP_CONTENT_BY_SEASON: Record<string, CupContent> = {
   '1:2026': WC_2026,
   '6:2025': AFCON_2025,
   '922:2024': WAFCON_2024,
-  '922:2026': WAFCON_2026,
+  '922:2025': WAFCON_2026,
 };
 
 /** All cup content entries (for slug lookups across all editions). */
