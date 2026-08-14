@@ -44,7 +44,7 @@ export function ScoreHeader({
   const awayGoals = goalScorers.filter((g) => g.teamId === awayTeamId);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15">
+    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       {/* Competition + round */}
       <div className="border-b border-border-subtle px-4 py-2.5 text-center">
         <p className="text-xs font-medium text-text-secondary">

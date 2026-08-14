@@ -71,7 +71,7 @@ export function MatchSectionNav({ sections }: MatchSectionNavProps) {
             onClick={(e) => handleClick(e, s.id)}
             className={`flex-1 border-b-2 px-3 py-3.5 text-center text-xs font-semibold uppercase tracking-wider transition-colors ${
               activeId === s.id
-                ? 'border-accent-azure text-accent-azure'
+                ? 'border-accent-green text-accent-green'
                 : 'border-transparent text-text-tertiary hover:text-text-secondary'
             }`}
           >
