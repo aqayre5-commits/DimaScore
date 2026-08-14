@@ -9,7 +9,6 @@ import type { TeamSnapshot } from '@/lib/db/queries-hydrate';
 import { MatchInfoCard } from '@/components/match/MatchInfoCard';
 import { H2HPanel } from '@/components/match/H2HPanel';
 import { NextMatchCard } from '@/components/match/NextMatchCard';
-import { PredictionCard } from '@/components/match/PredictionCard';
 import { MatchTopStats } from '@/components/match/MatchTopStats';
 import { fetchMatchStats } from '@/lib/api/match';
 
@@ -115,7 +114,6 @@ export function MatchClientLeftRail({
           <MatchTopStats homeStats={homeStats} awayStats={awayStats} />
         </div>
       )}
-      {coverage?.predictions && <PredictionCard />}
     </div>
   );
 }

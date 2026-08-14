@@ -23,8 +23,13 @@ export function H2HPanel({
 
   if (fixtures.length === 0) {
     return (
-      <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-6 text-center text-base text-text-tertiary">
-        {t('noH2H')}
+      <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+        <div className="border-b border-border-subtle bg-bg-surface-2 px-4 py-2.5">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-accent-green">
+            {t('h2h')}
+          </h3>
+        </div>
+        <div className="px-4 py-6 text-center text-sm text-text-tertiary">{t('noH2H')}</div>
       </div>
     );
   }
@@ -45,7 +50,10 @@ export function H2HPanel({
   }
 
   return (
-    <div className="rounded-xl border border-border-subtle bg-bg-surface">
+    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+      <div className="border-b border-border-subtle bg-bg-surface-2 px-4 py-2.5">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-accent-green">{t('h2h')}</h3>
+      </div>
       {/* Record summary */}
       <div className="flex items-center justify-between border-b border-border-subtle px-4 py-2.5">
         <span className="text-xs font-medium text-text-primary">{homeTeamName}</span>
