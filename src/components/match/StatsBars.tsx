@@ -121,7 +121,7 @@ function StatRow({ stat }: { stat: PairedStat }) {
 
       {/* Bars */}
       {hasBars && (
-        <div className="flex h-1.5 gap-1 overflow-hidden rounded-full">
+        <div className="flex h-2.5 gap-1 overflow-hidden rounded-full">
           <div className="flex flex-1 justify-end">
             <div
               className="rounded-s-full bg-accent-green transition-all"
@@ -130,7 +130,7 @@ function StatRow({ stat }: { stat: PairedStat }) {
           </div>
           <div className="flex flex-1">
             <div
-              className="rounded-e-full bg-text-tertiary transition-all"
+              className="rounded-e-full bg-text-secondary transition-all"
               style={{ width: `${awayWidth}%` }}
             />
           </div>

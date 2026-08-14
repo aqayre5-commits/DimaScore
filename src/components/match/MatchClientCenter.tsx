@@ -116,7 +116,6 @@ export function MatchClientCenter({
               homeTeamName={homeName}
               awayTeamName={awayName}
               locale={locale}
-              pitchOnly
               events={events ?? []}
             />
           </section>
