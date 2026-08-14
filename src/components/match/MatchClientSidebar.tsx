@@ -9,9 +9,9 @@ import type { TeamSnapshot } from '@/lib/db/queries-hydrate';
 import { MatchInfoCard } from '@/components/match/MatchInfoCard';
 import { H2HPanel } from '@/components/match/H2HPanel';
 import { NextMatchCard } from '@/components/match/NextMatchCard';
-import { MatchEventsCard } from '@/components/match/MatchEventsCard';
 import { PredictionCard } from '@/components/match/PredictionCard';
-import { fetchMatchEvents } from '@/lib/api/match';
+import { MatchTopStats } from '@/components/match/MatchTopStats';
+import { fetchMatchStats } from '@/lib/api/match';
 
 /** Serializable subset of MatchDetail (kickoffAt as ISO string) */
 export interface SerializedMatchDetail {
@@ -83,10 +83,10 @@ export function MatchClientLeftRail({
     queryFn: () => fetchMatchSidebar(matchId),
   });
 
-  const { data: events } = useQuery({
-    queryKey: qk.matchEvents(matchId),
-    queryFn: () => fetchMatchEvents(matchId),
-    enabled: !isUpcoming && (coverage?.events ?? false),
+  const { data: statsData } = useQuery({
+    queryKey: qk.matchStats(matchId),
+    queryFn: () => fetchMatchStats(matchId),
+    enabled: !isUpcoming && (coverage?.statisticsFixtures ?? false),
   });
 
   const nextFixtures = (sidebar?.nextFixtures ?? []).map((f) => ({
@@ -94,7 +94,10 @@ export function MatchClientLeftRail({
     kickoffAt: new Date(f.kickoffAt),
   }));
 
-  const hasEvents = (coverage?.events ?? false) && (events?.length ?? 0) > 0;
+  const teamStats = statsData?.teamStats ?? [];
+  const homeStats = teamStats.find((s) => s.teamId === homeTeamId);
+  const awayStats = teamStats.find((s) => s.teamId === awayTeamId);
+  const hasStats = (coverage?.statisticsFixtures ?? false) && teamStats.length === 2;
 
   return (
     <div className="space-y-4">
@@ -106,8 +109,11 @@ export function MatchClientLeftRail({
         awayTeam={match.awayTeam}
         locale={locale}
       />
-      {hasEvents && events && (
-        <MatchEventsCard events={events} homeTeamId={homeTeamId} locale={locale} />
+      {/* Desktop-only stats snapshot — mobile/tablet show the full stats block inline in the centre. */}
+      {hasStats && homeStats && awayStats && (
+        <div className="hidden xl:block">
+          <MatchTopStats homeStats={homeStats} awayStats={awayStats} />
+        </div>
       )}
       {coverage?.predictions && <PredictionCard />}
     </div>

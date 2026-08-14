@@ -46,14 +46,21 @@ export function EventTimeline({ events, homeTeamId, locale }: EventTimelineProps
 
 function HalfTimeSeparator({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-1.5">
+    <div className="flex items-center gap-3 bg-bg-surface-2 px-4 py-1.5">
       <div className="h-px flex-1 bg-border-subtle" />
-      <span className="text-xs font-medium text-text-tertiary">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+        {label}
+      </span>
       <div className="h-px flex-1 bg-border-subtle" />
     </div>
   );
 }
 
+/**
+ * One timeline row on the central "minute spine": home events sit in the left column (aligned toward
+ * the centre), the minute in a pill on the spine, away events in the right column. Only the active
+ * side renders content, so there is no empty gutter. Goals get a subtle green wash.
+ */
 function EventRow({
   event,
   isHome,
@@ -66,28 +73,41 @@ function EventRow({
   t: ReturnType<typeof useTranslations>;
 }) {
   const minute = event.extraMinute ? `${event.minute}+${event.extraMinute}'` : `${event.minute}'`;
-
   const { icon, content } = resolveEventDisplay(event, locale, t);
+
+  const isGoal =
+    event.type?.toLowerCase() === 'goal' && !(event.detail ?? '').toLowerCase().includes('missed');
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-2.5 ${isHome ? 'flex-row' : 'flex-row-reverse'}`}
+      className={`grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 py-2.5 ${
+        isGoal ? 'bg-accent-green/10' : ''
+      }`}
     >
-      {/* Minute */}
-      <span className="w-10 shrink-0 text-xs font-semibold tabular-nums text-text-secondary">
-        {isHome ? minute : ''}
+      {/* Home side — content flows toward the spine (right-aligned) */}
+      <div className="flex min-w-0 items-center justify-end gap-2 text-end">
+        {isHome && (
+          <>
+            <div className="min-w-0">{content}</div>
+            <span className="shrink-0">{icon}</span>
+          </>
+        )}
+      </div>
+
+      {/* Minute pill on the spine */}
+      <span className="min-w-[2.75rem] shrink-0 justify-self-center rounded-full border border-border-subtle bg-bg-surface-2 px-2 py-0.5 text-center text-[11px] font-semibold tabular-nums text-text-secondary">
+        {minute}
       </span>
 
-      {/* Icon */}
-      <span className="shrink-0">{icon}</span>
-
-      {/* Content */}
-      <div className={`min-w-0 flex-1 ${isHome ? 'text-start' : 'text-end'}`}>{content}</div>
-
-      {/* Minute (away side) */}
-      <span className="w-10 shrink-0 text-end text-xs font-semibold tabular-nums text-text-secondary">
-        {isHome ? '' : minute}
-      </span>
+      {/* Away side — content flows toward the spine (left-aligned) */}
+      <div className="flex min-w-0 items-center justify-start gap-2 text-start">
+        {!isHome && (
+          <>
+            <span className="shrink-0">{icon}</span>
+            <div className="min-w-0">{content}</div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -27,7 +27,7 @@ function parseStatValue(value: number | string | null): {
   return { num: null, isPercentage: false };
 }
 
-function pairStats(home: StatEntry[], away: StatEntry[]): PairedStat[] {
+export function pairStats(home: StatEntry[], away: StatEntry[]): PairedStat[] {
   if (!Array.isArray(home) || !Array.isArray(away)) return [];
   const awayMap = new Map<string, StatEntry>();
   for (const s of away) {
