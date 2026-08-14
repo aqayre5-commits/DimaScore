@@ -33,6 +33,11 @@ export interface BracketMatch {
   awayLeg2Score?: number | null;
   homeLogoUrl?: string | null;
   awayLogoUrl?: string | null;
+  /** ISO alpha-2 country codes + national flags, so bracket nodes render country flags (via <Flag>). */
+  homeCountryCode?: string | null;
+  awayCountryCode?: string | null;
+  homeIsNational?: boolean | null;
+  awayIsNational?: boolean | null;
   status: 'upcoming' | 'live' | 'finished' | 'placeholder';
   statusLabel?: string;
   feedsInto?: string;

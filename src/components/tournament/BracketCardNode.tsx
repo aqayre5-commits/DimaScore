@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { Flag } from '@/components/shared/Flag';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { BracketMatch } from './BracketMatchCell';
 import type { Locale } from '@/lib/i18n/config';
@@ -67,6 +67,8 @@ export function BracketCardNode({
       <div className="min-w-0 flex-1 divide-y divide-border-subtle/60">
         <NodeRow
           logoUrl={match.homeLogoUrl}
+          countryCode={match.homeCountryCode}
+          isNational={match.homeIsNational}
           code={match.homeLabel}
           score={match.homeScore}
           pen={match.homeScorePen}
@@ -76,6 +78,8 @@ export function BracketCardNode({
         />
         <NodeRow
           logoUrl={match.awayLogoUrl}
+          countryCode={match.awayCountryCode}
+          isNational={match.awayIsNational}
           code={match.awayLabel}
           score={match.awayScore}
           pen={match.awayScorePen}
@@ -129,6 +133,8 @@ export function BracketCardNode({
 
 function NodeRow({
   logoUrl,
+  countryCode,
+  isNational,
   code,
   score,
   pen,
@@ -137,6 +143,8 @@ function NodeRow({
   mirrored,
 }: {
   logoUrl?: string | null;
+  countryCode?: string | null;
+  isNational?: boolean | null;
   code: string;
   score?: number | null;
   pen?: number | null;
@@ -146,19 +154,15 @@ function NodeRow({
 }) {
   return (
     <div className="flex items-center gap-2.5 px-[5px] py-2.5">
-      {/* Flag — outer edge (order-last when mirrored) */}
+      {/* Flag — outer edge (order-last when mirrored). Country flag for national teams, else crest. */}
       <span className={cn('flex shrink-0', mirrored && 'order-last')}>
-        {logoUrl ? (
-          <Image
-            src={logoUrl}
-            alt=""
-            width={28}
-            height={20}
-            className="h-5 w-7 rounded-[3px] border border-border-subtle/60 object-cover"
-          />
-        ) : (
-          <span className="h-5 w-7 rounded-[3px] bg-bg-surface-2" />
-        )}
+        <Flag
+          countryCode={countryCode}
+          isNational={isNational}
+          logoUrl={logoUrl}
+          size={20}
+          label={code}
+        />
       </span>
 
       {/* Code — pushed toward the flag (ml-auto when mirrored) */}

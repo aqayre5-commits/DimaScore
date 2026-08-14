@@ -284,6 +284,28 @@ export function buildDynamicBracket(
     byPhase.get(phase)!.push(f);
   }
 
+  // API-Football files placement matches (5th–8th place) under round "Final" too. When more than
+  // one "Final" fixture exists and a semi-final round is present, the real final is the one whose
+  // both teams contested the semis; the others are classification matches — drop them so the
+  // bracket shows a single final rather than a stack of "finals".
+  const finalFixtures = byPhase.get('final');
+  const sfFixtures = byPhase.get('sf');
+  if (finalFixtures && finalFixtures.length > 1 && sfFixtures && sfFixtures.length > 0) {
+    const sfTeamIds = new Set<number>();
+    for (const f of sfFixtures) {
+      if (f.homeTeamId != null) sfTeamIds.add(f.homeTeamId);
+      if (f.awayTeamId != null) sfTeamIds.add(f.awayTeamId);
+    }
+    const realFinals = finalFixtures.filter(
+      (f) =>
+        f.homeTeamId != null &&
+        f.awayTeamId != null &&
+        sfTeamIds.has(f.homeTeamId) &&
+        sfTeamIds.has(f.awayTeamId),
+    );
+    if (realFinals.length > 0) byPhase.set('final', realFinals);
+  }
+
   const tiesByPhase = new Map<KnockoutPhase, Tie[]>();
   for (const [phase, fixtures] of byPhase) {
     if (phase === '3rd') continue; // Handle separately
@@ -374,6 +396,10 @@ export function buildDynamicBracket(
         awayLeg2Score: awayLeg2,
         homeLogoUrl: tie.leg1.homeTeam?.logoUrl ?? null,
         awayLogoUrl: tie.leg1.awayTeam?.logoUrl ?? null,
+        homeCountryCode: tie.leg1.homeTeam?.countryCode ?? null,
+        awayCountryCode: tie.leg1.awayTeam?.countryCode ?? null,
+        homeIsNational: tie.leg1.homeTeam?.isNational ?? null,
+        awayIsNational: tie.leg1.awayTeam?.isNational ?? null,
         status,
         statusLabel,
         feedsInto: feedsIntoId,
@@ -404,6 +430,12 @@ export function buildDynamicBracket(
       awayScore: f.awayScore,
       homeScorePen: f.homeScorePen ?? null,
       awayScorePen: f.awayScorePen ?? null,
+      homeLogoUrl: f.homeTeam?.logoUrl ?? null,
+      awayLogoUrl: f.awayTeam?.logoUrl ?? null,
+      homeCountryCode: f.homeTeam?.countryCode ?? null,
+      awayCountryCode: f.awayTeam?.countryCode ?? null,
+      homeIsNational: f.homeTeam?.isNational ?? null,
+      awayIsNational: f.awayTeam?.isNational ?? null,
       statusCode: f.statusCode,
       kickoffISO: f.kickoffAt.toISOString(),
       status: isFin ? 'finished' : 'upcoming',
