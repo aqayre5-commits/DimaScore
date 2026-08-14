@@ -101,68 +101,70 @@ export function MatchClientCenter({
   const hasNoData = !isLoading && !hasEvents && !hasLineups && !hasStats && !hasRatings;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-      {/* Lineups */}
-      {lineupsLoading && coverage?.lineups && !isUpcoming && <SectionSkeleton />}
-      {hasLineups && homeLineup && awayLineup && (
-        <section id="sec-lineups" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
-          <LineupPitch
-            homeLineup={homeLineup}
-            awayLineup={awayLineup}
-            homeTeamName={homeName}
-            awayTeamName={awayName}
-            locale={locale}
-            pitchOnly
-            events={events ?? []}
-          />
-        </section>
-      )}
-
-      {/* Sticky section nav */}
+    <div className="space-y-3">
+      {/* Sticky section nav — sits above every section as a standalone tab bar */}
       {navSections.length > 0 && <MatchSectionNav sections={navSections} />}
 
-      {/* Events */}
-      {eventsLoading && coverage?.events && !isUpcoming && <SectionSkeleton />}
-      {hasEvents && events && (
-        <section id="sec-events" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
-          <SectionHeader label={t('events')} />
-          <EventTimeline events={events} homeTeamId={homeTeamId} locale={locale} />
-        </section>
-      )}
+      <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+        {/* Lineups */}
+        {lineupsLoading && coverage?.lineups && !isUpcoming && <SectionSkeleton />}
+        {hasLineups && homeLineup && awayLineup && (
+          <section id="sec-lineups" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
+            <LineupPitch
+              homeLineup={homeLineup}
+              awayLineup={awayLineup}
+              homeTeamName={homeName}
+              awayTeamName={awayName}
+              locale={locale}
+              pitchOnly
+              events={events ?? []}
+            />
+          </section>
+        )}
 
-      {/* Statistics */}
-      {statsLoading && coverage?.statisticsFixtures && !isUpcoming && <SectionSkeleton />}
-      {hasStats && homeStatData && awayStatData && (
-        <section
-          id="sec-statistics"
-          className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]"
-        >
-          <SectionHeader label={t('stats')} />
-          <StatsBars homeStats={homeStatData} awayStats={awayStatData} />
-        </section>
-      )}
+        {/* Events */}
+        {eventsLoading && coverage?.events && !isUpcoming && <SectionSkeleton />}
+        {hasEvents && events && (
+          <section id="sec-events" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
+            <SectionHeader label={t('events')} />
+            <EventTimeline events={events} homeTeamId={homeTeamId} locale={locale} />
+          </section>
+        )}
 
-      {/* Player Statistics */}
-      {hasRatings && (
-        <section id="sec-players" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
-          <SectionHeader label={t('playerRatings')} />
-          <PlayerRatingsPanel
-            playerStats={playerStats}
-            homeTeamId={homeTeamId}
-            awayTeamId={awayTeamId}
-            homeTeamName={homeName}
-            awayTeamName={awayName}
-            locale={locale}
-          />
-        </section>
-      )}
+        {/* Statistics */}
+        {statsLoading && coverage?.statisticsFixtures && !isUpcoming && <SectionSkeleton />}
+        {hasStats && homeStatData && awayStatData && (
+          <section
+            id="sec-statistics"
+            className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]"
+          >
+            <SectionHeader label={t('stats')} />
+            <StatsBars homeStats={homeStatData} awayStats={awayStatData} />
+          </section>
+        )}
 
-      {/* Fallback */}
-      {hasNoData && !isUpcoming && (
-        <div className="px-4 py-10 text-center">
-          <p className="text-sm text-text-tertiary">{t('noLiveDetailData')}</p>
-        </div>
-      )}
+        {/* Player Statistics */}
+        {hasRatings && (
+          <section id="sec-players" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
+            <SectionHeader label={t('playerRatings')} />
+            <PlayerRatingsPanel
+              playerStats={playerStats}
+              homeTeamId={homeTeamId}
+              awayTeamId={awayTeamId}
+              homeTeamName={homeName}
+              awayTeamName={awayName}
+              locale={locale}
+            />
+          </section>
+        )}
+
+        {/* Fallback */}
+        {hasNoData && !isUpcoming && (
+          <div className="px-4 py-10 text-center">
+            <p className="text-sm text-text-tertiary">{t('noLiveDetailData')}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

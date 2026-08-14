@@ -61,7 +61,7 @@ export function MatchSectionNav({ sections }: MatchSectionNavProps) {
     <nav
       ref={navRef}
       aria-label="Match sections"
-      className="sticky top-[var(--app-sticky-offset)] z-30 border-t border-border-subtle bg-bg-surface/95 backdrop-blur-sm"
+      className="sticky top-[var(--app-sticky-offset)] z-30 overflow-hidden rounded-xl border border-border-subtle bg-bg-surface/95 backdrop-blur-sm"
     >
       <div className="flex">
         {sections.map((s) => (
