@@ -27,6 +27,13 @@ interface QualificationZone {
 interface BaseTournamentMetadata {
   competitionId: number;
   editionYear: number;
+  /**
+   * Display-only edition-selector label overrides: DB season year → shown year.
+   * Routing, data fetching, and <option value> still use the real DB year; only the
+   * rendered label changes. Used where the source's season year differs from the
+   * tournament's brand year (e.g. API-Football files the Jul-2026 WAFCON under 2025).
+   */
+  seasonLabelOverrides?: Record<number, number>;
 }
 
 export interface CupMetadata extends BaseTournamentMetadata {
@@ -265,6 +272,8 @@ const WAFCON_2026: CupMetadata = {
   // Real API-Football data lives under season 2025 (the source's edition year for the
   // Jul 2026 tournament). Adopted as canonical; the placeholder season 2026 was removed.
   editionYear: 2025,
+  // Selector shows "2026" (brand/real-world year) while data stays on DB season 2025.
+  seasonLabelOverrides: { 2025: 2026 },
   type: 'cup',
   format: 'groups_and_knockout',
   groupsCount: 4,

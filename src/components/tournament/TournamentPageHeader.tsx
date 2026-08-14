@@ -74,6 +74,9 @@ export function TournamentPageHeader({
   const router = useRouter();
   const pathname = usePathname();
   const displayYear = seasonYear ?? metadata.editionYear;
+  // Display-only: remap the shown year (e.g. WAFCON DB season 2025 → brand year 2026).
+  // Routing and <option value> keep using the real DB year.
+  const labelYear = (y: number) => metadata.seasonLabelOverrides?.[y] ?? y;
 
   function handleSeasonChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const year = e.target.value;
@@ -121,13 +124,13 @@ export function TournamentPageHeader({
       >
         {availableSeasons.map((s) => (
           <option key={s.year} value={s.year}>
-            Edition: {s.year}
+            Edition: {labelYear(s.year)}
           </option>
         ))}
       </select>
     ) : (
       <span className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure">
-        Edition: {displayYear}
+        Edition: {labelYear(displayYear)}
       </span>
     );
 
