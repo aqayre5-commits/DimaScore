@@ -36,6 +36,36 @@ export function mapFixtureToInsert(f: NormalizedFixture) {
   };
 }
 
+/**
+ * API-Football files a cup's 5th–8th place classification matches under round "Final" too, which
+ * makes them show up as extra "finals" on the match page, breadcrumb and bracket. When a season has
+ * more than one "Final" and semi-finals exist, the real final(s) are the ones contested by
+ * semi-finalists; every other "Final" is a placement game — relabel it. Mutates round in place.
+ * No-op for normal single-final cups (UCL/WC/AFCON) and before the semis exist in the batch.
+ */
+export function normalizeClassificationFinals(fixtures: NormalizedFixture[]): void {
+  const finals = fixtures.filter((f) => f.league.round === 'Final');
+  if (finals.length <= 1) return;
+
+  const semiFinalTeamIds = new Set<number>();
+  for (const f of fixtures) {
+    const round = f.league.round;
+    if (round === 'Semi-finals' || round === 'Semi-Finals') {
+      semiFinalTeamIds.add(f.homeTeam.id);
+      semiFinalTeamIds.add(f.awayTeam.id);
+    }
+  }
+  if (semiFinalTeamIds.size === 0) return;
+
+  for (const f of finals) {
+    const bothSemifinalists =
+      semiFinalTeamIds.has(f.homeTeam.id) && semiFinalTeamIds.has(f.awayTeam.id);
+    if (!bothSemifinalists) {
+      f.league.round = '5th–8th Place Play-off';
+    }
+  }
+}
+
 // ─── Sync ───
 
 export async function syncFixtures(
@@ -47,6 +77,8 @@ export async function syncFixtures(
     league: params.leagueId,
     season: params.season,
   });
+  // Correct API-Football's "Final"-labeled 5th–8th place classification games before persisting.
+  normalizeClassificationFinals(fixtures);
   const inserted = 0;
   let updated = 0;
 
