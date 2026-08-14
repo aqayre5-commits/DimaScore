@@ -9,7 +9,7 @@ interface PlayerRatingBadgeProps {
 }
 
 function ratingColor(rating: number): string {
-  if (rating >= 8.0) return 'bg-accent-emerald text-white';
+  if (rating >= 8.0) return 'bg-emerald-500 text-white';
   if (rating >= 7.0) return 'bg-teal-600 text-white';
   if (rating >= 6.0) return 'bg-amber-500 text-white';
   return 'bg-red-500 text-white';
