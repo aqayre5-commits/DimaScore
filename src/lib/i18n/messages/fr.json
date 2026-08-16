@@ -158,6 +158,7 @@
     "tomorrow": "Demain"
   },
   "homepage": {
+    "pageHeading": "Football aujourd'hui — scores en direct, calendrier et résultats",
     "emptyState": "Les matchs arrivent bientôt",
     "featuredVideos": "Vidéos à la une",
     "featured": "À la une",
