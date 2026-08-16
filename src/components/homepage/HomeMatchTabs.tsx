@@ -176,11 +176,14 @@ function MatchRow({
   );
 }
 
+// Viewer-local day comparison — matches the viewer-local separators, date pill, and kickoff
+// times (all rendered without a timeZone). Safe against SSR/hydration because the filtered list
+// is gated on `mounted`, so the day-boundary calc only runs client-side.
 function isSameDay(a: Date, b: Date) {
   return (
-    a.getUTCFullYear() === b.getUTCFullYear() &&
-    a.getUTCMonth() === b.getUTCMonth() &&
-    a.getUTCDate() === b.getUTCDate()
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
   );
 }
 
@@ -254,10 +257,10 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const [dateOffset, setDateOffset] = useState(0);
   const mounted = useMounted();
 
-  // Selected date (UTC to match fixture kickoff times)
+  // Selected date in the viewer's local zone (matches the viewer-local labels/separators).
   const today = new Date();
   const selectedDate = new Date(today);
-  selectedDate.setUTCDate(today.getUTCDate() + dateOffset);
+  selectedDate.setDate(today.getDate() + dateOffset);
 
   const formattedDate = selectedDate.toLocaleDateString(locale, {
     weekday: 'short',
