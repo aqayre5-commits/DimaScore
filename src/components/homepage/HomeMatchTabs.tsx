@@ -287,10 +287,10 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   // status so live rows tick and a finishing match moves Live → Results without a
   // reload. Order: live, then upcoming (soonest first), then results (newest first).
   const livePatches = useLiveFixtures();
-  const dayFixtures = applyLivePatches([...live, ...upcoming, ...results], livePatches).filter(
-    (f) => isSameDay(f.kickoffAt, selectedDate),
-  );
-  const dayLive = dayFixtures.filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
+  const patchedAll = applyLivePatches([...live, ...upcoming, ...results], livePatches);
+  // Global "live now", independent of the selected day — the Live tab always means "live now".
+  const globalLive = patchedAll.filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
+  const dayFixtures = patchedAll.filter((f) => isSameDay(f.kickoffAt, selectedDate));
   const dayUpcoming = dayFixtures.filter(
     (f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming',
   );
@@ -302,7 +302,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
 
   const tabDefs: { key: Tab; label: string; count: number }[] = [
     { key: 'all', label: labels.all, count: dayFixtures.length },
-    { key: 'live', label: labels.live, count: dayLive.length },
+    { key: 'live', label: labels.live, count: globalLive.length },
     { key: 'upcoming', label: labels.upcoming, count: dayUpcoming.length },
     { key: 'results', label: labels.results, count: dayResults.length },
   ];
@@ -310,7 +310,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   // Each tab grouped by competition — one divider per competition, no recurring headers.
   const matchesByTab: Record<Tab, HomeFixture[]> = {
     all: groupByCompetition(dayFixtures),
-    live: groupByCompetition(dayLive),
+    live: groupByCompetition(globalLive),
     upcoming: groupByCompetition(dayUpcoming),
     results: groupByCompetition(dayResults),
   };
