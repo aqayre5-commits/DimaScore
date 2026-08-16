@@ -159,6 +159,8 @@
   },
   "homepage": {
     "pageHeading": "Football today — live scores, fixtures & results",
+    "followAria": "Follow {name}",
+    "unfollowAria": "Unfollow {name}",
     "emptyState": "Matches coming soon",
     "featuredVideos": "Featured videos",
     "featured": "Featured",

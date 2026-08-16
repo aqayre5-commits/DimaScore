@@ -14,6 +14,8 @@ import { CompetitionLogo } from '@/components/shared/Logo';
 import { Flag } from '@/components/shared/Flag';
 import { useMounted } from '@/hooks/useMounted';
 import { useLiveFixtures, type LiveFixturePatch } from '@/hooks/useLiveFixtures';
+import { useFollows } from '@/hooks/useFollows';
+import { FollowStar } from '@/components/shared/FollowStar';
 
 interface Props {
   live: HomeFixture[];
@@ -228,7 +230,7 @@ function applyLivePatches(
  *  displayPriority (lower = more important, so World Cup / Botola / top leagues lead and
  *  friendlies sink), then earliest kickoff; within a group: live, then upcoming (soonest),
  *  then results (newest first). */
-function groupByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
+function groupByCompetition(fixtures: HomeFixture[], followedComps?: Set<number>): HomeFixture[] {
   const rank = (f: HomeFixture) => {
     const s = getMatchState(f.statusCode, f.kickoffAt);
     return s === 'live' ? 0 : s === 'upcoming' ? 1 : 2;
@@ -254,9 +256,10 @@ function groupByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
         g,
         priority: g[0].competition.displayPriority,
         earliest: Math.min(...g.map((f) => f.kickoffAt.getTime())),
+        followed: followedComps?.has(g[0].competition.id) ? 0 : 1,
       };
     })
-    .sort((a, b) => a.priority - b.priority || a.earliest - b.earliest)
+    .sort((a, b) => a.followed - b.followed || a.priority - b.priority || a.earliest - b.earliest)
     .flatMap((x) => x.g);
 }
 
@@ -283,6 +286,8 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [dateOffset, setDateOffset] = useState(0);
   const mounted = useMounted();
+  const { followedComps, toggleComp } = useFollows();
+  const tHome = useTranslations('homepage');
 
   // Selected date in the viewer's local zone (matches the viewer-local labels/separators).
   const today = new Date();
@@ -329,10 +334,10 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
 
   // Each tab grouped by competition — one divider per competition, no recurring headers.
   const matchesByTab: Record<Tab, HomeFixture[]> = {
-    all: groupByCompetition(dayFixtures),
-    live: groupByCompetition(globalLive),
-    upcoming: groupByCompetition(dayUpcoming),
-    results: groupByCompetition(dayResults),
+    all: groupByCompetition(dayFixtures, followedComps),
+    live: groupByCompetition(globalLive, followedComps),
+    upcoming: groupByCompetition(dayUpcoming, followedComps),
+    results: groupByCompetition(dayResults, followedComps),
   };
   const fixtures = matchesByTab[activeTab];
 
@@ -472,23 +477,36 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
             >
               {labels.all}
             </button>
-            {presentComps.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setSelectedComp(c.id)}
-                className={chipClass(effectiveComp === c.id)}
-              >
-                {c.logoUrl && (
-                  <CompetitionLogo
-                    src={c.logoUrl}
-                    size={14}
-                    className="size-3.5 shrink-0 object-contain"
+            {presentComps.map((c) => {
+              const name = c.name[locale] ?? c.name['en'] ?? '';
+              const followed = followedComps.has(c.id);
+              return (
+                <div key={c.id} className={chipClass(effectiveComp === c.id)}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedComp(c.id)}
+                    className="flex items-center gap-1.5"
+                  >
+                    {c.logoUrl && (
+                      <CompetitionLogo
+                        src={c.logoUrl}
+                        size={14}
+                        className="size-3.5 shrink-0 object-contain"
+                      />
+                    )}
+                    <span className="whitespace-nowrap">{name}</span>
+                    <span className="tabular-nums opacity-70">{c.count}</span>
+                  </button>
+                  <FollowStar
+                    active={followed}
+                    onToggle={() => toggleComp(c.id)}
+                    label={
+                      followed ? tHome('unfollowAria', { name }) : tHome('followAria', { name })
+                    }
                   />
-                )}
-                <span className="whitespace-nowrap">{c.name[locale] ?? c.name['en'] ?? ''}</span>
-                <span className="tabular-nums opacity-70">{c.count}</span>
-              </button>
-            ))}
+                </div>
+              );
+            })}
           </div>
         )}
         {/* Grouped by competition + date — gated on mounted to avoid server-vs-client

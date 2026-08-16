@@ -159,6 +159,8 @@
   },
   "homepage": {
     "pageHeading": "كرة القدم اليوم — نتائج مباشرة ومباريات",
+    "followAria": "متابعة {name}",
+    "unfollowAria": "إلغاء متابعة {name}",
     "emptyState": "المباريات قادمة قريبًا",
     "featuredVideos": "فيديوهات مختارة",
     "featured": "المميزة",

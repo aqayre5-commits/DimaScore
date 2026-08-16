@@ -159,6 +159,8 @@
   },
   "homepage": {
     "pageHeading": "Football aujourd'hui — scores en direct, calendrier et résultats",
+    "followAria": "Suivre {name}",
+    "unfollowAria": "Ne plus suivre {name}",
     "emptyState": "Les matchs arrivent bientôt",
     "featuredVideos": "Vidéos à la une",
     "featured": "À la une",
