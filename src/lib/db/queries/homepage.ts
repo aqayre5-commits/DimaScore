@@ -47,7 +47,7 @@ export interface GoalEvent {
 
 export interface TrendingPlayer {
   playerId: number;
-  playerName: string;
+  playerName: Record<string, string>;
   photoUrl: string | null;
   teamName: Record<string, string>;
   teamLogoUrl: string | null;
@@ -330,7 +330,7 @@ export async function getTrendingPlayers(
   return (
     rows.rows as {
       player_id: string;
-      player_name: string;
+      player_name: Record<string, string> | null;
       photo_url: string | null;
       team_name: Record<string, string> | null;
       team_logo_url: string | null;
@@ -338,7 +338,7 @@ export async function getTrendingPlayers(
     }[]
   ).map((r) => ({
     playerId: Number(r.player_id),
-    playerName: r.player_name,
+    playerName: r.player_name ?? {},
     photoUrl: r.photo_url,
     teamName: r.team_name ?? {},
     teamLogoUrl: r.team_logo_url,
