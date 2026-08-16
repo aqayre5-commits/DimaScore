@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { stripWomenSuffix, getNationalFlagUrl } from '@/lib/team-display';
@@ -57,18 +57,30 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const livePatches = useLiveFixtures();
 
+  // Drop slides whose (patched) status is finished, so the hero advances past a match that just
+  // ended instead of getting stuck on "FT". Falls back to the full set if every slide has finished.
+  const visibleMatches = useMemo(() => {
+    const vis = matches.filter(
+      (m) =>
+        getMatchState(livePatches.get(m.id)?.statusCode ?? m.statusCode, m.kickoffAt) !==
+        'finished',
+    );
+    return vis.length > 0 ? vis : matches;
+  }, [matches, livePatches]);
+  const safeIdx = idx < visibleMatches.length ? idx : 0;
+
   const next = useCallback(
-    () => setIdx((i) => (i === matches.length - 1 ? 0 : i + 1)),
-    [matches.length],
+    () => setIdx((i) => (i >= visibleMatches.length - 1 ? 0 : i + 1)),
+    [visibleMatches.length],
   );
 
   useEffect(() => {
-    if (matches.length <= 1 || paused) return;
+    if (visibleMatches.length <= 1 || paused) return;
     timerRef.current = setInterval(next, 10000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [matches.length, paused, next]);
+  }, [visibleMatches.length, paused, next]);
 
   const goTo = useCallback((i: number) => {
     setIdx(i);
@@ -82,7 +94,7 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
 
   // Overlay the live poll so a featured match that kicks off (or finishes) while you're
   // on the page flips from "VS + countdown" to a live/final score.
-  const raw = matches[idx];
+  const raw = visibleMatches[safeIdx];
   const patch = livePatches.get(raw.id);
   const match: HomeFixture = patch
     ? {
@@ -113,21 +125,21 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
 
       {/* Slide content */}
       <div className="flex flex-col items-center px-4 pb-2 pt-14 sm:px-8">
-        <CarouselSlide match={match} locale={locale} labels={labels} isFirst={idx === 0} />
+        <CarouselSlide match={match} locale={locale} labels={labels} isFirst={safeIdx === 0} />
       </div>
 
       {/* Navigation arrows */}
-      {matches.length > 1 && (
+      {visibleMatches.length > 1 && (
         <>
           <button
-            onClick={() => goTo(idx === 0 ? matches.length - 1 : idx - 1)}
+            onClick={() => goTo(safeIdx === 0 ? visibleMatches.length - 1 : safeIdx - 1)}
             className="absolute start-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary sm:block"
             aria-label="Previous"
           >
             <ChevronLeft className="size-5" />
           </button>
           <button
-            onClick={() => goTo(idx === matches.length - 1 ? 0 : idx + 1)}
+            onClick={() => goTo(safeIdx === visibleMatches.length - 1 ? 0 : safeIdx + 1)}
             className="absolute end-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary sm:block"
             aria-label="Next"
           >
@@ -149,14 +161,14 @@ export function HomeFeaturedCarousel({ matches, locale, labels }: Props) {
             </>
           )}
         </div>
-        {matches.length > 1 && (
+        {visibleMatches.length > 1 && (
           <div className="flex shrink-0 items-center gap-1.5 px-4">
-            {matches.map((_, i) => (
+            {visibleMatches.map((_, i) => (
               <button
                 key={i}
                 onClick={() => goTo(i)}
                 className={`rounded-full transition-all ${
-                  i === idx
+                  i === safeIdx
                     ? 'h-2 w-5 bg-accent-azure'
                     : 'size-2 bg-border-subtle hover:bg-text-tertiary'
                 }`}
