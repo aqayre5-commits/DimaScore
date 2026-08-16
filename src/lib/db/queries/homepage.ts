@@ -161,8 +161,10 @@ export async function getHomeMatchesByCategory(
 ): Promise<{ live: HomeFixture[]; upcoming: HomeFixture[]; results: HomeFixture[] }> {
   const nowSql = sql`NOW()`;
   const fourHoursAgo = sql`NOW() - INTERVAL '4 hours'`;
-  const sevenDaysAgo = sql`NOW() - INTERVAL '7 days'`;
-  const thirtyDaysOut = sql`NOW() + INTERVAL '30 days'`;
+  // Narrowed near-term windows (B5): ship only the day range the homepage tabs browse, not a
+  // 37-day span across every competition. Deeper past/future date nav is a separate concern.
+  const resultsFrom = sql`NOW() - INTERVAL '3 days'`;
+  const upcomingTo = sql`NOW() + INTERVAL '8 days'`;
 
   const rows = await db
     .select({
@@ -192,17 +194,17 @@ export async function getHomeMatchesByCategory(
         and(
           eq(schema.fixtures.statusCode, 'NS'),
           sql`${schema.fixtures.kickoffAt} >= ${fourHoursAgo}`,
-          sql`${schema.fixtures.kickoffAt} < ${thirtyDaysOut}`,
+          sql`${schema.fixtures.kickoffAt} < ${upcomingTo}`,
         ),
         and(
           inArray(schema.fixtures.statusCode, FINISHED_CODES),
-          sql`${schema.fixtures.kickoffAt} >= ${sevenDaysAgo}`,
+          sql`${schema.fixtures.kickoffAt} >= ${resultsFrom}`,
           sql`${schema.fixtures.kickoffAt} < ${nowSql}`,
         ),
         and(
           inArray(schema.fixtures.statusCode, INTERRUPTED_CODES),
-          sql`${schema.fixtures.kickoffAt} >= ${sevenDaysAgo}`,
-          sql`${schema.fixtures.kickoffAt} < ${thirtyDaysOut}`,
+          sql`${schema.fixtures.kickoffAt} >= ${resultsFrom}`,
+          sql`${schema.fixtures.kickoffAt} < ${upcomingTo}`,
         ),
       ),
     )
