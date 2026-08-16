@@ -167,6 +167,8 @@ export default async function HomePage({ params }: PageProps) {
     viewFullSchedule: t('viewFullSchedule'),
     showLess: t('showLess'),
     noMatches: t('noMatches'),
+    noMatchesToday: t('noMatchesToday'),
+    emptyState: t('emptyState'),
   };
 
   return (

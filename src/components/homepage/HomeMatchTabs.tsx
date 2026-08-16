@@ -31,6 +31,8 @@ interface Props {
     viewFullSchedule: string;
     showLess: string;
     noMatches: string;
+    noMatchesToday: string;
+    emptyState: string;
   };
 }
 
@@ -474,7 +476,11 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
               })()
             ) : (
               <div className="px-4 py-8 text-center text-sm text-text-tertiary">
-                {labels.noMatches}
+                {patchedAll.length === 0
+                  ? labels.emptyState
+                  : dateOffset === 0
+                    ? labels.noMatchesToday
+                    : labels.noMatches}
               </div>
             )
           ) : null}
