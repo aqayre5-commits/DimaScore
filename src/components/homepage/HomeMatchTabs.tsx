@@ -258,6 +258,24 @@ function groupByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
     .flatMap((x) => x.g);
 }
 
+// Collapsed view: cap each competition to PER_COMP matches so a busy foreign league can't bury
+// Botola/Morocco, and stop at MAX_COLLAPSED rows overall. Expects the priority-ordered, contiguous
+// output of groupByCompetition; "View full schedule" reveals the uncapped list.
+const PER_COMP = 5;
+const MAX_COLLAPSED = 15;
+function collapseByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
+  const perComp = new Map<number, number>();
+  const out: HomeFixture[] = [];
+  for (const f of fixtures) {
+    if (out.length >= MAX_COLLAPSED) break;
+    const seen = perComp.get(f.competition.id) ?? 0;
+    if (seen >= PER_COMP) continue;
+    perComp.set(f.competition.id, seen + 1);
+    out.push(f);
+  }
+  return out;
+}
+
 export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props) {
   type Tab = 'all' | 'live' | 'upcoming' | 'results';
   const [activeTab, setActiveTab] = useState<Tab>('all');
@@ -316,10 +334,10 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   };
   const fixtures = matchesByTab[activeTab];
 
-  const displayLimit = 8;
   const [expanded, setExpanded] = useState(false);
-  const hasMore = fixtures.length > displayLimit;
-  const displayed = expanded ? fixtures : fixtures.slice(0, displayLimit);
+  const collapsed = collapseByCompetition(fixtures);
+  const hasMore = fixtures.length > collapsed.length;
+  const displayed = expanded ? fixtures : collapsed;
 
   return (
     <div className="space-y-2.5">
