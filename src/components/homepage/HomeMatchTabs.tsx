@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
@@ -337,9 +337,48 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const fixtures = matchesByTab[activeTab];
 
   const [expanded, setExpanded] = useState(false);
+  const [selectedComp, setSelectedComp] = useState<number | null>(null);
+
+  // Competitions present in the active tab (priority order, with counts) — drives the filter chips.
+  const presentComps = useMemo(() => {
+    const map = new Map<
+      number,
+      { id: number; name: Record<string, string>; logoUrl: string | null; count: number }
+    >();
+    for (const f of fixtures) {
+      const e = map.get(f.competition.id);
+      if (e) e.count++;
+      else
+        map.set(f.competition.id, {
+          id: f.competition.id,
+          name: f.competition.name,
+          logoUrl: f.competition.logoUrl,
+          count: 1,
+        });
+    }
+    return [...map.values()];
+  }, [fixtures]);
+
+  // Auto-clear a selection that's no longer present (after a live update / day change).
+  const effectiveComp =
+    selectedComp != null && presentComps.some((c) => c.id === selectedComp) ? selectedComp : null;
+
   const collapsed = collapseByCompetition(fixtures);
-  const hasMore = fixtures.length > collapsed.length;
-  const displayed = expanded ? fixtures : collapsed;
+  // Filtered to one competition → show all its matches (no cap); otherwise the capped/expanded view.
+  const displayed =
+    effectiveComp != null
+      ? fixtures.filter((f) => f.competition.id === effectiveComp)
+      : expanded
+        ? fixtures
+        : collapsed;
+  const hasMore = effectiveComp == null && fixtures.length > collapsed.length;
+
+  const chipClass = (active: boolean) =>
+    `flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+      active
+        ? 'bg-accent-azure text-white'
+        : 'bg-bg-surface-2 text-text-secondary hover:bg-bg-surface-3 hover:text-text-primary'
+    }`;
 
   return (
     <div className="space-y-2.5">
@@ -357,6 +396,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
                     setActiveTab(td.key);
                     setDateOffset(0);
                     setExpanded(false);
+                    setSelectedComp(null);
                   }}
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                     active
@@ -423,6 +463,34 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
 
       {/* Match list — separate card */}
       <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+        {/* Competition filter chips — filter the day's list to a single competition. */}
+        {mounted && presentComps.length >= 2 && (
+          <div className="flex gap-1.5 overflow-x-auto border-b border-border-subtle p-2.5 scrollbar-none">
+            <button
+              onClick={() => setSelectedComp(null)}
+              className={chipClass(effectiveComp === null)}
+            >
+              {labels.all}
+            </button>
+            {presentComps.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedComp(c.id)}
+                className={chipClass(effectiveComp === c.id)}
+              >
+                {c.logoUrl && (
+                  <CompetitionLogo
+                    src={c.logoUrl}
+                    size={14}
+                    className="size-3.5 shrink-0 object-contain"
+                  />
+                )}
+                <span className="whitespace-nowrap">{c.name[locale] ?? c.name['en'] ?? ''}</span>
+                <span className="tabular-nums opacity-70">{c.count}</span>
+              </button>
+            ))}
+          </div>
+        )}
         {/* Grouped by competition + date — gated on mounted to avoid server-vs-client
             day-boundary divergence in the filtered fixture set. */}
         <div>
