@@ -5,7 +5,11 @@ import * as schema from '../schema';
 import { ALL_ENTRIES } from '@/lib/constants/competitions-mega-menu';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
-import { LIVE_CODES_ARRAY, SCORED_STATUSES_ARRAY } from '@/lib/match-status';
+import {
+  LIVE_CODES_ARRAY,
+  SCORED_STATUSES_ARRAY,
+  INTERRUPTED_CODES_ARRAY,
+} from '@/lib/match-status';
 import { resolveContextLabel } from './right-rail';
 
 export interface HomeFixture {
@@ -58,6 +62,9 @@ const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
 // Statuses that produced an official scored result — narrower than FINISHED_CODES_ARRAY
 // because we exclude CANC + ABD (no winner). Used to filter scored matches for the homepage.
 const FINISHED_CODES: string[] = [...SCORED_STATUSES_ARRAY];
+// Postponed / suspended / cancelled / abandoned — surfaced so they don't silently vanish from
+// the homepage; they carry an explicit status label and are bucketed under Results client-side.
+const INTERRUPTED_CODES: string[] = [...INTERRUPTED_CODES_ARRAY];
 
 const FRIENDLIES_ID = 10;
 const YOUTH_NAME_RE = /\bU-?\d{2}\b/;
@@ -191,6 +198,11 @@ export async function getHomeMatchesByCategory(
           inArray(schema.fixtures.statusCode, FINISHED_CODES),
           sql`${schema.fixtures.kickoffAt} >= ${sevenDaysAgo}`,
           sql`${schema.fixtures.kickoffAt} < ${nowSql}`,
+        ),
+        and(
+          inArray(schema.fixtures.statusCode, INTERRUPTED_CODES),
+          sql`${schema.fixtures.kickoffAt} >= ${sevenDaysAgo}`,
+          sql`${schema.fixtures.kickoffAt} < ${thirtyDaysOut}`,
         ),
       ),
     )

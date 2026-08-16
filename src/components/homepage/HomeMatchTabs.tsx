@@ -6,7 +6,8 @@ import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { LocalTime } from '@/components/shared/LocalTime';
-import { getMatchState } from '@/lib/match-status';
+import { getMatchState, getMatchStatusLabelKey } from '@/lib/match-status';
+import { useTranslations } from 'next-intl';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
 import { CompetitionLogo } from '@/components/shared/Logo';
@@ -45,6 +46,8 @@ function MatchRow({
   const state = getMatchState(fixture.statusCode, fixture.kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
+  const isInterrupted = state === 'interrupted';
+  const t = useTranslations('matchDetail');
   const homeName = getTeamDisplayName(fixture.homeTeam, locale);
   const awayName = getTeamDisplayName(fixture.awayTeam, locale);
 
@@ -103,6 +106,10 @@ function MatchRow({
       {showPens && (
         <span className="mt-0.5 text-[9px] font-semibold tabular-nums text-text-tertiary">PEN</span>
       )}
+    </span>
+  ) : isInterrupted ? (
+    <span className="text-xs font-semibold text-text-tertiary">
+      {t(getMatchStatusLabelKey(fixture.statusCode) ?? 'postponed')}
     </span>
   ) : (
     <span className="text-sm tabular-nums text-text-secondary">
@@ -287,9 +294,11 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const dayUpcoming = dayFixtures.filter(
     (f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming',
   );
-  const dayResults = dayFixtures.filter(
-    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished',
-  );
+  const dayResults = dayFixtures.filter((f) => {
+    const s = getMatchState(f.statusCode, f.kickoffAt);
+    // Interrupted (postponed/abandoned/…) count under Results so All = Live + Upcoming + Results.
+    return s === 'finished' || s === 'interrupted';
+  });
 
   const tabDefs: { key: Tab; label: string; count: number }[] = [
     { key: 'all', label: labels.all, count: dayFixtures.length },
