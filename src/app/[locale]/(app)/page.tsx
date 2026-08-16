@@ -12,7 +12,9 @@ import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
 import { HomeNextMatch } from '@/components/homepage/HomeNextMatch';
 import { getHomeRailData } from '@/lib/db/queries/home-rail';
 import { HomeTrendingPlayersStreamed } from '@/components/homepage/HomeTrendingPlayersStreamed';
+import { HomeFeaturedVideos } from '@/components/homepage/HomeFeaturedVideos';
 import { db } from '@/lib/db/client';
+import { getMediaVideos } from '@/lib/db/queries/media';
 import {
   getFeaturedMatches,
   getHomeMatchesByCategory,
@@ -110,12 +112,13 @@ const ALL_LEFT_RAIL_IDS = LEFT_RAIL_SECTIONS.flatMap((s) => s.ids);
 async function getCachedHomepageData() {
   'use cache';
   cacheLife('minutes');
-  const [featured, matchesByCategory, leftRailComps] = await Promise.all([
+  const [featured, matchesByCategory, leftRailComps, featuredVideos] = await Promise.all([
     getFeaturedMatches(db),
     getHomeMatchesByCategory(db),
     getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
+    getMediaVideos(db, { isFeatured: true, limit: 12 }),
   ]);
-  return { featured, matchesByCategory, leftRailComps };
+  return { featured, matchesByCategory, leftRailComps, featuredVideos: featuredVideos.videos };
 }
 
 // ── Page ──
@@ -124,11 +127,12 @@ export default async function HomePage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
-  const [{ featured, matchesByCategory, leftRailComps }, railData, t] = await Promise.all([
-    getCachedHomepageData(),
-    getHomeRailData(typedLocale),
-    getTranslations({ locale, namespace: 'homepage' }),
-  ]);
+  const [{ featured, matchesByCategory, leftRailComps, featuredVideos }, railData, t] =
+    await Promise.all([
+      getCachedHomepageData(),
+      getHomeRailData(typedLocale),
+      getTranslations({ locale, namespace: 'homepage' }),
+    ]);
 
   // Enrich featured matches: WC venues + team form
   const WC_COMP_ID = 1;
@@ -213,6 +217,11 @@ export default async function HomePage({ params }: PageProps) {
                   labels={matchTabLabels}
                 />
               </div>
+
+              <HomeFeaturedVideos
+                videos={featuredVideos}
+                labels={{ featuredVideos: t('featuredVideos') }}
+              />
 
               {/* Rail data surfaced in the mobile flow (value-ordered); hidden on desktop. */}
               <div className="lg:hidden">

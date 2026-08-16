@@ -22,8 +22,8 @@ interface Props {
 // Rail order: live/today content first, reference tables grouped at the bottom.
 // Mobile omits 'nextMatch' (the Live Now card) — it's lifted above the filter tabs in page.tsx.
 const SEQUENCES: Record<Props['variant'], string[]> = {
-  desktop: ['nextMatch', 'topMatches', 'liveGroups', 'standings', 'scorers', 'lions'],
-  mobile: ['topMatches', 'standings', 'scorers', 'liveGroups', 'lions'],
+  desktop: ['nextMatch', 'lions', 'topMatches', 'liveGroups', 'standings', 'scorers'],
+  mobile: ['lions', 'topMatches', 'standings', 'scorers', 'liveGroups'],
 };
 
 export async function HomeRailWidgets({ data, locale, variant }: Props) {
