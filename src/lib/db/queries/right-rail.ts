@@ -257,7 +257,7 @@ export async function resolveGroupLabel(
 // Knockout rounds get a priority boost so a UCL Final (base 45) outranks
 // a Botola regular-season match (base 20). Qualifier rounds excluded.
 
-const FEATURED_ORDER = sql`
+export const FEATURED_ORDER = sql`
   ${schema.fixtures.isFeatured} DESC,
   (${schema.competitions.displayPriority} - CASE
     WHEN ${schema.fixtures.round} = 'Final' THEN 30
@@ -611,7 +611,7 @@ export async function getLiveGroupStandings(
 //   3. Morocco NT is playing (men id=31, women id=14461)
 //   4. Any AFCON (6) or WAFCON (922) match
 
-const MOROCCO_TEAM_IDS = [TEAM_IDS.MOROCCO_MEN, TEAM_IDS.MOROCCO_WOMEN];
+export const MOROCCO_TEAM_IDS = [TEAM_IDS.MOROCCO_MEN, TEAM_IDS.MOROCCO_WOMEN];
 const ALWAYS_TOP_COMP_IDS = [1, 6, 922]; // WC, AFCON, WAFCON
 
 const KNOCKOUT_ROUND_FILTER = sql`(

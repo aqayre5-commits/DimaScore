@@ -10,7 +10,7 @@ import {
   SCORED_STATUSES_ARRAY,
   INTERRUPTED_CODES_ARRAY,
 } from '@/lib/match-status';
-import { resolveContextLabel } from './right-rail';
+import { resolveContextLabel, FEATURED_ORDER, MOROCCO_TEAM_IDS } from './right-rail';
 
 export interface HomeFixture {
   id: number;
@@ -280,13 +280,31 @@ export async function getFeaturedMatches(
       ),
     )
     .where(
-      and(
-        eq(schema.fixtures.statusCode, 'NS'),
-        gte(schema.fixtures.kickoffAt, now),
-        lt(schema.fixtures.kickoffAt, thirtyDaysOut),
+      or(
+        // Live now — so the hero can actually lead with a match in progress.
+        inArray(schema.fixtures.statusCode, LIVE_CODES),
+        and(
+          eq(schema.fixtures.statusCode, 'NS'),
+          gte(schema.fixtures.kickoffAt, now),
+          lt(schema.fixtures.kickoffAt, thirtyDaysOut),
+        ),
       ),
     )
-    .orderBy(asc(schema.competitions.displayPriority), asc(schema.fixtures.kickoffAt))
+    // Ranking (matches the rail): live > Morocco > isFeatured > knockout boost > priority > soonest.
+    .orderBy(
+      sql`CASE WHEN ${schema.fixtures.statusCode} IN (${sql.join(
+        LIVE_CODES.map((c) => sql`${c}`),
+        sql`, `,
+      )}) THEN 0 ELSE 1 END`,
+      sql`CASE WHEN ${schema.fixtures.homeTeamId} IN (${sql.join(
+        MOROCCO_TEAM_IDS.map((id) => sql`${id}`),
+        sql`, `,
+      )}) OR ${schema.fixtures.awayTeamId} IN (${sql.join(
+        MOROCCO_TEAM_IDS.map((id) => sql`${id}`),
+        sql`, `,
+      )}) THEN 0 ELSE 1 END`,
+      FEATURED_ORDER,
+    )
     .limit(limit);
 
   const teamIds = new Set<number>();
