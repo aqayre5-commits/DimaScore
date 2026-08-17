@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { FormDots } from '@/components/shared/FormSparkline';
 import type { TeamDetail, FormResult } from '@/lib/db/queries/team';
+import { TeamFollowButton } from '@/components/team/TeamFollowButton';
 import type { Locale } from '@/lib/i18n/config';
 import { codeToFlag } from '@/lib/flags';
 import { slugify } from '@/lib/ingestion/slug';
@@ -68,9 +69,12 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
 
         {/* Identity */}
         <div className="flex min-w-0 flex-1 flex-col py-1">
-          <h1 className="font-display text-xl font-bold leading-tight text-text-primary md:text-2xl">
-            {name}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-display text-xl font-bold leading-tight text-text-primary md:text-2xl">
+              {name}
+            </h1>
+            <TeamFollowButton teamId={team.id} teamName={name} />
+          </div>
 
           {team.coach && (
             <div className="mt-1 text-sm text-text-tertiary">

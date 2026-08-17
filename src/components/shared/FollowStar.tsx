@@ -9,11 +9,13 @@ interface FollowStarProps {
   /** Full accessible label, e.g. "Follow Botola Pro" / "Unfollow Botola Pro". */
   label: string;
   className?: string;
+  /** Star size utility (default `size-3.5`) — larger on page headers than on compact chips. */
+  iconClassName?: string;
 }
 
 /** Small star toggle for following a team/competition. Stops propagation so it can sit inside
  *  other clickable rows (chips, list rows) without triggering them. */
-export function FollowStar({ active, onToggle, label, className }: FollowStarProps) {
+export function FollowStar({ active, onToggle, label, className, iconClassName }: FollowStarProps) {
   return (
     <button
       type="button"
@@ -31,7 +33,7 @@ export function FollowStar({ active, onToggle, label, className }: FollowStarPro
         className,
       )}
     >
-      <Star className={cn('size-3.5', active && 'fill-current')} />
+      <Star className={cn(iconClassName ?? 'size-3.5', active && 'fill-current')} />
     </button>
   );
 }
