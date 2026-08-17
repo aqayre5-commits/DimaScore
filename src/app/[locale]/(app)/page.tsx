@@ -169,6 +169,7 @@ export default async function HomePage({ params }: PageProps) {
     noMatches: t('noMatches'),
     noMatchesToday: t('noMatchesToday'),
     emptyState: t('emptyState'),
+    yourMatches: t('yourMatches'),
   };
 
   return (

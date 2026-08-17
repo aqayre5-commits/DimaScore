@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Star } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState, getMatchStatusLabelKey } from '@/lib/match-status';
@@ -35,6 +35,7 @@ interface Props {
     noMatches: string;
     noMatchesToday: string;
     emptyState: string;
+    yourMatches: string;
   };
 }
 
@@ -281,12 +282,59 @@ function collapseByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
   return out;
 }
 
+/** Render a fixture list grouped by competition (a separator row per competition/date, then the
+ *  match rows). Shared by the "Your matches" group and the main list. */
+function renderGroupedRows(list: HomeFixture[], locale: string): React.ReactNode[] {
+  const elements: React.ReactNode[] = [];
+  let lastGroupKey = '';
+  let matchIdx = 0;
+  for (const f of list) {
+    const dateStr = f.kickoffAt.toLocaleDateString(locale, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+    const groupKey = `${f.competition.id}-${f.kickoffAt.toDateString()}`;
+    if (groupKey !== lastGroupKey) {
+      lastGroupKey = groupKey;
+      const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
+      elements.push(
+        <div
+          key={`sep-${matchIdx}-${groupKey}`}
+          className="flex items-center gap-2 bg-bg-surface-2 px-4 py-1.5"
+        >
+          {f.competition.logoUrl ? (
+            <CompetitionLogo
+              src={f.competition.logoUrl}
+              size={16}
+              className="size-4 shrink-0 object-contain"
+            />
+          ) : (
+            <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-3 text-[7px] font-bold text-text-tertiary">
+              {compName.slice(0, 2)}
+            </span>
+          )}
+          <span className="text-[11px] font-semibold text-text-secondary">{compName}</span>
+          <span className="text-[11px] text-text-tertiary">&middot; {dateStr}</span>
+        </div>,
+      );
+    }
+    elements.push(
+      <div key={f.id} className="border-b border-border-subtle last:border-b-0">
+        <MatchRow fixture={f} locale={locale} enablePrefetch={matchIdx < 3} />
+      </div>,
+    );
+    matchIdx++;
+  }
+  return elements;
+}
+
 export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props) {
   type Tab = 'all' | 'live' | 'upcoming' | 'results';
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [dateOffset, setDateOffset] = useState(0);
   const mounted = useMounted();
-  const { followedComps, toggleComp } = useFollows();
+  const { followedTeams, followedComps, toggleComp } = useFollows();
   const tHome = useTranslations('homepage');
 
   // Selected date in the viewer's local zone (matches the viewer-local labels/separators).
@@ -345,7 +393,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const [selectedComp, setSelectedComp] = useState<number | null>(null);
 
   // Competitions present in the active tab (priority order, with counts) — drives the filter chips.
-  const presentComps = useMemo(() => {
+  const presentComps = (() => {
     const map = new Map<
       number,
       { id: number; name: Record<string, string>; logoUrl: string | null; count: number }
@@ -362,21 +410,39 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
         });
     }
     return [...map.values()];
-  }, [fixtures]);
+  })();
 
   // Auto-clear a selection that's no longer present (after a live update / day change).
   const effectiveComp =
     selectedComp != null && presentComps.some((c) => c.id === selectedComp) ? selectedComp : null;
 
-  const collapsed = collapseByCompetition(fixtures);
+  // "Your matches" — followed teams'/competitions' fixtures for the selected day, pinned above the
+  // list on the All tab (no chip filter) and deduped from the main list so nothing appears twice.
+  const isYours = (f: HomeFixture) =>
+    (f.homeTeamId != null && followedTeams.has(f.homeTeamId)) ||
+    (f.awayTeamId != null && followedTeams.has(f.awayTeamId)) ||
+    followedComps.has(f.competition.id);
+  const showYourGroup = mounted && activeTab === 'all' && effectiveComp === null;
+  const yourGrouped = showYourGroup
+    ? groupByCompetition(dayFixtures.filter(isYours), followedComps)
+    : [];
+
+  const baseFixtures =
+    yourGrouped.length > 0
+      ? groupByCompetition(
+          dayFixtures.filter((f) => !isYours(f)),
+          followedComps,
+        )
+      : fixtures;
+  const collapsed = collapseByCompetition(baseFixtures);
   // Filtered to one competition → show all its matches (no cap); otherwise the capped/expanded view.
   const displayed =
     effectiveComp != null
       ? fixtures.filter((f) => f.competition.id === effectiveComp)
       : expanded
-        ? fixtures
+        ? baseFixtures
         : collapsed;
-  const hasMore = effectiveComp == null && fixtures.length > collapsed.length;
+  const hasMore = effectiveComp == null && baseFixtures.length > collapsed.length;
 
   const chipClass = (active: boolean) =>
     `flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
@@ -513,62 +579,30 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
             day-boundary divergence in the filtered fixture set. */}
         <div>
           {mounted ? (
-            displayed.length > 0 ? (
-              (() => {
-                const elements: React.ReactNode[] = [];
-                let lastGroupKey = '';
-                let matchIdx = 0;
-                for (const f of displayed) {
-                  const dateStr = f.kickoffAt.toLocaleDateString(locale, {
-                    weekday: 'short',
-                    day: 'numeric',
-                    month: 'short',
-                  });
-                  const groupKey = `${f.competition.id}-${f.kickoffAt.toDateString()}`;
-                  if (groupKey !== lastGroupKey) {
-                    lastGroupKey = groupKey;
-                    const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
-                    elements.push(
-                      <div
-                        key={`sep-${matchIdx}-${groupKey}`}
-                        className="flex items-center gap-2 bg-bg-surface-2 px-4 py-1.5"
-                      >
-                        {f.competition.logoUrl ? (
-                          <CompetitionLogo
-                            src={f.competition.logoUrl}
-                            size={16}
-                            className="size-4 shrink-0 object-contain"
-                          />
-                        ) : (
-                          <span className="flex size-4 shrink-0 items-center justify-center rounded-sm bg-bg-surface-3 text-[7px] font-bold text-text-tertiary">
-                            {compName.slice(0, 2)}
-                          </span>
-                        )}
-                        <span className="text-[11px] font-semibold text-text-secondary">
-                          {compName}
-                        </span>
-                        <span className="text-[11px] text-text-tertiary">&middot; {dateStr}</span>
-                      </div>,
-                    );
-                  }
-                  elements.push(
-                    <div key={f.id} className="border-b border-border-subtle last:border-b-0">
-                      <MatchRow fixture={f} locale={locale} enablePrefetch={matchIdx < 3} />
-                    </div>,
-                  );
-                  matchIdx++;
-                }
-                return elements;
-              })()
-            ) : (
-              <div className="px-4 py-8 text-center text-sm text-text-tertiary">
-                {patchedAll.length === 0
-                  ? labels.emptyState
-                  : dateOffset === 0
-                    ? labels.noMatchesToday
-                    : labels.noMatches}
-              </div>
-            )
+            <>
+              {yourGrouped.length > 0 && (
+                <>
+                  <div className="flex items-center gap-2 bg-bg-surface-2 px-4 py-2">
+                    <Star className="size-3.5 shrink-0 fill-current text-yellow-400" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
+                      {labels.yourMatches}
+                    </span>
+                  </div>
+                  {renderGroupedRows(yourGrouped, locale)}
+                </>
+              )}
+              {displayed.length > 0
+                ? renderGroupedRows(displayed, locale)
+                : yourGrouped.length === 0 && (
+                    <div className="px-4 py-8 text-center text-sm text-text-tertiary">
+                      {patchedAll.length === 0
+                        ? labels.emptyState
+                        : dateOffset === 0
+                          ? labels.noMatchesToday
+                          : labels.noMatches}
+                    </div>
+                  )}
+            </>
           ) : null}
         </div>
 

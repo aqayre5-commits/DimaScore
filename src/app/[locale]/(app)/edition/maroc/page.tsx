@@ -183,6 +183,7 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
     noMatches: t('noMatches'),
     noMatchesToday: t('noMatchesToday'),
     emptyState: t('emptyState'),
+    yourMatches: t('yourMatches'),
   };
 
   const standingsLabels = {
