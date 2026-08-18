@@ -162,6 +162,8 @@
     "followAria": "Suivre {name}",
     "unfollowAria": "Ne plus suivre {name}",
     "yourMatches": "Mes matchs",
+    "tableTab": "Classement",
+    "scorersTab": "Buteurs",
     "emptyState": "Les matchs arrivent bientôt",
     "featuredVideos": "Vidéos à la une",
     "featured": "À la une",

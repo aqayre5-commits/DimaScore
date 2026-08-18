@@ -4,8 +4,7 @@ import { HomeNextMatch } from './HomeNextMatch';
 import { HomeLiveGroupStandings } from './HomeLiveGroupStandings';
 import { HomeTopMatches } from './HomeTodaysMatches';
 import { HomeLionsAbroad } from './HomeLionsAbroad';
-import { HomeStandingsMini } from './HomeStandingsMini';
-import { HomeTopScorers } from './HomeTopScorers';
+import { HomeLeagueSnapshot } from './HomeLeagueSnapshot';
 import type { HomeRailData } from '@/lib/db/queries/home-rail';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -22,8 +21,8 @@ interface Props {
 // Rail order: live/today content first, reference tables grouped at the bottom.
 // Mobile omits 'nextMatch' (the Live Now card) — it's lifted above the filter tabs in page.tsx.
 const SEQUENCES: Record<Props['variant'], string[]> = {
-  desktop: ['nextMatch', 'lions', 'topMatches', 'liveGroups', 'standings', 'scorers'],
-  mobile: ['lions', 'topMatches', 'standings', 'scorers', 'liveGroups'],
+  desktop: ['nextMatch', 'lions', 'topMatches', 'liveGroups', 'leagueSnapshot'],
+  mobile: ['lions', 'topMatches', 'leagueSnapshot', 'liveGroups'],
 };
 
 export async function HomeRailWidgets({ data, locale, variant }: Props) {
@@ -33,20 +32,8 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
     liveGroupStandings,
     topMatches,
     moroccanPerformances,
-    topScorersData,
-    standingsLeagues,
+    leagueSnapshots,
   } = data;
-
-  const standingsLabels = {
-    viewFullStandings: t('viewFullStandings'),
-    team: t('team'),
-    played: t('played'),
-    won: t('won'),
-    drawn: t('drawn'),
-    lost: t('lost'),
-    goalDiff: t('goalDiff'),
-    points: t('points'),
-  };
 
   const widgets: Record<string, React.ReactNode> = {
     nextMatch:
@@ -108,23 +95,23 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
           }}
         />
       ) : null,
-    standings: standingsLeagues[0] ? (
-      <HomeStandingsMini
-        compName={standingsLeagues[0].compName}
-        countryKey={standingsLeagues[0].countryKey}
-        slug={standingsLeagues[0].slug}
-        rows={standingsLeagues[0].rows}
-        locale={locale}
-        labels={standingsLabels}
-      />
-    ) : null,
-    scorers:
-      topScorersData.scorers.length > 0 ? (
-        <HomeTopScorers
-          competitionName={topScorersData.competitionName}
-          scorers={topScorersData.scorers}
+    leagueSnapshot:
+      leagueSnapshots.length > 0 ? (
+        <HomeLeagueSnapshot
+          leagues={leagueSnapshots}
           locale={locale}
-          labels={{ topScorers: t('topScorers') }}
+          labels={{
+            tableTab: t('tableTab'),
+            scorersTab: t('scorersTab'),
+            viewFullStandings: t('viewFullStandings'),
+            topScorers: t('topScorers'),
+            team: t('team'),
+            played: t('played'),
+            won: t('won'),
+            lost: t('lost'),
+            goalDiff: t('goalDiff'),
+            points: t('points'),
+          }}
         />
       ) : null,
   };

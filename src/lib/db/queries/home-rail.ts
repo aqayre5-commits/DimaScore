@@ -6,8 +6,8 @@ import {
   getLiveGroupStandings,
   getTopMatchesThisWeek,
   getMoroccanPlayerPerformances,
-  getRightRailTopScorers,
 } from '@/lib/db/queries/right-rail';
+import { getResolvedTopScorers, type TopPlayerRow } from '@/lib/db/queries/league';
 import { timedQuery } from '@/lib/db/timing';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -61,12 +61,13 @@ export const HOMEPAGE_LEAGUES = [
   },
 ];
 
-export interface HomeRailStandingsLeague {
+export interface LeagueSnapshot {
   compId: number;
   compName: string;
   countryKey: string;
   slug: Record<string, string>;
   rows: StandingRow[];
+  scorers: TopPlayerRow[];
 }
 
 export interface HomeRailData {
@@ -74,8 +75,7 @@ export interface HomeRailData {
   liveGroupStandings: Awaited<ReturnType<typeof getLiveGroupStandings>>;
   topMatches: Awaited<ReturnType<typeof getTopMatchesThisWeek>>;
   moroccanPerformances: Awaited<ReturnType<typeof getMoroccanPlayerPerformances>>;
-  topScorersData: Awaited<ReturnType<typeof getRightRailTopScorers>>;
-  standingsLeagues: HomeRailStandingsLeague[];
+  leagueSnapshots: LeagueSnapshot[];
 }
 
 /**
@@ -95,14 +95,13 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     liveGroupStandings,
     topMatches,
     moroccanPerformances,
-    topScorersData,
     standingsResults,
+    scorersResults,
   ] = await Promise.all([
     timedQuery('getNextFeaturedMatches', () => getNextFeaturedMatches(db)),
     timedQuery('getLiveGroupStandings', () => getLiveGroupStandings(db)),
     timedQuery('getTopMatchesThisWeek', () => getTopMatchesThisWeek(db)),
     timedQuery('getMoroccanPlayerPerformances', () => getMoroccanPlayerPerformances(db)),
-    timedQuery('getRightRailTopScorers', () => getRightRailTopScorers(db)),
     Promise.all(
       HOMEPAGE_LEAGUES.map((l) => {
         const year = seasonMap.get(l.compId);
@@ -110,22 +109,31 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
         return timedQuery(`getStandings(${l.compId})`, () => getStandings(db, l.compId, year));
       }),
     ),
+    Promise.all(
+      HOMEPAGE_LEAGUES.map((l) => {
+        const year = seasonMap.get(l.compId);
+        if (!year) return Promise.resolve([] as TopPlayerRow[]);
+        return timedQuery(`getResolvedTopScorers(${l.compId})`, () =>
+          getResolvedTopScorers(db, l.compId, year, locale, 5),
+        );
+      }),
+    ),
   ]);
 
-  const standingsLeagues: HomeRailStandingsLeague[] = HOMEPAGE_LEAGUES.map((l, i) => ({
+  const leagueSnapshots: LeagueSnapshot[] = HOMEPAGE_LEAGUES.map((l, i) => ({
     compId: l.compId,
     compName: l.label[locale] ?? l.label['en'],
     countryKey: l.countryKey,
     slug: l.slugs,
     rows: standingsResults[i],
-  })).filter((l) => l.rows.length > 0);
+    scorers: scorersResults[i],
+  })).filter((l) => l.rows.length > 0 || l.scorers.length > 0);
 
   return {
     nextFeaturedCandidates,
     liveGroupStandings,
     topMatches,
     moroccanPerformances,
-    topScorersData,
-    standingsLeagues,
+    leagueSnapshots,
   };
 }

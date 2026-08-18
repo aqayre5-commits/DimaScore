@@ -162,6 +162,8 @@
     "followAria": "Follow {name}",
     "unfollowAria": "Unfollow {name}",
     "yourMatches": "Your matches",
+    "tableTab": "Table",
+    "scorersTab": "Scorers",
     "emptyState": "Matches coming soon",
     "featuredVideos": "Featured videos",
     "featured": "Featured",
