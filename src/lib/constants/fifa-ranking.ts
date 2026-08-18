@@ -321,13 +321,14 @@ export const FIFA_RANKING_SNAPSHOT: readonly FifaRankingRow[] = [
 ];
 
 /**
- * Resolve the top `limit` nations for display, always pinning `pinCode` (Morocco) — its row is
- * appended if it falls outside the top `limit`, so a Morocco-first card never loses it.
+ * Resolve the top `limit` nations for display. Pinning is opt-in: pass a `pinCode` to highlight
+ * that nation and append its row if it falls outside the top `limit`; with no `pinCode` (default)
+ * the list is a plain top-N with no highlighted row.
  * Localized names + flag codes come from COUNTRY_META (fallback: the raw FIFA code, no flag).
  */
 export function getFifaRankingTop(
   locale: Locale,
-  { limit = 8, pinCode = 'MAR' }: { limit?: number; pinCode?: string } = {},
+  { limit = 8, pinCode = null }: { limit?: number; pinCode?: string | null } = {},
 ): ResolvedFifaRankingRow[] {
   const resolve = (row: FifaRankingRow): ResolvedFifaRankingRow => {
     const meta = COUNTRY_META[row.code];
@@ -337,13 +338,13 @@ export function getFifaRankingTop(
       iso2: meta?.iso2 ?? null,
       name: meta?.name[locale] ?? row.code,
       points: row.points,
-      isPinned: row.code === pinCode,
+      isPinned: pinCode != null && row.code === pinCode,
     };
   };
 
   const top = FIFA_RANKING_SNAPSHOT.slice(0, limit).map(resolve);
 
-  if (!top.some((r) => r.code === pinCode)) {
+  if (pinCode != null && !top.some((r) => r.code === pinCode)) {
     const pinned = FIFA_RANKING_SNAPSHOT.find((r) => r.code === pinCode);
     if (pinned) top.push(resolve(pinned));
   }

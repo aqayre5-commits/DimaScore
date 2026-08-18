@@ -31,19 +31,10 @@ export function HomeFifaRanking({ rows, labels }: Props) {
 
       <div className="divide-y divide-border-subtle">
         {rows.map((r) => (
-          <div
-            key={r.code}
-            className={`flex items-center gap-2.5 px-4 py-2 ${
-              r.isPinned ? 'bg-accent-green/10' : ''
-            }`}
-          >
+          <div key={r.code} className="flex items-center gap-2.5 px-4 py-2">
             <span className="w-5 shrink-0 text-xs tabular-nums text-text-tertiary">{r.rank}</span>
             <Flag countryCode={r.iso2} isNational size={16} label={r.code} className="shrink-0" />
-            <span
-              className={`min-w-0 flex-1 truncate text-xs ${
-                r.isPinned ? 'font-semibold text-accent-green' : 'font-medium text-text-primary'
-              }`}
-            >
+            <span className="min-w-0 flex-1 truncate text-xs font-medium text-text-primary">
               {r.name}
             </span>
             <span className="shrink-0 text-xs tabular-nums text-text-secondary">
