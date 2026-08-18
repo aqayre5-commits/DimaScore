@@ -5,6 +5,7 @@ import { HomeLiveGroupStandings } from './HomeLiveGroupStandings';
 import { HomeTopMatches } from './HomeTodaysMatches';
 import { HomeLionsAbroad } from './HomeLionsAbroad';
 import { HomeLeagueSnapshot } from './HomeLeagueSnapshot';
+import { HomeTopPerformances } from './HomeTopPerformances';
 import type { HomeRailData } from '@/lib/db/queries/home-rail';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -21,8 +22,8 @@ interface Props {
 // Rail order: live/today content first, reference tables grouped at the bottom.
 // Mobile omits 'nextMatch' (the Live Now card) — it's lifted above the filter tabs in page.tsx.
 const SEQUENCES: Record<Props['variant'], string[]> = {
-  desktop: ['nextMatch', 'lions', 'topMatches', 'liveGroups', 'leagueSnapshot'],
-  mobile: ['lions', 'topMatches', 'leagueSnapshot', 'liveGroups'],
+  desktop: ['nextMatch', 'lions', 'topMatches', 'liveGroups', 'leagueSnapshot', 'topPerformances'],
+  mobile: ['lions', 'topMatches', 'leagueSnapshot', 'topPerformances', 'liveGroups'],
 };
 
 export async function HomeRailWidgets({ data, locale, variant }: Props) {
@@ -33,6 +34,7 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
     topMatches,
     moroccanPerformances,
     leagueSnapshots,
+    topPerformances,
   } = data;
 
   const widgets: Record<string, React.ReactNode> = {
@@ -112,6 +114,14 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
             goalDiff: t('goalDiff'),
             points: t('points'),
           }}
+        />
+      ) : null,
+    topPerformances:
+      topPerformances.length > 0 ? (
+        <HomeTopPerformances
+          performances={topPerformances}
+          locale={locale}
+          labels={{ topPerformances: t('topPerformances') }}
         />
       ) : null,
   };

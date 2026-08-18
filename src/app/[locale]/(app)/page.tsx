@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
@@ -11,7 +10,6 @@ import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
 import { HomeNextMatch } from '@/components/homepage/HomeNextMatch';
 import { getHomeRailData } from '@/lib/db/queries/home-rail';
-import { HomeTrendingPlayersStreamed } from '@/components/homepage/HomeTrendingPlayersStreamed';
 import { HomeFeaturedVideos } from '@/components/homepage/HomeFeaturedVideos';
 import { db } from '@/lib/db/client';
 import { getMediaVideos } from '@/lib/db/queries/media';
@@ -230,10 +228,6 @@ export default async function HomePage({ params }: PageProps) {
               <div className="lg:hidden">
                 <HomeRailWidgets data={railData} locale={typedLocale} variant="mobile" />
               </div>
-
-              <Suspense>
-                <HomeTrendingPlayersStreamed locale={typedLocale} />
-              </Suspense>
             </div>
           </div>
 

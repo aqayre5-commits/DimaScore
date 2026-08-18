@@ -1,4 +1,5 @@
 import { db } from '@/lib/db/client';
+import { sql } from 'drizzle-orm';
 import { cacheLife } from 'next/cache';
 import { getStandings, getCurrentSeasons, type StandingRow } from '@/lib/db/queries';
 import {
@@ -70,12 +71,76 @@ export interface LeagueSnapshot {
   scorers: TopPlayerRow[];
 }
 
+export interface TopPerformance {
+  playerId: number;
+  playerSlug: string;
+  playerName: string;
+  playerPhoto: string | null;
+  teamName: string;
+  teamLogo: string | null;
+  position: string | null;
+  rating: number;
+}
+
+/** Highest match-rated players from recent finished games, deduped to each player's best rating. */
+export async function getTopPerformances(locale: string, limit = 5): Promise<TopPerformance[]> {
+  const result = await db.execute(sql`
+    SELECT fps.player_id, p.slug AS player_slug,
+           COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
+           p.photo_url,
+           COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
+           t.logo_url AS team_logo,
+           fps.position, fps.rating
+    FROM fixture_player_stats fps
+    JOIN fixtures f ON f.id = fps.fixture_id
+    JOIN players p ON p.id = fps.player_id
+    LEFT JOIN teams t ON t.id = fps.team_id
+    WHERE f.status_code IN ('FT', 'AET', 'PEN')
+      AND f.kickoff_at >= NOW() - INTERVAL '7 days'
+      AND fps.rating IS NOT NULL
+      AND fps.minutes_played >= 60
+    ORDER BY fps.rating DESC
+    LIMIT 30`);
+
+  const rows = result.rows as {
+    player_id: number;
+    player_slug: string;
+    player_name: string | null;
+    photo_url: string | null;
+    team_name: string | null;
+    team_logo: string | null;
+    position: string | null;
+    rating: string | null;
+  }[];
+
+  const seen = new Set<number>();
+  const out: TopPerformance[] = [];
+  for (const r of rows) {
+    const id = Number(r.player_id);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push({
+      playerId: id,
+      playerSlug: r.player_slug,
+      playerName: r.player_name ?? '',
+      playerPhoto: r.photo_url,
+      teamName: r.team_name ?? '',
+      teamLogo: r.team_logo,
+      position: r.position,
+      rating: Number(r.rating),
+    });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 export interface HomeRailData {
   nextFeaturedCandidates: Awaited<ReturnType<typeof getNextFeaturedMatches>>;
   liveGroupStandings: Awaited<ReturnType<typeof getLiveGroupStandings>>;
   topMatches: Awaited<ReturnType<typeof getTopMatchesThisWeek>>;
   moroccanPerformances: Awaited<ReturnType<typeof getMoroccanPlayerPerformances>>;
   leagueSnapshots: LeagueSnapshot[];
+  topPerformances: TopPerformance[];
 }
 
 /**
@@ -95,6 +160,7 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     liveGroupStandings,
     topMatches,
     moroccanPerformances,
+    topPerformances,
     standingsResults,
     scorersResults,
   ] = await Promise.all([
@@ -102,6 +168,7 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     timedQuery('getLiveGroupStandings', () => getLiveGroupStandings(db)),
     timedQuery('getTopMatchesThisWeek', () => getTopMatchesThisWeek(db)),
     timedQuery('getMoroccanPlayerPerformances', () => getMoroccanPlayerPerformances(db)),
+    timedQuery('getTopPerformances', () => getTopPerformances(locale, 5)),
     Promise.all(
       HOMEPAGE_LEAGUES.map((l) => {
         const year = seasonMap.get(l.compId);
@@ -135,5 +202,6 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     topMatches,
     moroccanPerformances,
     leagueSnapshots,
+    topPerformances,
   };
 }
