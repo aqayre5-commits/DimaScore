@@ -9,6 +9,7 @@ import {
   getMoroccanPlayerPerformances,
 } from '@/lib/db/queries/right-rail';
 import { getResolvedTopScorers, type TopPlayerRow } from '@/lib/db/queries/league';
+import { getFifaRankingTop, type ResolvedFifaRankingRow } from '@/lib/constants/fifa-ranking';
 import { timedQuery } from '@/lib/db/timing';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -141,6 +142,7 @@ export interface HomeRailData {
   moroccanPerformances: Awaited<ReturnType<typeof getMoroccanPlayerPerformances>>;
   leagueSnapshots: LeagueSnapshot[];
   topPerformances: TopPerformance[];
+  fifaRanking: ResolvedFifaRankingRow[];
 }
 
 /**
@@ -196,6 +198,9 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     scorers: scorersResults[i],
   })).filter((l) => l.rows.length > 0 || l.scorers.length > 0);
 
+  // Published FIFA ranking — a versioned constant (no DB), resolved for locale + Morocco pin.
+  const fifaRanking = getFifaRankingTop(locale, { limit: 8 });
+
   return {
     nextFeaturedCandidates,
     liveGroupStandings,
@@ -203,5 +208,6 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     moroccanPerformances,
     leagueSnapshots,
     topPerformances,
+    fifaRanking,
   };
 }

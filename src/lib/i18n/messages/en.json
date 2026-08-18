@@ -165,6 +165,8 @@
     "tableTab": "Table",
     "scorersTab": "Scorers",
     "topPerformances": "Top performances",
+    "fifaRanking": "FIFA Ranking",
+    "asOf": "as of {date}",
     "emptyState": "Matches coming soon",
     "featuredVideos": "Featured videos",
     "featured": "Featured",

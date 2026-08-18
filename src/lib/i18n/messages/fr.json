@@ -165,6 +165,8 @@
     "tableTab": "Classement",
     "scorersTab": "Buteurs",
     "topPerformances": "Meilleures performances",
+    "fifaRanking": "Classement FIFA",
+    "asOf": "au {date}",
     "emptyState": "Les matchs arrivent bientôt",
     "featuredVideos": "Vidéos à la une",
     "featured": "À la une",

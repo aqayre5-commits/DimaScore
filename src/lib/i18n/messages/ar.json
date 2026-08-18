@@ -165,6 +165,8 @@
     "tableTab": "الترتيب",
     "scorersTab": "الهدافون",
     "topPerformances": "أفضل الأداءات",
+    "fifaRanking": "تصنيف الفيفا",
+    "asOf": "حتى {date}",
     "emptyState": "المباريات قادمة قريبًا",
     "featuredVideos": "فيديوهات مختارة",
     "featured": "المميزة",

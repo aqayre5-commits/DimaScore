@@ -6,6 +6,8 @@ import { HomeTopMatches } from './HomeTodaysMatches';
 import { HomeLionsAbroad } from './HomeLionsAbroad';
 import { HomeLeagueSnapshot } from './HomeLeagueSnapshot';
 import { HomeTopPerformances } from './HomeTopPerformances';
+import { HomeFifaRanking } from './HomeFifaRanking';
+import { FIFA_RANKING_META } from '@/lib/constants/fifa-ranking';
 import type { HomeRailData } from '@/lib/db/queries/home-rail';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -19,11 +21,12 @@ interface Props {
   variant: 'desktop' | 'mobile';
 }
 
-// Rail order: live/today content first, reference tables grouped at the bottom.
+// Final rail: next match → league snapshot → FIFA ranking → top performances.
 // Mobile omits 'nextMatch' (the Live Now card) — it's lifted above the filter tabs in page.tsx.
+// (lions / topMatches / liveGroups slots remain wired below but are no longer placed in the rail.)
 const SEQUENCES: Record<Props['variant'], string[]> = {
-  desktop: ['nextMatch', 'lions', 'topMatches', 'liveGroups', 'leagueSnapshot', 'topPerformances'],
-  mobile: ['lions', 'topMatches', 'leagueSnapshot', 'topPerformances', 'liveGroups'],
+  desktop: ['nextMatch', 'leagueSnapshot', 'fifaRanking', 'topPerformances'],
+  mobile: ['leagueSnapshot', 'fifaRanking', 'topPerformances'],
 };
 
 export async function HomeRailWidgets({ data, locale, variant }: Props) {
@@ -35,7 +38,15 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
     moroccanPerformances,
     leagueSnapshots,
     topPerformances,
+    fifaRanking,
   } = data;
+
+  // Static release date → deterministic (safe under cacheComponents); localized per request.
+  const fifaAsOf = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(FIFA_RANKING_META.updatedAt));
 
   const widgets: Record<string, React.ReactNode> = {
     nextMatch:
@@ -122,6 +133,17 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
           performances={topPerformances}
           locale={locale}
           labels={{ topPerformances: t('topPerformances') }}
+        />
+      ) : null,
+    fifaRanking:
+      fifaRanking.length > 0 ? (
+        <HomeFifaRanking
+          rows={fifaRanking}
+          locale={locale}
+          labels={{
+            fifaRanking: t('fifaRanking'),
+            asOf: t('asOf', { date: fifaAsOf }),
+          }}
         />
       ) : null,
   };
