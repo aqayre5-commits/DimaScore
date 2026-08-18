@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Flag } from '@/components/shared/Flag';
 import type { ResolvedFifaRankingRow } from '@/lib/constants/fifa-ranking';
 import type { Locale } from '@/lib/i18n/config';
@@ -9,15 +10,16 @@ interface Props {
     fifaRanking: string;
     /** Pre-interpolated "as of {date}" string. */
     asOf: string;
+    viewFullRanking: string;
   };
 }
 
 /**
- * Rail card: the published FIFA men's World Ranking (top nations, Morocco pinned + highlighted).
- * Data is a versioned constant (see fifa-ranking.ts); movement arrows arrive in Phase 2 when we
- * compute previous ranks internally. Renders nothing when there's no data.
+ * Rail card: the published FIFA men's World Ranking (top nations). Data is a versioned constant
+ * (see fifa-ranking.ts); movement arrows arrive in Phase 2 when we compute previous ranks
+ * internally. Footer links to the full 211-nation page. Renders nothing when there's no data.
  */
-export function HomeFifaRanking({ rows, labels }: Props) {
+export function HomeFifaRanking({ rows, locale, labels }: Props) {
   if (rows.length === 0) return null;
 
   return (
@@ -43,6 +45,13 @@ export function HomeFifaRanking({ rows, labels }: Props) {
           </div>
         ))}
       </div>
+
+      <Link
+        href={`/${locale}/classement-fifa`}
+        className="block border-t border-border-subtle px-4 py-2.5 text-center text-xs font-medium text-accent-green transition-colors hover:bg-bg-surface-2"
+      >
+        {labels.viewFullRanking}
+      </Link>
     </div>
   );
 }

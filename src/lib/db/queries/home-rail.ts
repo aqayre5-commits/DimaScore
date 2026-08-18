@@ -170,7 +170,7 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     timedQuery('getLiveGroupStandings', () => getLiveGroupStandings(db)),
     timedQuery('getTopMatchesThisWeek', () => getTopMatchesThisWeek(db)),
     timedQuery('getMoroccanPlayerPerformances', () => getMoroccanPlayerPerformances(db)),
-    timedQuery('getTopPerformances', () => getTopPerformances(locale, 5)),
+    timedQuery('getTopPerformances', () => getTopPerformances(locale, 10)),
     Promise.all(
       HOMEPAGE_LEAGUES.map((l) => {
         const year = seasonMap.get(l.compId);
@@ -198,8 +198,8 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
     scorers: scorersResults[i],
   })).filter((l) => l.rows.length > 0 || l.scorers.length > 0);
 
-  // Published FIFA ranking — a versioned constant (no DB), resolved for locale + Morocco pin.
-  const fifaRanking = getFifaRankingTop(locale, { limit: 8 });
+  // Published FIFA ranking — a versioned constant (no DB), resolved for locale.
+  const fifaRanking = getFifaRankingTop(locale, { limit: 10 });
 
   return {
     nextFeaturedCandidates,

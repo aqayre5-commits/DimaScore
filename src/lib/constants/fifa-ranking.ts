@@ -100,6 +100,14 @@ export const COUNTRY_META: Record<string, FifaCountryMeta> = {
   QAT: { iso2: 'qa', name: { en: 'Qatar', fr: 'Qatar', ar: 'قطر' } },
   IRQ: { iso2: 'iq', name: { en: 'Iraq', fr: 'Irak', ar: 'العراق' } },
   JOR: { iso2: 'jo', name: { en: 'Jordan', fr: 'Jordanie', ar: 'الأردن' } },
+  // UK home nations + Kosovo: Intl.DisplayNames has no region entry for these codes.
+  WAL: { iso2: 'gb-wls', name: { en: 'Wales', fr: 'Pays de Galles', ar: 'ويلز' } },
+  SCO: { iso2: 'gb-sct', name: { en: 'Scotland', fr: 'Écosse', ar: 'اسكتلندا' } },
+  NIR: {
+    iso2: 'gb-nir',
+    name: { en: 'Northern Ireland', fr: 'Irlande du Nord', ar: 'أيرلندا الشمالية' },
+  },
+  KOS: { iso2: 'xk', name: { en: 'Kosovo', fr: 'Kosovo', ar: 'كوسوفو' } },
 };
 
 /**
@@ -321,22 +329,265 @@ export const FIFA_RANKING_SNAPSHOT: readonly FifaRankingRow[] = [
 ];
 
 /**
+ * FIFA 3-letter code → api-sports flag code (ISO alpha-2 lowercase; api-sports UK sub-codes for the
+ * home nations). Covers all 211 nations so the full-ranking page can render every flag. Curated
+ * football-standard names + the few non-ISO codes (UK nations, Kosovo) live in COUNTRY_META and
+ * take precedence; the long tail gets its localized name from Intl.DisplayNames on this iso2.
+ */
+export const FIFA_TO_ISO2: Record<string, string> = {
+  ESP: 'es',
+  ARG: 'ar',
+  FRA: 'fr',
+  ENG: 'gb-eng',
+  BRA: 'br',
+  MAR: 'ma',
+  POR: 'pt',
+  BEL: 'be',
+  NED: 'nl',
+  MEX: 'mx',
+  COL: 'co',
+  GER: 'de',
+  CRO: 'hr',
+  SUI: 'ch',
+  ITA: 'it',
+  USA: 'us',
+  JPN: 'jp',
+  SEN: 'sn',
+  NOR: 'no',
+  URU: 'uy',
+  DEN: 'dk',
+  IRN: 'ir',
+  AUT: 'at',
+  EGY: 'eg',
+  ECU: 'ec',
+  NGA: 'ng',
+  TUR: 'tr',
+  AUS: 'au',
+  ALG: 'dz',
+  CAN: 'ca',
+  CIV: 'ci',
+  KOR: 'kr',
+  UKR: 'ua',
+  PAR: 'py',
+  RUS: 'ru',
+  POL: 'pl',
+  SWE: 'se',
+  WAL: 'gb-wls',
+  HUN: 'hu',
+  SRB: 'rs',
+  COD: 'cd',
+  SCO: 'gb-sct',
+  CMR: 'cm',
+  PAN: 'pa',
+  SVK: 'sk',
+  GRE: 'gr',
+  VEN: 've',
+  CZE: 'cz',
+  CHI: 'cl',
+  PER: 'pe',
+  CRC: 'cr',
+  ROU: 'ro',
+  MLI: 'ml',
+  RSA: 'za',
+  IRL: 'ie',
+  SVN: 'si',
+  TUN: 'tn',
+  KSA: 'sa',
+  QAT: 'qa',
+  UZB: 'uz',
+  BIH: 'ba',
+  BFA: 'bf',
+  IRQ: 'iq',
+  CPV: 'cv',
+  GHA: 'gh',
+  HON: 'hn',
+  ALB: 'al',
+  UAE: 'ae',
+  MKD: 'mk',
+  NIR: 'gb-nir',
+  JAM: 'jm',
+  GEO: 'ge',
+  JOR: 'jo',
+  ISL: 'is',
+  FIN: 'fi',
+  ISR: 'il',
+  BOL: 'bo',
+  KOS: 'xk',
+  OMA: 'om',
+  MNE: 'me',
+  GUI: 'gn',
+  CUW: 'cw',
+  SYR: 'sy',
+  GAB: 'ga',
+  BUL: 'bg',
+  NZL: 'nz',
+  ANG: 'ao',
+  HAI: 'ht',
+  UGA: 'ug',
+  ZAM: 'zm',
+  CHN: 'cn',
+  BHR: 'bh',
+  BEN: 'bj',
+  THA: 'th',
+  PLE: 'ps',
+  BLR: 'by',
+  GUA: 'gt',
+  LUX: 'lu',
+  VIE: 'vn',
+  SLV: 'sv',
+  TJK: 'tj',
+  TRI: 'tt',
+  MOZ: 'mz',
+  MAD: 'mg',
+  EQG: 'gq',
+  KGZ: 'kg',
+  ARM: 'am',
+  COM: 'km',
+  KEN: 'ke',
+  LBY: 'ly',
+  KAZ: 'kz',
+  TAN: 'tz',
+  MTN: 'mr',
+  NIG: 'ne',
+  LBN: 'lb',
+  GAM: 'gm',
+  SDN: 'sd',
+  IDN: 'id',
+  TOG: 'tg',
+  PRK: 'kp',
+  NAM: 'na',
+  SLE: 'sl',
+  FRO: 'fo',
+  CYP: 'cy',
+  SUR: 'sr',
+  AZE: 'az',
+  EST: 'ee',
+  RWA: 'rw',
+  MWI: 'mw',
+  ZIM: 'zw',
+  NCA: 'ni',
+  GNB: 'gw',
+  KUW: 'kw',
+  CGO: 'cg',
+  PHI: 'ph',
+  MAS: 'my',
+  LVA: 'lv',
+  IND: 'in',
+  CTA: 'cf',
+  LBR: 'lr',
+  TKM: 'tm',
+  BDI: 'bi',
+  ETH: 'et',
+  DOM: 'do',
+  YEM: 'ye',
+  LES: 'ls',
+  BOT: 'bw',
+  SGP: 'sg',
+  LTU: 'lt',
+  GUY: 'gy',
+  NCL: 'nc',
+  SKN: 'kn',
+  SOL: 'sb',
+  PUR: 'pr',
+  FIJ: 'fj',
+  HKG: 'hk',
+  TAH: 'pf',
+  MYA: 'mm',
+  MDA: 'md',
+  VAN: 'vu',
+  MLT: 'mt',
+  ATG: 'ag',
+  GRN: 'gd',
+  CUB: 'cu',
+  SWZ: 'sz',
+  LCA: 'lc',
+  BER: 'bm',
+  PNG: 'pg',
+  SSD: 'ss',
+  VIN: 'vc',
+  AFG: 'af',
+  AND: 'ad',
+  MDV: 'mv',
+  TPE: 'tw',
+  CAM: 'kh',
+  MSR: 'ms',
+  NEP: 'np',
+  MRI: 'mu',
+  BRB: 'bb',
+  BLZ: 'bz',
+  BAN: 'bd',
+  DMA: 'dm',
+  CHA: 'td',
+  ERI: 'er',
+  LAO: 'la',
+  COK: 'ck',
+  SRI: 'lk',
+  SAM: 'ws',
+  ARU: 'aw',
+  MNG: 'mn',
+  ASA: 'as',
+  BHU: 'bt',
+  MAC: 'mo',
+  BRU: 'bn',
+  STP: 'st',
+  DJI: 'dj',
+  CAY: 'ky',
+  PAK: 'pk',
+  SOM: 'so',
+  TGA: 'to',
+  TLS: 'tl',
+  GIB: 'gi',
+  GUM: 'gu',
+  SEY: 'sc',
+  TCA: 'tc',
+  LIE: 'li',
+  BAH: 'bs',
+  VIR: 'vi',
+  VGB: 'vg',
+  AIA: 'ai',
+  SMR: 'sm',
+};
+
+/**
+ * Build a locale-bound country resolver reusing one Intl.DisplayNames instance across rows.
+ * COUNTRY_META wins for curated football names + flags; otherwise the flag comes from FIFA_TO_ISO2
+ * and the name from Intl.DisplayNames, falling back to the raw FIFA code when neither resolves.
+ */
+function makeCountryResolver(locale: Locale) {
+  const display = new Intl.DisplayNames([locale], { type: 'region' });
+  return (code: string): { iso2: string | null; name: string } => {
+    const meta = COUNTRY_META[code];
+    if (meta) return { iso2: meta.iso2, name: meta.name[locale] };
+    const iso2 = FIFA_TO_ISO2[code] ?? null;
+    let name = code;
+    if (iso2 && iso2.length === 2) {
+      try {
+        name = display.of(iso2.toUpperCase()) ?? code;
+      } catch {
+        name = code;
+      }
+    }
+    return { iso2, name };
+  };
+}
+
+/**
  * Resolve the top `limit` nations for display. Pinning is opt-in: pass a `pinCode` to highlight
  * that nation and append its row if it falls outside the top `limit`; with no `pinCode` (default)
  * the list is a plain top-N with no highlighted row.
- * Localized names + flag codes come from COUNTRY_META (fallback: the raw FIFA code, no flag).
  */
 export function getFifaRankingTop(
   locale: Locale,
   { limit = 8, pinCode = null }: { limit?: number; pinCode?: string | null } = {},
 ): ResolvedFifaRankingRow[] {
+  const resolveCountry = makeCountryResolver(locale);
   const resolve = (row: FifaRankingRow): ResolvedFifaRankingRow => {
-    const meta = COUNTRY_META[row.code];
+    const c = resolveCountry(row.code);
     return {
       rank: row.rank,
       code: row.code,
-      iso2: meta?.iso2 ?? null,
-      name: meta?.name[locale] ?? row.code,
+      iso2: c.iso2,
+      name: c.name,
       points: row.points,
       isPinned: pinCode != null && row.code === pinCode,
     };
@@ -350,4 +601,20 @@ export function getFifaRankingTop(
   }
 
   return top;
+}
+
+/** Full 211-nation ranking, resolved (localized name + flag) for the full-ranking page. */
+export function getFullFifaRanking(locale: Locale): ResolvedFifaRankingRow[] {
+  const resolveCountry = makeCountryResolver(locale);
+  return FIFA_RANKING_SNAPSHOT.map((row) => {
+    const c = resolveCountry(row.code);
+    return {
+      rank: row.rank,
+      code: row.code,
+      iso2: c.iso2,
+      name: c.name,
+      points: row.points,
+      isPinned: false,
+    };
+  });
 }

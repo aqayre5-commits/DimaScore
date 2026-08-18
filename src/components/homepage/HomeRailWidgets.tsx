@@ -143,6 +143,7 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
           labels={{
             fifaRanking: t('fifaRanking'),
             asOf: t('asOf', { date: fifaAsOf }),
+            viewFullRanking: t('viewFullRanking'),
           }}
         />
       ) : null,

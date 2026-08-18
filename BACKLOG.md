@@ -239,3 +239,9 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   3. **Re-seed reminder** — next official FIFA update is **7 Oct 2026**; bump `FIFA_RANKING_SNAPSHOT` + `FIFA_RANKING_META` then (until Phase 2 automates it).
   4. **Full-ranking page + confederation view** — card is link-less in v1; a `/classement-fifa` page (all 211) and a CAF/Arab filter would need `COUNTRY_META` expanded beyond the current ~46 display entries.
   5. **Women's ranking** — different (Elo-variant) algorithm; not seeded.
+
+- [2026-08-18][phase 14 — FIFA full-ranking page, follow-ups] Shipped: `/[locale]/classement-fifa` (all 211, search), top 10 on both landing cards, `FIFA_TO_ISO2` + `Intl.DisplayNames` name resolution. Deferred:
+  1. **Long-tail names use CLDR (Intl) form** — a few differ from football convention: TPE renders "Taiwan"/"تايوان" (FIFA uses "Chinese Taipei"), HKG→"Hong Kong SAR China", MAC→"Macao SAR China". Fix: add these to `COUNTRY_META` overrides for football-standard names.
+  2. **Confederation filter** (CAF/UEFA/CONMEBOL/AFC/…) — deferred per v1 scope; needs a country→confederation map for all 211.
+  3. **Favourites toggle** on the full page (SofaScore has one) — deferred; ties into the follow store (`useFollows`) once national teams are followable.
+  4. **Movement / previous-points columns** — still Phase 2 (needs internal prev-rank computation).
