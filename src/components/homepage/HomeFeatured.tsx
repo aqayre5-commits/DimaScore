@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { stripWomenSuffix, getNationalFlagUrl } from '@/lib/team-display';
 import { LocalTime } from '@/components/shared/LocalTime';
@@ -19,7 +19,7 @@ interface Props {
   locale: Locale;
   labels: {
     matchOfDay: string;
-    nextBigMatches: string;
+    featured: string;
     kicksOffIn: string;
     live: string;
     tags: Record<FeatureTag, string>;
@@ -50,38 +50,103 @@ function computeCountdown(kickoffAt: Date) {
 }
 
 /**
- * Reimagined landing hero (Option B): one strong hero match + a "next big matches" strip.
- * Matches arrive pre-ranked from getFeaturedMatches (Morocco-first + imminence-first + diversity
- * cap); this component applies the live poll, drops finished slides, and never repeats a match
- * between the hero and the strip. No timed rotation — the hero is the top match, updated live.
+ * Reimagined landing hero: a single rotating hero across the top ranked matches (Morocco-first +
+ * imminence-first + diversity cap from getFeaturedMatches). Live matches are pulled to the front,
+ * finished slides are dropped, and rotation pauses on hover/focus. The server's #1 keeps the
+ * "Match of the day" badge; other slides read "Featured".
  */
 export function HomeFeatured({ matches, locale, labels }: Props) {
   const livePatches = useLiveFixtures();
-  if (matches.length === 0) return null;
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const patched = matches.map((m) => applyPatch(m, livePatches.get(m.id)));
   const notFinished = patched.filter(
     (m) => getMatchState(m.statusCode, m.kickoffAt) !== 'finished',
   );
-  const view = notFinished.length > 0 ? notFinished : patched;
-  const hero = view[0];
-  const rest = view.slice(1, 6);
+  const base = notFinished.length > 0 ? notFinished : patched;
+  // Live-first: a match in progress always leads; the rest keep the server ranking.
+  const live = base.filter((m) => getMatchState(m.statusCode, m.kickoffAt) === 'live');
+  const upcoming = base.filter((m) => getMatchState(m.statusCode, m.kickoffAt) !== 'live');
+  const view = [...live, ...upcoming].slice(0, 8);
+  const matchOfDayId = matches[0]?.id ?? null;
+
+  const safeIdx = idx < view.length ? idx : 0;
+
+  const next = useCallback(() => setIdx((i) => (i >= view.length - 1 ? 0 : i + 1)), [view.length]);
+
+  useEffect(() => {
+    if (view.length <= 1 || paused) return;
+    timerRef.current = setInterval(next, 9000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [view.length, paused, next]);
+
+  const goTo = useCallback((i: number) => {
+    setIdx(i);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  if (view.length === 0) return null;
+  const match = view[safeIdx];
 
   return (
-    <div className="space-y-2.5">
-      <HeroCard match={hero} locale={locale} labels={labels} />
-      {rest.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-          <div className="px-4 py-2.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
-              {labels.nextBigMatches}
-            </h2>
-          </div>
-          <div className="divide-y divide-border-subtle">
-            {rest.map((m) => (
-              <StripRow key={m.id} match={m} locale={locale} labels={labels} />
-            ))}
-          </div>
+    <div
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
+      <div className="relative">
+        <HeroCard
+          match={match}
+          locale={locale}
+          labels={labels}
+          isLead={match.id === matchOfDayId}
+        />
+
+        {view.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => goTo(safeIdx === 0 ? view.length - 1 : safeIdx - 1)}
+              aria-label="Previous"
+              className="absolute start-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary sm:block"
+            >
+              <ChevronLeft className="size-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => goTo(safeIdx === view.length - 1 ? 0 : safeIdx + 1)}
+              aria-label="Next"
+              className="absolute end-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary sm:block"
+            >
+              <ChevronRight className="size-5" />
+            </button>
+          </>
+        )}
+      </div>
+
+      {view.length > 1 && (
+        <div className="mt-2 flex items-center justify-center gap-1.5">
+          {view.map((m, i) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => goTo(i)}
+              aria-label={`Slide ${i + 1}`}
+              className={`rounded-full transition-all ${
+                i === safeIdx
+                  ? 'h-2 w-5 bg-accent-azure'
+                  : 'size-2 bg-border-subtle hover:bg-text-tertiary'
+              }`}
+            />
+          ))}
         </div>
       )}
     </div>
@@ -104,9 +169,8 @@ function TagChip({ tag, labels }: { tag: FeatureTag; labels: Props['labels'] }) 
   );
 }
 
-function TeamCrest({ team, size }: { team: HomeFixture['homeTeam']; size: 'lg' | 'sm' }) {
+function TeamCrest({ team }: { team: HomeFixture['homeTeam'] }) {
   const url = team ? (getNationalFlagUrl(team) ?? team.logoUrl) : null;
-  const box = size === 'lg' ? 'h-12 w-16 sm:h-[72px] sm:w-24' : 'h-5 w-7';
   if (url) {
     return (
       <Image
@@ -114,15 +178,13 @@ function TeamCrest({ team, size }: { team: HomeFixture['homeTeam']; size: 'lg' |
         alt=""
         width={96}
         height={72}
-        className={`${box} rounded-sm object-contain ring-1 ring-border-subtle/40`}
+        className="h-12 w-16 rounded-sm object-contain ring-1 ring-border-subtle/40 sm:h-[72px] sm:w-24"
       />
     );
   }
   const initial = team ? Object.values(team.name)[0]?.[0] : '?';
   return (
-    <div
-      className={`${box} flex items-center justify-center rounded-sm bg-bg-surface-2 font-bold text-text-tertiary ring-1 ring-border-subtle/40`}
-    >
+    <div className="flex h-12 w-16 items-center justify-center rounded-sm bg-bg-surface-2 font-bold text-text-tertiary ring-1 ring-border-subtle/40 sm:h-[72px] sm:w-24">
       {initial}
     </div>
   );
@@ -132,10 +194,12 @@ function HeroCard({
   match,
   locale,
   labels,
+  isLead,
 }: {
   match: HomeFixture;
   locale: Locale;
   labels: Props['labels'];
+  isLead: boolean;
 }) {
   const [remaining, setRemaining] = useState(() => computeCountdown(match.kickoffAt));
   const [prevKo, setPrevKo] = useState(match.kickoffAt.getTime());
@@ -168,7 +232,7 @@ function HeroCard({
           </span>
         ) : (
           <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-azure/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-accent-azure">
-            ★ {labels.matchOfDay}
+            ★ {isLead ? labels.matchOfDay : labels.featured}
           </span>
         )}
       </div>
@@ -188,7 +252,7 @@ function HeroCard({
 
         <div className="mt-4 flex w-full items-center justify-center gap-3">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:w-[160px] sm:flex-none">
-            <TeamCrest team={match.homeTeam} size="lg" />
+            <TeamCrest team={match.homeTeam} />
             <span className="w-full truncate text-sm font-bold text-text-primary">{homeName}</span>
           </div>
 
@@ -217,7 +281,7 @@ function HeroCard({
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:w-[160px] sm:flex-none">
-            <TeamCrest team={match.awayTeam} size="lg" />
+            <TeamCrest team={match.awayTeam} />
             <span className="w-full truncate text-sm font-bold text-text-primary">{awayName}</span>
           </div>
         </div>
@@ -273,57 +337,5 @@ function CountdownUnit({ value, label }: { value: number; label: string }) {
         {label}
       </span>
     </div>
-  );
-}
-
-function StripRow({
-  match,
-  locale,
-  labels,
-}: {
-  match: HomeFixture;
-  locale: Locale;
-  labels: Props['labels'];
-}) {
-  const homeName = stripWomenSuffix(getTeamDisplayName(match.homeTeam, locale));
-  const awayName = stripWomenSuffix(getTeamDisplayName(match.awayTeam, locale));
-  const state = getMatchState(match.statusCode, match.kickoffAt);
-  const isLive = state === 'live';
-
-  return (
-    <Link
-      href={`/${locale}/match/${match.id}`}
-      className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-bg-surface-2"
-    >
-      {match.featureTag ? (
-        <TagChip tag={match.featureTag} labels={labels} />
-      ) : (
-        <span className="w-0" />
-      )}
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        <TeamCrest team={match.homeTeam} size="sm" />
-        <span className="min-w-0 flex-1 truncate text-xs font-medium text-text-primary">
-          {homeName}
-        </span>
-      </div>
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        <TeamCrest team={match.awayTeam} size="sm" />
-        <span className="min-w-0 flex-1 truncate text-xs font-medium text-text-primary">
-          {awayName}
-        </span>
-      </div>
-      <span className="shrink-0 text-xs tabular-nums">
-        {isLive ? (
-          <span className="flex items-center gap-1 font-bold text-score-live">
-            <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-            {match.statusCode === 'HT' ? 'HT' : `${match.minute ?? ''}'`}
-          </span>
-        ) : (
-          <span className="text-text-tertiary" suppressHydrationWarning>
-            <LocalTime date={match.kickoffAt} locale={locale} format="kickoff" />
-          </span>
-        )}
-      </span>
-    </Link>
   );
 }

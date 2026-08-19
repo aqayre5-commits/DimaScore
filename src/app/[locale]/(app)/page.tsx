@@ -188,7 +188,7 @@ export default async function HomePage({ params }: PageProps) {
                 locale={typedLocale}
                 labels={{
                   matchOfDay: t('matchOfDay'),
-                  nextBigMatches: t('nextBigMatches'),
+                  featured: t('featured'),
                   kicksOffIn: t('kicksOffIn'),
                   live: t('live'),
                   tags: {
