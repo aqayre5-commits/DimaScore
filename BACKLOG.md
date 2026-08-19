@@ -253,3 +253,10 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   4. **Countdown unit labels hardcoded English** ("DAYS/HOURS/MINS") — pre-existing from the old carousel, carried into HomeFeatured; localize for fr/ar.
   5. **Live-swap across tiers is cache-bound** — a candidate that goes live mid-session doesn't re-rank until the 'minutes' cache revalidates; the hero only advances past a *finished* slide client-side. Acceptable v1; full client re-rank deferred.
   6. **Two national-team-only paths remain** — MOROCCO_TEAM_IDS + FEATURED_ORDER still used by right-rail.ts; consider unifying Morocco detection on countryCode='MA'.
+
+- [2026-08-20][phase 14 — magnitude featuring shipped] getFeaturedMatches now ranks by imminence tier → match magnitude (CLUB_PRESTIGE + FIFA-rank nation prestige + DERBIES + COMPETITION_PRESTIGE + knockout) → Moroccan tie-break → kickoff (src/lib/constants/match-magnitude.ts). Hardcoded Morocco tiers removed; Atlas clubs/Lions now rank via magnitude (Wydad/Raja Tier S; Morocco FIFA #6). Added `derby` tag. Follow-ups:
+  1. **Top-of-the-table stakes** — add a standings-based bonus (both teams high in table) to computeMagnitude; getFeaturedMatches already joins standings for the home team, needs the away side too.
+  2. **Women's nation prestige** — nationPrestige is 0 for women's national teams (no women's FIFA ranking in data yet). Women's matches still feature via competition prestige.
+  3. **Prestige/derby lists are curated starter data** — refine weights + add clubs/rivalries over time (Merseyside needs Everton id; more CAF/Gulf clubs).
+  4. **displayPriority no longer drives featuring** (COMPETITION_PRESTIGE does) but is still used elsewhere (left rail, other queries) — leave as-is.
+  5. **FIFA snapshot is the 20 Jul 2026 seed** — nation prestige shifts when it's re-seeded (next 7 Oct 2026).

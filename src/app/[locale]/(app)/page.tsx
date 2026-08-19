@@ -194,6 +194,7 @@ export default async function HomePage({ params }: PageProps) {
                   tags: {
                     atlasLions: t('tagAtlasLions'),
                     atlasClub: t('tagAtlasClub'),
+                    derby: t('tagDerby'),
                     knockout: t('tagKnockout'),
                     opener: t('tagOpener'),
                   },

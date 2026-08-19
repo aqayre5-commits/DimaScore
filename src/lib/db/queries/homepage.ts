@@ -12,6 +12,7 @@ import {
 } from '@/lib/match-status';
 import { resolveContextLabel } from './right-rail';
 import { toSiteDateKey } from '@/lib/utils/date';
+import { computeMagnitude, isDerby, knockoutBoost } from '@/lib/constants/match-magnitude';
 
 export interface HomeFixture {
   id: number;
@@ -25,7 +26,7 @@ export interface HomeFixture {
   /** Editorial pin (fixtures.is_featured) — pins the hero's top slot. */
   isFeatured: boolean;
   /** Why-featured tag for the hero + strip. Null when nothing notable applies. */
-  featureTag: 'atlasLions' | 'atlasClub' | 'knockout' | 'opener' | null;
+  featureTag: 'atlasLions' | 'derby' | 'atlasClub' | 'knockout' | 'opener' | null;
   homeTeamId: number | null;
   awayTeamId: number | null;
   homeScore: number | null;
@@ -106,29 +107,17 @@ const isMoroccoNational = (t: TeamSnapshot | null): boolean =>
 const isMoroccoClub = (t: TeamSnapshot | null): boolean =>
   !!t && t.countryCode === MOROCCO_CC && !t.isNational;
 
-/** Knockout-stage priority boost — mirrors FEATURED_ORDER's SQL CASE (qualifying excluded). */
-function knockoutBoost(round: string | null): number {
-  if (!round) return 0;
-  const r = round.toLowerCase();
-  if (r.includes('qualif')) return 0;
-  if (round === 'Final') return 30;
-  if (round === '3rd Place Final') return 25;
-  if (r.includes('semi-final')) return 20;
-  if (r.includes('quarter-final')) return 10;
-  if (round === 'Round of 16') return 5;
-  if (round === 'Round of 32') return 3;
-  return 0;
-}
-
 const isOpener = (round: string | null): boolean => !!round && /\s-\s*1$/.test(round);
 
-/** Why-featured tag from static fields (round + team nationality). */
+/** Why-featured tag from static fields (round + teams). knockoutBoost / isDerby come from
+ *  match-magnitude so tags and ranking agree. */
 function featureTagOf(
   round: string | null,
   home: TeamSnapshot | null,
   away: TeamSnapshot | null,
 ): HomeFixture['featureTag'] {
   if (isMoroccoNational(home) || isMoroccoNational(away)) return 'atlasLions';
+  if (isDerby(home, away)) return 'derby';
   if (isMoroccoClub(home) || isMoroccoClub(away)) return 'atlasClub';
   if (knockoutBoost(round) > 0) return 'knockout';
   if (isOpener(round)) return 'opener';
@@ -354,11 +343,12 @@ export async function getFeaturedMatches(
 }
 
 /**
- * Reimagined hero ranking (Option B): Morocco-first + imminence-first, capped for diversity.
- * Tiers — 0 editorial pin · 1 Atlas Lions live · 2 Atlas Lions upcoming · 3 any live ·
- * 4 today (Casablanca) · 5 ≤72h · 6 ≤7d · 7 later — then Moroccan involvement (clubs included),
- * adjusted competition priority, soonest kickoff. Finally a diversity cap of one match per
- * competition (overflow appended only to reach `limit`), so hero + strip never repeat a league.
+ * Hero ranking: imminence-first, then match magnitude (big clubs + national teams by FIFA rank +
+ * derbies + competition/stage — see match-magnitude.ts), then a light Moroccan tie-break, then
+ * kickoff. Tiers — 0 editorial pin · 1 live · 2 today (Casablanca) · 3 ≤72h · 4 ≤7d · 5 later.
+ * Finally a diversity cap of one match per competition (overflow appended only to reach `limit`),
+ * so hero + strip never repeat a league. Morocco is not hardcoded here: Atlas clubs/Lions rank up
+ * through magnitude (Wydad/Raja Tier S; Morocco FIFA #6); the tie-break only settles equal scores.
  */
 function rankFeaturedMatches(list: HomeFixture[], now: Date, limit: number): HomeFixture[] {
   const todayKey = toSiteDateKey(now);
@@ -367,33 +357,29 @@ function rankFeaturedMatches(list: HomeFixture[], now: Date, limit: number): Hom
 
   const tierOf = (f: HomeFixture): number => {
     if (f.isFeatured) return 0;
-    const live = LIVE_CODES.includes(f.statusCode);
-    const atlasLions = isMoroccoNational(f.homeTeam) || isMoroccoNational(f.awayTeam);
-    if (atlasLions) return live ? 1 : 2;
-    if (live) return 3;
+    if (LIVE_CODES.includes(f.statusCode)) return 1;
     const t = new Date(f.kickoffAt).getTime();
-    if (toSiteDateKey(f.kickoffAt) === todayKey) return 4;
-    if (t <= h72) return 5;
-    if (t <= d7) return 6;
-    return 7;
+    if (toSiteDateKey(f.kickoffAt) === todayKey) return 2;
+    if (t <= h72) return 3;
+    if (t <= d7) return 4;
+    return 5;
   };
   const moroccan = (f: HomeFixture): number =>
     f.homeTeam?.countryCode === MOROCCO_CC || f.awayTeam?.countryCode === MOROCCO_CC ? 0 : 1;
-  const adjPriority = (f: HomeFixture): number =>
-    f.competition.displayPriority - knockoutBoost(f.round);
 
-  const sorted = [...list].sort(
-    (a, b) =>
-      tierOf(a) - tierOf(b) ||
-      moroccan(a) - moroccan(b) ||
-      adjPriority(a) - adjPriority(b) ||
-      new Date(a.kickoffAt).getTime() - new Date(b.kickoffAt).getTime(),
-  );
+  const scored = list.map((f) => ({
+    f,
+    tier: tierOf(f),
+    mag: computeMagnitude(f),
+    mor: moroccan(f),
+    ko: new Date(f.kickoffAt).getTime(),
+  }));
+  scored.sort((a, b) => a.tier - b.tier || b.mag - a.mag || a.mor - b.mor || a.ko - b.ko);
 
   const seen = new Set<number>();
   const primary: HomeFixture[] = [];
   const overflow: HomeFixture[] = [];
-  for (const f of sorted) {
+  for (const { f } of scored) {
     if (seen.has(f.competition.id)) overflow.push(f);
     else {
       seen.add(f.competition.id);

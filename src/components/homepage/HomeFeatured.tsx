@@ -157,6 +157,7 @@ function TagChip({ tag, labels }: { tag: FeatureTag; labels: Props['labels'] }) 
   const styles: Record<FeatureTag, string> = {
     atlasLions: 'bg-accent-emerald/12 text-accent-emerald',
     atlasClub: 'bg-accent-emerald/12 text-accent-emerald',
+    derby: 'bg-score-live/12 text-score-live',
     knockout: 'bg-accent-amber/15 text-accent-amber',
     opener: 'bg-accent-azure/12 text-accent-azure',
   };
