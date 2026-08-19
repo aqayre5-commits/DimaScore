@@ -10,7 +10,8 @@ import {
   SCORED_STATUSES_ARRAY,
   INTERRUPTED_CODES_ARRAY,
 } from '@/lib/match-status';
-import { resolveContextLabel, FEATURED_ORDER, MOROCCO_TEAM_IDS } from './right-rail';
+import { resolveContextLabel } from './right-rail';
+import { toSiteDateKey } from '@/lib/utils/date';
 
 export interface HomeFixture {
   id: number;
@@ -21,6 +22,10 @@ export interface HomeFixture {
   groupLabel: string | null;
   /** Adaptive short label for the featured-match card context line — see resolveContextLabel. */
   contextLabel: string | null;
+  /** Editorial pin (fixtures.is_featured) — pins the hero's top slot. */
+  isFeatured: boolean;
+  /** Why-featured tag for the hero + strip. Null when nothing notable applies. */
+  featureTag: 'atlasLions' | 'atlasClub' | 'knockout' | 'opener' | null;
   homeTeamId: number | null;
   awayTeamId: number | null;
   homeScore: number | null;
@@ -95,6 +100,41 @@ function normalizeRound(round: string | null): string | null {
 
 // ── Helpers ──
 
+const MOROCCO_CC = 'MA';
+const isMoroccoNational = (t: TeamSnapshot | null): boolean =>
+  !!t && t.countryCode === MOROCCO_CC && !!t.isNational;
+const isMoroccoClub = (t: TeamSnapshot | null): boolean =>
+  !!t && t.countryCode === MOROCCO_CC && !t.isNational;
+
+/** Knockout-stage priority boost — mirrors FEATURED_ORDER's SQL CASE (qualifying excluded). */
+function knockoutBoost(round: string | null): number {
+  if (!round) return 0;
+  const r = round.toLowerCase();
+  if (r.includes('qualif')) return 0;
+  if (round === 'Final') return 30;
+  if (round === '3rd Place Final') return 25;
+  if (r.includes('semi-final')) return 20;
+  if (r.includes('quarter-final')) return 10;
+  if (round === 'Round of 16') return 5;
+  if (round === 'Round of 32') return 3;
+  return 0;
+}
+
+const isOpener = (round: string | null): boolean => !!round && /\s-\s*1$/.test(round);
+
+/** Why-featured tag from static fields (round + team nationality). */
+function featureTagOf(
+  round: string | null,
+  home: TeamSnapshot | null,
+  away: TeamSnapshot | null,
+): HomeFixture['featureTag'] {
+  if (isMoroccoNational(home) || isMoroccoNational(away)) return 'atlasLions';
+  if (isMoroccoClub(home) || isMoroccoClub(away)) return 'atlasClub';
+  if (knockoutBoost(round) > 0) return 'knockout';
+  if (isOpener(round)) return 'opener';
+  return null;
+}
+
 function mapFixtureRow(
   r: {
     id: number;
@@ -118,11 +158,14 @@ function mapFixtureRow(
     venueName?: string | null;
     venueCity?: string | null;
     venueCapacity?: number | null;
+    isFeatured?: boolean | null;
   },
   teamsMap: Map<number, TeamSnapshot>,
 ): HomeFixture {
   const normalizedRound = normalizeRound(r.round);
   const groupLabel = r.groupLabel ?? null;
+  const homeTeam = r.homeTeamId ? (teamsMap.get(r.homeTeamId) ?? null) : null;
+  const awayTeam = r.awayTeamId ? (teamsMap.get(r.awayTeamId) ?? null) : null;
   return {
     id: r.id,
     kickoffAt: r.kickoffAt,
@@ -131,14 +174,16 @@ function mapFixtureRow(
     round: normalizedRound,
     groupLabel,
     contextLabel: resolveContextLabel(normalizedRound, groupLabel),
+    isFeatured: r.isFeatured ?? false,
+    featureTag: featureTagOf(normalizedRound, homeTeam, awayTeam),
     homeTeamId: r.homeTeamId,
     awayTeamId: r.awayTeamId,
     homeScore: r.homeScore,
     awayScore: r.awayScore,
     homeScorePen: r.homeScorePen,
     awayScorePen: r.awayScorePen,
-    homeTeam: r.homeTeamId ? (teamsMap.get(r.homeTeamId) ?? null) : null,
-    awayTeam: r.awayTeamId ? (teamsMap.get(r.awayTeamId) ?? null) : null,
+    homeTeam,
+    awayTeam,
     competition: {
       id: r.compId,
       name: r.compName,
@@ -241,7 +286,7 @@ export async function getFeaturedMatches(
   limit = 8,
 ): Promise<HomeFixture[]> {
   const now = new Date();
-  const thirtyDaysOut = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const windowOut = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
   const rows = await db
     .select({
@@ -250,6 +295,7 @@ export async function getFeaturedMatches(
       statusCode: schema.fixtures.statusCode,
       minute: schema.fixtures.minute,
       round: schema.fixtures.round,
+      isFeatured: schema.fixtures.isFeatured,
       groupLabel: schema.standings.groupLabel,
       homeTeamId: schema.fixtures.homeTeamId,
       awayTeamId: schema.fixtures.awayTeamId,
@@ -288,26 +334,13 @@ export async function getFeaturedMatches(
         and(
           eq(schema.fixtures.statusCode, 'NS'),
           gte(schema.fixtures.kickoffAt, now),
-          lt(schema.fixtures.kickoffAt, thirtyDaysOut),
+          lt(schema.fixtures.kickoffAt, windowOut),
         ),
       ),
     )
-    // Ranking (matches the rail): live > Morocco > isFeatured > knockout boost > priority > soonest.
-    .orderBy(
-      sql`CASE WHEN ${schema.fixtures.statusCode} IN (${sql.join(
-        LIVE_CODES.map((c) => sql`${c}`),
-        sql`, `,
-      )}) THEN 0 ELSE 1 END`,
-      sql`CASE WHEN ${schema.fixtures.homeTeamId} IN (${sql.join(
-        MOROCCO_TEAM_IDS.map((id) => sql`${id}`),
-        sql`, `,
-      )}) OR ${schema.fixtures.awayTeamId} IN (${sql.join(
-        MOROCCO_TEAM_IDS.map((id) => sql`${id}`),
-        sql`, `,
-      )}) THEN 0 ELSE 1 END`,
-      FEATURED_ORDER,
-    )
-    .limit(limit);
+    // Candidate pool ordered by kickoff; final ranking happens in JS (rankFeaturedMatches).
+    .orderBy(asc(schema.fixtures.kickoffAt))
+    .limit(120);
 
   const teamIds = new Set<number>();
   for (const r of rows) {
@@ -316,7 +349,58 @@ export async function getFeaturedMatches(
   }
   const teamsMap = await hydrateTeams(db, teamIds);
 
-  return rows.map((r) => mapFixtureRow(r, teamsMap));
+  const pool = rows.map((r) => mapFixtureRow(r, teamsMap)).filter(isDisplayableFixture);
+  return rankFeaturedMatches(pool, now, limit);
+}
+
+/**
+ * Reimagined hero ranking (Option B): Morocco-first + imminence-first, capped for diversity.
+ * Tiers — 0 editorial pin · 1 Atlas Lions live · 2 Atlas Lions upcoming · 3 any live ·
+ * 4 today (Casablanca) · 5 ≤72h · 6 ≤7d · 7 later — then Moroccan involvement (clubs included),
+ * adjusted competition priority, soonest kickoff. Finally a diversity cap of one match per
+ * competition (overflow appended only to reach `limit`), so hero + strip never repeat a league.
+ */
+function rankFeaturedMatches(list: HomeFixture[], now: Date, limit: number): HomeFixture[] {
+  const todayKey = toSiteDateKey(now);
+  const h72 = now.getTime() + 72 * 60 * 60 * 1000;
+  const d7 = now.getTime() + 7 * 24 * 60 * 60 * 1000;
+
+  const tierOf = (f: HomeFixture): number => {
+    if (f.isFeatured) return 0;
+    const live = LIVE_CODES.includes(f.statusCode);
+    const atlasLions = isMoroccoNational(f.homeTeam) || isMoroccoNational(f.awayTeam);
+    if (atlasLions) return live ? 1 : 2;
+    if (live) return 3;
+    const t = new Date(f.kickoffAt).getTime();
+    if (toSiteDateKey(f.kickoffAt) === todayKey) return 4;
+    if (t <= h72) return 5;
+    if (t <= d7) return 6;
+    return 7;
+  };
+  const moroccan = (f: HomeFixture): number =>
+    f.homeTeam?.countryCode === MOROCCO_CC || f.awayTeam?.countryCode === MOROCCO_CC ? 0 : 1;
+  const adjPriority = (f: HomeFixture): number =>
+    f.competition.displayPriority - knockoutBoost(f.round);
+
+  const sorted = [...list].sort(
+    (a, b) =>
+      tierOf(a) - tierOf(b) ||
+      moroccan(a) - moroccan(b) ||
+      adjPriority(a) - adjPriority(b) ||
+      new Date(a.kickoffAt).getTime() - new Date(b.kickoffAt).getTime(),
+  );
+
+  const seen = new Set<number>();
+  const primary: HomeFixture[] = [];
+  const overflow: HomeFixture[] = [];
+  for (const f of sorted) {
+    if (seen.has(f.competition.id)) overflow.push(f);
+    else {
+      seen.add(f.competition.id);
+      primary.push(f);
+    }
+  }
+  return [...primary, ...overflow].slice(0, limit);
 }
 
 /** Goal events for the first live match (right rail live card). */

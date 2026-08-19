@@ -245,3 +245,11 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   2. **Confederation filter** (CAF/UEFA/CONMEBOL/AFC/…) — deferred per v1 scope; needs a country→confederation map for all 211.
   3. **Favourites toggle** on the full page (SofaScore has one) — deferred; ties into the follow store (`useFollows`) once national teams are followable.
   4. **Movement / previous-points columns** — still Phase 2 (needs internal prev-rank computation).
+
+- [2026-08-18][phase 14 — hero reimagined (Option B), follow-ups] Shipped: hero + "next big matches" strip (HomeFeatured.tsx) replacing the carousel; imminence-first + Morocco-first ranking with diversity cap in getFeaturedMatches; featureTag on HomeFixture (atlasLions/atlasClub/knockout/opener). Deferred:
+  1. **"Top of the table" tag** (agreed fast-follow) — getFeaturedMatches already joins standings; add a "1st v 2nd" tag/stakes for league games.
+  2. **Derby + big-club tags** — need curated rivalry / big-club id lists.
+  3. **UCL/UEL "Play-offs" round not tagged knockout** — knockoutBoost only catches Final/SF/QF/R16/R32; qualifying play-offs get no boost/tag by design. Revisit if we want them flagged.
+  4. **Countdown unit labels hardcoded English** ("DAYS/HOURS/MINS") — pre-existing from the old carousel, carried into HomeFeatured; localize for fr/ar.
+  5. **Live-swap across tiers is cache-bound** — a candidate that goes live mid-session doesn't re-rank until the 'minutes' cache revalidates; the hero only advances past a *finished* slide client-side. Acceptable v1; full client re-rank deferred.
+  6. **Two national-team-only paths remain** — MOROCCO_TEAM_IDS + FEATURED_ORDER still used by right-rail.ts; consider unifying Morocco detection on countryCode='MA'.

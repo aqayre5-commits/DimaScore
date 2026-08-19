@@ -4,7 +4,7 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
-import { HomeFeaturedCarousel } from '@/components/homepage/HomeFeaturedCarousel';
+import { HomeFeatured } from '@/components/homepage/HomeFeatured';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
@@ -183,14 +183,20 @@ export default async function HomePage({ params }: PageProps) {
           <div className="order-1 min-w-0 lg:order-none lg:col-start-1 lg:row-start-1 xl:col-start-2 xl:row-start-1">
             <div className="space-y-2.5">
               <h1 className="px-1 text-sm font-medium text-text-secondary">{t('pageHeading')}</h1>
-              <HomeFeaturedCarousel
+              <HomeFeatured
                 matches={featured}
                 locale={typedLocale}
                 labels={{
-                  featuredMatch: t('featured'),
+                  matchOfDay: t('matchOfDay'),
+                  nextBigMatches: t('nextBigMatches'),
                   kicksOffIn: t('kicksOffIn'),
-                  stadium: t('stadium'),
-                  expectedAttendance: t('expectedAttendance'),
+                  live: t('live'),
+                  tags: {
+                    atlasLions: t('tagAtlasLions'),
+                    atlasClub: t('tagAtlasClub'),
+                    knockout: t('tagKnockout'),
+                    opener: t('tagOpener'),
+                  },
                 }}
               />
 
