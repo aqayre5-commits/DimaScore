@@ -287,20 +287,23 @@ function HeroCard({
           </div>
         </div>
 
-        {state === 'upcoming' && (
-          <div className="mt-4 flex flex-col items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
-              {labels.kicksOffIn}
-            </span>
-            <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
-              <CountdownUnit value={remaining.days} label="DAYS" />
-              <div className="h-12 w-px bg-border-subtle" />
-              <CountdownUnit value={remaining.hours} label="HOURS" />
-              <div className="h-12 w-px bg-border-subtle" />
-              <CountdownUnit value={remaining.minutes} label="MINS" />
-            </div>
+        {/* Countdown reserves its space on live/finished slides (invisible, not unmounted) so the
+            hero card keeps a constant height as it rotates — no resize jump. */}
+        <div
+          className={`mt-4 flex flex-col items-center gap-2 ${state === 'upcoming' ? '' : 'invisible'}`}
+          aria-hidden={state !== 'upcoming'}
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
+            {labels.kicksOffIn}
+          </span>
+          <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
+            <CountdownUnit value={remaining.days} label="DAYS" />
+            <div className="h-12 w-px bg-border-subtle" />
+            <CountdownUnit value={remaining.hours} label="HOURS" />
+            <div className="h-12 w-px bg-border-subtle" />
+            <CountdownUnit value={remaining.minutes} label="MINS" />
           </div>
-        )}
+        </div>
       </div>
 
       <div className="flex items-center gap-1.5 px-4 pb-4 pt-3 text-xs font-medium text-text-secondary sm:px-6">

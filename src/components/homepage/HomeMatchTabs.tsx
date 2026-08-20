@@ -3,7 +3,12 @@
 import { useState } from 'react';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
-import { ChevronLeft, ChevronRight, Calendar, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Calendar, Star } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState, getMatchStatusLabelKey } from '@/lib/match-status';
@@ -391,6 +396,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
 
   const [expanded, setExpanded] = useState(false);
   const [selectedComp, setSelectedComp] = useState<number | null>(null);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   // Competitions present in the active tab (priority order, with counts) — drives the filter chips.
   const presentComps = (() => {
@@ -415,6 +421,10 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   // Auto-clear a selection that's no longer present (after a live update / day change).
   const effectiveComp =
     selectedComp != null && presentComps.some((c) => c.id === selectedComp) ? selectedComp : null;
+  const selectedCompMeta = presentComps.find((c) => c.id === effectiveComp);
+  const filterLabel = selectedCompMeta
+    ? (selectedCompMeta.name[locale] ?? selectedCompMeta.name['en'] ?? labels.all)
+    : labels.all;
 
   // "Your matches" — followed teams'/competitions' fixtures for the selected day, pinned above the
   // list on the All tab (no chip filter) and deduped from the main list so nothing appears twice.
@@ -444,11 +454,11 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
         : collapsed;
   const hasMore = effectiveComp == null && baseFixtures.length > collapsed.length;
 
-  const chipClass = (active: boolean) =>
-    `flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+  const filterRowClass = (active: boolean) =>
+    `rounded-md px-2 py-1.5 text-sm transition-colors ${
       active
-        ? 'bg-accent-azure text-white'
-        : 'bg-bg-surface-2 text-text-secondary hover:bg-bg-surface-3 hover:text-text-primary'
+        ? 'bg-accent-azure/10 font-semibold text-accent-azure'
+        : 'text-text-secondary hover:bg-bg-surface-2'
     }`;
 
   return (
@@ -529,52 +539,70 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
           >
             <ChevronRight className="size-4" />
           </button>
+
+          {/* Competition filter — compact dropdown on the same line as the day picker (replaces the
+              old full-width chip scroller). Trigger shows the active competition (or "All"). */}
+          {mounted && presentComps.length >= 2 && (
+            <DropdownMenu open={filterOpen} onOpenChange={setFilterOpen}>
+              <DropdownMenuTrigger
+                className="flex shrink-0 items-center gap-1.5 rounded-full bg-bg-surface-2 px-3 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-surface-3"
+                aria-label={labels.all}
+              >
+                <span className="max-w-[38vw] truncate sm:max-w-[150px]">{filterLabel}</span>
+                <ChevronDown className="size-4 shrink-0 text-text-tertiary" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="max-h-80 w-56 overflow-y-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedComp(null);
+                    setFilterOpen(false);
+                  }}
+                  className={`w-full text-start ${filterRowClass(effectiveComp === null)}`}
+                >
+                  {labels.all}
+                </button>
+                {presentComps.map((c) => {
+                  const name = c.name[locale] ?? c.name['en'] ?? '';
+                  const followed = followedComps.has(c.id);
+                  return (
+                    <div key={c.id} className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedComp(c.id);
+                          setFilterOpen(false);
+                        }}
+                        className={`flex min-w-0 flex-1 items-center gap-2 ${filterRowClass(effectiveComp === c.id)}`}
+                      >
+                        {c.logoUrl && (
+                          <CompetitionLogo
+                            src={c.logoUrl}
+                            size={16}
+                            className="size-4 shrink-0 object-contain"
+                          />
+                        )}
+                        <span className="min-w-0 flex-1 truncate text-start">{name}</span>
+                        <span className="shrink-0 tabular-nums text-text-tertiary">{c.count}</span>
+                      </button>
+                      <FollowStar
+                        active={followed}
+                        onToggle={() => toggleComp(c.id)}
+                        label={
+                          followed ? tHome('unfollowAria', { name }) : tHome('followAria', { name })
+                        }
+                      />
+                    </div>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
       {/* Match list — separate card */}
       <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-        {/* Competition filter chips — filter the day's list to a single competition. */}
-        {mounted && presentComps.length >= 2 && (
-          <div className="flex gap-1.5 overflow-x-auto border-b border-border-subtle p-2.5 scrollbar-none">
-            <button
-              onClick={() => setSelectedComp(null)}
-              className={chipClass(effectiveComp === null)}
-            >
-              {labels.all}
-            </button>
-            {presentComps.map((c) => {
-              const name = c.name[locale] ?? c.name['en'] ?? '';
-              const followed = followedComps.has(c.id);
-              return (
-                <div key={c.id} className={chipClass(effectiveComp === c.id)}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedComp(c.id)}
-                    className="flex items-center gap-1.5"
-                  >
-                    {c.logoUrl && (
-                      <CompetitionLogo
-                        src={c.logoUrl}
-                        size={14}
-                        className="size-3.5 shrink-0 object-contain"
-                      />
-                    )}
-                    <span className="whitespace-nowrap">{name}</span>
-                    <span className="tabular-nums opacity-70">{c.count}</span>
-                  </button>
-                  <FollowStar
-                    active={followed}
-                    onToggle={() => toggleComp(c.id)}
-                    label={
-                      followed ? tHome('unfollowAria', { name }) : tHome('followAria', { name })
-                    }
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
         {/* Grouped by competition + date — gated on mounted to avoid server-vs-client
             day-boundary divergence in the filtered fixture set. */}
         <div>
