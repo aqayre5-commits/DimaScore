@@ -274,3 +274,8 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   2. **League/competition pages emit no SportsOrganization JSON-LD** — only cup pages have a tournament SportsEvent. Add SportsOrganization (name, logo, sameAs) to league competition pages.
   3. **Player sameAs** — still deferred (thousands of players, no data source); a superstar-only map could come later.
   4. **Extend curated lists** — more clubs/nations/competitions in entity-links.ts over time; uncurated entities emit no sameAs (fine).
+
+- [2026-08-20][phase 14 — IndexNow shipped] public/<key>.txt + src/lib/seo/indexnow.ts (submitToIndexNow, prod-gated, best-effort). finalize-stale now returns finalizedIds and its cron pings the finalized match URLs (3 locales) to IndexNow. Follow-ups:
+  1. **Comprehensive coverage** — finalize-stale only catches poller-*abandoned* matches; matches the live poller finalizes itself aren't pinged. Add a "finished in last N min" query (or a poller-side hook, external repo) to cover all newly-finished matches.
+  2. **New-fixture + competition/standings pings** — ping new match URLs from fixtures-schedule and competition/standings pages when they change.
+  3. **Verify on prod** — after deploy, submit works only when VERCEL_ENV=production; check Bing Webmaster Tools IndexNow report picks up the pings.

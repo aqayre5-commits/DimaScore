@@ -18,6 +18,8 @@ export interface FinalizeStaleResult {
   skipped: number;
   notFound: number;
   apiCalls: number;
+  /** Fixture ids finalized this run — used to ping IndexNow with the freshly-completed matches. */
+  finalizedIds: number[];
 }
 
 /**
@@ -71,7 +73,7 @@ export async function finalizeStaleFixtures(
     .limit(max);
 
   if (staleRows.length === 0) {
-    return { stale: 0, updated: 0, skipped: 0, notFound: 0, apiCalls: 0 };
+    return { stale: 0, updated: 0, skipped: 0, notFound: 0, apiCalls: 0, finalizedIds: [] };
   }
 
   const staleMap = new Map(staleRows.map((r) => [r.id, r]));
@@ -80,6 +82,7 @@ export async function finalizeStaleFixtures(
   let updated = 0;
   let skipped = 0;
   let apiCalls = 0;
+  const finalizedIds: number[] = [];
 
   for (let i = 0; i < ids.length; i += BATCH) {
     const batch = ids.slice(i, i + BATCH);
@@ -124,9 +127,17 @@ export async function finalizeStaleFixtures(
           },
         });
       updated++;
+      finalizedIds.push(f.id);
       staleMap.delete(f.id);
     }
   }
 
-  return { stale: staleRows.length, updated, skipped, notFound: staleMap.size, apiCalls };
+  return {
+    stale: staleRows.length,
+    updated,
+    skipped,
+    notFound: staleMap.size,
+    apiCalls,
+    finalizedIds,
+  };
 }

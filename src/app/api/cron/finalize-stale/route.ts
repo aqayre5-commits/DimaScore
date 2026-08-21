@@ -3,6 +3,9 @@ import { db } from '@/lib/db/client';
 import { getDataProvider } from '@/lib/data';
 import { verifyCronSecret } from '@/lib/cron/auth';
 import { finalizeStaleFixtures } from '@/lib/ingestion/finalize-stale';
+import { submitToIndexNow } from '@/lib/seo/indexnow';
+import { BASE_URL } from '@/lib/constants/site';
+import { locales } from '@/lib/i18n/config';
 
 /**
  * Finalizes matches the live poller lost track of (stuck in a live/NS status
@@ -17,6 +20,15 @@ export async function GET(request: Request) {
   try {
     const provider = getDataProvider();
     const result = await finalizeStaleFixtures(provider, db);
+
+    // Instant-index the freshly-finalized matches (best-effort, prod-only).
+    if (result.finalizedIds.length > 0) {
+      const urls = result.finalizedIds.flatMap((id) =>
+        locales.map((l) => `${BASE_URL}/${l}/match/${id}`),
+      );
+      await submitToIndexNow(urls);
+    }
+
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
     return NextResponse.json(
