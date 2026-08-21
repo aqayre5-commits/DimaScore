@@ -334,21 +334,18 @@ export { ALL_ENTRIES };
 // ---------------------------------------------------------------------------
 
 /** Competition IDs shown as direct links in the top nav bar, in display order. */
-export const TOP_NAV_COMPETITION_IDS = [200, 1, 6, 2, 39, 140, 61, 78, 135, 922, 12] as const;
+// Lean, FotMob-style top nav: a marquee set only (Morocco/Africa cluster → global). Competition
+// breadth lives in the "Competitions" mega-menu + the left rail. Order: Botola · AFCON · CAF CL ·
+// WC26 · UCL. Demoted leagues (EPL/LaLiga/Bundesliga/Ligue 1/Serie A/WAFCON) are in MEGA_MENU_SECTIONS.
+export const TOP_NAV_COMPETITION_IDS = [200, 6, 12, 1, 2] as const;
 
 /** Label keys for top nav items (used by Topbar to render short labels). */
 const TOP_NAV_LABEL_KEYS: Record<number, string> = {
   200: 'botolaPro',
-  1: 'worldCup2026',
   6: 'afcon',
-  2: 'championsLeague',
-  39: 'premierLeague',
-  140: 'laLiga',
-  61: 'ligue1',
-  78: 'bundesliga',
-  135: 'serieA',
-  922: 'wafcon2026',
   12: 'cafChampionsLeague',
+  1: 'worldCup2026',
+  2: 'championsLeague',
 };
 
 /** Returns the 11 top-nav entries in display order. */
@@ -390,6 +387,7 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
     entries: entriesFor([
       'afcon',
       'afconQualifiers',
+      'wafcon2026',
       'wafcon2024',
       'cafChampionsLeague',
       'cafConfederationCup',
@@ -409,7 +407,16 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
   },
   {
     titleKey: 'europe',
-    entries: entriesFor(['serieA', 'europaLeague', 'conferenceLeague']),
+    entries: entriesFor([
+      'premierLeague',
+      'laLiga',
+      'bundesliga',
+      'ligue1',
+      'serieA',
+      'championsLeague',
+      'europaLeague',
+      'conferenceLeague',
+    ]),
   },
   {
     titleKey: 'arabTurkish',

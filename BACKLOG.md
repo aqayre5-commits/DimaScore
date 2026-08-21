@@ -279,3 +279,8 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   1. **Comprehensive coverage** — finalize-stale only catches poller-*abandoned* matches; matches the live poller finalizes itself aren't pinged. Add a "finished in last N min" query (or a poller-side hook, external repo) to cover all newly-finished matches.
   2. **New-fixture + competition/standings pings** — ping new match URLs from fixtures-schedule and competition/standings pages when they change.
   3. **Verify on prod** — after deploy, submit works only when VERCEL_ENV=production; check Bing Webmaster Tools IndexNow report picks up the pings.
+
+- [2026-08-20][phase 14 — lean top nav (Option A / FotMob-style) shipped] Trimmed top nav from 11 competition tabs to 5 marquee (Botola · AFCON · CAF CL · WC26 · UCL); renamed "More"→"Competitions"; added a "Following" nav link (→ /{locale}#matches). Demoted leagues (EPL/LaLiga/Bundesliga/Ligue 1) + WAFCON 2026 moved into the Competitions mega-menu. Follow-ups:
+  1. **Dedicated /following page** — Following currently anchors to the homepage "Your matches" group; build a real page listing followed teams'/comps' fixtures (uses useFollows).
+  2. **Adaptive seasonal tournament slot** — auto-promote WC26/AFCON/WAFCON to the front only while in-season (AdaptiveTopStrip logic), drop off-season.
+  3. **Mobile drawer / bottom-bar consistency** — MobileDrawer reflects the mega-menu automatically; the bottom bar's WC26 shortcut + drawer could adopt the same lean grouping + a Following entry.

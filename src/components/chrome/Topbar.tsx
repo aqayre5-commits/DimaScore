@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronDown, Menu } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
 import {
@@ -68,7 +68,6 @@ function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void
 
 export function Topbar() {
   const t = useTranslations('topbar');
-  const tMega = useTranslations('megaMenu');
   const tTopNav = useTranslations('topNav');
   const locale = useLocale() as Locale;
   const pathname = usePathname();
@@ -129,9 +128,17 @@ export function Topbar() {
               moreOpen ? 'text-accent-azure' : 'text-text-secondary hover:text-accent-azure',
             )}
           >
-            {t('more')}
+            {t('competitions')}
             <ChevronDown className={cn('size-3 transition-transform', moreOpen && 'rotate-180')} />
           </button>
+
+          {/* Following — personalized matches (Your matches group on the homepage). */}
+          <Link
+            href={`/${locale}#matches`}
+            className="rounded-md px-2 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-accent-azure"
+          >
+            {t('following')}
+          </Link>
         </div>
 
         {/* Spacer */}
