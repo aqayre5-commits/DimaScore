@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import { SportsTeamJsonLd } from '@/components/seo/SportsTeamJsonLd';
 import {
   findEntryByCompetitionId,
   buildCompetitionHref,
@@ -162,10 +163,9 @@ export default async function TeamPage({ params }: PageProps) {
   const typedLocale = locale as Locale;
   const teamSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
 
-  const [data, tBc, tTeam] = await Promise.all([
+  const [data, tBc] = await Promise.all([
     getCachedTeamData(teamSlug, locale),
     getTranslations({ locale, namespace: 'breadcrumb' }),
-    getTranslations({ locale, namespace: 'teamPage' }),
   ]);
   if (!data) notFound();
   const {
@@ -232,7 +232,7 @@ export default async function TeamPage({ params }: PageProps) {
       });
     }
   }
-  breadcrumbs.push({ label: `${teamName} ${tTeam('seoSections')}` });
+  breadcrumbs.push({ label: teamName });
 
   // Center tabs — Standings, Statistics, Players (per schematic)
   const hashes = TAB_HASHES[typedLocale];
@@ -308,6 +308,14 @@ export default async function TeamPage({ params }: PageProps) {
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
         <SeoBreadcrumb segments={breadcrumbs} compact />
+        <SportsTeamJsonLd
+          url={`${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(teamSlug)}`}
+          name={teamName}
+          logo={team.logoUrl}
+          competitionName={
+            primaryComp ? (primaryComp.name[typedLocale] ?? primaryComp.name['en']) : null
+          }
+        />
       </div>
 
       <InnerPageShell

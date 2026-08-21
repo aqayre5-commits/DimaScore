@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { locales, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import { PersonJsonLd } from '@/components/seo/PersonJsonLd';
 import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
 import { CoachPageHeader } from '@/components/coach/CoachPageHeader';
 import { CoachCareerTable } from '@/components/coach/CoachCareerTable';
@@ -87,12 +88,23 @@ export default async function CoachPage({ params }: PageProps) {
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${locale}` },
     ...(nationality ? [{ label: nationality }] : []),
-    { label: `${displayName}, ${tBc('sectionsCoach')}` },
+    { label: displayName },
   ];
 
   return (
     <div className="mx-auto w-full max-w-[1280px] space-y-4 px-4 py-4">
       <SeoBreadcrumb segments={breadcrumbs} compact />
+      <PersonJsonLd
+        url={`${BASE_URL}/${typedLocale}/entraineur/${rawSlug.map(decodeURIComponent).join('/')}`}
+        name={displayName}
+        nationality={nationality}
+        image={coach.photoUrl}
+        affiliation={
+          coach.currentTeam
+            ? (coach.currentTeam.name[typedLocale] ?? coach.currentTeam.name['en'])
+            : null
+        }
+      />
       <CoachPageHeader coach={coach} locale={typedLocale} />
       <CoachCareerTable career={coach.career} />
     </div>

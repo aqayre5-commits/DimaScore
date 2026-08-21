@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import { PersonJsonLd } from '@/components/seo/PersonJsonLd';
 import { PlayerPageHeader } from '@/components/player/PlayerPageHeader';
 import { PlayerInfoCard } from '@/components/player/PlayerInfoCard';
 import { PlayerSeasonStats } from '@/components/player/PlayerSeasonStats';
@@ -129,7 +130,7 @@ export default async function PlayerPage({ params }: PageProps) {
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${locale}` },
     ...(nationality ? [{ label: nationality }] : []),
-    { label: `${playerName}, ${tBc('sectionsPlayer')}` },
+    { label: playerName },
   ];
 
   // Center tabs — Statistics (season dropdown), Career (all-seasons table), Trophies (placeholder)
@@ -159,6 +160,17 @@ export default async function PlayerPage({ params }: PageProps) {
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
         <SeoBreadcrumb segments={breadcrumbs} compact />
+        <PersonJsonLd
+          url={`${baseUrl}/${typedLocale}/joueur/${rawSlug.join('/')}`}
+          name={playerName}
+          nationality={nationality}
+          image={player.photoUrl}
+          affiliation={
+            player.currentTeam
+              ? (player.currentTeam.name[typedLocale] ?? player.currentTeam.name['en'])
+              : null
+          }
+        />
       </div>
 
       <InnerPageShell

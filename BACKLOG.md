@@ -260,3 +260,11 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   3. **Prestige/derby lists are curated starter data** — refine weights + add clubs/rivalries over time (Merseyside needs Everton id; more CAF/Gulf clubs).
   4. **displayPriority no longer drives featuring** (COMPETITION_PRESTIGE does) but is still used elsewhere (left rail, other queries) — leave as-is.
   5. **FIFA snapshot is the 20 Jul 2026 seed** — nation prestige shifts when it's re-seeded (next 7 Oct 2026).
+
+- [2026-08-20][phase 14 — SEO structured data Phase 1 shipped] Concise entity-first breadcrumbs (dropped keyword suffixes + match round crumb; keywords stay in <title>). New JSON-LD: per-match SportsEvent (competitors + logos, venue, competition, eventStatus) on match pages; SportsTeam on team pages; Person on player + coach pages. Follow-ups (P2/P3):
+  1. **sameAs (biggest enrichment)** — link SportsTeam/Person/SportsOrganization to Wikipedia/Wikidata; needs a curated URL map (seed the big clubs/nations first). Wires DimaScore into the Knowledge Graph.
+  2. **jobTitle on Person** — omitted to avoid an English string on fr/ar pages; add localized "Footballer"/"Coach" to distinguish player vs coach entities.
+  3. **Player/coach nationality uses getLocalizedCountryName (~15 countries)** — null for most (e.g. Turkey), so nationality is dropped from Person + breadcrumb. Switch to Intl.DisplayNames (as done in fifa-ranking) for full coverage.
+  4. **ItemList** on /classement-fifa + top-scorer lists.
+  5. **Season sub-page canonical/OG** (competition/[country]/[tournament]/[season]) — currently no generateMetadata → duplicate-content risk.
+  6. **IndexNow** (instant Bing/Yandex crawl on fixture/result updates) + **llms.txt** experiment; **news sitemap + NewsArticle** once media ships.

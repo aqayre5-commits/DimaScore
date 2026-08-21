@@ -23,6 +23,7 @@ import {
 } from '@/lib/constants/competitions-mega-menu';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import { MatchJsonLd } from '@/components/seo/MatchJsonLd';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
@@ -34,18 +35,10 @@ import { getCachedPredictedXI } from '@/lib/db/queries/predicted-lineup';
 import { MatchClientLeftRail, MatchClientRightRail } from '@/components/match/MatchClientSidebar';
 
 import { cacheLife } from 'next/cache';
-import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
+import { locales, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 
 const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
-
-/** Tidy API-Football round strings: "Regular Season - 38" → "Matchday 38", "8th Finals" → "Round of 16". */
-function prettyRound(round: string, tBc: Awaited<ReturnType<typeof getTranslations>>): string {
-  const md = round.match(/^(?:Regular Season|Group Stage)\s*-\s*(\d+)$/i);
-  if (md) return tBc('matchday', { number: md[1] });
-  if (/^8th\s+finals?$/i.test(round)) return tBc('roundOf16');
-  return round;
-}
 
 interface PageProps {
   params: Promise<{ locale: string; id: string }>;
@@ -188,13 +181,12 @@ export default async function MatchDetailPage({ params }: PageProps) {
     ? buildCompetitionHref(competitionEntry, typedLocale)
     : null;
 
+  // Concise, entity-first trail: Football › Competition › Home vs Away. Keyword intent
+  // (live score, lineups, …) lives in the <title>/<h1>, not the breadcrumb.
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${locale}` },
     { label: compName, href: competitionHref ?? undefined },
-    ...((match.groupLabel ?? match.round)
-      ? [{ label: match.groupLabel ?? prettyRound(match.round!, tBc) }]
-      : []),
-    { label: `${home} vs ${away}, ${tBc('sectionsMatch')}` },
+    { label: `${home} vs ${away}` },
   ];
 
   const matchId = String(fixtureId);
@@ -246,6 +238,18 @@ export default async function MatchDetailPage({ params }: PageProps) {
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
         <SeoBreadcrumb segments={breadcrumbs} compact />
+        <MatchJsonLd
+          url={`${BASE_URL}/${typedLocale}/match/${fixtureId}`}
+          homeName={home}
+          awayName={away}
+          homeLogo={match.homeTeam?.logoUrl}
+          awayLogo={match.awayTeam?.logoUrl}
+          competitionName={compName}
+          kickoffAt={match.kickoffAt}
+          statusCode={match.statusCode}
+          venueName={match.venue?.name}
+          venueCity={match.venue?.city}
+        />
       </div>
 
       <InnerPageShell
