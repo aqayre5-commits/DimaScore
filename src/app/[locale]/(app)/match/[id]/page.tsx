@@ -24,6 +24,7 @@ import {
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { MatchJsonLd } from '@/components/seo/MatchJsonLd';
+import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
@@ -249,6 +250,9 @@ export default async function MatchDetailPage({ params }: PageProps) {
           statusCode={match.statusCode}
           venueName={match.venue?.name}
           venueCity={match.venue?.city}
+          homeSameAs={sameAsForTeam(match.homeTeam?.id)}
+          awaySameAs={sameAsForTeam(match.awayTeam?.id)}
+          competitionSameAs={sameAsForCompetition(match.competition.id)}
         />
       </div>
 

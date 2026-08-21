@@ -27,6 +27,7 @@ import { CompetitionMediaSection } from '@/components/tournament/CompetitionMedi
 import { AboutCard } from '@/components/tournament/AboutCard';
 import { TournamentInfoStrip } from '@/components/tournament/TournamentInfoStrip';
 import { SportsEventJsonLd } from '@/components/seo/SportsEventJsonLd';
+import { sameAsForCompetition } from '@/lib/constants/entity-links';
 import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
 import { HashScrollHighlight } from '@/components/shared/HashScrollHighlight';
 import { getAboutContent } from '@/lib/constants/about-content';
@@ -517,6 +518,7 @@ export async function renderCupPage(
                 cupContent ? Object.values(cupContent.titles).filter((t) => t !== pageTitle) : []
               }
               canonicalUrl={cupContent?.urls[locale] ?? ''}
+              sameAs={sameAsForCompetition(competitionId)}
             />
             {aboutContent && <FaqPageJsonLd faqs={aboutContent.faqs} />}
           </>

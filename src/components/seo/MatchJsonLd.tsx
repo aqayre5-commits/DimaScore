@@ -9,6 +9,9 @@ interface MatchJsonLdProps {
   statusCode: string;
   venueName?: string | null;
   venueCity?: string | null;
+  homeSameAs?: string[];
+  awaySameAs?: string[];
+  competitionSameAs?: string[];
 }
 
 /** schema.org eventStatus from our fixture status code (schema has no "in progress"/"completed"). */
@@ -35,6 +38,9 @@ export function MatchJsonLd({
   statusCode,
   venueName,
   venueCity,
+  homeSameAs,
+  awaySameAs,
+  competitionSameAs,
 }: MatchJsonLdProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -44,8 +50,18 @@ export function MatchJsonLd({
     startDate: kickoffAt.toISOString(),
     eventStatus: eventStatus(statusCode),
     competitor: [
-      { '@type': 'SportsTeam', name: homeName, ...(homeLogo ? { logo: homeLogo } : {}) },
-      { '@type': 'SportsTeam', name: awayName, ...(awayLogo ? { logo: awayLogo } : {}) },
+      {
+        '@type': 'SportsTeam',
+        name: homeName,
+        ...(homeLogo ? { logo: homeLogo } : {}),
+        ...(homeSameAs && homeSameAs.length > 0 ? { sameAs: homeSameAs } : {}),
+      },
+      {
+        '@type': 'SportsTeam',
+        name: awayName,
+        ...(awayLogo ? { logo: awayLogo } : {}),
+        ...(awaySameAs && awaySameAs.length > 0 ? { sameAs: awaySameAs } : {}),
+      },
     ],
     ...(venueName
       ? {
@@ -56,7 +72,11 @@ export function MatchJsonLd({
           },
         }
       : {}),
-    superEvent: { '@type': 'SportsOrganization', name: competitionName },
+    superEvent: {
+      '@type': 'SportsOrganization',
+      name: competitionName,
+      ...(competitionSameAs && competitionSameAs.length > 0 ? { sameAs: competitionSameAs } : {}),
+    },
     url,
   };
 

@@ -5,6 +5,8 @@ interface SportsEventJsonLdProps {
   tournamentName: string;
   alternateNames: string[];
   canonicalUrl: string;
+  /** Wikipedia/Wikidata entity links (Knowledge Graph). */
+  sameAs?: string[];
 }
 
 /**
@@ -18,6 +20,7 @@ export function SportsEventJsonLd({
   tournamentName,
   alternateNames,
   canonicalUrl,
+  sameAs,
 }: SportsEventJsonLdProps) {
   const hostCountryNames: Record<string, string> = {
     US: 'United States',
@@ -42,6 +45,7 @@ export function SportsEventJsonLd({
       '@type': 'Organization',
       name: 'FIFA',
     },
+    ...(sameAs && sameAs.length > 0 ? { sameAs } : {}),
     url: canonicalUrl,
   };
 

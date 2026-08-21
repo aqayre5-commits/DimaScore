@@ -268,3 +268,9 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   4. **ItemList** on /classement-fifa + top-scorer lists.
   5. **Season sub-page canonical/OG** (competition/[country]/[tournament]/[season]) — currently no generateMetadata → duplicate-content risk.
   6. **IndexNow** (instant Bing/Yandex crawl on fixture/result updates) + **llms.txt** experiment; **news sitemap + NewsArticle** once media ships.
+
+- [2026-08-20][phase 14 — SEO sameAs (Knowledge Graph) shipped] src/lib/constants/entity-links.ts: curl-verified Wikipedia URLs for ~60 clubs + 45 national teams + 36 competitions, keyed by DB id. Wired into SportsTeamJsonLd (team pages), MatchJsonLd (competitors + superEvent), and the cup-page SportsEventJsonLd. Follow-ups:
+  1. **Wikidata Q-ids as a 2nd sameAs** — Wikidata is the KG backbone; add alongside Wikipedia for a stronger signal.
+  2. **League/competition pages emit no SportsOrganization JSON-LD** — only cup pages have a tournament SportsEvent. Add SportsOrganization (name, logo, sameAs) to league competition pages.
+  3. **Player sameAs** — still deferred (thousands of players, no data source); a superstar-only map could come later.
+  4. **Extend curated lists** — more clubs/nations/competitions in entity-links.ts over time; uncurated entities emit no sameAs (fine).

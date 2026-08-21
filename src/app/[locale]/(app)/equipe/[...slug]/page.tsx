@@ -5,6 +5,7 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { SportsTeamJsonLd } from '@/components/seo/SportsTeamJsonLd';
+import { sameAsForTeam } from '@/lib/constants/entity-links';
 import {
   findEntryByCompetitionId,
   buildCompetitionHref,
@@ -315,6 +316,7 @@ export default async function TeamPage({ params }: PageProps) {
           competitionName={
             primaryComp ? (primaryComp.name[typedLocale] ?? primaryComp.name['en']) : null
           }
+          sameAs={sameAsForTeam(team.id)}
         />
       </div>
 
