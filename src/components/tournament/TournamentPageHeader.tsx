@@ -113,16 +113,28 @@ export function TournamentPageHeader({
       : []),
   ];
 
+  // Show only the last 3 editions (consistent depth). Older editions still resolve by URL; the
+  // active edition is kept so its own page never loses its selector entry.
+  const sortedSeasons = availableSeasons
+    ? [...availableSeasons].sort((a, b) => b.year - a.year)
+    : [];
+  const shownSeasons = (() => {
+    const top = sortedSeasons.slice(0, 3);
+    if (top.some((s) => s.year === displayYear)) return top;
+    const active = sortedSeasons.find((s) => s.year === displayYear);
+    return active ? [...top, active].sort((a, b) => b.year - a.year) : top;
+  })();
+
   // Edition/season control — top-right on desktop; on its own line under the meta on mobile, so it
   // doesn't collide with the one-line title.
   const editionControl =
-    availableSeasons && availableSeasons.length > 1 ? (
+    shownSeasons.length > 1 ? (
       <select
         value={displayYear}
         onChange={handleSeasonChange}
         className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure focus:outline-none focus:ring-1 focus:ring-accent"
       >
-        {availableSeasons.map((s) => (
+        {shownSeasons.map((s) => (
           <option key={s.year} value={s.year}>
             Edition: {labelYear(s.year)}
           </option>
