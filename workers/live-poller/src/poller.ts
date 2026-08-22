@@ -3,7 +3,7 @@ import { getDataProvider } from '@/lib/data';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { mapFixtureToInsert } from '@/lib/ingestion/fixtures';
-import { syncLiveFixtureDetails } from '@/lib/ingestion/fixture-details';
+import { syncLiveFixtureDetails, syncFixtureDetails } from '@/lib/ingestion/fixture-details';
 import { getPusherServer } from '@/lib/realtime/pusher-server';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
@@ -68,13 +68,26 @@ export async function pollLiveFixtures(): Promise<PollResult> {
         season: schema.leagueCoverage.season,
         events: schema.leagueCoverage.events,
         lineups: schema.leagueCoverage.lineups,
+        statisticsFixtures: schema.leagueCoverage.statisticsFixtures,
       })
       .from(schema.leagueCoverage)
       .where(inArray(schema.leagueCoverage.leagueId, leagueIds));
-    const coverage = new Map<string, { events: boolean; lineups: boolean }>();
+    const coverage = new Map<string, { events: boolean; lineups: boolean; statistics: boolean }>();
     for (const r of coverageRows) {
-      coverage.set(`${r.leagueId}-${r.season}`, { events: !!r.events, lineups: !!r.lineups });
+      coverage.set(`${r.leagueId}-${r.season}`, {
+        events: !!r.events,
+        lineups: !!r.lineups,
+        statistics: !!r.statisticsFixtures,
+      });
     }
+
+    const resolveCov = (leagueId: number, season: number) => {
+      const current = coverage.get(`${leagueId}-${season}`);
+      if (current && (current.events || current.lineups || current.statistics)) return current;
+      const previous = coverage.get(`${leagueId}-${season - 1}`);
+      if (previous && (previous.events || previous.lineups || previous.statistics)) return previous;
+      return current ?? previous ?? null;
+    };
 
     const existingLineups = await db
       .select({ fixtureId: schema.fixtureLineups.fixtureId })
@@ -86,25 +99,27 @@ export async function pollLiveFixtures(): Promise<PollResult> {
     const now = Date.now();
     for (const f of liveFixtures) {
       if (isQuotaExhausted()) break;
-      const cov = coverage.get(`${f.league.id}-${f.league.season}`);
+      const cov = resolveCov(f.league.id, f.league.season);
       if (!cov) continue;
       const wantLineups = cov.lineups && !hasLineups.has(f.id);
-      const wantEvents =
-        cov.events &&
-        (deltaIds.has(f.id) || now - (lastEventSync.get(f.id) ?? 0) > EVENT_THROTTLE_MS);
-      if (!wantLineups && !wantEvents) continue;
+      const due = deltaIds.has(f.id) || now - (lastEventSync.get(f.id) ?? 0) > EVENT_THROTTLE_MS;
+      const wantEvents = cov.events && due;
+      const wantStatistics = cov.statistics && due;
+      if (!wantLineups && !wantEvents && !wantStatistics) continue;
       try {
         const counts = await syncLiveFixtureDetails(provider, db, f.id, {
           events: wantEvents,
           lineups: wantLineups,
+          statistics: wantStatistics,
         });
-        if (wantEvents) {
+        if (wantEvents || wantStatistics) {
           trackCall();
           lastEventSync.set(f.id, now);
         }
         if (wantLineups) trackCall();
+        if (wantStatistics) trackCall();
         console.log(
-          `  [details] fixture=${f.id} events=${counts.events} lineups=${counts.lineups}`,
+          `  [details] fixture=${f.id} events=${counts.events} lineups=${counts.lineups} stats=${counts.statistics}`,
         );
       } catch (err) {
         console.error(
@@ -174,6 +189,25 @@ export async function pollLiveFixtures(): Promise<PollResult> {
     console.log(
       `  [delta] fixture=${delta.fixtureId} changes=[${delta.changes.join(',')}] score=${fixture.goals.home}-${fixture.goals.away} status=${fixture.status.short} min=${fixture.status.elapsed}`,
     );
+
+    const finished =
+      fixture.status.short === 'FT' ||
+      fixture.status.short === 'AET' ||
+      fixture.status.short === 'PEN';
+    if (finished && delta.changes.includes('statusCode') && !isQuotaExhausted()) {
+      try {
+        const counts = await syncFixtureDetails(provider, db, delta.fixtureId);
+        trackCall();
+        console.log(
+          `  [ft-details] fixture=${delta.fixtureId} events=${counts.events} lineups=${counts.lineups} stats=${counts.statistics}`,
+        );
+      } catch (err) {
+        console.error(
+          `  [ft-details] fixture=${delta.fixtureId} failed:`,
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
   }
 
   const { tickCalls } = resetTick();

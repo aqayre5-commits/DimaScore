@@ -15,7 +15,7 @@ export function mapStandingToInsert(
   return {
     competitionId,
     seasonYear,
-    groupLabel: entry.group,
+    groupLabel: (entry.group ?? '').trim(),
     teamId: entry.team.id,
     rank: entry.rank,
     points: entry.points,

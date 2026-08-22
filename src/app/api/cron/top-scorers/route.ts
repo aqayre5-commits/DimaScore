@@ -3,7 +3,8 @@ import { db } from '@/lib/db/client';
 import { getDataProvider } from '@/lib/data';
 import { verifyCronSecret } from '@/lib/cron/auth';
 import { syncTopScorers, syncTopAssists } from '@/lib/ingestion/top-scorers';
-import { eq, and } from 'drizzle-orm';
+import { getCurrentSeasons } from '@/lib/db/queries';
+import { and, eq, inArray } from 'drizzle-orm';
 import * as schema from '@/lib/db/schema';
 
 export async function GET(request: Request) {
@@ -14,23 +15,35 @@ export async function GET(request: Request) {
   try {
     const provider = getDataProvider();
 
-    // Find all current seasons with topScorers coverage
-    const coverageRows = await db
-      .select({
-        leagueId: schema.leagueCoverage.leagueId,
-        season: schema.leagueCoverage.season,
-        topScorers: schema.leagueCoverage.topScorers,
-        topAssists: schema.leagueCoverage.topAssists,
-      })
-      .from(schema.leagueCoverage)
-      .innerJoin(
-        schema.seasons,
-        and(
-          eq(schema.seasons.competitionId, schema.leagueCoverage.leagueId),
-          eq(schema.seasons.year, schema.leagueCoverage.season),
-          eq(schema.seasons.isCurrent, true),
-        ),
-      );
+    // Includes the changeover-gap fallback (leagues with no is_current row).
+    const currentSeasons = await getCurrentSeasons(db);
+    const coverageRows =
+      currentSeasons.length === 0
+        ? []
+        : await db
+            .select({
+              leagueId: schema.leagueCoverage.leagueId,
+              season: schema.leagueCoverage.season,
+              topScorers: schema.leagueCoverage.topScorers,
+              topAssists: schema.leagueCoverage.topAssists,
+            })
+            .from(schema.leagueCoverage)
+            .where(
+              and(
+                inArray(
+                  schema.leagueCoverage.leagueId,
+                  currentSeasons.map((s) => s.competitionId),
+                ),
+                inArray(schema.leagueCoverage.season, [
+                  ...new Set(currentSeasons.map((s) => s.year)),
+                ]),
+              ),
+            )
+            .then((rows) =>
+              rows.filter((r) =>
+                currentSeasons.some((s) => s.competitionId === r.leagueId && s.year === r.season),
+              ),
+            );
 
     const results: {
       leagueId: number;

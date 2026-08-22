@@ -6,6 +6,7 @@ import {
   syncFixtureDetails,
   getFixturesMissingDetails,
   getPenFixturesMissingShootout,
+  getScoredFixturesMissingEvents,
 } from '@/lib/ingestion/fixture-details';
 
 export async function GET(request: Request) {
@@ -18,7 +19,8 @@ export async function GET(request: Request) {
     const missingDetails = await getFixturesMissingDetails(db, 50);
     // Shootout fixtures synced before the kicks were published upstream get one more pass.
     const missingShootout = await getPenFixturesMissingShootout(db, 10);
-    const fixtureIds = [...new Set([...missingDetails, ...missingShootout])];
+    const missingEvents = await getScoredFixturesMissingEvents(db, 20);
+    const fixtureIds = [...new Set([...missingDetails, ...missingShootout, ...missingEvents])];
 
     if (fixtureIds.length === 0) {
       return NextResponse.json({ ok: true, message: 'No fixtures missing details', processed: 0 });

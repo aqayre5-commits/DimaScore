@@ -13,8 +13,8 @@ function playerName(
   player: { id: number; name: Record<string, string> } | null,
   locale: string,
 ): string {
-  if (!player?.name) return '';
-  return player.name[locale] ?? player.name['en'] ?? '';
+  if (!player?.name) return '—';
+  return player.name[locale] ?? player.name['en'] ?? '—';
 }
 
 export function EventTimeline({ events, homeTeamId, locale }: EventTimelineProps) {

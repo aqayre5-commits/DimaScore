@@ -9,18 +9,7 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
 const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
-const TERMINAL_CODES = new Set([
-  'FT',
-  'AET',
-  'PEN',
-  'SUSP',
-  'INT',
-  'PST',
-  'CANC',
-  'ABD',
-  'AWD',
-  'WO',
-]);
+const TERMINAL_CODES = new Set(['FT', 'AET', 'PEN', 'SUSP', 'PST', 'CANC', 'ABD', 'AWD', 'WO']);
 
 export interface LiveMatchState {
   homeScore: number | null;
@@ -80,9 +69,10 @@ export function MatchLiveUpdater({
       setState((prev) => {
         const scoreChanged =
           prev.homeScore !== payload.homeScore || prev.awayScore !== payload.awayScore;
+        const statusChanged = prev.statusCode !== payload.statusCode;
 
-        // Invalidate all match sub-queries (events, stats, lineups, sidebar) on score change
-        if (scoreChanged) {
+        // Invalidate detail queries on score or status change (FT must refetch even 0-0).
+        if (scoreChanged || statusChanged) {
           queryClient.invalidateQueries({ queryKey: ['match', String(fixtureId)] });
         }
 
@@ -141,12 +131,14 @@ export function MatchLiveUpdater({
   // starved or disconnected Pusher. Applies this fixture's patch to the overlay state.
   const livePatches = useLiveFixtures();
   const poll = livePatches.get(fixtureId);
-  const prevPollScore = useRef(`${initialHomeScore}-${initialAwayScore}`);
+  const prevPollKey = useRef(`${initialHomeScore}-${initialAwayScore}:${initialStatus}`);
   useEffect(() => {
     if (!poll) return;
-    const scoreKey = `${poll.homeScore}-${poll.awayScore}`;
-    const scoreChanged = scoreKey !== prevPollScore.current;
-    prevPollScore.current = scoreKey;
+    const nextKey = `${poll.homeScore}-${poll.awayScore}:${poll.statusCode}`;
+    const changed = nextKey !== prevPollKey.current;
+    const scoreChanged =
+      `${poll.homeScore}-${poll.awayScore}` !== prevPollKey.current.split(':')[0];
+    prevPollKey.current = nextKey;
     setState({
       homeScore: poll.homeScore,
       awayScore: poll.awayScore,
@@ -155,7 +147,7 @@ export function MatchLiveUpdater({
       extraMinute: poll.extraMinute,
       scoreFlash: scoreChanged,
     });
-    if (scoreChanged) {
+    if (changed) {
       queryClient.invalidateQueries({ queryKey: ['match', String(fixtureId)] });
     }
   }, [poll, fixtureId, queryClient]);

@@ -34,7 +34,6 @@ export function LeagueOverviewTab({
   topScorers,
   topAssists,
   topCards,
-  coverage,
   locale,
 }: LeagueOverviewTabProps) {
   const t = useTranslations('leaguePage');
@@ -69,7 +68,7 @@ export function LeagueOverviewTab({
       )}
 
       {/* Top scorers (top 5) */}
-      {coverage?.topScorers && compactScorers.length > 0 && (
+      {compactScorers.length > 0 && (
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-base font-semibold text-text-primary">{t('topScorers')}</h2>
@@ -85,7 +84,7 @@ export function LeagueOverviewTab({
       )}
 
       {/* Top assists (top 5) */}
-      {coverage?.topAssists && compactAssists.length > 0 && (
+      {compactAssists.length > 0 && (
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-base font-semibold text-text-primary">{t('topAssists')}</h2>
@@ -101,7 +100,7 @@ export function LeagueOverviewTab({
       )}
 
       {/* Top cards (top 5 yellow) */}
-      {coverage?.topCards && compactCards.length > 0 && (
+      {compactCards.length > 0 && (
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-base font-semibold text-text-primary">{t('topCards')}</h2>

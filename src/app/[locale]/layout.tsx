@@ -90,12 +90,14 @@ export async function generateMetadata({
       type: 'website',
       siteName: 'DimaScore',
       url: `${baseUrl}/${locale}`,
-      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'DimaScore' }],
+      images: [
+        { url: '/opengraph-image-1200x630.png', width: 1200, height: 630, alt: 'DimaScore' },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: 'DimaScore',
-      images: ['/twitter-image.png'],
+      images: ['/opengraph-image-1200x630.png'],
     },
   };
 }

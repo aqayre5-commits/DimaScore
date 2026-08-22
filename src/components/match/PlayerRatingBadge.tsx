@@ -61,7 +61,7 @@ const POS_LABEL_KEY: Record<string, string> = {
 };
 
 function playerName(names: Record<string, string>, locale: string): string {
-  return names[locale] ?? names['en'] ?? '';
+  return names[locale] ?? names['en'] ?? '—';
 }
 
 export function PlayerRatingsPanel({

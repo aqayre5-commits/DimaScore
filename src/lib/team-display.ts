@@ -8,7 +8,10 @@
  */
 export function stripWomenSuffix(name: string | null | undefined): string {
   if (!name) return '';
-  return name.replace(/\s+\(?W\)?$/, '');
+  return name
+    .replace(/\s+\(?W\)?$/i, '')
+    .replace(/\s+\(?F\)?$/i, '')
+    .replace(/\s+\(?سيدات\)?$/, '');
 }
 
 /**

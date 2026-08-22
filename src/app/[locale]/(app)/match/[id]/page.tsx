@@ -65,15 +65,13 @@ async function getCachedMatchData(fixtureId: number) {
   const hasTeams = homeTeamId > 0 && awayTeamId > 0;
   // new Date() is allowed here — TTL-bounded by 'use cache'.
   const isUpcoming = getMatchState(match.statusCode, match.kickoffAt) === 'upcoming';
-  const hasStats =
-    !isUpcoming &&
-    ((coverage?.statisticsFixtures ?? false) || (coverage?.statisticsPlayers ?? false));
+  const hasStats = !isUpcoming;
 
   // Server-prefetch the tab data so the client useQuery hydrates with it (no
-  // client-fetch "content dump"). Gated identically to the client `enabled`.
+  // client-fetch "content dump"). Same gate as MatchClientCenter (`!isUpcoming`).
   const [events, lineups, teamStats, playerStats, h2h, nextFixtures, formMap] = await Promise.all([
-    !isUpcoming && coverage?.events ? getMatchEvents(db, fixtureId) : null,
-    !isUpcoming && coverage?.lineups ? getMatchLineups(db, fixtureId) : null,
+    !isUpcoming ? getMatchEvents(db, fixtureId) : null,
+    !isUpcoming ? getMatchLineups(db, fixtureId) : null,
     hasStats ? getMatchStatistics(db, fixtureId) : null,
     hasStats ? getMatchPlayerStats(db, fixtureId) : null,
     hasTeams ? getHeadToHead(db, homeTeamId, awayTeamId, fixtureId) : [],
@@ -270,7 +268,26 @@ export default async function MatchDetailPage({ params }: PageProps) {
         }
         center={
           <div className="space-y-4">
-            <ScoreHeader match={match} locale={typedLocale} competitionHref={competitionHref} />
+            <ScoreHeader
+              match={match}
+              locale={typedLocale}
+              competitionHref={competitionHref}
+              goalScorers={(prefetch.events ?? []).flatMap((e) => {
+                const type = e.type?.toLowerCase() ?? '';
+                const detail = (e.detail ?? '').toLowerCase();
+                if (type !== 'goal' || detail.includes('missed')) return [];
+                return [
+                  {
+                    playerName: e.player?.name?.[typedLocale] ?? e.player?.name?.en ?? '—',
+                    minute: e.minute,
+                    extraMinute: e.extraMinute,
+                    isOwnGoal: detail.includes('own goal'),
+                    isPenalty: detail.includes('penalty'),
+                    teamId: e.teamId,
+                  },
+                ];
+              })}
+            />
             {isUpcoming && (
               <PreMatchForm
                 locale={typedLocale}

@@ -9,7 +9,12 @@ interface RouteParams {
 export async function GET(_request: Request, { params }: RouteParams) {
   const { id } = await params;
   const fixtureId = Number(id);
-  if (!Number.isFinite(fixtureId) || fixtureId <= 0) {
+  if (
+    !Number.isFinite(fixtureId) ||
+    !Number.isInteger(fixtureId) ||
+    fixtureId <= 0 ||
+    fixtureId >= 2_000_000_000
+  ) {
     return NextResponse.json({ error: 'Invalid fixture ID' }, { status: 400 });
   }
 

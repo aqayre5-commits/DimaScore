@@ -4,10 +4,11 @@ import { useTranslations } from 'next-intl';
 import { useLiveMatch } from '@/components/match/MatchLiveUpdater';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { Locale } from '@/lib/i18n/config';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 
-const LIVE_CODES = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE']);
+const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
 const FINISHED_CODES = new Set(['FT', 'AET', 'PEN']);
-const INTERRUPTED_CODES = new Set(['SUSP', 'INT', 'PST', 'CANC', 'ABD', 'AWD', 'WO']);
+const INTERRUPTED_CODES = new Set(['SUSP', 'PST', 'CANC', 'ABD', 'AWD', 'WO']);
 
 type RenderState = 'upcoming' | 'live' | 'finished' | 'interrupted';
 

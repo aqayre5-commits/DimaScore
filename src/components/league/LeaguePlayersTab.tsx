@@ -18,7 +18,6 @@ interface LeaguePlayersTabProps {
 type Board = 'goals' | 'assists' | 'yellowCards' | 'redCards';
 
 export function LeaguePlayersTab({
-  coverage,
   topScorers,
   topAssists,
   topCards,
@@ -28,21 +27,21 @@ export function LeaguePlayersTab({
   const [board, setBoard] = useState<Board>('goals');
 
   const boards: { key: Board; label: string; available: boolean }[] = [
-    { key: 'goals', label: t('goals'), available: !!coverage?.topScorers && topScorers.length > 0 },
+    { key: 'goals', label: t('goals'), available: topScorers.length > 0 },
     {
       key: 'assists',
       label: t('assists'),
-      available: !!coverage?.topAssists && topAssists.length > 0,
+      available: topAssists.length > 0,
     },
     {
       key: 'yellowCards',
       label: t('yellowCards'),
-      available: !!coverage?.topCards && topCards.length > 0,
+      available: topCards.length > 0,
     },
     {
       key: 'redCards',
       label: t('redCards'),
-      available: !!coverage?.topCards && topCards.length > 0,
+      available: topCards.length > 0,
     },
   ];
 

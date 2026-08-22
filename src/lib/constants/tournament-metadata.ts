@@ -84,7 +84,7 @@ const WC_2026: CupMetadata = {
   groups: [
     { label: 'A', teamCodes: ['MEX', 'SOU', 'KOR', 'CZE'], isMoroccoGroup: false },
     { label: 'B', teamCodes: ['CAN', 'BOS', 'QAT', 'SWI'], isMoroccoGroup: false },
-    { label: 'C', teamCodes: ['BRA', 'MOR', 'HAI', 'SCO'], isMoroccoGroup: false },
+    { label: 'C', teamCodes: ['BRA', 'MOR', 'HAI', 'SCO'], isMoroccoGroup: true },
     { label: 'D', teamCodes: ['USA', 'PAR', 'AUS', 'TUR'], isMoroccoGroup: false },
     { label: 'E', teamCodes: ['GER', 'CUR', 'IVO', 'ECU'], isMoroccoGroup: false },
     { label: 'F', teamCodes: ['NET', 'JAP', 'SWE', 'TUN'], isMoroccoGroup: false },

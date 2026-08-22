@@ -156,11 +156,14 @@ export async function syncFixtureDetails(
       }
     }
 
-    // Mark fixture as synced so it won't be re-processed
-    await tx
-      .update(schema.fixtures)
-      .set({ detailsSyncedAt: new Date() })
-      .where(eq(schema.fixtures.id, fixtureId));
+    // Only mark synced when something landed. An empty provider response
+    // (common right after FT) must stay in the retry queue.
+    if (eventsCount + lineupsCount + statisticsCount + playerStatsCount > 0) {
+      await tx
+        .update(schema.fixtures)
+        .set({ detailsSyncedAt: new Date() })
+        .where(eq(schema.fixtures.id, fixtureId));
+    }
   });
 
   return {
@@ -171,20 +174,20 @@ export async function syncFixtureDetails(
   };
 }
 
-// ── Live sync: events and/or lineups only, never sets detailsSyncedAt ──
+// ── Live sync: events, lineups, and/or team stats — never sets detailsSyncedAt ──
 
 /**
- * Lightweight detail sync for an in-progress match. Fetches only events and/or lineups
- * (gated by `want`, so an uncovered feed is skipped) and never marks detailsSyncedAt —
- * the post-FT cron still runs the full sync (stats + player stats) once the match ends.
+ * Lightweight detail sync for an in-progress match. Gated by `want` so an uncovered
+ * feed is skipped. Never marks detailsSyncedAt — the post-FT cron still runs the
+ * full sync (player stats included) once the match ends.
  */
 export async function syncLiveFixtureDetails(
   provider: DataProvider,
   db: NeonHttpDatabase<typeof schema>,
   fixtureId: number,
-  want: { events: boolean; lineups: boolean },
-): Promise<{ events: number; lineups: number }> {
-  const [events, lineups] = await Promise.all([
+  want: { events: boolean; lineups: boolean; statistics?: boolean },
+): Promise<{ events: number; lineups: number; statistics: number }> {
+  const [events, lineups, statistics] = await Promise.all([
     want.events
       ? provider
           .getFixtureEvents({ fixture: fixtureId })
@@ -195,10 +198,16 @@ export async function syncLiveFixtureDetails(
           .getFixtureLineups({ fixture: fixtureId })
           .catch(() => [] as NormalizedFixtureLineup[])
       : Promise.resolve([] as NormalizedFixtureLineup[]),
+    want.statistics
+      ? provider
+          .getFixtureStatistics({ fixture: fixtureId })
+          .catch(() => [] as NormalizedFixtureStatistic[])
+      : Promise.resolve([] as NormalizedFixtureStatistic[]),
   ]);
 
   let eventsCount = 0;
   let lineupsCount = 0;
+  let statisticsCount = 0;
 
   await runWrites(async (tx) => {
     if (want.events && events.length > 0) {
@@ -224,9 +233,21 @@ export async function syncLiveFixtureDetails(
         });
       lineupsCount++;
     }
+
+    for (const s of statistics) {
+      const row = mapStatistics(fixtureId, s);
+      await tx
+        .insert(schema.fixtureStatistics)
+        .values(row)
+        .onConflictDoUpdate({
+          target: [schema.fixtureStatistics.fixtureId, schema.fixtureStatistics.teamId],
+          set: { stats: row.stats },
+        });
+      statisticsCount++;
+    }
   });
 
-  return { events: eventsCount, lineups: lineupsCount };
+  return { events: eventsCount, lineups: lineupsCount, statistics: statisticsCount };
 }
 
 // ── Batch: find fixtures missing details ──
@@ -273,6 +294,32 @@ export async function getPenFixturesMissingShootout(
             WHERE fe.fixture_id = f.id
               AND fe.minute >= 119
               AND fe.detail ILIKE '%penalty%'
+          )
+        ORDER BY f.kickoff_at DESC
+        LIMIT ${limit}`,
+  );
+
+  return (rows.rows as { id: number }[]).map((r) => Number(r.id));
+}
+
+/**
+ * Finished matches that were marked synced (or never queued) but have a score and
+ * no goal events. Bounded to 48h so the cron heals opening-weekend holes without
+ * re-walking historical seasons.
+ */
+export async function getScoredFixturesMissingEvents(
+  db: NeonHttpDatabase<typeof schema>,
+  limit = 20,
+): Promise<number[]> {
+  const rows = await db.execute(
+    sql`SELECT f.id FROM fixtures f
+        WHERE f.status_code IN ('FT', 'AET', 'PEN')
+          AND f.kickoff_at > NOW() - INTERVAL '48 hours'
+          AND COALESCE(f.home_score, 0) + COALESCE(f.away_score, 0) > 0
+          AND NOT EXISTS (
+            SELECT 1 FROM fixture_events fe
+            WHERE fe.fixture_id = f.id
+              AND fe.type = 'Goal'
           )
         ORDER BY f.kickoff_at DESC
         LIMIT ${limit}`,

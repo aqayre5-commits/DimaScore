@@ -67,7 +67,6 @@ export function MatchClientLeftRail({
   matchId,
   locale,
   match,
-  coverage,
   homeTeamId,
   awayTeamId,
   isUpcoming,
@@ -85,7 +84,7 @@ export function MatchClientLeftRail({
   const { data: statsData } = useQuery({
     queryKey: qk.matchStats(matchId),
     queryFn: () => fetchMatchStats(matchId),
-    enabled: !isUpcoming && (coverage?.statisticsFixtures ?? false),
+    enabled: !isUpcoming,
   });
 
   const nextFixtures = (sidebar?.nextFixtures ?? []).map((f) => ({
@@ -96,7 +95,7 @@ export function MatchClientLeftRail({
   const teamStats = statsData?.teamStats ?? [];
   const homeStats = teamStats.find((s) => s.teamId === homeTeamId);
   const awayStats = teamStats.find((s) => s.teamId === awayTeamId);
-  const hasStats = (coverage?.statisticsFixtures ?? false) && teamStats.length === 2;
+  const hasStats = teamStats.length === 2;
 
   return (
     <div className="space-y-4">

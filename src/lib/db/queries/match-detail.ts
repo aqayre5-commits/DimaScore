@@ -509,6 +509,31 @@ export interface MatchCoverage {
   predictions: boolean;
 }
 
+function fixtureCoverageActive(r: {
+  events: boolean | null;
+  lineups: boolean | null;
+  statisticsFixtures: boolean | null;
+  statisticsPlayers: boolean | null;
+}): boolean {
+  return !!(r.events || r.lineups || r.statisticsFixtures || r.statisticsPlayers);
+}
+
+function toMatchCoverage(r: {
+  events: boolean | null;
+  lineups: boolean | null;
+  statisticsFixtures: boolean | null;
+  statisticsPlayers: boolean | null;
+  predictions: boolean | null;
+}): MatchCoverage {
+  return {
+    events: r.events ?? false,
+    lineups: r.lineups ?? false,
+    statisticsFixtures: r.statisticsFixtures ?? false,
+    statisticsPlayers: r.statisticsPlayers ?? false,
+    predictions: r.predictions ?? false,
+  };
+}
+
 export async function getMatchCoverage(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number,
@@ -516,6 +541,7 @@ export async function getMatchCoverage(
 ): Promise<MatchCoverage | null> {
   const rows = await db
     .select({
+      season: schema.leagueCoverage.season,
       events: schema.leagueCoverage.events,
       lineups: schema.leagueCoverage.lineups,
       statisticsFixtures: schema.leagueCoverage.statisticsFixtures,
@@ -526,21 +552,21 @@ export async function getMatchCoverage(
     .where(
       and(
         eq(schema.leagueCoverage.leagueId, competitionId),
-        eq(schema.leagueCoverage.season, season),
+        inArray(schema.leagueCoverage.season, [season, season - 1]),
       ),
-    )
-    .limit(1);
+    );
 
-  if (rows.length === 0) return null;
+  const current = rows.find((r) => r.season === season);
+  const previous = rows.find((r) => r.season === season - 1);
+  const chosen =
+    current && fixtureCoverageActive(current)
+      ? current
+      : previous && fixtureCoverageActive(previous)
+        ? previous
+        : (current ?? previous ?? null);
 
-  const r = rows[0];
-  return {
-    events: r.events ?? false,
-    lineups: r.lineups ?? false,
-    statisticsFixtures: r.statisticsFixtures ?? false,
-    statisticsPlayers: r.statisticsPlayers ?? false,
-    predictions: r.predictions ?? false,
-  };
+  if (!chosen) return null;
+  return toMatchCoverage(chosen);
 }
 
 // ── Next fixtures for teams ──

@@ -230,7 +230,7 @@ export async function renderLeaguePage(
       labelKey: 'standings',
       icon: 'table',
       content:
-        coverage?.standings !== false && standings.length > 0 ? (
+        standings.length > 0 ? (
           <LeagueStandingsTab standings={standings} locale={locale} />
         ) : (
           <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-8 text-center">
@@ -304,7 +304,7 @@ export async function renderLeaguePage(
         rightRail={
           <LeagueRightRailCard
             featuredMatches={featuredMatches.slice(1)}
-            topScorers={coverage?.topScorers ? topScorers.slice(0, 3) : []}
+            topScorers={topScorers.slice(0, 3)}
             locale={locale}
             competitionName={competitionName}
           />

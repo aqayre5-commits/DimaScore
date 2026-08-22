@@ -120,7 +120,7 @@ export default async function OGImage({
             alignItems: 'center',
           }}
         >
-          {isFinished && hasScore ? (
+          {hasScore ? (
             <span style={{ fontSize: 64, fontWeight: 800, color: '#e6edf3' }}>
               {match.homeScore} - {match.awayScore}
             </span>
@@ -134,6 +134,11 @@ export default async function OGImage({
                 : match.statusCode === 'PEN'
                   ? 'Penalties'
                   : 'Full Time'}
+            </span>
+          )}
+          {!isFinished && hasScore && (
+            <span style={{ fontSize: 18, color: '#e11d48', fontWeight: 700, marginTop: 4 }}>
+              LIVE
             </span>
           )}
         </div>

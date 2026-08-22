@@ -1,5 +1,5 @@
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { DataProvider } from '@/lib/data/provider';
 import * as schema from '@/lib/db/schema';
 import { mapFixtureToInsert } from './fixtures';
@@ -99,6 +99,12 @@ export async function finalizeStaleFixtures(
         stale.homeScore === f.goals.home &&
         stale.awayScore === f.goals.away
       ) {
+        // Touch updated_at so the 5-min stale window advances instead of
+        // re-selecting this fixture every 2-minute cron tick forever.
+        await db
+          .update(schema.fixtures)
+          .set({ updatedAt: new Date() })
+          .where(eq(schema.fixtures.id, f.id));
         skipped++;
         staleMap.delete(f.id);
         continue;
