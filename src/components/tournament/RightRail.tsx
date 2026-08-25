@@ -15,17 +15,17 @@ interface RightRailProps {
 }
 
 /**
- * Right rail composition — widgets stacked.
- * Widget order: Top Scorers → Top Assists. Each is coverage-gated (Rule 12): a card only renders
- * when API-Football provides that stat for the competition; before data lands it shows a placeholder.
+ * Right rail composition — widgets stacked (Top Scorers → Top Assists).
+ * Cup scorer/assist lists are derived from match events (always available when goals exist), not the
+ * optional aggregate `/topscorers` feed — so they are gated on data presence, not the coverage flag.
  */
-export function RightRail({ locale, coverage, topScorers, topAssists }: RightRailProps) {
+export function RightRail({ locale, topScorers, topAssists }: RightRailProps) {
   return (
     <div className="space-y-4">
-      {coverage?.topScorers && (
+      {topScorers.length > 0 && (
         <RankedPlayersList players={topScorers} locale={locale} stat="goals" />
       )}
-      {coverage?.topAssists && (
+      {topAssists.length > 0 && (
         <RankedPlayersList players={topAssists} locale={locale} stat="assists" />
       )}
     </div>

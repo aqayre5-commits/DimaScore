@@ -26,7 +26,6 @@ export function CupOverviewTab({
   standings,
   topScorers,
   topAssists,
-  coverage,
   locale,
 }: CupOverviewTabProps) {
   const t = useTranslations('tournament');
@@ -116,7 +115,7 @@ export function CupOverviewTab({
       )}
 
       {/* Top scorers */}
-      {coverage?.topScorers && compactScorers.length > 0 && (
+      {compactScorers.length > 0 && (
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-base font-semibold text-text-primary">{tL('topScorers')}</h2>
@@ -132,7 +131,7 @@ export function CupOverviewTab({
       )}
 
       {/* Top assists */}
-      {coverage?.topAssists && compactAssists.length > 0 && (
+      {compactAssists.length > 0 && (
         <div>
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-base font-semibold text-text-primary">{tL('topAssists')}</h2>

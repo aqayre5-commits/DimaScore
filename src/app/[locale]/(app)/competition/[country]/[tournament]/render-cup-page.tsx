@@ -7,7 +7,9 @@ import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBr
 import {
   getMetadataForCompetitionSeason,
   type CupMetadata,
+  type GroupDefinition,
 } from '@/lib/constants/tournament-metadata';
+import { TEAM_IDS } from '@/lib/constants/canonical-ids';
 import { getRelatedCompetitionIds } from '@/lib/constants/competitions-mega-menu';
 import { RelatedCompetitions } from '@/components/tournament/RelatedCompetitions';
 import { getCupContent, getCupContentForSeason } from '@/lib/constants/cup-content';
@@ -34,7 +36,12 @@ import { getAboutContent } from '@/lib/constants/about-content';
 import { computeBestThirdPlaced } from '@/lib/standings/best-third';
 import type { TournamentPhase } from '@/components/tournament/StatusDescriptor';
 import { db } from '@/lib/db/client';
-import { getKnockoutFixtures, getStandings, type FixtureWithTeams } from '@/lib/db/queries';
+import {
+  getKnockoutFixtures,
+  getStandings,
+  type FixtureWithTeams,
+  type StandingRow,
+} from '@/lib/db/queries';
 import {
   getLeagueFeaturedMatches,
   getLeagueFixtures,
@@ -46,6 +53,39 @@ import {
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+
+// Knockout bracket size by entry round — used to derive how many best-third teams advance.
+const KNOCKOUT_SLOTS: Record<CupMetadata['knockoutStartsRound'], number> = {
+  qf: 8,
+  r16: 16,
+  r32: 32,
+};
+
+/** Best-third qualifying places = knockout slots − direct (top-2 per group) qualifiers. */
+function bestThirdQualifyingCount(m: CupMetadata): number {
+  if (!m.groupsCount) return 0;
+  return Math.max(0, KNOCKOUT_SLOTS[m.knockoutStartsRound] - m.groupsCount * 2);
+}
+
+const MOROCCO_TEAM_IDS: number[] = [TEAM_IDS.MOROCCO_MEN, TEAM_IDS.MOROCCO_WOMEN];
+
+/**
+ * Group definitions derived from standings — fallback for editions whose metadata `groups` array is
+ * empty (e.g. AFCON) but which have full group standings in the DB. Labels come straight from the
+ * (already normalized) standings; the Morocco group is flagged when it contains a Morocco team.
+ * `teamCodes` is left empty — it's only used for pre-draw display, and here the standings already
+ * carry the teams.
+ */
+function deriveGroupsFromStandings(standings: StandingRow[]): GroupDefinition[] {
+  const labels = [...new Set(standings.map((s) => s.groupLabel).filter(Boolean))].sort();
+  return labels.map((label) => ({
+    label,
+    teamCodes: [],
+    isMoroccoGroup: standings.some(
+      (s) => s.groupLabel === label && s.teamId != null && MOROCCO_TEAM_IDS.includes(s.teamId),
+    ),
+  }));
+}
 
 async function getCachedCupData(
   competitionId: number,
@@ -329,7 +369,14 @@ export async function renderCupPage(
   const bestThird =
     metadata.hasBestThirdPlace && groupStageReady ? computeBestThirdPlaced(standings) : null;
 
-  const hasGroups = metadata.groups.length > 0;
+  // Editions like AFCON ship an empty metadata `groups` array; derive groups from the standings so
+  // tables/overview/fixtures grouping render. Editions with populated groups are passed through
+  // unchanged (identity), so there is no behavior change for them.
+  const effectiveGroups =
+    metadata.groups.length > 0 ? metadata.groups : deriveGroupsFromStandings(standings);
+  const metadataWithGroups: CupMetadata =
+    effectiveGroups === metadata.groups ? metadata : { ...metadata, groups: effectiveGroups };
+  const hasGroups = effectiveGroups.length > 0;
 
   // Build team → group mapping from standings for fixtures filtering
   const teamGroupMap: Record<number, string> = {};
@@ -353,7 +400,7 @@ export async function renderCupPage(
         <OverviewTab
           fixtures={allCupFixtures}
           standings={standings}
-          metadata={metadata}
+          metadata={metadataWithGroups}
           locale={locale}
           facts={facts}
           historicalTeamNames={historicalTeamNames}
@@ -370,7 +417,7 @@ export async function renderCupPage(
         <WCFixturesTab
           fixtures={allCupFixtures}
           locale={locale}
-          groupLabels={metadata.groups.map((g) => g.label)}
+          groupLabels={effectiveGroups.map((g) => g.label)}
           teamGroupMap={teamGroupMap}
         />
       ) : (
@@ -386,12 +433,12 @@ export async function renderCupPage(
       // below the group standings instead of a separate tab, to declutter the tab bar.
       content: (
         <div className="space-y-6">
-          <StandingsTab standings={standings} metadata={metadata} locale={locale} />
+          <StandingsTab standings={standings} metadata={metadataWithGroups} locale={locale} />
           {bestThird && (
             <BestThirdTab
               rows={bestThird.rows}
               locale={locale}
-              qualifiedCount={8}
+              qualifiedCount={bestThirdQualifyingCount(metadata)}
               hasTiesRequiringFallback={bestThird.hasTiesRequiringFallback}
             />
           )}
