@@ -170,7 +170,6 @@ export function Footer() {
           {/* Zone 1 — Brand + social */}
           <div className="flex flex-col gap-3">
             <span className="text-xl font-bold text-text-primary">{tApp('name')}</span>
-            <span className="text-base text-text-secondary">{t('tagline')}</span>
             <div className="flex items-center gap-3">
               {socialLinks.map(({ Icon, href, label }) => (
                 <a
@@ -247,6 +246,10 @@ export function Footer() {
             </div>
           </div>
         </div>
+
+        <p className="mt-8 border-t border-border-subtle pt-6 text-sm leading-relaxed text-text-tertiary">
+          {t('description')}
+        </p>
       </div>
 
       {/* Sub-footer — copyright */}

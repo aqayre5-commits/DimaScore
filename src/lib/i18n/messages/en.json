@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "DimaScore",
-    "tagline": "Live football — Morocco and the world"
+    "tagline": "Live football — scores, standings and stats worldwide"
   },
   "nav": {
     "home": "Home",
@@ -121,7 +121,7 @@
     "morocco": "Morocco"
   },
   "footer": {
-    "tagline": "Live football — Morocco and the world",
+    "description": "DimaScore delivers real-time football scores, results and standings from hundreds of leagues, cups and tournaments around the world. Follow live match events, lineups, statistics and player ratings across Europe, Africa, the Americas and Asia — from domestic leagues to the Champions League, continental cups and the World Cup. Track your favourite teams and players and get every result the moment it happens.",
     "legalNotice": "Legal notice",
     "privacyPolicy": "Privacy policy",
     "contact": "Contact",
