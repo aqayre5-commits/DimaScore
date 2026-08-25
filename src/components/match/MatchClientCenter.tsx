@@ -41,6 +41,7 @@ function SectionHeader({ label }: { label: string }) {
 export function MatchClientCenter({
   matchId,
   locale,
+  coverage,
   homeTeamId,
   awayTeamId,
   homeName,
@@ -54,35 +55,35 @@ export function MatchClientCenter({
   const live = useLiveMatch();
   const liveRefetch = live && isLive(live.statusCode) ? 30_000 : false;
 
-  // Fetch whenever the match has started. Coverage flags can be stale at season
-  // start (API still reports false); empty tabs stay hidden via the length checks.
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: qk.matchEvents(matchId),
     queryFn: () => fetchMatchEvents(matchId),
-    enabled: !isUpcoming,
+    enabled: !isUpcoming && (coverage?.events ?? false),
     refetchInterval: liveRefetch,
   });
 
   const { data: lineups, isLoading: lineupsLoading } = useQuery({
     queryKey: qk.matchLineups(matchId),
     queryFn: () => fetchMatchLineups(matchId),
-    enabled: !isUpcoming,
+    enabled: !isUpcoming && (coverage?.lineups ?? false),
     refetchInterval: liveRefetch,
   });
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: qk.matchStats(matchId),
     queryFn: () => fetchMatchStats(matchId),
-    enabled: !isUpcoming,
+    enabled:
+      !isUpcoming &&
+      ((coverage?.statisticsFixtures ?? false) || (coverage?.statisticsPlayers ?? false)),
     refetchInterval: liveRefetch,
   });
 
-  const hasEvents = (events?.length ?? 0) > 0;
-  const hasLineups = (lineups?.length ?? 0) === 2;
+  const hasEvents = (coverage?.events ?? false) && (events?.length ?? 0) > 0;
+  const hasLineups = (coverage?.lineups ?? false) && (lineups?.length ?? 0) === 2;
   const teamStats = statsData?.teamStats ?? [];
   const playerStats = statsData?.playerStats ?? [];
-  const hasStats = teamStats.length === 2;
-  const hasRatings = playerStats.length > 0;
+  const hasStats = (coverage?.statisticsFixtures ?? false) && teamStats.length === 2;
+  const hasRatings = (coverage?.statisticsPlayers ?? false) && playerStats.length > 0;
 
   const homeLineup = lineups?.find((l) => l.teamId === homeTeamId);
   const awayLineup = lineups?.find((l) => l.teamId === awayTeamId);
@@ -106,7 +107,7 @@ export function MatchClientCenter({
 
       <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
         {/* Lineups */}
-        {lineupsLoading && !isUpcoming && <SectionSkeleton />}
+        {lineupsLoading && coverage?.lineups && !isUpcoming && <SectionSkeleton />}
         {hasLineups && homeLineup && awayLineup && (
           <section id="sec-lineups" className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]">
             <LineupPitch

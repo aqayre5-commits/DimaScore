@@ -86,4 +86,4 @@ Trace content changes over time/state and flag anything stale, wrong, or jarring
 Prioritized findings (P1/P2/P3). For each: **what**, **where** (file:line), **why it matters for a
 Morocco-first audience**, and a **content recommendation** (never a layout or odds change). Keep
 "content gaps vs donor" separate from "bugs in current behavior." End with a short shortlist of the
-3–5 highest-leverage content changes.
+7–10 highest-leverage content changes.
