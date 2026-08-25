@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import type { Locale } from '@/lib/i18n/config';
-import { buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
+import {
+  buildCompetitionHref,
+  findEntryByCompetitionId,
+  type MegaMenuEntry,
+} from '@/lib/constants/competitions-mega-menu';
 
 // Inline SVG social icons (16x16, stroke style matching Lucide conventions)
 
@@ -94,60 +98,20 @@ const socialLinks = [
   },
 ] as const;
 
-const competitionLinks = [
-  {
-    labelKey: 'botolaPro' as const,
-    entry: {
-      competitionId: 200,
-      labelKey: 'botolaPro',
-      countryKey: 'maroc',
-      slugs: {
-        fr: 'botola-pro',
-        en: 'botola-pro',
-        ar: 'البطولة-الاحترافية',
-      },
-      isCurrentlyVisible: true,
-    },
-  },
-  {
-    labelKey: 'premierLeague' as const,
-    entry: {
-      competitionId: 39,
-      labelKey: 'premierLeague',
-      countryKey: 'angleterre',
-      slugs: {
-        fr: 'premier-league',
-        en: 'premier-league',
-        ar: 'الدوري-الإنجليزي-الممتاز',
-      },
-      isCurrentlyVisible: true,
-    },
-  },
-  {
-    labelKey: 'laLiga' as const,
-    entry: {
-      competitionId: 140,
-      labelKey: 'laLiga',
-      countryKey: 'espagne',
-      slugs: { fr: 'la-liga', en: 'la-liga', ar: 'الدوري-الإسباني' },
-      isCurrentlyVisible: true,
-    },
-  },
-  {
-    labelKey: 'championsLeague' as const,
-    entry: {
-      competitionId: 2,
-      labelKey: 'championsLeague',
-      countryKey: 'uefa',
-      slugs: {
-        fr: 'ligue-des-champions',
-        en: 'champions-league',
-        ar: 'دوري-أبطال-أوروبا',
-      },
-      isCurrentlyVisible: true,
-    },
-  },
+// Coverage columns — titleKey is a `megaMenu` i18n key; ids resolve to canonical localized
+// competition entries via the mega-menu (single source of truth for slugs), so links never drift.
+const COVERAGE_COLUMNS: { titleKey: string; ids: number[] }[] = [
+  { titleKey: 'topLeagues', ids: [39, 140, 78, 135, 61, 200] },
+  { titleKey: 'cupsAndContinental', ids: [2, 3, 848, 12, 20, 822] },
+  { titleKey: 'international', ids: [1, 6, 922, 29, 32] },
 ];
+
+const coverageColumns = COVERAGE_COLUMNS.map((col) => ({
+  titleKey: col.titleKey,
+  entries: col.ids
+    .map((id) => findEntryByCompetitionId(id))
+    .filter((e): e is MegaMenuEntry => e !== null),
+}));
 
 const legalLinks = [
   { key: 'legalNotice', route: 'legal' },
@@ -165,11 +129,11 @@ export function Footer() {
   return (
     <footer className="border-t border-border-subtle bg-bg-surface">
       <div className="mx-auto max-w-[1280px] px-4 py-8">
-        {/* Desktop: 3-zone grid / Mobile: stacked */}
-        <div className="flex flex-col gap-8 md:grid md:grid-cols-[1fr_2fr_1fr] md:gap-6">
-          {/* Zone 1 — Brand + social */}
-          <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-8 md:flex-row md:gap-10">
+          {/* Brand — name, description, social (wide left column) */}
+          <div className="flex flex-col gap-3 md:w-72 md:shrink-0">
             <span className="text-xl font-bold text-text-primary">{tApp('name')}</span>
+            <p className="text-sm leading-relaxed text-text-secondary">{t('description')}</p>
             <div className="flex items-center gap-3">
               {socialLinks.map(({ Icon, href, label }) => (
                 <a
@@ -186,24 +150,25 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Zone 2 — Link columns */}
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
-            {/* Competitions */}
-            <div>
-              <h3 className="label-caps mb-2">{t('competitions')}</h3>
-              <ul className="flex flex-col gap-1">
-                {competitionLinks.map(({ labelKey, entry }) => (
-                  <li key={entry.competitionId}>
-                    <Link
-                      href={buildCompetitionHref(entry, locale)}
-                      className="text-base text-text-secondary transition-colors hover:text-text-primary"
-                    >
-                      {tMega(labelKey)}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {/* Link columns — coverage groups + resources + about */}
+          <div className="grid flex-1 grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
+            {coverageColumns.map((col) => (
+              <div key={col.titleKey}>
+                <h3 className="label-caps mb-2">{tMega(col.titleKey)}</h3>
+                <ul className="flex flex-col gap-1">
+                  {col.entries.map((entry) => (
+                    <li key={`${entry.competitionId}-${entry.labelKey}`}>
+                      <Link
+                        href={buildCompetitionHref(entry, locale)}
+                        className="text-base text-text-secondary transition-colors hover:text-text-primary"
+                      >
+                        {tMega(entry.labelKey)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
 
             {/* Resources */}
             <div>
@@ -246,10 +211,6 @@ export function Footer() {
             </div>
           </div>
         </div>
-
-        <p className="mt-8 border-t border-border-subtle pt-6 text-sm leading-relaxed text-text-tertiary">
-          {t('description')}
-        </p>
       </div>
 
       {/* Sub-footer — copyright */}
