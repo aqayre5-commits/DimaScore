@@ -371,7 +371,7 @@
     "playVideo": "Play video",
     "faqTitle": "Frequently asked questions",
     "bestThird": "Best 3rd",
-    "bestThirdCaption": "The 8 best third-placed teams advance to the Round of 32.",
+    "bestThirdCaption": "The {count} best third-placed teams advance to the {round}.",
     "bestThirdGroupCol": "Grp",
     "bestThirdRankCol": "Rank",
     "bestThirdDisclaimer": "Ties beyond goals scored use a fall-back order. FIFA's full tiebreaker chain (fair-play, world ranking) requires data not yet seeded.",

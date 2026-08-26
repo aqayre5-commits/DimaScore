@@ -7,17 +7,21 @@ interface BestThirdTabProps {
   rows: BestThirdRow[];
   locale: Locale;
   qualifiedCount: number;
+  /** i18n key (tournament namespace) for the round best-third teams advance to, e.g. 'roundOf16'. */
+  targetRoundKey: string;
   hasTiesRequiringFallback: boolean;
 }
 
 /**
  * Best 3rd-placed teams tab.
- * Caption + optional disclaimer + 12-row cross-group table.
+ * Caption + optional disclaimer + cross-group table. The caption's count + target round are derived
+ * from the tournament format (WC: 8 → Round of 32; AFCON: 4 → Round of 16).
  */
 export function BestThirdTab({
   rows,
   locale,
   qualifiedCount,
+  targetRoundKey,
   hasTiesRequiringFallback,
 }: BestThirdTabProps) {
   const t = useTranslations('tournament');
@@ -26,7 +30,7 @@ export function BestThirdTab({
     <div className="space-y-4">
       {/* Caption + optional disclaimer */}
       <p className="text-sm text-text-secondary">
-        {t('bestThirdCaption')}
+        {t('bestThirdCaption', { count: qualifiedCount, round: t(targetRoundKey) })}
         {hasTiesRequiringFallback && (
           <span
             className="ml-1.5 inline-flex cursor-help text-text-tertiary"

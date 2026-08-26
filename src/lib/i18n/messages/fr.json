@@ -368,7 +368,7 @@
     "playVideo": "Lire la vid\u00e9o",
     "faqTitle": "Questions fr\u00e9quentes",
     "bestThird": "Meilleurs 3\u00e8mes",
-    "bestThirdCaption": "Les 8 meilleurs troisi\u00e8mes se qualifient pour les 32es de finale.",
+    "bestThirdCaption": "Les {count} meilleurs troisi\u00e8mes se qualifient pour les {round}.",
     "bestThirdGroupCol": "Grp",
     "bestThirdRankCol": "Rang",
     "bestThirdDisclaimer": "Les \u00e9galit\u00e9s au-del\u00e0 des buts marqu\u00e9s utilisent un ordre de repli. La cha\u00eene compl\u00e8te de d\u00e9partages FIFA (fair-play, classement mondial) n\u00e9cessite des donn\u00e9es non encore disponibles.",

@@ -439,6 +439,7 @@ export async function renderCupPage(
               rows={bestThird.rows}
               locale={locale}
               qualifiedCount={bestThirdQualifyingCount(metadata)}
+              targetRoundKey={metadata.knockoutStartsRound === 'r32' ? 'roundOf32' : 'roundOf16'}
               hasTiesRequiringFallback={bestThird.hasTiesRequiringFallback}
             />
           )}
