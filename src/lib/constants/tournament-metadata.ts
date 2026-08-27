@@ -111,6 +111,36 @@ const WC_2026: CupMetadata = {
 };
 
 /**
+ * WC 2018 — FIFA World Cup Russia 2018.
+ * 32 teams, 8 groups, R16 knockout start. France won. `groups` left empty — the group tables are
+ * derived from the standings (render-cup-page). Its own metadata entry keeps the header/format
+ * correct instead of inheriting the current edition's default.
+ */
+const WC_2018: CupMetadata = {
+  competitionId: 1,
+  editionYear: 2018,
+  type: 'cup',
+  format: 'groups_and_knockout',
+  groupsCount: 8,
+  teamsCount: 32,
+  hostCountryCodes: ['RU'],
+  kickoffDate: '2018-06-14',
+  finalDate: '2018-07-15',
+  fifaRankingApplicable: true,
+  homeAwayMeaningful: false,
+  knockoutStartsRound: 'r16',
+  hasThirdPlaceMatch: true,
+  hasBestThirdPlace: false,
+  groups: [],
+  historicalWinners: [],
+  relatedCompetitionIds: [],
+  qualificationZones: [
+    { positions: [1, 2], type: 'qualified', color: 'var(--accent-emerald)' },
+    { positions: [3, 4], type: 'eliminated', color: 'var(--accent-crimson)' },
+  ],
+};
+
+/**
  * WC 2022 — FIFA World Cup Qatar 2022.
  * 32 teams, 8 groups, R16 knockout start. Argentina won.
  */
@@ -311,6 +341,7 @@ const METADATA_REGISTRY: Map<number, TournamentMetadata> = new Map([
 
 /** Season-specific metadata: key = "competitionId:editionYear". */
 const METADATA_BY_SEASON: Map<string, TournamentMetadata> = new Map([
+  ['1:2018', WC_2018],
   ['1:2022', WC_2022],
   ['1:2026', WC_2026],
   ['6:2023', AFCON_2023],

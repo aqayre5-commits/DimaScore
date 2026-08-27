@@ -369,11 +369,12 @@ export async function renderCupPage(
   const bestThird =
     metadata.hasBestThirdPlace && groupStageReady ? computeBestThirdPlaced(standings) : null;
 
-  // Editions like AFCON ship an empty metadata `groups` array; derive groups from the standings so
-  // tables/overview/fixtures grouping render. Editions with populated groups are passed through
-  // unchanged (identity), so there is no behavior change for them.
-  const effectiveGroups =
-    metadata.groups.length > 0 ? metadata.groups : deriveGroupsFromStandings(standings);
+  // Standings are authoritative for which groups exist: derive from them whenever they carry group
+  // data — this covers editions whose metadata.groups is empty (AFCON) OR stale/mismatched (e.g. a
+  // historical edition that fell back to the current edition's metadata, like WC 2018 → WC_2026).
+  // Only pre-draw, when there are no group standings yet, do we use the curated metadata.groups.
+  const derivedGroups = deriveGroupsFromStandings(standings);
+  const effectiveGroups = derivedGroups.length > 0 ? derivedGroups : metadata.groups;
   const metadataWithGroups: CupMetadata =
     effectiveGroups === metadata.groups ? metadata : { ...metadata, groups: effectiveGroups };
   const hasGroups = effectiveGroups.length > 0;
