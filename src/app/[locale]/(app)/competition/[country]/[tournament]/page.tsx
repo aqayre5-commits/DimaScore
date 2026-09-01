@@ -106,7 +106,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   for (const loc of locales) {
     const locEntry = resolveEntry(tournament, loc as Locale) ?? entry;
     const locSlug = locEntry?.slugs[loc as Locale] ?? tournament;
-    languages[loc] = `${baseUrl}/${loc}/competition/${country}/${locSlug}`;
+    const locCountry = locEntry?.countryKey
+      ? getCountrySlug(locEntry.countryKey, loc as Locale)
+      : country;
+    languages[loc] = `${baseUrl}/${loc}/competition/${locCountry}/${locSlug}`;
   }
   languages['x-default'] = languages[defaultLocale];
 

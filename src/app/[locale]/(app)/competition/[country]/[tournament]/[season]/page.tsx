@@ -5,6 +5,7 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { db } from '@/lib/db/client';
 import { getCompetitionById, getCurrentSeasonYear } from '@/lib/db/queries/league';
 import { BASE_URL } from '@/lib/constants/site';
+import { getCountrySlug } from '@/lib/constants/country-slugs';
 import { CompetitionContent, resolveEntry } from '../competition-content';
 
 interface PageProps {
@@ -44,7 +45,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   for (const loc of locales) {
     const locEntry = resolveEntry(tournament, loc as Locale) ?? entry;
     const locSlug = locEntry?.slugs[loc as Locale] ?? tournament;
-    languages[loc] = `${BASE_URL}/${loc}/competition/${country}/${locSlug}/${season}`;
+    const locCountry = locEntry?.countryKey
+      ? getCountrySlug(locEntry.countryKey, loc as Locale)
+      : country;
+    languages[loc] = `${BASE_URL}/${loc}/competition/${locCountry}/${locSlug}/${season}`;
   }
   languages['x-default'] = languages[defaultLocale];
 
