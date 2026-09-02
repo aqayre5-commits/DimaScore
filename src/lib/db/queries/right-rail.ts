@@ -924,6 +924,7 @@ export async function getRightRailTopScorers(
           WHERE f.competition_id IN (${compsList})
             AND e.type = 'Goal'
             AND e.detail IN ('Normal Goal', 'Penalty')
+            AND e.comments IS DISTINCT FROM 'Penalty Shootout'
           GROUP BY f.competition_id, e.player_id, p.name, p.slug, p.photo_url, t.id, t.name, t.logo_url, c.name
         )
         SELECT * FROM pss_top WHERE rn <= ${limit}

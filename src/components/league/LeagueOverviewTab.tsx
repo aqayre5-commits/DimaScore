@@ -11,6 +11,7 @@ import type {
   RoundInfo,
 } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
+import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 import { LeagueFixturesCard } from './LeagueFixturesCard';
 import { LeagueStandingsTab } from './LeagueStandingsTab';
 
@@ -38,7 +39,7 @@ export function LeagueOverviewTab({
 }: LeagueOverviewTabProps) {
   const t = useTranslations('leaguePage');
 
-  const compactStandings = standings.slice(0, 7);
+  const compactStandings = dedupeStandingsByTeam(standings).slice(0, 7);
   const compactScorers = topScorers.slice(0, 5);
   const compactAssists = topAssists.slice(0, 5);
   const compactCards = topCards.slice(0, 5);

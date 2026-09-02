@@ -36,12 +36,12 @@ export function LeaguePlayersTab({
     {
       key: 'yellowCards',
       label: t('yellowCards'),
-      available: topCards.length > 0,
+      available: topCards.some((p) => p.yellowCards > 0),
     },
     {
       key: 'redCards',
       label: t('redCards'),
-      available: topCards.length > 0,
+      available: topCards.some((p) => p.redCards > 0),
     },
   ];
 

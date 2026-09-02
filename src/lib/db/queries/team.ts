@@ -502,6 +502,7 @@ export async function getTeamTournamentScorers(
         LEFT JOIN teams t ON t.id = e.team_id
         WHERE f.competition_id = ${compId} AND f.season_year = ${season} AND e.team_id = ${teamId}
           AND e.type = 'Goal' AND e.detail IN ('Normal Goal', 'Penalty')
+          AND e.comments IS DISTINCT FROM 'Penalty Shootout'
         GROUP BY p.id, t.id
         ORDER BY value DESC, p.slug
         LIMIT ${limit}`,
@@ -517,6 +518,7 @@ export async function getTeamTournamentScorers(
         LEFT JOIN teams t ON t.id = e.team_id
         WHERE f.competition_id = ${compId} AND f.season_year = ${season} AND e.team_id = ${teamId}
           AND e.type = 'Goal' AND e.detail IN ('Normal Goal', 'Penalty')
+          AND e.comments IS DISTINCT FROM 'Penalty Shootout'
           AND e.assist_player_id IS NOT NULL
         GROUP BY p.id, t.id
         ORDER BY value DESC, p.slug

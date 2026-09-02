@@ -477,6 +477,7 @@ export async function getEditionTopScorers(
       AND f.season_year = ${seasonYear}
       AND e.type = 'Goal'
       AND e.detail IN ('Normal Goal', 'Penalty')
+      AND e.comments IS DISTINCT FROM 'Penalty Shootout'
     GROUP BY p.id, t.id
     ORDER BY goals DESC, p.slug
     LIMIT ${limit}
@@ -516,6 +517,7 @@ export async function getEditionTopAssists(
       AND f.season_year = ${seasonYear}
       AND e.type = 'Goal'
       AND e.detail IN ('Normal Goal', 'Penalty')
+      AND e.comments IS DISTINCT FROM 'Penalty Shootout'
       AND e.assist_player_id IS NOT NULL
     GROUP BY p.id, t.id
     ORDER BY assists DESC, p.slug
