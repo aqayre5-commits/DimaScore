@@ -3,6 +3,11 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
 
+// Self-hosted Soketi (Railway) speaks the Pusher protocol over its own host. Allow that host in the
+// CSP connect-src, driven by the same env var the client uses; degrades safely when unset.
+const realtimeHost = process.env.NEXT_PUBLIC_PUSHER_HOST;
+const realtimeSrc = realtimeHost ? ` https://${realtimeHost} wss://${realtimeHost}` : '';
+
 const securityHeaders = [
   {
     key: 'Content-Security-Policy',
@@ -12,7 +17,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' https://media.api-sports.io https://media-4.api-sports.io https://i.ytimg.com https://img.youtube.com https://res.cloudinary.com https://www.facebook.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com data:",
       'frame-src https://www.youtube.com https://www.googletagmanager.com',
-      "connect-src 'self' https://*.pusher.com wss://*.pusher.com https://connect.facebook.net https://www.facebook.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com",
+      `connect-src 'self'${realtimeSrc} https://connect.facebook.net https://www.facebook.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com`,
       "font-src 'self' https://fonts.gstatic.com",
     ].join('; '),
   },
