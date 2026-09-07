@@ -6,6 +6,7 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { ALL_ENTRIES, buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
 import { BASE_URL } from '@/lib/constants/site';
 import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
+import { botolaClassementPath } from '@/lib/seo/botola-classement';
 
 const baseUrl = BASE_URL;
 
@@ -110,6 +111,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry((l) => botolaSeasonOpenerPath(l), {
       priority: 0.9,
       changeFrequency: 'daily',
+      lastModified: now,
+    }),
+  );
+
+  entries.push(
+    entry((l) => botolaClassementPath(l), {
+      priority: 0.9,
+      changeFrequency: 'hourly',
       lastModified: now,
     }),
   );

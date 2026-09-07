@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
+import { translateStandingZoneLabel } from '@/lib/standings/zone-labels';
 import { Flag } from '@/components/shared/Flag';
 import { FormPills } from '@/components/shared/FormPills';
 
@@ -33,7 +34,7 @@ interface ZoneLegendItem {
   label: string;
 }
 
-function buildLegend(standings: StandingRow[]): ZoneLegendItem[] {
+function buildLegend(standings: StandingRow[], locale: Locale): ZoneLegendItem[] {
   const seen = new Set<string>();
   const items: ZoneLegendItem[] = [];
 
@@ -42,7 +43,10 @@ function buildLegend(standings: StandingRow[]): ZoneLegendItem[] {
     const color = getZoneColor(row.description);
     if (!color || seen.has(row.description)) continue;
     seen.add(row.description);
-    items.push({ color, label: row.description });
+    items.push({
+      color,
+      label: translateStandingZoneLabel(row.description, locale) ?? row.description,
+    });
   }
 
   return items;
@@ -53,7 +57,7 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
 
   // One row per team — a single-table league must not double a team that has variant group labels.
   const rows = dedupeStandingsByTeam(standings);
-  const legend = buildLegend(rows);
+  const legend = buildLegend(rows, locale);
 
   return (
     <div className="space-y-3">

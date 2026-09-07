@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, type ReactNode, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { matchTabByHash } from '@/lib/ui/tab-hash';
 import {
   Home,
   CalendarDays,
@@ -28,6 +29,7 @@ const ICON_MAP: Record<string, typeof Home> = {
 interface TabDefinition {
   key: string;
   hash: string;
+  hashAliases?: string[];
   labelKey: string;
   icon?: string;
   content: ReactNode;
@@ -52,13 +54,13 @@ export function CenterTabs({ tabs }: CenterTabsProps) {
   const [activeKey, setActiveKey] = useState<string>(() => {
     if (typeof window === 'undefined') return tabs[0]?.key ?? '';
     const hash = window.location.hash.slice(1);
-    return tabs.find((tab) => tab.hash === hash)?.key ?? tabs[0]?.key ?? '';
+    return matchTabByHash(tabs, hash)?.key ?? tabs[0]?.key ?? '';
   });
 
   useEffect(() => {
     function onHashChange() {
       const hash = window.location.hash.slice(1);
-      const match = tabs.find((tab) => tab.hash === hash);
+      const match = matchTabByHash(tabs, hash);
       if (match) setActiveKey(match.key);
     }
     window.addEventListener('hashchange', onHashChange);
