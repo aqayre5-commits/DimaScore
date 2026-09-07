@@ -11,6 +11,12 @@ const LEAGUE_INTROS: Record<number, Record<Locale, string>> = {
     en: "The Botola Pro is Morocco's top professional football league, featuring 16 clubs including Wydad AC, Raja CA, and AS FAR. Follow live standings, matches, and statistics.",
     ar: 'البطولة الاحترافية هي بطولة كرة القدم للمحترفين في المغرب، تضم 16 ناديًا من بينها الوداد الرياضي والرجاء الرياضي والجيش الملكي. تابعوا مباشرة الترتيب والمباريات والإحصائيات.',
   },
+  // Botola 2
+  201: {
+    fr: 'La Botola 2 est le deuxième niveau professionnel du football marocain. Suivez le classement, les matchs et les statistiques de la saison.',
+    en: "Botola 2 is Morocco's second-tier professional football league. Follow live standings, matches, and statistics.",
+    ar: 'القسم الثاني هو الدرجة الثانية الاحترافية في كرة القدم المغربية. تابعوا الترتيب والمباريات والإحصائيات.',
+  },
   // Premier League
   39: {
     fr: "La Premier League est le championnat d'Angleterre, considéré comme le plus compétitif au monde. Suivez le classement, les matchs et les statistiques.",

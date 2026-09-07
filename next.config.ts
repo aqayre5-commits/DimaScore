@@ -107,6 +107,22 @@ const nextConfig: NextConfig = {
         destination: '/ar/classement-botola-pro',
         permanent: true,
       },
+      // Botola 2 classement-primary — wrong-locale slugs
+      {
+        source: '/en/classement-botola-2',
+        destination: '/en/botola-2-standings',
+        permanent: true,
+      },
+      {
+        source: '/fr/botola-2-standings',
+        destination: '/fr/classement-botola-2',
+        permanent: true,
+      },
+      {
+        source: '/ar/botola-2-standings',
+        destination: '/ar/classement-botola-2',
+        permanent: true,
+      },
       // BUG-016: /competition/uefa/ucl → canonical champions-league slug
       {
         source: '/:locale/competition/:country/ucl',

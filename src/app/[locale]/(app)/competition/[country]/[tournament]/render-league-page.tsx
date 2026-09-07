@@ -37,6 +37,11 @@ import { LeagueFixturesTab } from '@/components/league/LeagueFixturesTab';
 import { LeaguePlayersTab } from '@/components/league/LeaguePlayersTab';
 import { LeagueTeamsTab } from '@/components/league/LeagueTeamsTab';
 import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-content';
+import {
+  BOTOLA_2_COMPETITION_ID,
+  botola2AboutTeamsValue,
+  botola2HeaderTeamsCount,
+} from '@/lib/seo/botola-2-classement';
 
 async function getCachedLeagueData(competitionId: number, seasonYear: number, locale: Locale) {
   'use cache';
@@ -269,7 +274,14 @@ export async function renderLeaguePage(
             introText={introText}
             availableSeasons={availableSeasons}
             currentSeasonYear={currentSeasonYear}
-            teamsCount={competitionTeams.length}
+            teamsCount={
+              competition.id === BOTOLA_2_COMPETITION_ID
+                ? botola2HeaderTeamsCount(
+                    standings.map((row) => row.teamId),
+                    botola2AboutTeamsValue(),
+                  )
+                : competitionTeams.length
+            }
             matchesCount={fixtures.length}
             totalRounds={rounds.length}
             currentRound={currentRound}
