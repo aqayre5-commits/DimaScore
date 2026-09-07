@@ -4,7 +4,12 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
-import { getMatchState, isLive as isLiveStatus } from '@/lib/match-status';
+import {
+  getMatchListBucket,
+  getMatchState,
+  getMatchStatusLabelKey,
+  isLive as isLiveStatus,
+} from '@/lib/match-status';
 import { formatMatchDate, SITE_TZ } from '@/lib/utils/date';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
@@ -36,9 +41,7 @@ export function TeamMatchesList({ fixtures, locale }: TeamMatchesListProps) {
 
   const buckets: Record<State, FixtureWithCompetition[]> = { upcoming: [], live: [], finished: [] };
   for (const f of fixtures) {
-    const s = getMatchState(f.statusCode, f.kickoffAt);
-    // Postponed/suspended/cancelled/abandoned have no result — group with pending/upcoming.
-    buckets[s === 'interrupted' ? 'upcoming' : s].push(f);
+    buckets[getMatchListBucket(f.statusCode, f.kickoffAt)].push(f);
   }
   buckets.upcoming.sort((a, b) => a.kickoffAt.getTime() - b.kickoffAt.getTime());
   buckets.finished.sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
@@ -138,9 +141,11 @@ export function TeamMatchesList({ fixtures, locale }: TeamMatchesListProps) {
 }
 
 function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; locale: Locale }) {
+  const t = useTranslations('matchDetail');
   const state = getMatchState(f.statusCode, f.kickoffAt);
   const isLive = state === 'live';
   const isDone = state === 'finished';
+  const interruptedKey = getMatchStatusLabelKey(f.statusCode);
   const showScore = (isLive || isDone) && f.homeScore != null && f.awayScore != null;
   const showPens = f.statusCode === 'PEN' && f.homeScorePen != null && f.awayScorePen != null;
   const homeWon = isDone && showScore && (f.homeScore ?? 0) > (f.awayScore ?? 0);
@@ -241,6 +246,10 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
             {isLive ? (
               <span className="text-sm font-bold tabular-nums text-score-live">
                 {isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE'}
+              </span>
+            ) : interruptedKey ? (
+              <span className="text-[10px] font-medium leading-tight text-text-tertiary">
+                {t(interruptedKey)}
               </span>
             ) : isDone ? (
               <span className="text-xs font-medium text-text-tertiary">
