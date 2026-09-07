@@ -70,6 +70,17 @@ const nextConfig: NextConfig = {
         destination: '/fr/lions-abroad',
         permanent: true,
       },
+      // BUG-016: /competition/uefa/ucl → canonical champions-league slug
+      {
+        source: '/:locale/competition/:country/ucl',
+        destination: '/:locale/competition/:country/champions-league',
+        permanent: true,
+      },
+      {
+        source: '/:locale/competition/:country/ucl/:season',
+        destination: '/:locale/competition/:country/champions-league/:season',
+        permanent: true,
+      },
       // dimascore.ma is the primary domain — served directly (no redirect).
       // www.dimascore.ma → apex (canonical, no www)
       {

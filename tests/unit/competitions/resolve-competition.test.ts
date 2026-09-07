@@ -51,3 +51,16 @@ describe('resolveCompetitionEntry — Botola aliases', () => {
     expect(resolveCompetitionId(BOTOLA_AR_COUNTRY)).toBeUndefined();
   });
 });
+
+describe('resolveCompetitionEntry — UCL aliases (BUG-016)', () => {
+  it('maps ucl to Champions League (id 2)', () => {
+    expect(resolveCompetitionId('ucl')).toBe(2);
+    expect(resolveCompetitionId('UCL')).toBe(2);
+    expect(resolveCompetitionEntry('ucl')?.competitionId).toBe(2);
+  });
+
+  it('still resolves the canonical champions-league slug', () => {
+    expect(resolveCompetitionId('champions-league')).toBe(2);
+    expect(resolveCompetitionId('ligue-des-champions')).toBe(2);
+  });
+});

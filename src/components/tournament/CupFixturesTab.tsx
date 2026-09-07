@@ -4,13 +4,18 @@ import { useState, useMemo } from 'react';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { useTranslations } from 'next-intl';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ListFilter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SITE_TZ } from '@/lib/utils/date';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchListBucket, getMatchState, getMatchStatusLabelKey } from '@/lib/match-status';
 import { Flag } from '@/components/shared/Flag';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import {
+  listFixtureRounds,
+  matchesSelectedRound,
+  selectDefaultRound,
+} from '@/lib/competitions/select-default-round';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
@@ -63,7 +68,6 @@ interface CupFixturesTabProps {
 }
 
 const INITIAL_VISIBLE = 10;
-const COMPACT_VISIBLE = 6;
 
 /**
  * Generic cup fixtures tab with status and round-type filters.
@@ -98,8 +102,21 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
     });
   }, [fixtures, livePatches]);
 
+  const rounds = useMemo(() => listFixtureRounds(patchedFixtures), [patchedFixtures]);
+  const defaultRound = useMemo(() => selectDefaultRound(patchedFixtures), [patchedFixtures]);
+  const [userRoundKey, setUserRoundKey] = useState<string | null>(null);
+  const selectedRound = useMemo(() => {
+    if (!compact || rounds.length === 0) return null;
+    if (userRoundKey) return rounds.find((r) => r.key === userRoundKey) ?? defaultRound;
+    return defaultRound;
+  }, [compact, rounds, userRoundKey, defaultRound]);
+
   const filtered = useMemo(() => {
-    let result = [...patchedFixtures].sort((a, b) => b.kickoffAt.getTime() - a.kickoffAt.getTime());
+    let result = [...patchedFixtures];
+
+    if (selectedRound) {
+      result = result.filter((f) => matchesSelectedRound(f, selectedRound));
+    }
 
     if (statusFilter !== 'all') {
       result = result.filter((f) => {
@@ -111,11 +128,19 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
       });
     }
 
-    return result;
-  }, [patchedFixtures, statusFilter]);
+    const newestFirst = statusFilter === 'results' || (statusFilter === 'all' && !compact);
+    result.sort((a, b) =>
+      newestFirst
+        ? b.kickoffAt.getTime() - a.kickoffAt.getTime()
+        : a.kickoffAt.getTime() - b.kickoffAt.getTime(),
+    );
 
-  const limit = compact ? COMPACT_VISIBLE : INITIAL_VISIBLE;
-  const visible = expanded ? filtered : filtered.slice(0, limit);
+    return result;
+  }, [patchedFixtures, statusFilter, selectedRound, compact]);
+
+  // Compact Overview shows the selected matchday in full (like a league picker).
+  const limit = compact ? filtered.length : INITIAL_VISIBLE;
+  const visible = compact || expanded ? filtered : filtered.slice(0, limit);
   const hasMore = !compact && filtered.length > limit;
 
   const hasLive = patchedFixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
@@ -141,7 +166,7 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border-subtle px-4 py-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle px-4 py-2.5">
         <div className="flex items-center gap-1.5">
           {statusPills.map((pill) => (
             <button
@@ -159,6 +184,25 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
             </button>
           ))}
         </div>
+        {compact && rounds.length > 1 && selectedRound && (
+          <div className="relative">
+            <ListFilter className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-tertiary" />
+            <select
+              value={selectedRound.key}
+              onChange={(e) => setUserRoundKey(e.target.value)}
+              className="appearance-none rounded-lg border border-border-subtle bg-bg-surface py-1.5 pl-8 pr-6 text-xs font-medium text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+            >
+              {rounds.map((r) => (
+                <option key={r.key} value={r.key}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-tertiary">
+              ▼
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Match rows grouped by date */}
