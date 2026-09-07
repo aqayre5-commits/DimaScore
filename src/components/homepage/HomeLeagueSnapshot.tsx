@@ -126,6 +126,7 @@ export function HomeLeagueSnapshot({ leagues, locale, labels }: Props) {
                           <Flag
                             countryCode={row.team?.countryCode}
                             logoUrl={row.team?.logoUrl}
+                            teamId={row.team?.id}
                             isNational={row.team?.isNational}
                             size={16}
                             label={row.team?.code}

@@ -130,7 +130,8 @@
     "resources": "Ressources",
     "about": "À propos",
     "aboutUs": "Qui sommes-nous",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "lionsAbroad": "Lions à l'étranger"
   },
   "placeholder": {
     "pageComingSoon": "Cette page sera disponible prochainement",
@@ -749,5 +750,29 @@
     "micro": "Micro",
     "sampleText": "DimaScore — Le football marocain",
     "sampleNumber": "0123456789"
+  },
+  "lionsAbroadPage": {
+    "title": "Lions à l'étranger",
+    "intro": "Joueurs marocains dans des clubs hors du Maroc — matchs ce soir et ce week-end, en direct, et buts ou passes des 7 derniers jours. Couverture éditoriale uniquement ; aucune cote.",
+    "liveStrip": "En direct",
+    "tonight": "Ce soir",
+    "weekend": "Ce week-end",
+    "upcoming": "À venir",
+    "last7d": "7 derniers jours — buts et passes",
+    "emptyFixtures": "Aucun match à venir avec un Lion à l'étranger pour le moment.",
+    "emptyPerformances": "Aucun but ni passe de Lions à l'étranger sur 7 jours.",
+    "vs": "contre",
+    "legendTitle": "Légende des badges",
+    "legendNote": "Les badges viennent des matchs terminés. Les coups d'envoi s'affichent dans votre fuseau horaire.",
+    "linkMaroc": "Édition Maroc",
+    "linkBotola": "Botola Pro",
+    "linkAtlasLions": "Lions de l'Atlas",
+    "faqTitle": "FAQ",
+    "faq1q": "Qui compte parmi les Lions à l'étranger ?",
+    "faq1a": "Les joueurs de nationalité marocaine dans un club non marocain. Les matchs de l'équipe nationale et la Botola ont leurs propres pages.",
+    "faq2q": "Pourquoi un joueur manque-t-il ?",
+    "faq2a": "Le hub utilise le club actuel et les statistiques des matchs terminés déjà ingérés. Un effectif obsolète peut retarder l'apparition d'un joueur.",
+    "faq3q": "Les horaires sont-ils à l'heure du Maroc ?",
+    "faq3a": "Non. Les coups d'envoi s'affichent dans le fuseau de votre appareil après le chargement de la page."
   }
 }

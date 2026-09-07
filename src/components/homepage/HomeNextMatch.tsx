@@ -121,6 +121,7 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
             <Flag
               countryCode={match.homeTeam?.countryCode}
               logoUrl={match.homeTeam?.logoUrl}
+              teamId={match.homeTeam?.id}
               isNational={match.homeTeam?.isNational}
               size={36}
               label={homeName}
@@ -146,6 +147,7 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
             <Flag
               countryCode={match.awayTeam?.countryCode}
               logoUrl={match.awayTeam?.logoUrl}
+              teamId={match.awayTeam?.id}
               isNational={match.awayTeam?.isNational}
               size={36}
               label={awayName}

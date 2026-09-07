@@ -7,9 +7,8 @@ export const INTL_LOCALE: Record<Locale, string> = {
 };
 
 /**
- * The site's editorial timezone. Server output formats kickoff times in this zone
- * (deterministic SSR, correct for the Moroccan audience); client surfaces re-format
- * in the viewer's local zone after mount via <LocalTime>.
+ * Editorial / day-bucketing timezone (group fixtures by Casablanca calendar day).
+ * NEVER pass this to kickoff/match clock UI — those use viewer-local via <LocalTime>.
  */
 export const SITE_TZ = 'Africa/Casablanca';
 

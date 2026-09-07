@@ -49,6 +49,7 @@ const COMPETITION_TIERS: { priority: number; ids: number[] }[] = [
 const FEATURED_TEAM_SLUG = 'morocco-31';
 
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: ChangeFreq }[] = [
+  { path: 'lions-abroad', priority: 0.85, changeFrequency: 'hourly' },
   { path: 'edition/maroc', priority: 0.8, changeFrequency: 'daily' },
   { path: 'about', priority: 0.5, changeFrequency: 'monthly' },
   { path: 'faq', priority: 0.5, changeFrequency: 'monthly' },

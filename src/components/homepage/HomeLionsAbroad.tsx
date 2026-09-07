@@ -26,7 +26,15 @@ export function HomeLionsAbroad({ performances, locale, labels }: Props) {
         <h2 className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
           {labels.lionsAbroad}
         </h2>
-        <span className="text-[10px] text-text-tertiary">{labels.last48h}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-text-tertiary">{labels.last48h}</span>
+          <Link
+            href={`/${locale}/lions-abroad`}
+            className="text-[10px] font-medium text-accent-azure hover:underline"
+          >
+            {labels.viewAll}
+          </Link>
+        </div>
       </div>
 
       {/* Players */}

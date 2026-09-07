@@ -1,11 +1,14 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { teamCrestUrl } from '@/lib/utils/crest';
 
 export interface FlagProps {
   /** ISO-3166 alpha-2 code (e.g. 'MA') — renders the country flag for national teams / nationalities. */
   countryCode?: string | null;
-  /** Club crest URL (api-sports team logo). Used only for non-national teams. */
+  /** Club crest URL. Used only for non-national teams. Prefer `teamId` to avoid inlining URLs. */
   logoUrl?: string | null;
+  /** Reconstructs the api-sports crest when `logoUrl` is omitted. */
+  teamId?: number | null;
   /** National team / country flag. When true (or when only a countryCode is given), the 4:3 flag wins. */
   isNational?: boolean | null;
   /** Box height in px. National flags render 4:3 (width = round(size*4/3)); crests render square. */
@@ -21,16 +24,25 @@ export interface FlagProps {
  * crest; otherwise a consistent initials box. Competition/league logos are NOT flags — use
  * `CompetitionLogo` for those.
  */
-export function Flag({ countryCode, logoUrl, isNational, size = 16, label, className }: FlagProps) {
+export function Flag({
+  countryCode,
+  logoUrl,
+  teamId,
+  isNational,
+  size = 16,
+  label,
+  className,
+}: FlagProps) {
   const cc = countryCode?.trim().toLowerCase();
+  const crest = logoUrl ?? (teamId != null ? teamCrestUrl(teamId) : null);
   // National teams and bare country codes → the 4:3 country flag (uniform, ignores any crest).
-  const asFlag = !!cc && (Boolean(isNational) || !logoUrl);
+  const asFlag = !!cc && (Boolean(isNational) || !crest);
   // Flags are width-driven at 4:3 (api-sports SVGs are 640×480): width = size so a flag occupies the
   // same width as a square crest — names stay aligned and flags never read "too wide". Height is the
   // shorter 4:3 side; crests stay square. `size` is the badge's width footprint.
   const width = size;
   const height = asFlag ? Math.round((size * 3) / 4) : size;
-  const src = asFlag ? `https://media.api-sports.io/flags/${cc}.svg` : (logoUrl ?? null);
+  const src = asFlag ? `https://media.api-sports.io/flags/${cc}.svg` : crest;
 
   if (src) {
     return (

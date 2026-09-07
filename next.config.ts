@@ -39,6 +39,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   cacheLife: {
     match: { revalidate: 30, expire: 3600 },
+    // Shared league-season lookup — short so AR/EN/FR static routes cannot pin a finished year.
+    season: { stale: 0, revalidate: 60, expire: 300 },
   },
   experimental: {
     viewTransition: true,
@@ -61,6 +63,12 @@ const nextConfig: NextConfig = {
         has: [{ type: 'query', key: 'season', value: '(?<season>\\d{4})' }],
         destination: '/:locale/competition/:country/:tournament/:season',
         permanent: false,
+      },
+      // FR SEO alias → canonical Lions Abroad hub
+      {
+        source: '/fr/joueurs-marocains-a-letranger',
+        destination: '/fr/lions-abroad',
+        permanent: true,
       },
       // dimascore.ma is the primary domain — served directly (no redirect).
       // www.dimascore.ma → apex (canonical, no www)

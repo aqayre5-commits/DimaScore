@@ -130,7 +130,8 @@
     "resources": "Resources",
     "about": "About",
     "aboutUs": "About us",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "lionsAbroad": "Lions Abroad"
   },
   "placeholder": {
     "pageComingSoon": "This page is coming soon",
@@ -749,5 +750,29 @@
     "micro": "Micro",
     "sampleText": "DimaScore — Moroccan Football",
     "sampleNumber": "0123456789"
+  },
+  "lionsAbroadPage": {
+    "title": "Lions Abroad",
+    "intro": "Moroccan players at clubs outside Morocco — tonight and weekend fixtures, live matches, and goals or assists from the last 7 days. Editorial coverage only; no betting odds.",
+    "liveStrip": "Live",
+    "tonight": "Tonight",
+    "weekend": "This weekend",
+    "upcoming": "Upcoming",
+    "last7d": "Last 7 days — goals & assists",
+    "emptyFixtures": "No upcoming fixtures with Moroccan players abroad right now.",
+    "emptyPerformances": "No goals or assists from Lions Abroad in the last 7 days.",
+    "vs": "vs",
+    "legendTitle": "Badge legend",
+    "legendNote": "Badges are match events from finished games. Kickoff times use your local timezone.",
+    "linkMaroc": "Morocco edition",
+    "linkBotola": "Botola Pro",
+    "linkAtlasLions": "Atlas Lions",
+    "faqTitle": "FAQ",
+    "faq1q": "Who counts as Lions Abroad?",
+    "faq1a": "Players with Moroccan nationality at a non-Moroccan club. Atlas Lions national-team matches and Botola clubs are covered on their own pages.",
+    "faq2q": "Why is a player missing?",
+    "faq2a": "The hub uses current club assignments and finished-match stats we have ingested. If a squad list is stale, the player may not appear until the next sync.",
+    "faq3q": "Are kickoff times in Morocco time?",
+    "faq3a": "No. Kickoffs are shown in your device timezone after the page loads."
   }
 }

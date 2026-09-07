@@ -2,12 +2,7 @@ import { db } from '@/lib/db/client';
 import { sql } from 'drizzle-orm';
 import { cacheLife } from 'next/cache';
 import { getStandings, getCurrentSeasons, type StandingRow } from '@/lib/db/queries';
-import {
-  getNextFeaturedMatches,
-  getLiveGroupStandings,
-  getTopMatchesThisWeek,
-  getMoroccanPlayerPerformances,
-} from '@/lib/db/queries/right-rail';
+import { getNextFeaturedMatches } from '@/lib/db/queries/right-rail';
 import { getResolvedTopScorers, type TopPlayerRow } from '@/lib/db/queries/league';
 import { getFifaRankingTop, type ResolvedFifaRankingRow } from '@/lib/constants/fifa-ranking';
 import { timedQuery } from '@/lib/db/timing';
@@ -137,49 +132,32 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
 
 export interface HomeRailData {
   nextFeaturedCandidates: Awaited<ReturnType<typeof getNextFeaturedMatches>>;
-  liveGroupStandings: Awaited<ReturnType<typeof getLiveGroupStandings>>;
-  topMatches: Awaited<ReturnType<typeof getTopMatchesThisWeek>>;
-  moroccanPerformances: Awaited<ReturnType<typeof getMoroccanPlayerPerformances>>;
+  liveGroupStandings: [];
+  topMatches: [];
+  moroccanPerformances: [];
   leagueSnapshots: LeagueSnapshot[];
   topPerformances: TopPerformance[];
   fifaRanking: ResolvedFifaRankingRow[];
 }
 
-/**
- * Aggregates every homepage-rail widget's data in one cached call, so the rail
- * can be rendered once and placed responsively (desktop column / mobile flow)
- * without double-querying. Cached for minutes, matching getCachedHomepageData.
- */
-export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
-  'use cache';
-  cacheLife('minutes');
+const PRIMARY_RAIL_COMP_IDS = new Set([200]);
 
+async function buildLeagueSnapshots(
+  locale: Locale,
+  leagues: typeof HOMEPAGE_LEAGUES,
+): Promise<LeagueSnapshot[]> {
   const currentSeasons = await timedQuery('getCurrentSeasons', () => getCurrentSeasons(db));
   const seasonMap = new Map(currentSeasons.map((s) => [s.competitionId, s.year]));
-
-  const [
-    nextFeaturedCandidates,
-    liveGroupStandings,
-    topMatches,
-    moroccanPerformances,
-    topPerformances,
-    standingsResults,
-    scorersResults,
-  ] = await Promise.all([
-    timedQuery('getNextFeaturedMatches', () => getNextFeaturedMatches(db)),
-    timedQuery('getLiveGroupStandings', () => getLiveGroupStandings(db)),
-    timedQuery('getTopMatchesThisWeek', () => getTopMatchesThisWeek(db)),
-    timedQuery('getMoroccanPlayerPerformances', () => getMoroccanPlayerPerformances(db)),
-    timedQuery('getTopPerformances', () => getTopPerformances(locale, 10)),
+  const [standingsResults, scorersResults] = await Promise.all([
     Promise.all(
-      HOMEPAGE_LEAGUES.map((l) => {
+      leagues.map((l) => {
         const year = seasonMap.get(l.compId);
         if (!year) return Promise.resolve([] as StandingRow[]);
         return timedQuery(`getStandings(${l.compId})`, () => getStandings(db, l.compId, year));
       }),
     ),
     Promise.all(
-      HOMEPAGE_LEAGUES.map((l) => {
+      leagues.map((l) => {
         const year = seasonMap.get(l.compId);
         if (!year) return Promise.resolve([] as TopPlayerRow[]);
         return timedQuery(`getResolvedTopScorers(${l.compId})`, () =>
@@ -188,26 +166,78 @@ export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
       }),
     ),
   ]);
+  return leagues
+    .map((l, i) => ({
+      compId: l.compId,
+      compName: l.label[locale] ?? l.label['en'],
+      countryKey: l.countryKey,
+      slug: l.slugs,
+      rows: standingsResults[i],
+      scorers: scorersResults[i],
+    }))
+    .filter((l) => l.rows.length > 0 || l.scorers.length > 0);
+}
 
-  const leagueSnapshots: LeagueSnapshot[] = HOMEPAGE_LEAGUES.map((l, i) => ({
-    compId: l.compId,
-    compName: l.label[locale] ?? l.label['en'],
-    countryKey: l.countryKey,
-    slug: l.slugs,
-    rows: standingsResults[i],
-    scorers: scorersResults[i],
-  })).filter((l) => l.rows.length > 0 || l.scorers.length > 0);
+/**
+ * Above-the-fold rail: next match + Botola snapshot only.
+ * Secondary European tables / FIFA / performances stream separately.
+ */
+export async function getHomeRailPrimary(locale: Locale): Promise<HomeRailData> {
+  'use cache';
+  cacheLife('minutes');
 
-  // Published FIFA ranking — a versioned constant (no DB), resolved for locale.
-  const fifaRanking = getFifaRankingTop(locale, { limit: 10 });
+  const primaryLeagues = HOMEPAGE_LEAGUES.filter((l) => PRIMARY_RAIL_COMP_IDS.has(l.compId));
+  const [nextFeaturedCandidates, leagueSnapshots] = await Promise.all([
+    timedQuery('getNextFeaturedMatches', () => getNextFeaturedMatches(db)),
+    buildLeagueSnapshots(locale, primaryLeagues),
+  ]);
 
   return {
     nextFeaturedCandidates,
-    liveGroupStandings,
-    topMatches,
-    moroccanPerformances,
+    liveGroupStandings: [],
+    topMatches: [],
+    moroccanPerformances: [],
+    leagueSnapshots,
+    topPerformances: [],
+    fifaRanking: [],
+  };
+}
+
+/** Below-the-fold rail: other league tables, FIFA ranking, top performances. */
+export async function getHomeRailSecondary(locale: Locale): Promise<HomeRailData> {
+  'use cache';
+  cacheLife('minutes');
+
+  const secondaryLeagues = HOMEPAGE_LEAGUES.filter((l) => !PRIMARY_RAIL_COMP_IDS.has(l.compId));
+  const [leagueSnapshots, topPerformances] = await Promise.all([
+    buildLeagueSnapshots(locale, secondaryLeagues),
+    timedQuery('getTopPerformances', () => getTopPerformances(locale, 10)),
+  ]);
+
+  return {
+    nextFeaturedCandidates: [],
+    liveGroupStandings: [],
+    topMatches: [],
+    moroccanPerformances: [],
     leagueSnapshots,
     topPerformances,
-    fifaRanking,
+    fifaRanking: getFifaRankingTop(locale, { limit: 10 }),
+  };
+}
+
+/** @deprecated Prefer getHomeRailPrimary + getHomeRailSecondary */
+export async function getHomeRailData(locale: Locale): Promise<HomeRailData> {
+  const [primary, secondary] = await Promise.all([
+    getHomeRailPrimary(locale),
+    getHomeRailSecondary(locale),
+  ]);
+  return {
+    nextFeaturedCandidates: primary.nextFeaturedCandidates,
+    liveGroupStandings: [],
+    topMatches: [],
+    moroccanPerformances: [],
+    leagueSnapshots: [...primary.leagueSnapshots, ...secondary.leagueSnapshots],
+    topPerformances: secondary.topPerformances,
+    fifaRanking: secondary.fifaRanking,
   };
 }
