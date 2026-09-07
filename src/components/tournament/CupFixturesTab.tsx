@@ -12,14 +12,17 @@ import { getMatchListBucket, getMatchState, getMatchStatusLabelKey } from '@/lib
 import { Flag } from '@/components/shared/Flag';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import {
+  asKickoffDate,
+  filterCupFixtures,
   listFixtureRounds,
-  matchesSelectedRound,
+  resolveSelectedRound,
   selectDefaultRound,
+  type CupStatusFilter,
 } from '@/lib/competitions/select-default-round';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 
-type StatusFilter = 'all' | 'live' | 'upcoming' | 'results';
+type StatusFilter = CupStatusFilter;
 
 const DATE_LOCALE_MAP: Record<string, string> = {
   fr: 'fr-FR',
@@ -35,12 +38,13 @@ function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
   for (const f of fixtures) {
     // Day key + label pinned to the site timezone — deterministic across SSR/hydration
     // and consistent with each other at midnight boundaries.
+    const kickoff = asKickoffDate(f.kickoffAt);
     const dateKey = new Intl.DateTimeFormat('en-CA', {
       timeZone: SITE_TZ,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-    }).format(f.kickoffAt);
+    }).format(kickoff);
     const idx = seen.get(dateKey);
     if (idx != null) {
       groups[idx].fixtures.push(f);
@@ -51,7 +55,7 @@ function groupByDate(fixtures: FixtureWithTeams[], locale: Locale) {
         month: 'long',
         year: 'numeric',
         timeZone: SITE_TZ,
-      }).format(f.kickoffAt);
+      }).format(kickoff);
       seen.set(dateKey, groups.length);
       groups.push({ key: dateKey, label, fixtures: [f] });
     }
@@ -105,47 +109,30 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
   const rounds = useMemo(() => listFixtureRounds(patchedFixtures), [patchedFixtures]);
   const defaultRound = useMemo(() => selectDefaultRound(patchedFixtures), [patchedFixtures]);
   const [userRoundKey, setUserRoundKey] = useState<string | null>(null);
-  const selectedRound = useMemo(() => {
-    if (!compact || rounds.length === 0) return null;
-    if (userRoundKey) return rounds.find((r) => r.key === userRoundKey) ?? defaultRound;
-    return defaultRound;
-  }, [compact, rounds, userRoundKey, defaultRound]);
+  const selectedRound = useMemo(
+    () => resolveSelectedRound(rounds, defaultRound, userRoundKey),
+    [rounds, defaultRound, userRoundKey],
+  );
 
-  const filtered = useMemo(() => {
-    let result = [...patchedFixtures];
-
-    if (selectedRound) {
-      result = result.filter((f) => matchesSelectedRound(f, selectedRound));
-    }
-
-    if (statusFilter !== 'all') {
-      result = result.filter((f) => {
-        const bucket = getMatchListBucket(f.statusCode, f.kickoffAt);
-        if (statusFilter === 'live') return bucket === 'live';
-        if (statusFilter === 'upcoming') return bucket === 'upcoming';
-        if (statusFilter === 'results') return bucket === 'finished';
-        return true;
-      });
-    }
-
-    const newestFirst = statusFilter === 'results' || (statusFilter === 'all' && !compact);
-    result.sort((a, b) =>
-      newestFirst
-        ? b.kickoffAt.getTime() - a.kickoffAt.getTime()
-        : a.kickoffAt.getTime() - b.kickoffAt.getTime(),
-    );
-
-    return result;
-  }, [patchedFixtures, statusFilter, selectedRound, compact]);
+  const filtered = useMemo(
+    () =>
+      filterCupFixtures(patchedFixtures, {
+        selectedRound,
+        statusFilter,
+      }),
+    [patchedFixtures, statusFilter, selectedRound],
+  );
 
   // Compact Overview shows the selected matchday in full (like a league picker).
   const limit = compact ? filtered.length : INITIAL_VISIBLE;
   const visible = compact || expanded ? filtered : filtered.slice(0, limit);
   const hasMore = !compact && filtered.length > limit;
 
-  const hasLive = patchedFixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
+  const hasLive = patchedFixtures.some(
+    (f) => getMatchState(f.statusCode, asKickoffDate(f.kickoffAt)) === 'live',
+  );
   const hasFinished = patchedFixtures.some(
-    (f) => getMatchListBucket(f.statusCode, f.kickoffAt) === 'finished',
+    (f) => getMatchListBucket(f.statusCode, asKickoffDate(f.kickoffAt)) === 'finished',
   );
 
   const statusPills: { key: StatusFilter; label: string; dot?: boolean }[] = [
@@ -184,7 +171,7 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
             </button>
           ))}
         </div>
-        {compact && rounds.length > 1 && selectedRound && (
+        {rounds.length > 1 && selectedRound && (
           <div className="relative">
             <ListFilter className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-tertiary" />
             <select
@@ -246,7 +233,8 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
 function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Locale }) {
   const { homeTeam, awayTeam, kickoffAt, statusCode, homeScore, awayScore } = fixture;
   const { homeScorePen, awayScorePen } = fixture;
-  const state = getMatchState(statusCode, kickoffAt);
+  const kickoff = asKickoffDate(kickoffAt);
+  const state = getMatchState(statusCode, kickoff);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
   const interruptedKey = getMatchStatusLabelKey(statusCode);
@@ -256,7 +244,7 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
   // Shootout rows read "FT" with "PEN x-y" stacked beneath — the official 120' result stays
   // the headline, the shootout is the annotation.
   const finishedLabel = statusCode === 'AET' ? 'AET' : 'FT';
-  const time = <LocalTime date={kickoffAt} locale={locale} format="time" />;
+  const time = <LocalTime date={kickoff} locale={locale} format="time" />;
 
   const homeName = resolveFullName(homeTeam, locale);
   const awayName = resolveFullName(awayTeam, locale);
@@ -269,7 +257,7 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
     homeScore,
     awayScore,
     statusCode,
-    kickoffAt,
+    kickoffAt: kickoff,
   });
 
   return (

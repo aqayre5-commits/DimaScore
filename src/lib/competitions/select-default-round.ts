@@ -1,7 +1,7 @@
 import { getMatchListBucket } from '@/lib/match-status';
 
 /**
- * Pick the competition Overview (and league round-picker) default matchday.
+ * Pick the competition Overview / Matches (and league round-picker) default matchday.
  *
  * Priority:
  *  1. Round that currently has live fixtures (earliest live kickoff if several)
@@ -10,6 +10,14 @@ import { getMatchListBucket } from '@/lib/match-status';
  *  3. Most recently completed round
  *  4. Chronologically first round
  */
+
+/** Status pills on cup Overview + Matches (`CupFixturesTab`). */
+export type CupStatusFilter = 'all' | 'live' | 'upcoming' | 'results';
+
+/** RSC may pass kickoff as an ISO string; coerce before getTime / bucket checks. */
+export function asKickoffDate(kickoffAt: Date | string | number): Date {
+  return kickoffAt instanceof Date ? kickoffAt : new Date(kickoffAt);
+}
 
 export interface RoundSelectableFixture {
   round: string | null;
@@ -80,7 +88,7 @@ function groupByRound(fixtures: RoundSelectableFixture[]): Map<string, RoundSele
 function minKickoff(fixtures: RoundSelectableFixture[]): number {
   let min = Infinity;
   for (const f of fixtures) {
-    const t = f.kickoffAt.getTime();
+    const t = asKickoffDate(f.kickoffAt).getTime();
     if (t < min) min = t;
   }
   return min;
@@ -123,8 +131,9 @@ export function selectDefaultRound(
 
   for (const [key, group] of entries) {
     for (const f of group) {
-      const bucket = getMatchListBucket(f.statusCode, f.kickoffAt, now);
-      const t = f.kickoffAt.getTime();
+      const kickoff = asKickoffDate(f.kickoffAt);
+      const bucket = getMatchListBucket(f.statusCode, kickoff, now);
+      const t = kickoff.getTime();
       if (bucket === 'live' && t < bestLiveAt) {
         bestLiveAt = t;
         bestLiveKey = key;
@@ -147,4 +156,51 @@ export function selectDefaultRound(
   const ordered = sortRoundEntries(entries);
   const [fallbackKey, fallbackGroup] = ordered[0];
   return toSelectedRound(fallbackKey, fallbackGroup);
+}
+
+/**
+ * Resolve the cup round dropdown: user choice if still present, else the
+ * default matchday. Applies to Overview and Matches — not compact-only.
+ */
+export function resolveSelectedRound(
+  rounds: SelectedRound[],
+  defaultRound: SelectedRound | null,
+  userRoundKey: string | null,
+): SelectedRound | null {
+  if (rounds.length === 0) return null;
+  if (userRoundKey) return rounds.find((r) => r.key === userRoundKey) ?? defaultRound;
+  return defaultRound;
+}
+
+/**
+ * Filter + sort cup Overview / Matches lists.
+ * Upcoming includes NS/TBD with kickoff still ahead (same bucket as Overview).
+ * All / live / upcoming are chronological; results are newest-first.
+ */
+export function filterCupFixtures<T extends RoundSelectableFixture>(
+  fixtures: T[],
+  opts: {
+    selectedRound: SelectedRound | null;
+    statusFilter: CupStatusFilter;
+    now?: Date;
+  },
+): T[] {
+  const now = opts.now ?? new Date();
+  const result = fixtures.filter((f) => {
+    if (opts.selectedRound && !matchesSelectedRound(f, opts.selectedRound)) return false;
+    if (opts.statusFilter === 'all') return true;
+    const kickoff = asKickoffDate(f.kickoffAt);
+    const bucket = getMatchListBucket(f.statusCode, kickoff, now);
+    if (opts.statusFilter === 'live') return bucket === 'live';
+    if (opts.statusFilter === 'upcoming') return bucket === 'upcoming';
+    if (opts.statusFilter === 'results') return bucket === 'finished';
+    return true;
+  });
+
+  const newestFirst = opts.statusFilter === 'results';
+  return [...result].sort((a, b) => {
+    const da = asKickoffDate(a.kickoffAt).getTime();
+    const db = asKickoffDate(b.kickoffAt).getTime();
+    return newestFirst ? db - da : da - db;
+  });
 }
