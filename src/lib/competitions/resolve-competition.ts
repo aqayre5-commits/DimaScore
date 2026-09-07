@@ -36,6 +36,9 @@ const SLUG_TO_ENTRY: Map<string, MegaMenuEntry> = (() => {
       map.set(slugKey(slug), entry);
     }
   }
+  // Short aliases that are not locale-canonical mega-menu slugs (BUG-016).
+  const ucl = ALL_ENTRIES.find((e) => e.competitionId === 2);
+  if (ucl) map.set(slugKey('ucl'), ucl);
   return map;
 })();
 

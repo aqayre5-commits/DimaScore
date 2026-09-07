@@ -4,6 +4,7 @@ import * as schema from '../schema';
 import type { FixtureWithTeams } from '../queries';
 import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
+import { selectDefaultRound } from '@/lib/competitions/select-default-round';
 
 // ── Types ──
 
@@ -178,61 +179,31 @@ export async function getLeagueRounds(
 }
 
 /**
- * Determine the "current" round.
- * Priority: round with live matches > most recent round with finished matches > first round.
- * Uses full status code sets + kickoff-time fallback for stale statuses.
+ * Determine the "current" round for league Overview / Matches pickers.
+ * Live → soonest upcoming matchday → most recent completed → first round.
+ * Delegates to selectDefaultRound so cups and leagues share one policy.
  */
 export async function getCurrentRound(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number,
   seasonYear: number,
 ): Promise<number | null> {
-  const base = and(
-    eq(schema.fixtures.competitionId, competitionId),
-    eq(schema.fixtures.seasonYear, seasonYear),
-    sql`${schema.fixtures.roundNumber} IS NOT NULL`,
-  );
-
-  // 1. Round with any live match — that's THE current round
-  const live = await db
-    .select({ roundNumber: schema.fixtures.roundNumber })
-    .from(schema.fixtures)
-    .where(and(base, inArray(schema.fixtures.statusCode, [...LIVE_CODES_ARRAY])))
-    .orderBy(desc(schema.fixtures.roundNumber))
-    .limit(1);
-
-  if (live[0]?.roundNumber != null) return live[0].roundNumber;
-
-  // 2. Most recent round with a finished match (explicit codes OR stale status with past kickoff)
-  const finished = await db
-    .select({ roundNumber: schema.fixtures.roundNumber })
+  const rows = await db
+    .select({
+      round: schema.fixtures.round,
+      roundNumber: schema.fixtures.roundNumber,
+      statusCode: schema.fixtures.statusCode,
+      kickoffAt: schema.fixtures.kickoffAt,
+    })
     .from(schema.fixtures)
     .where(
       and(
-        base,
-        sql`(${schema.fixtures.statusCode} IN (${sql.join(
-          FINISHED_CODES_ARRAY.map((c) => sql`${c}`),
-          sql`, `,
-        )}) OR (${schema.fixtures.kickoffAt} <= NOW() AND ${schema.fixtures.statusCode} NOT IN (${sql.join(
-          LIVE_CODES_ARRAY.map((c) => sql`${c}`),
-          sql`, `,
-        )})))`,
+        eq(schema.fixtures.competitionId, competitionId),
+        eq(schema.fixtures.seasonYear, seasonYear),
       ),
-    )
-    .orderBy(desc(schema.fixtures.roundNumber))
-    .limit(1);
+    );
 
-  if (finished[0]?.roundNumber != null) return finished[0].roundNumber;
-
-  // 3. Fallback: first round with any match
-  const first = await db
-    .select({ roundNumber: schema.fixtures.roundNumber })
-    .from(schema.fixtures)
-    .where(base)
-    .orderBy(asc(schema.fixtures.roundNumber))
-    .limit(1);
-
-  return first[0]?.roundNumber ?? null;
+  return selectDefaultRound(rows)?.roundNumber ?? null;
 }
 
 /**
