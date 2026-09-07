@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { db } from '@/lib/db/client';
-import { getCompetitionById, getCurrentSeasonYear } from '@/lib/db/queries/league';
+import { getCompetitionById } from '@/lib/db/queries/league';
+import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { BASE_URL } from '@/lib/constants/site';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import { CompetitionContent, resolveEntry } from '../competition-content';
@@ -38,7 +39,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const seasonUrl = `${BASE_URL}/${locale}/competition/${country}/${tournament}/${season}`;
   const baseUrlNoSeason = `${BASE_URL}/${locale}/competition/${country}/${tournament}`;
-  const currentYear = competition ? await getCurrentSeasonYear(db, competition.id) : null;
+  const currentYear = competition
+    ? (await resolveCompetitionSeason(competition.id, null)).currentSeasonYear
+    : null;
   const canonical = currentYear && seasonYear === currentYear ? baseUrlNoSeason : seasonUrl;
 
   const languages: Record<string, string> = {};

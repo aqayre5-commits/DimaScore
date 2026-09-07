@@ -6,7 +6,9 @@ import { findCupContentBySlug } from '@/lib/constants/cup-content';
 import { ALL_ENTRIES, TOP_NAV_COMPETITION_IDS } from '@/lib/constants/competitions-mega-menu';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import { db } from '@/lib/db/client';
-import { getCompetitionById, getCurrentSeasonYear } from '@/lib/db/queries/league';
+import { getCompetitionById } from '@/lib/db/queries/league';
+import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
+import { formatSeasonLabel } from '@/lib/competitions/league-season';
 import { BASE_URL } from '@/lib/constants/site';
 import { CompetitionContent, resolveEntry } from './competition-content';
 
@@ -95,8 +97,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const competition = await getCompetitionById(db, entry.competitionId);
     if (competition) {
       displayName = competition.name[typedLocale] ?? competition.name['en'] ?? displayName;
-      const seasonYear = await getCurrentSeasonYear(db, competition.id);
-      const season = seasonYear ? `${seasonYear}/${(seasonYear + 1) % 100}` : '';
+      const { seasonYear } = await resolveCompetitionSeason(competition.id, null);
+      const season = seasonYear ? formatSeasonLabel(seasonYear) : '';
       displayName = season ? `${displayName} ${season}` : displayName;
       description = `${displayName} — standings, matches, and statistics | DimaScore`;
     }

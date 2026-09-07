@@ -50,6 +50,8 @@ interface LeaguePageHeaderProps {
   countryName: string | null;
   introText: string | null;
   availableSeasons: { year: number; isCurrent: boolean }[];
+  /** Live current season — picker navigates to the base URL for this year. */
+  currentSeasonYear?: number | null;
   teamsCount?: number;
   matchesCount?: number;
   totalRounds?: number;
@@ -63,6 +65,7 @@ export function LeaguePageHeader({
   countryName,
   introText,
   availableSeasons,
+  currentSeasonYear,
   teamsCount,
   matchesCount,
   totalRounds,
@@ -77,10 +80,10 @@ export function LeaguePageHeader({
 
   function handleSeasonChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const year = e.target.value;
-    const currentSeason = availableSeasons.find((s) => s.isCurrent);
+    const currentYear = currentSeasonYear ?? availableSeasons.find((s) => s.isCurrent)?.year;
     // Strip any trailing /YYYY season segment to get the base competition path.
     const basePath = pathname.replace(/\/\d{4}$/, '');
-    if (currentSeason && Number(year) === currentSeason.year) {
+    if (currentYear != null && Number(year) === currentYear) {
       router.push(basePath);
     } else {
       router.push(`${basePath}/${year}`);

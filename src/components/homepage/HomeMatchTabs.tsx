@@ -21,6 +21,7 @@ import { useMounted } from '@/hooks/useMounted';
 import { useLiveFixtures, type LiveFixturePatch } from '@/hooks/useLiveFixtures';
 import { useFollows } from '@/hooks/useFollows';
 import { FollowStar } from '@/components/shared/FollowStar';
+import { competitionCrestUrl } from '@/lib/utils/crest';
 
 interface Props {
   live: HomeFixture[];
@@ -82,6 +83,7 @@ function MatchRow({
     <Flag
       countryCode={fixture.homeTeam?.countryCode}
       logoUrl={fixture.homeTeam?.logoUrl}
+      teamId={fixture.homeTeam?.id}
       isNational={fixture.homeTeam?.isNational}
       size={24}
       label={homeName}
@@ -92,6 +94,7 @@ function MatchRow({
     <Flag
       countryCode={fixture.awayTeam?.countryCode}
       logoUrl={fixture.awayTeam?.logoUrl}
+      teamId={fixture.awayTeam?.id}
       isNational={fixture.awayTeam?.isNational}
       size={24}
       label={awayName}
@@ -308,9 +311,9 @@ function renderGroupedRows(list: HomeFixture[], locale: string): React.ReactNode
           key={`sep-${matchIdx}-${groupKey}`}
           className="flex items-center gap-2 bg-bg-surface-2 px-4 py-1.5"
         >
-          {f.competition.logoUrl ? (
+          {f.competition.logoUrl || f.competition.id ? (
             <CompetitionLogo
-              src={f.competition.logoUrl}
+              src={f.competition.logoUrl ?? competitionCrestUrl(f.competition.id)}
               size={16}
               className="size-4 shrink-0 object-contain"
             />
@@ -575,13 +578,11 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
                         }}
                         className={`flex min-w-0 flex-1 items-center gap-2 ${filterRowClass(effectiveComp === c.id)}`}
                       >
-                        {c.logoUrl && (
-                          <CompetitionLogo
-                            src={c.logoUrl}
-                            size={16}
-                            className="size-4 shrink-0 object-contain"
-                          />
-                        )}
+                        <CompetitionLogo
+                          src={c.logoUrl ?? competitionCrestUrl(c.id)}
+                          size={16}
+                          className="size-4 shrink-0 object-contain"
+                        />
                         <span className="min-w-0 flex-1 truncate text-start">{name}</span>
                         <span className="shrink-0 tabular-nums text-text-tertiary">{c.count}</span>
                       </button>

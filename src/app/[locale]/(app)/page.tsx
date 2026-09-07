@@ -4,15 +4,14 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
 import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
+import { Suspense } from 'react';
 import { HomeFeatured } from '@/components/homepage/HomeFeatured';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { HomeRailWidgets } from '@/components/homepage/HomeRailWidgets';
 import { HomeNextMatch } from '@/components/homepage/HomeNextMatch';
-import { getHomeRailData } from '@/lib/db/queries/home-rail';
-import { HomeFeaturedVideos } from '@/components/homepage/HomeFeaturedVideos';
+import { getHomeRailPrimary } from '@/lib/db/queries/home-rail';
 import { db } from '@/lib/db/client';
-import { getMediaVideos } from '@/lib/db/queries/media';
 import {
   getFeaturedMatches,
   getHomeMatchesByCategory,
@@ -20,6 +19,12 @@ import {
 } from '@/lib/db/queries/homepage';
 import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
 import { cacheLife } from 'next/cache';
+import { partitionHomeMatches, slimHomeFixture } from '@/lib/homepage/slim-payload';
+import {
+  HomeDeferredRail,
+  HomeDeferredVideos,
+  HomeSecondaryMatchTabs,
+} from '@/components/homepage/HomeDeferred';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -107,16 +112,15 @@ const ALL_LEFT_RAIL_IDS = LEFT_RAIL_SECTIONS.flatMap((s) => s.ids);
 
 // ── Cached data ──
 
-async function getCachedHomepageData() {
+async function getCachedHomepagePrimary() {
   'use cache';
   cacheLife('minutes');
-  const [featured, matchesByCategory, leftRailComps, featuredVideos] = await Promise.all([
+  const [featured, matchesByCategory, leftRailComps] = await Promise.all([
     getFeaturedMatches(db),
     getHomeMatchesByCategory(db),
     getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
-    getMediaVideos(db, { isFeatured: true, limit: 12 }),
   ]);
-  return { featured, matchesByCategory, leftRailComps, featuredVideos: featuredVideos.videos };
+  return { featured, matchesByCategory, leftRailComps };
 }
 
 // ── Page ──
@@ -125,16 +129,16 @@ export default async function HomePage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
-  const [{ featured, matchesByCategory, leftRailComps, featuredVideos }, railData, t] =
-    await Promise.all([
-      getCachedHomepageData(),
-      getHomeRailData(typedLocale),
-      getTranslations({ locale, namespace: 'homepage' }),
-    ]);
+  const [{ featured, matchesByCategory, leftRailComps }, railPrimary, t] = await Promise.all([
+    getCachedHomepagePrimary(),
+    getHomeRailPrimary(typedLocale),
+    getTranslations({ locale, namespace: 'homepage' }),
+  ]);
+  const { primary } = partitionHomeMatches(matchesByCategory, typedLocale);
+  const featuredSlim = featured.map((m) => slimHomeFixture(m, typedLocale));
 
-  // Enrich featured matches: WC venues + team form
   const WC_COMP_ID = 1;
-  for (const m of featured) {
+  for (const m of featuredSlim) {
     if (m.competition.id === WC_COMP_ID && !m.venueName) {
       const wcVenue = getWcVenueByTeamCodes(
         m.homeTeam?.code ?? null,
@@ -150,8 +154,6 @@ export default async function HomePage({ params }: PageProps) {
     }
   }
 
-  // Left-rail competition logos — LeagueLeftRail builds its own sections + curated names
-  // from the mega-menu (single source of truth, shared with every other page).
   const competitionLogos = Object.fromEntries(leftRailComps.map((c) => [c.id, c.logoUrl]));
 
   const matchTabLabels = {
@@ -170,42 +172,37 @@ export default async function HomePage({ params }: PageProps) {
     yourMatches: t('yourMatches'),
   };
 
+  const featuredLabels = {
+    matchOfDay: t('matchOfDay'),
+    featured: t('featured'),
+    kicksOffIn: t('kicksOffIn'),
+    live: t('live'),
+    tags: {
+      atlasLions: t('tagAtlasLions'),
+      atlasClub: t('tagAtlasClub'),
+      derby: t('tagDerby'),
+      knockout: t('tagKnockout'),
+      opener: t('tagOpener'),
+    },
+  };
+
   return (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
         <div className="mx-auto flex max-w-4xl flex-col gap-2.5 lg:grid lg:max-w-[930px] lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto] lg:items-start xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-2.5">
-          {/* Left rail — competition nav. Desktop only: the drawer + bottom tab bar cover mobile. */}
           <aside className="hidden xl:col-start-1 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
             <LeagueLeftRail locale={typedLocale} competitionLogos={competitionLogos} />
           </aside>
 
-          {/* Center column */}
           <div className="order-1 min-w-0 lg:order-none lg:col-start-1 lg:row-start-1 xl:col-start-2 xl:row-start-1">
             <div className="space-y-2.5">
               <h1 className="px-1 text-sm font-medium text-text-secondary">{t('pageHeading')}</h1>
-              <HomeFeatured
-                matches={featured}
-                locale={typedLocale}
-                labels={{
-                  matchOfDay: t('matchOfDay'),
-                  featured: t('featured'),
-                  kicksOffIn: t('kicksOffIn'),
-                  live: t('live'),
-                  tags: {
-                    atlasLions: t('tagAtlasLions'),
-                    atlasClub: t('tagAtlasClub'),
-                    derby: t('tagDerby'),
-                    knockout: t('tagKnockout'),
-                    opener: t('tagOpener'),
-                  },
-                }}
-              />
+              <HomeFeatured matches={featuredSlim} locale={typedLocale} labels={featuredLabels} />
 
-              {/* Live Now / next-match card — above the tabs on mobile; desktop shows it in the rail. */}
-              {railData.nextFeaturedCandidates.length > 0 && (
+              {railPrimary.nextFeaturedCandidates.length > 0 && (
                 <div className="lg:hidden">
                   <HomeNextMatch
-                    candidates={railData.nextFeaturedCandidates}
+                    candidates={railPrimary.nextFeaturedCandidates}
                     locale={typedLocale}
                     labels={{
                       nextMatch: t('nextMatch'),
@@ -217,30 +214,39 @@ export default async function HomePage({ params }: PageProps) {
               )}
 
               <div id="matches" className="scroll-mt-24">
-                <HomeMatchTabs
-                  live={matchesByCategory.live}
-                  upcoming={matchesByCategory.upcoming}
-                  results={matchesByCategory.results}
-                  locale={typedLocale}
-                  labels={matchTabLabels}
-                />
+                <Suspense
+                  fallback={
+                    <HomeMatchTabs
+                      live={primary.live}
+                      upcoming={primary.upcoming}
+                      results={primary.results}
+                      locale={typedLocale}
+                      labels={matchTabLabels}
+                    />
+                  }
+                >
+                  <HomeSecondaryMatchTabs locale={typedLocale} primary={primary} />
+                </Suspense>
               </div>
 
-              <HomeFeaturedVideos
-                videos={featuredVideos}
-                labels={{ featuredVideos: t('featuredVideos') }}
-              />
+              <Suspense fallback={null}>
+                <HomeDeferredVideos locale={typedLocale} />
+              </Suspense>
 
-              {/* Rail data surfaced in the mobile flow (value-ordered); hidden on desktop. */}
               <div className="lg:hidden">
-                <HomeRailWidgets data={railData} locale={typedLocale} variant="mobile" />
+                <HomeRailWidgets data={railPrimary} locale={typedLocale} variant="mobile" />
+                <Suspense fallback={null}>
+                  <HomeDeferredRail locale={typedLocale} variant="mobile" />
+                </Suspense>
               </div>
             </div>
           </div>
 
-          {/* Right rail — shown from lg (tablet 2-col) and desktop (mobile gets the value-ordered block above) */}
           <aside className="hidden lg:col-start-2 lg:row-start-1 lg:block lg:sticky lg:top-[104px] lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto xl:col-start-3 xl:row-start-1">
-            <HomeRailWidgets data={railData} locale={typedLocale} variant="desktop" />
+            <HomeRailWidgets data={railPrimary} locale={typedLocale} variant="desktop" />
+            <Suspense fallback={null}>
+              <HomeDeferredRail locale={typedLocale} variant="desktop" />
+            </Suspense>
           </aside>
         </div>
       </div>

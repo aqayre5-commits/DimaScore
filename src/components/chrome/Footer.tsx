@@ -207,6 +207,14 @@ export function Footer() {
                     {t('faq')}
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href={`/${locale}/lions-abroad`}
+                    className="text-base text-text-secondary transition-colors hover:text-text-primary"
+                  >
+                    {t('lionsAbroad')}
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

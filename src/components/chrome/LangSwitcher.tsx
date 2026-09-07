@@ -10,6 +10,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
+import { resolveCompetitionEntry } from '@/lib/competitions/resolve-competition';
+import { getCountrySlug } from '@/lib/constants/country-slugs';
+import type { Locale } from '@/lib/i18n/config';
 
 const localeLabels: Record<string, string> = {
   fr: 'Français',
@@ -27,6 +30,20 @@ export function LangSwitcher() {
     if (newLocale === locale) return;
     const segments = pathname.split('/');
     segments[1] = newLocale;
+    // /{locale}/competition/{country}/{tournament}/...
+    if (segments[2] === 'competition' && segments[4]) {
+      let tournament = segments[4];
+      try {
+        tournament = decodeURIComponent(tournament);
+      } catch {
+        // keep raw
+      }
+      const entry = resolveCompetitionEntry(tournament, locale as Locale);
+      if (entry) {
+        segments[3] = getCountrySlug(entry.countryKey, newLocale as Locale);
+        segments[4] = entry.slugs[newLocale as Locale];
+      }
+    }
     router.push(segments.join('/'));
   }
 

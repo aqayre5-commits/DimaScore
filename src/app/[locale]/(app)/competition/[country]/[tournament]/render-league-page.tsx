@@ -15,7 +15,6 @@ import { getStandings } from '@/lib/db/queries';
 import {
   getCompetitionById,
   getLeagueCoverage,
-  getCurrentSeasonYear,
   getLeagueRounds,
   getCurrentRound,
   getLeagueFeaturedMatches,
@@ -23,9 +22,9 @@ import {
   getResolvedTopScorers,
   getResolvedTopAssists,
   getTopCardsForLeague,
-  getAvailableSeasons,
   getCompetitionTeams,
 } from '@/lib/db/queries/league';
+import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { getInjuriesForCompetition } from '@/lib/db/queries/injuries';
 import { InjuriesTab } from '@/components/league/InjuriesTab';
 import { LeagueAboutCard } from '@/components/league/LeagueAboutCard';
@@ -109,16 +108,6 @@ const LEAGUE_TAB_HASHES: Record<
   },
 };
 
-async function getCachedLeagueSeasonInfo(competitionId: number) {
-  'use cache';
-  cacheLife('minutes');
-  const [availableSeasons, currentSeasonYear] = await Promise.all([
-    getAvailableSeasons(db, competitionId),
-    getCurrentSeasonYear(db, competitionId),
-  ]);
-  return { availableSeasons, currentSeasonYear };
-}
-
 export async function renderLeaguePage(
   competition: NonNullable<Awaited<ReturnType<typeof getCompetitionById>>>,
   entry: MegaMenuEntry,
@@ -132,14 +121,15 @@ export async function renderLeaguePage(
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
 
-  const { availableSeasons, currentSeasonYear } = await getCachedLeagueSeasonInfo(competition.id);
-
-  // Use season from URL param if valid, otherwise fall back to current
   const requestedYear = seasonParam ? Number(seasonParam) : null;
-  const seasonYear =
-    requestedYear && availableSeasons.some((s) => s.year === requestedYear)
-      ? requestedYear
-      : currentSeasonYear;
+  const {
+    seasonYear,
+    seasons: availableSeasons,
+    currentSeasonYear,
+  } = await resolveCompetitionSeason(
+    competition.id,
+    requestedYear != null && Number.isFinite(requestedYear) ? requestedYear : null,
+  );
 
   if (!seasonYear) {
     // No season data — show coming soon
@@ -277,6 +267,7 @@ export async function renderLeaguePage(
             countryName={countryName}
             introText={introText}
             availableSeasons={availableSeasons}
+            currentSeasonYear={currentSeasonYear}
             teamsCount={competitionTeams.length}
             matchesCount={fixtures.length}
             totalRounds={rounds.length}

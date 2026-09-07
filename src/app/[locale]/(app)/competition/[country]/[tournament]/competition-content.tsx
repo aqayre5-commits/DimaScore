@@ -4,7 +4,8 @@ import { cacheLife } from 'next/cache';
 import { inArray } from 'drizzle-orm';
 import type { Locale } from '@/lib/i18n/config';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
-import { ALL_ENTRIES, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
+import { type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
+import { resolveCompetitionEntry } from '@/lib/competitions/resolve-competition';
 import {
   getMetadataForCompetition,
   getMetadataForCompetitionSeason,
@@ -17,12 +18,9 @@ import { renderCupPage } from './render-cup-page';
 import { renderLeaguePage } from './render-league-page';
 import { renderGenericCupPage } from './render-generic-cup-page';
 
-/** Resolve a tournament slug to its mega-menu entry (current locale, then any). */
-export function resolveEntry(tournament: string, locale: Locale): MegaMenuEntry | undefined {
-  return (
-    ALL_ENTRIES.find((entry) => entry.slugs[locale] === tournament) ??
-    ALL_ENTRIES.find((entry) => Object.values(entry.slugs).some((slug) => slug === tournament))
-  );
+/** Normalize slug → competition entry. Locale is unused; aliases share one ID. */
+export function resolveEntry(tournament: string, locale?: Locale): MegaMenuEntry | undefined {
+  return resolveCompetitionEntry(tournament, locale);
 }
 
 const LEFT_RAIL_COMP_IDS = [200, 201, 822, 1, 922, 6, 39, 140, 78, 135, 61, 2, 3, 848];
