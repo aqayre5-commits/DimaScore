@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { parseRoundNumber } from '@/lib/ingestion/round';
 import {
+  filterCupFixtures,
   listFixtureRounds,
+  resolveSelectedRound,
   selectDefaultRound,
   type RoundSelectableFixture,
 } from '@/lib/competitions/select-default-round';
@@ -100,5 +102,73 @@ describe('listFixtureRounds', () => {
     const rounds = listFixtureRounds(leagueStageSeason());
     expect(rounds.map((r) => r.roundNumber)).toEqual([1, 2, 3, 8]);
     expect(rounds[0]?.label).toBe('League Stage - 1');
+  });
+});
+
+describe('filterCupFixtures — Matches tab default round + Upcoming (UCL league stage)', () => {
+  it('All defaults to League Stage 1 chronological, not January Stage 8 newest-first', () => {
+    const fixtures = leagueStageSeason();
+    const selected = selectDefaultRound(fixtures, NOW);
+    const filtered = filterCupFixtures(fixtures, {
+      selectedRound: resolveSelectedRound(listFixtureRounds(fixtures), selected, null),
+      statusFilter: 'all',
+      now: NOW,
+    });
+
+    expect(selected?.label).toBe('League Stage - 1');
+    expect(filtered.length).toBeGreaterThan(0);
+    expect(filtered.every((f) => f.round === 'League Stage - 1')).toBe(true);
+    expect(filtered[0]?.kickoffAt.toISOString()).toBe('2026-09-08T19:00:00.000Z');
+    expect(filtered.some((f) => f.round === 'League Stage - 8')).toBe(false);
+  });
+
+  it('Upcoming + League Stage 1 includes NS Sep 8–9 fixtures (not empty)', () => {
+    const fixtures = leagueStageSeason();
+    const rounds = listFixtureRounds(fixtures);
+    const stage1 = rounds.find((r) => r.label === 'League Stage - 1') ?? null;
+    expect(stage1).not.toBeNull();
+
+    const filtered = filterCupFixtures(fixtures, {
+      selectedRound: stage1,
+      statusFilter: 'upcoming',
+      now: NOW,
+    });
+
+    expect(filtered.length).toBe(3);
+    expect(filtered.every((f) => f.statusCode === 'NS')).toBe(true);
+    expect(filtered.every((f) => f.round === 'League Stage - 1')).toBe(true);
+    expect(filtered.map((f) => f.kickoffAt.toISOString())).toEqual([
+      '2026-09-08T19:00:00.000Z',
+      '2026-09-08T19:00:00.000Z',
+      '2026-09-09T19:00:00.000Z',
+    ]);
+  });
+
+  it('Upcoming + Stage 1 still lists NS when kickoffAt arrives as an ISO string', () => {
+    const fixtures = leagueStageSeason().map((f) => ({
+      ...f,
+      kickoffAt: f.kickoffAt.toISOString() as unknown as Date,
+    }));
+    const selected = selectDefaultRound(fixtures, NOW);
+    const filtered = filterCupFixtures(fixtures, {
+      selectedRound: selected,
+      statusFilter: 'upcoming',
+      now: NOW,
+    });
+
+    expect(selected?.label).toBe('League Stage - 1');
+    expect(filtered).toHaveLength(3);
+    expect(filtered.every((f) => f.round === 'League Stage - 1')).toBe(true);
+  });
+
+  it('user-selected League Stage 1 + Upcoming does not leak Stage 8 January fixtures', () => {
+    const fixtures = leagueStageSeason();
+    const stage1 = listFixtureRounds(fixtures).find((r) => r.key === 'n:1') ?? null;
+    const filtered = filterCupFixtures(fixtures, {
+      selectedRound: stage1,
+      statusFilter: 'upcoming',
+      now: NOW,
+    });
+    expect(filtered.some((f) => f.roundNumber === 8)).toBe(false);
   });
 });
