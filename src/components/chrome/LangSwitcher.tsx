@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { resolveCompetitionEntry } from '@/lib/competitions/resolve-competition';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
+import { rewriteBotolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
 import type { Locale } from '@/lib/i18n/config';
 
 const localeLabels: Record<string, string> = {
@@ -28,6 +29,11 @@ export function LangSwitcher() {
 
   function switchLocale(newLocale: string) {
     if (newLocale === locale) return;
+    const openerPath = rewriteBotolaSeasonOpenerPath(pathname, newLocale as Locale);
+    if (openerPath) {
+      router.push(openerPath);
+      return;
+    }
     const segments = pathname.split('/');
     segments[1] = newLocale;
     // /{locale}/competition/{country}/{tournament}/...

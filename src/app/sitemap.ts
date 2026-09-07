@@ -5,6 +5,7 @@ import * as schema from '@/lib/db/schema';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { ALL_ENTRIES, buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
 import { BASE_URL } from '@/lib/constants/site';
+import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
 
 const baseUrl = BASE_URL;
 
@@ -104,6 +105,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
   }
+
+  entries.push(
+    entry((l) => botolaSeasonOpenerPath(l), {
+      priority: 0.9,
+      changeFrequency: 'daily',
+      lastModified: now,
+    }),
+  );
 
   // ── Teams ──
   const teams = await db

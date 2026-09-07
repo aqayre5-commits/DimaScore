@@ -70,6 +70,27 @@ const nextConfig: NextConfig = {
         destination: '/fr/lions-abroad',
         permanent: true,
       },
+      // IMP-006: Botola 2026/27 season-opener — FR alias + wrong-locale slugs
+      {
+        source: '/fr/reprise-botola-pro-2026-2027',
+        destination: '/fr/calendrier-botola-pro-2026-2027',
+        permanent: true,
+      },
+      {
+        source: '/en/calendrier-botola-pro-2026-2027',
+        destination: '/en/botola-pro-2026-27-calendar',
+        permanent: true,
+      },
+      {
+        source: '/fr/botola-pro-2026-27-calendar',
+        destination: '/fr/calendrier-botola-pro-2026-2027',
+        permanent: true,
+      },
+      {
+        source: '/ar/botola-pro-2026-27-calendar',
+        destination: '/ar/calendrier-botola-pro-2026-2027',
+        permanent: true,
+      },
       // BUG-016: /competition/uefa/ucl → canonical champions-league slug
       {
         source: '/:locale/competition/:country/ucl',
