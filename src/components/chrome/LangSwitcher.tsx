@@ -38,7 +38,7 @@ export function LangSwitcher() {
       } catch {
         // keep raw
       }
-      const entry = resolveCompetitionEntry(tournament, locale as Locale);
+      const entry = resolveCompetitionEntry(tournament);
       if (entry) {
         segments[3] = getCountrySlug(entry.countryKey, newLocale as Locale);
         segments[4] = entry.slugs[newLocale as Locale];

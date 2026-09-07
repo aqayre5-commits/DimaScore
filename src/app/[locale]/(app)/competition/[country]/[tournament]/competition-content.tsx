@@ -20,7 +20,7 @@ import { renderGenericCupPage } from './render-generic-cup-page';
 
 /** Normalize slug → competition entry. Locale is unused; aliases share one ID. */
 export function resolveEntry(tournament: string, locale?: Locale): MegaMenuEntry | undefined {
-  return resolveCompetitionEntry(tournament, locale);
+  return resolveCompetitionEntry(tournament);
 }
 
 const LEFT_RAIL_COMP_IDS = [200, 201, 822, 1, 922, 6, 39, 140, 78, 135, 61, 2, 3, 848];
