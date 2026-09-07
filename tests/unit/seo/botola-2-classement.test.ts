@@ -16,6 +16,8 @@ import {
   botola2CompetitionMetaDescription,
   botola2CompetitionPageTitle,
   botola2CompetitionStandingsHref,
+  botola2HeaderTeamsCount,
+  botola2SeasonLabel,
   isBotola2ClassementSlug,
   rewriteBotola2ClassementPath,
 } from '@/lib/seo/botola-2-classement';
@@ -126,11 +128,13 @@ describe('botola 2 classement copy (LANG-023)', () => {
     expect(packs.fr.metaDescription).not.toMatch(EN_STANDINGS_META_RE);
   });
 
-  it('SSR lead answers live table + free/no betting and Pro vs 2 distinction', () => {
-    expect(packs.fr.lead).toMatch(/classement live/i);
+  it('SSR lead answers SoT season table + free/no betting and Pro vs 2 distinction', () => {
+    expect(packs.fr.lead).toMatch(/\{season\}/);
     expect(packs.fr.lead).toMatch(/sans paris|sans cotes/i);
     expect(packs.fr.lead).toMatch(/Botola Pro/);
+    expect(packs.fr.lead).not.toMatch(/classement live/i);
     expect(packs.ar.lead).toMatch(/ترتيب/);
+    expect(packs.ar.lead).toMatch(/\{season\}/);
     expect(packs.ar.lead).toMatch(/البطولة الاحترافية/);
     expect(packs.fr.ctaFixtures).toMatch(/[Mm]atchs/);
     expect(packs.ar.ctaFixtures).toMatch(/المباريات/);
@@ -209,5 +213,31 @@ describe('botola 2 standings zone footnotes (LANG-023)', () => {
     expect(translateStandingZoneLabel('Promotion - Botola Pro (Promotion)', 'ar')).toBe(
       'صعود - البطولة الاحترافية (ملحق الصعود)',
     );
+  });
+});
+
+describe('botola 2 season-from-SoT (DATA-006)', () => {
+  it('formats the product current season and does not invent 2026/27', () => {
+    expect(botola2SeasonLabel(2025)).toBe('2025/26');
+    expect(botola2SeasonLabel(2024)).toBe('2024/25');
+    expect(botola2SeasonLabel(null)).toBe('');
+    expect(botola2SeasonLabel(undefined)).toBe('');
+  });
+
+  it('interpolates {season} in body copy instead of hard-claiming a year', () => {
+    expect(fr.botola2Classement.metaDescription).toMatch(/\{season\}/);
+    expect(fr.botola2Classement.tableTitle).toMatch(/\{season\}/);
+    expect(fr.botola2Classement.faq1a).toMatch(/\{season\}/);
+    expect(en.botola2Classement.lead).toMatch(/\{season\}/);
+    expect(ar.botola2Classement.faq1a).toMatch(/\{season\}/);
+  });
+});
+
+describe('botola 2 header team count (DATA-007)', () => {
+  it('prefers standings, then About, and never invents a fixture-union count', () => {
+    expect(botola2HeaderTeamsCount([1, 2, 3, 3, null], '16')).toBe(3);
+    expect(botola2HeaderTeamsCount([], '16')).toBe(16);
+    expect(botola2HeaderTeamsCount([], null)).toBeUndefined();
+    expect(botola2HeaderTeamsCount([], '18 clubs')).toBe(18);
   });
 });

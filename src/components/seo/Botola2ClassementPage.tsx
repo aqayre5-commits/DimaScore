@@ -17,6 +17,7 @@ import {
   botola2ClassementTableHashAliases,
   botola2CompetitionFixturesHref,
   botola2CompetitionStandingsHref,
+  botola2SeasonLabel,
 } from '@/lib/seo/botola-2-classement';
 
 async function getCachedBotola2Standings(seasonYear: number) {
@@ -28,6 +29,7 @@ async function getCachedBotola2Standings(seasonYear: number) {
 export async function Botola2ClassementPage({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: 'botola2Classement' });
   const { seasonYear } = await resolveCompetitionSeason(BOTOLA_2_COMPETITION_ID, null);
+  const season = botola2SeasonLabel(seasonYear);
   const standings = seasonYear != null ? await getCachedBotola2Standings(seasonYear) : [];
 
   const hubHref = BOTOLA_2_COMPETITION_HUB[locale];
@@ -41,7 +43,7 @@ export async function Botola2ClassementPage({ locale }: { locale: Locale }) {
   const tableAliases = botola2ClassementTableHashAliases(locale);
 
   const faqs = [
-    { q: t('faq1q'), a: t('faq1a') },
+    { q: t('faq1q'), a: t('faq1a', { season }) },
     { q: t('faq2q'), a: t('faq2a') },
     { q: t('faq3q'), a: t('faq3a') },
     { q: t('faq4q'), a: t('faq4a') },
@@ -59,14 +61,14 @@ export async function Botola2ClassementPage({ locale }: { locale: Locale }) {
       />
 
       <h1 className="mt-2 text-2xl font-bold text-text-primary">{t('h1')}</h1>
-      <p className="mt-2 text-sm leading-relaxed text-text-secondary">{t('lead')}</p>
+      <p className="mt-2 text-sm leading-relaxed text-text-secondary">{t('lead', { season })}</p>
 
       <section id={tableHash} className="mt-8 scroll-mt-24">
         {tableAliases.map((alias) => (
           <div key={alias} id={alias} className="h-0 w-0 overflow-hidden" aria-hidden />
         ))}
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <h2 className="text-lg font-semibold text-text-primary">{t('tableTitle')}</h2>
+          <h2 className="text-lg font-semibold text-text-primary">{t('tableTitle', { season })}</h2>
           <Link
             href={standingsHref}
             className="text-sm font-medium text-accent-azure hover:underline"
@@ -131,7 +133,9 @@ export async function Botola2ClassementPage({ locale }: { locale: Locale }) {
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-text-primary">{t('vsNewsTitle')}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-text-secondary">{t('vsNewsBody')}</p>
+        <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+          {t('vsNewsBody', { season })}
+        </p>
       </section>
 
       <section className="mt-10">

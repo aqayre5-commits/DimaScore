@@ -1,5 +1,7 @@
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { LEAGUE_IDS } from '@/lib/constants/canonical-ids';
+import { formatSeasonLabel } from '@/lib/competitions/league-season';
+import { getLeagueAbout } from '@/lib/constants/league-about-content';
 import { BOTOLA_COMPETITION_TAB_HASH } from '@/lib/seo/botola-season-opener';
 import {
   botolaClassementTableHash,
@@ -108,4 +110,33 @@ export function botola2CompetitionMetaDescription(locale: Locale, displayName: s
     return `${displayName} — الترتيب والمباريات والإحصائيات | ديماسكور`;
   }
   return `${displayName} — standings, matches, and statistics | DimaScore`;
+}
+
+/** Product SoT season label — never invent 2026/27. */
+export function botola2SeasonLabel(seasonYear: number | null | undefined): string {
+  return seasonYear != null ? formatSeasonLabel(seasonYear) : '';
+}
+
+/**
+ * DATA-007: Overview header must not invent club counts.
+ * Prefer standings rows, then About/LNFP fact — never the inflated fixture union.
+ */
+export function botola2HeaderTeamsCount(
+  standingTeamIds: Array<number | null | undefined>,
+  aboutTeamsValue?: string | null,
+): number | undefined {
+  const fromStandings = new Set(
+    standingTeamIds.filter((id): id is number => typeof id === 'number' && Number.isFinite(id)),
+  ).size;
+  if (fromStandings > 0) return fromStandings;
+  const parsed = aboutTeamsValue != null ? Number.parseInt(aboutTeamsValue, 10) : Number.NaN;
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  return undefined;
+}
+
+export function botola2AboutTeamsValue(): string | null {
+  return (
+    getLeagueAbout(BOTOLA_2_COMPETITION_ID)?.facts.find((f) => f.labelKey === 'teams')?.value.en ??
+    null
+  );
 }
