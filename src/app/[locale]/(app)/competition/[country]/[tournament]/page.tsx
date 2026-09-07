@@ -10,6 +10,11 @@ import { getCompetitionById } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
 import { BASE_URL } from '@/lib/constants/site';
+import {
+  BOTOLA_2_COMPETITION_ID,
+  botola2CompetitionMetaDescription,
+  botola2CompetitionPageTitle,
+} from '@/lib/seo/botola-2-classement';
 import { CompetitionContent, resolveEntry } from './competition-content';
 
 interface PageProps {
@@ -92,6 +97,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!entry) notFound();
   let displayName = tournament.replace(/-/g, ' ');
   let description = `${displayName} — DimaScore`;
+  let title: string | null = null;
 
   if (entry) {
     const competition = await getCompetitionById(db, entry.competitionId);
@@ -100,7 +106,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       const { seasonYear } = await resolveCompetitionSeason(competition.id, null);
       const season = seasonYear ? formatSeasonLabel(seasonYear) : '';
       displayName = season ? `${displayName} ${season}` : displayName;
-      description = `${displayName} — standings, matches, and statistics | DimaScore`;
+      if (competition.id === BOTOLA_2_COMPETITION_ID) {
+        title = botola2CompetitionPageTitle(typedLocale, season);
+        description = botola2CompetitionMetaDescription(typedLocale, displayName);
+      } else {
+        description = `${displayName} — standings, matches, and statistics | DimaScore`;
+      }
     }
   }
 
@@ -116,7 +127,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   languages['x-default'] = languages[defaultLocale];
 
   return {
-    title: `${displayName} | DimaScore`,
+    title: title ?? `${displayName} | DimaScore`,
     description,
     alternates: { languages },
     robots: { index: true, follow: true },

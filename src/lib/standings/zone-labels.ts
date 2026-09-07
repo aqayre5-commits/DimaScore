@@ -15,6 +15,16 @@ const ZONE_LABELS: Record<string, Record<Locale, string>> = {
     fr: 'Promotion - Coupe de la confédération CAF (qualification)',
     ar: 'تأهل - كأس الكونفدرالية الأفريقية (تصفيات)',
   },
+  'Promotion - Botola Pro': {
+    en: 'Promotion - Botola Pro',
+    fr: 'Promotion - Botola Pro',
+    ar: 'صعود - البطولة الاحترافية',
+  },
+  'Promotion - Botola Pro (Promotion)': {
+    en: 'Promotion - Botola Pro (Promotion)',
+    fr: 'Promotion - Botola Pro (accession)',
+    ar: 'صعود - البطولة الاحترافية (ملحق الصعود)',
+  },
 };
 
 export function translateStandingZoneLabel(

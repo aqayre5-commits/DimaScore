@@ -7,6 +7,11 @@ import { getCompetitionById } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { BASE_URL } from '@/lib/constants/site';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
+import {
+  BOTOLA_2_COMPETITION_ID,
+  botola2CompetitionMetaDescription,
+  botola2CompetitionPageTitle,
+} from '@/lib/seo/botola-2-classement';
 import { CompetitionContent, resolveEntry } from '../competition-content';
 
 interface PageProps {
@@ -34,8 +39,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     displayName = competition.name[typedLocale] ?? competition.name['en'] ?? displayName;
   const seasonLabel = Number.isFinite(seasonYear) ? `${seasonYear}/${(seasonYear + 1) % 100}` : '';
   const fullName = seasonLabel ? `${displayName} ${seasonLabel}` : displayName;
-  const title = `${fullName} | DimaScore`;
-  const description = `${fullName} — standings, results, and statistics | DimaScore`;
+  const botola2Title =
+    entry.competitionId === BOTOLA_2_COMPETITION_ID
+      ? botola2CompetitionPageTitle(typedLocale, seasonLabel || null)
+      : null;
+  const title = botola2Title ?? `${fullName} | DimaScore`;
+  const description =
+    entry.competitionId === BOTOLA_2_COMPETITION_ID
+      ? botola2CompetitionMetaDescription(typedLocale, fullName)
+      : `${fullName} — standings, results, and statistics | DimaScore`;
 
   const seasonUrl = `${BASE_URL}/${locale}/competition/${country}/${tournament}/${season}`;
   const baseUrlNoSeason = `${BASE_URL}/${locale}/competition/${country}/${tournament}`;
