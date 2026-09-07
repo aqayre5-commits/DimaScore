@@ -11,7 +11,7 @@ import { stripWomenSuffix } from '@/lib/team-display';
 import { Flag } from '@/components/shared/Flag';
 import { SITE_TZ } from '@/lib/utils/date';
 import { LocalTime } from '@/components/shared/LocalTime';
-import { getMatchState } from '@/lib/match-status';
+import { getMatchListBucket, getMatchState, getMatchStatusLabelKey } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
@@ -138,10 +138,10 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
     // Status filter
     if (statusFilter !== 'all') {
       result = result.filter((f) => {
-        const state = getMatchState(f.statusCode, f.kickoffAt);
-        if (statusFilter === 'live') return state === 'live';
-        if (statusFilter === 'upcoming') return state === 'upcoming';
-        if (statusFilter === 'results') return state === 'finished';
+        const bucket = getMatchListBucket(f.statusCode, f.kickoffAt);
+        if (statusFilter === 'live') return bucket === 'live';
+        if (statusFilter === 'upcoming') return bucket === 'upcoming';
+        if (statusFilter === 'results') return bucket === 'finished';
         return true;
       });
     }
@@ -172,7 +172,7 @@ export function WCFixturesTab({ fixtures, locale, groupLabels, teamGroupMap }: W
   // appears as soon as the poll picks up a kickoff).
   const hasLive = patchedFixtures.some((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
   const hasFinished = patchedFixtures.some(
-    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished',
+    (f) => getMatchListBucket(f.statusCode, f.kickoffAt) === 'finished',
   );
 
   const statusPills: { key: StatusFilter; label: string; dot?: boolean }[] = [
@@ -284,6 +284,8 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
   const state = getMatchState(statusCode, kickoffAt);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
+  const interruptedKey = getMatchStatusLabelKey(statusCode);
+  const tStatus = useTranslations('matchDetail');
   const hasScore = homeScore != null && awayScore != null;
   const showPens = statusCode === 'PEN' && homeScorePen != null && awayScorePen != null;
   // Shootout rows read "FT" with "PEN x-y" stacked beneath — the official 120' result stays
@@ -378,6 +380,10 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
           {isLive ? (
             <span className="text-sm font-bold tabular-nums text-score-live">
               {statusCode === 'HT' ? 'HT' : statusCode === 'P' ? 'PEN' : statusCode}
+            </span>
+          ) : interruptedKey ? (
+            <span className="text-[10px] font-medium leading-tight text-text-tertiary">
+              {tStatus(interruptedKey)}
             </span>
           ) : isFinished ? (
             <>

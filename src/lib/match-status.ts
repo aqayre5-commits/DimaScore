@@ -6,6 +6,9 @@
 
 export type MatchState = 'live' | 'finished' | 'upcoming' | 'interrupted';
 
+/** Upcoming / Live / Completed (Results) tabs — interrupted never counts as upcoming. */
+export type MatchListBucket = 'live' | 'upcoming' | 'finished';
+
 /** Exported arrays for SQL IN-clause reuse */
 export const LIVE_CODES_ARRAY = ['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE', 'INT'] as const;
 export const FINISHED_CODES_ARRAY = ['FT', 'AET', 'PEN', 'WO', 'AWD', 'CANC', 'ABD'] as const;
@@ -16,6 +19,13 @@ export const FINISHED_CODES_ARRAY = ['FT', 'AET', 'PEN', 'WO', 'AWD', 'CANC', 'A
  * INT stays LIVE (it's in LIVE_CODES for live-fixture polling).
  */
 export const INTERRUPTED_CODES_ARRAY = ['PST', 'SUSP', 'CANC', 'ABD'] as const;
+/** Scheduled, not started. The only statuses that belong in Upcoming lists. */
+export const UPCOMING_CODES_ARRAY = ['NS', 'TBD'] as const;
+/**
+ * Terminal non-played statuses — never upcoming, even if kickoff is still in the future.
+ * CANC/ABD are voided; PST is postponed (no kickoff to play); WO/AWD are awarded results.
+ */
+export const TERMINAL_NON_PLAYED_CODES_ARRAY = ['CANC', 'ABD', 'PST', 'WO', 'AWD'] as const;
 
 /** Maps an interrupted status code to its `matchDetail` i18n key, or null if not interrupted. */
 export function getMatchStatusLabelKey(statusCode: string): string | null {
@@ -53,6 +63,23 @@ export function getMatchState(statusCode: string, kickoffAt: Date, now?: Date): 
   // getCachedNow); omitted on the client, where a live `new Date()` is fine.
   if (kickoffAt <= (now ?? new Date())) return 'finished';
   return 'upcoming';
+}
+
+/**
+ * Tab bucket for match lists (team Upcoming/Live/Completed, cup Upcoming/Results, etc.).
+ * Upcoming is only NS/TBD (or any other non-terminal code) with kickoff still ahead.
+ * Interrupted (CANC/ABD/PST/SUSP) and finished (FT/AET/PEN/WO/AWD) go to Completed/Results
+ * so cancelled fixtures never appear as a future kickoff.
+ */
+export function getMatchListBucket(
+  statusCode: string,
+  kickoffAt: Date,
+  now?: Date,
+): MatchListBucket {
+  const state = getMatchState(statusCode, kickoffAt, now);
+  if (state === 'live') return 'live';
+  if (state === 'upcoming') return 'upcoming';
+  return 'finished';
 }
 
 export function isLive(statusCode: string): boolean {
