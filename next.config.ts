@@ -91,6 +91,22 @@ const nextConfig: NextConfig = {
         destination: '/ar/calendrier-botola-pro-2026-2027',
         permanent: true,
       },
+      // IMP-008: Botola classement-primary — wrong-locale slugs
+      {
+        source: '/en/classement-botola-pro',
+        destination: '/en/botola-pro-standings',
+        permanent: true,
+      },
+      {
+        source: '/fr/botola-pro-standings',
+        destination: '/fr/classement-botola-pro',
+        permanent: true,
+      },
+      {
+        source: '/ar/botola-pro-standings',
+        destination: '/ar/classement-botola-pro',
+        permanent: true,
+      },
       // BUG-016: /competition/uefa/ucl → canonical champions-league slug
       {
         source: '/:locale/competition/:country/ucl',

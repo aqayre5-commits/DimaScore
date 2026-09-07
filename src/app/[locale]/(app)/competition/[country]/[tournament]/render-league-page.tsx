@@ -217,6 +217,7 @@ export async function renderLeaguePage(
     {
       key: 'standings',
       hash: hashes.standings,
+      hashAliases: hashes.standings === 'standings' ? undefined : ['standings'],
       labelKey: 'standings',
       icon: 'table',
       content:
