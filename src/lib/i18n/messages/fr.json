@@ -160,7 +160,13 @@
     "tomorrow": "Demain"
   },
   "homepage": {
-    "pageHeading": "Football aujourd'hui — scores en direct, calendrier et résultats",
+    "pageHeading": "Matchs du jour en direct",
+    "metaTitle": "Matchs du jour en direct — résultats et calendrier | DimaScore",
+    "metaDescription": "Matchs du jour en direct : résultats et calendrier. Couverture gratuite, sans paris ni cotes.",
+    "editionMetaTitle": "Matchs du Maroc aujourd'hui en direct — Botola et Lions de l'Atlas | DimaScore",
+    "editionMetaDescription": "Matchs du Maroc aujourd'hui en direct : résultats et calendrier Botola, Coupe du Trône et Lions de l'Atlas. Couverture gratuite, sans paris.",
+    "editionH1": "Football marocain aujourd'hui — matchs et scores en direct",
+    "editionLead": "Matchs du jour en direct, sans paris.",
     "followAria": "Suivre {name}",
     "unfollowAria": "Ne plus suivre {name}",
     "yourMatches": "Mes matchs",

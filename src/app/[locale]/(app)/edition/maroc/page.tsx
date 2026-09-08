@@ -72,28 +72,12 @@ const ALL_LEFT_RAIL_IDS = LEFT_RAIL_SECTIONS.flatMap((s) => s.ids);
 
 // ── Metadata ──
 
-const EDITION_META: Record<Locale, { title: string; description: string }> = {
-  fr: {
-    title: 'DimaScore Maroc — Botola Pro, Atlas Lions, Coupe du Trône en direct',
-    description:
-      "Édition Maroc de DimaScore : scores en direct Botola Pro, Botola 2, Coupe du Trône, Atlas Lions, AFCON, WAFCON et joueurs marocains à l'étranger.",
-  },
-  en: {
-    title: 'DimaScore Morocco — Botola Pro, Atlas Lions, Coupe du Trône live',
-    description:
-      'Morocco edition of DimaScore: live scores for Botola Pro, Botola 2, Coupe du Trône, Atlas Lions, AFCON, WAFCON and Moroccan players abroad.',
-  },
-  ar: {
-    title: 'ديماسكور المغرب — البطولة الاحترافية، أسود الأطلس، كأس العرش مباشر',
-    description:
-      'النسخة المغربية من ديماسكور: نتائج مباشرة للبطولة الاحترافية، القسم الثاني، كأس العرش، أسود الأطلس، كأس أمم إفريقيا والمحترفين المغاربة بالخارج.',
-  },
-};
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
   const typedLocale = locale as Locale;
-  const meta = EDITION_META[typedLocale];
+  const t = await getTranslations({ locale, namespace: 'homepage' });
+  const title = t('editionMetaTitle');
+  const description = t('editionMetaDescription');
   const pageUrl = `${BASE_URL}/${locale}/edition/maroc`;
 
   const languages: Record<string, string> = {};
@@ -103,13 +87,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   languages['x-default'] = `${BASE_URL}/fr/edition/maroc`;
 
   return {
-    title: meta.title,
-    description: meta.description,
+    title,
+    description,
     alternates: { canonical: pageUrl, languages },
     robots: { index: true, follow: true },
     openGraph: {
-      title: meta.title,
-      description: meta.description,
+      title,
+      description,
       url: pageUrl,
       siteName: 'DimaScore',
       locale: typedLocale === 'fr' ? 'fr_MA' : typedLocale === 'ar' ? 'ar_MA' : 'en',
@@ -117,8 +101,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title: meta.title,
-      description: meta.description,
+      title,
+      description,
     },
   };
 }
@@ -203,20 +187,8 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
       center={
         <div className="space-y-4">
           <div className="rounded-xl border border-border-subtle bg-bg-surface p-4">
-            <h1 className="text-lg font-semibold text-text-primary">
-              {typedLocale === 'ar'
-                ? 'ديماسكور المغرب'
-                : typedLocale === 'fr'
-                  ? 'DimaScore Maroc'
-                  : 'DimaScore Morocco'}
-            </h1>
-            <p className="mt-1 text-sm text-text-secondary">
-              {typedLocale === 'ar'
-                ? 'تابعوا كرة القدم المغربية مباشرة'
-                : typedLocale === 'fr'
-                  ? 'Suivez le football marocain en direct'
-                  : 'Follow Moroccan football live'}
-            </p>
+            <h1 className="text-lg font-semibold text-text-primary">{t('editionH1')}</h1>
+            <p className="mt-1 text-sm text-text-secondary">{t('editionLead')}</p>
           </div>
           <HomeMatchTabs
             live={matchesByCategory.live}
