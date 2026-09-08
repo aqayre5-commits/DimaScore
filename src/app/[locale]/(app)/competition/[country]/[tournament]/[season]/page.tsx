@@ -12,6 +12,12 @@ import {
   botola2CompetitionMetaDescription,
   botola2CompetitionPageTitle,
 } from '@/lib/seo/botola-2-classement';
+import {
+  BOTOLA_PRO_COMPETITION_ID,
+  botolaProCompetitionHreflang,
+  botolaProCompetitionMetaDescription,
+  botolaProCompetitionPageTitle,
+} from '@/lib/seo/botola-classement';
 import { CompetitionContent, resolveEntry } from '../competition-content';
 
 interface PageProps {
@@ -43,18 +49,31 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     entry.competitionId === BOTOLA_2_COMPETITION_ID
       ? botola2CompetitionPageTitle(typedLocale, seasonLabel || null)
       : null;
-  const title = botola2Title ?? `${fullName} | DimaScore`;
+  const botolaProTitle =
+    entry.competitionId === BOTOLA_PRO_COMPETITION_ID
+      ? botolaProCompetitionPageTitle(typedLocale, seasonLabel || null)
+      : null;
+  const title = botola2Title ?? botolaProTitle ?? `${fullName} | DimaScore`;
   const description =
     entry.competitionId === BOTOLA_2_COMPETITION_ID
       ? botola2CompetitionMetaDescription(typedLocale, fullName)
-      : `${fullName} — standings, results, and statistics | DimaScore`;
+      : entry.competitionId === BOTOLA_PRO_COMPETITION_ID
+        ? botolaProCompetitionMetaDescription(typedLocale, fullName)
+        : `${fullName} — standings, results, and statistics | DimaScore`;
 
   const seasonUrl = `${BASE_URL}/${locale}/competition/${country}/${tournament}/${season}`;
   const baseUrlNoSeason = `${BASE_URL}/${locale}/competition/${country}/${tournament}`;
   const currentYear = competition
     ? (await resolveCompetitionSeason(competition.id, null)).currentSeasonYear
     : null;
-  const canonical = currentYear && seasonYear === currentYear ? baseUrlNoSeason : seasonUrl;
+  const hubLanguages =
+    entry.competitionId === BOTOLA_PRO_COMPETITION_ID
+      ? botolaProCompetitionHreflang(BASE_URL)
+      : null;
+  const canonical =
+    currentYear && seasonYear === currentYear
+      ? (hubLanguages?.[typedLocale] ?? baseUrlNoSeason)
+      : seasonUrl;
 
   const languages: Record<string, string> = {};
   for (const loc of locales) {

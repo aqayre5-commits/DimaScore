@@ -75,11 +75,6 @@ export async function BotolaSeasonOpenerPage({ locale }: { locale: Locale }) {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-lg font-semibold text-text-primary">{t('j1Title')}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-text-secondary">{t('j1Body')}</p>
-      </section>
-
-      <section className="mt-8">
         <h2 className="text-lg font-semibold text-text-primary">{t('highlightsTitle')}</h2>
         <ul className="mt-3 divide-y divide-border-subtle overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
           {BOTOLA_SEASON_OPENER_HIGHLIGHTS.map((item) => (
@@ -103,6 +98,11 @@ export async function BotolaSeasonOpenerPage({ locale }: { locale: Locale }) {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold text-text-primary">{t('j1Title')}</h2>
+        <p className="mt-2 text-sm leading-relaxed text-text-secondary">{t('j1Body')}</p>
       </section>
 
       <section className="mt-8">

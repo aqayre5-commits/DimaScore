@@ -60,7 +60,7 @@ export async function BotolaClassementPage({ locale }: { locale: Locale }) {
       <h1 className="mt-2 text-2xl font-bold text-text-primary">{t('h1')}</h1>
       <p className="mt-2 text-sm leading-relaxed text-text-secondary">{t('lead')}</p>
 
-      <section id={tableHash} className="mt-8 scroll-mt-24">
+      <section id={tableHash} className="mt-4 scroll-mt-24">
         {tableAliases.map((alias) => (
           <div key={alias} id={alias} className="h-0 w-0 overflow-hidden" aria-hidden />
         ))}

@@ -105,16 +105,31 @@ describe('botola matchs copy', () => {
     expect(Object.keys(packs.ar).sort()).toEqual(frKeys);
   });
 
-  it('uses titles that say matchs / مباريات, not only Botola Pro', () => {
-    expect(packs.fr.metaTitle).toBe('Matchs Botola Pro en direct 2026/27 | DimaScore');
-    expect(packs.ar.metaTitle).toBe('مباريات البطولة الاحترافية مباشرة 2026/27 | ديماسكور');
-    expect(packs.en.metaTitle).toBe('Botola Pro matches live 2026/27 | DimaScore');
-    expect(packs.fr.h1).toBe('Matchs Botola Pro en direct');
-    expect(packs.ar.h1).toBe('مباريات البطولة الاحترافية مباشرة');
+  it('uses titles that say matchs / scores / مباريات, not only Botola Pro', () => {
+    expect(packs.fr.metaTitle).toBe('Matchs & scores Botola Pro en direct 2026/27 | DimaScore');
+    expect(packs.ar.metaTitle).toBe('مباريات ونتائج البطولة الاحترافية مباشرة 2026/27 | ديماسكور');
+    expect(packs.en.metaTitle).toBe('Botola Pro matches & live scores 2026/27 | DimaScore');
+    expect(packs.fr.h1).toBe('Matchs & scores Botola Pro en direct');
+    expect(packs.en.h1).toBe('Botola Pro matches & live scores');
+    expect(packs.ar.h1).toBe('مباريات ونتائج البطولة الاحترافية مباشرة');
     expect(packs.fr.metaTitle).toMatch(/[Mm]atchs/);
+    expect(packs.fr.metaTitle).toMatch(/scores/i);
     expect(packs.ar.metaTitle).toMatch(/مباريات/);
+    expect(packs.ar.metaTitle).toMatch(/نتائج/);
     expect(packs.fr.h1).toMatch(/[Mm]atchs/);
     expect(packs.ar.h1).toMatch(/مباريات/);
+  });
+
+  it('meta descriptions mention today / upcoming / LIVE', () => {
+    expect(packs.fr.metaDescription).toMatch(/aujourd’hui|aujourd'hui/i);
+    expect(packs.fr.metaDescription).toMatch(/prochains/i);
+    expect(packs.fr.metaDescription).toMatch(/LIVE/);
+    expect(packs.en.metaDescription).toMatch(/today/i);
+    expect(packs.en.metaDescription).toMatch(/upcoming/i);
+    expect(packs.en.metaDescription).toMatch(/LIVE/);
+    expect(packs.ar.metaDescription).toMatch(/اليوم/);
+    expect(packs.ar.metaDescription).toMatch(/القادمة/);
+    expect(packs.ar.metaDescription).toMatch(/مباشر/);
   });
 
   it('SSR lead answers live matchs + same SoT + free/no betting and points to classement + calendrier', () => {

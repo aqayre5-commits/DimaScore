@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
@@ -42,6 +43,9 @@ import {
   botola2AboutTeamsValue,
   botola2HeaderTeamsCount,
 } from '@/lib/seo/botola-2-classement';
+import { BOTOLA_PRO_COMPETITION_ID, botolaClassementPath } from '@/lib/seo/botola-classement';
+import { botolaMatchsPath } from '@/lib/seo/botola-matchs';
+import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
 
 async function getCachedLeagueData(competitionId: number, seasonYear: number, locale: Locale) {
   'use cache';
@@ -125,6 +129,10 @@ export async function renderLeaguePage(
 ) {
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
+  const tLandings =
+    competition.id === BOTOLA_PRO_COMPETITION_ID
+      ? await getTranslations({ locale: rawLocale, namespace: 'botolaMatchs' })
+      : null;
 
   const requestedYear = seasonParam ? Number(seasonParam) : null;
   const {
@@ -262,6 +270,22 @@ export async function renderLeaguePage(
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
         <SeoBreadcrumb segments={breadcrumbs} compact />
+        {tLandings && (
+          <nav className="mt-2 mb-1 flex flex-wrap gap-3 text-sm">
+            <Link href={botolaMatchsPath(locale)} className="text-accent-azure hover:underline">
+              {tLandings('ctaFixtures')}
+            </Link>
+            <Link href={botolaClassementPath(locale)} className="text-accent-azure hover:underline">
+              {tLandings('ctaClassementLanding')}
+            </Link>
+            <Link
+              href={botolaSeasonOpenerPath(locale)}
+              className="text-accent-azure hover:underline"
+            >
+              {tLandings('ctaCalendar')}
+            </Link>
+          </nav>
+        )}
       </div>
 
       <InnerPageShell
