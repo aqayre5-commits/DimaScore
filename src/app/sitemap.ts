@@ -8,6 +8,7 @@ import { BASE_URL } from '@/lib/constants/site';
 import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
 import { botolaClassementPath } from '@/lib/seo/botola-classement';
 import { botola2ClassementPath } from '@/lib/seo/botola-2-classement';
+import { botolaMatchsPath } from '@/lib/seo/botola-matchs';
 
 const baseUrl = BASE_URL;
 
@@ -126,6 +127,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   entries.push(
     entry((l) => botola2ClassementPath(l), {
+      priority: 0.9,
+      changeFrequency: 'hourly',
+      lastModified: now,
+    }),
+  );
+
+  entries.push(
+    entry((l) => botolaMatchsPath(l), {
       priority: 0.9,
       changeFrequency: 'hourly',
       lastModified: now,

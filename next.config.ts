@@ -123,6 +123,52 @@ const nextConfig: NextConfig = {
         destination: '/ar/classement-botola-2',
         permanent: true,
       },
+      // IMP-010: Botola Pro matchs / live-scores — query alias + wrong-locale slugs
+      {
+        source: '/fr/matchs-de-botola',
+        destination: '/fr/matchs-botola-pro',
+        permanent: true,
+      },
+      {
+        source: '/ar/matchs-de-botola',
+        destination: '/ar/matchs-botola-pro',
+        permanent: true,
+      },
+      {
+        source: '/en/matchs-de-botola',
+        destination: '/en/botola-pro-matches',
+        permanent: true,
+      },
+      {
+        source: '/en/matchs-botola-pro',
+        destination: '/en/botola-pro-matches',
+        permanent: true,
+      },
+      {
+        source: '/fr/botola-pro-matches',
+        destination: '/fr/matchs-botola-pro',
+        permanent: true,
+      },
+      {
+        source: '/ar/botola-pro-matches',
+        destination: '/ar/matchs-botola-pro',
+        permanent: true,
+      },
+      {
+        source: '/en/botola-pro-fixtures',
+        destination: '/en/botola-pro-matches',
+        permanent: true,
+      },
+      {
+        source: '/fr/botola-pro-fixtures',
+        destination: '/fr/matchs-botola-pro',
+        permanent: true,
+      },
+      {
+        source: '/ar/botola-pro-fixtures',
+        destination: '/ar/matchs-botola-pro',
+        permanent: true,
+      },
       // BUG-016: /competition/uefa/ucl → canonical champions-league slug
       {
         source: '/:locale/competition/:country/ucl',
