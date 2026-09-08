@@ -15,6 +15,7 @@ import { getCountrySlug } from '@/lib/constants/country-slugs';
 import { rewriteBotolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
 import { rewriteBotolaClassementPath } from '@/lib/seo/botola-classement';
 import { rewriteBotola2ClassementPath } from '@/lib/seo/botola-2-classement';
+import { rewriteBotolaMatchsPath } from '@/lib/seo/botola-matchs';
 import type { Locale } from '@/lib/i18n/config';
 
 const localeLabels: Record<string, string> = {
@@ -44,6 +45,11 @@ export function LangSwitcher() {
     const botola2ClassementPath = rewriteBotola2ClassementPath(pathname, newLocale as Locale);
     if (botola2ClassementPath) {
       router.push(botola2ClassementPath);
+      return;
+    }
+    const matchsPath = rewriteBotolaMatchsPath(pathname, newLocale as Locale);
+    if (matchsPath) {
+      router.push(matchsPath);
       return;
     }
     const segments = pathname.split('/');
