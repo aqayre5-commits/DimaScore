@@ -160,7 +160,13 @@
     "tomorrow": "Tomorrow"
   },
   "homepage": {
-    "pageHeading": "Football today — live scores, fixtures & results",
+    "pageHeading": "Today's matches live",
+    "metaTitle": "Today's matches live — results and fixtures | DimaScore",
+    "metaDescription": "Today's matches live: results and fixtures. Free coverage, no betting odds.",
+    "editionMetaTitle": "Morocco matches today live — Botola and Atlas Lions | DimaScore",
+    "editionMetaDescription": "Morocco matches today live: Botola results and fixtures, Coupe du Trône and Atlas Lions. Free coverage, no betting.",
+    "editionH1": "Moroccan football today — live matches and results",
+    "editionLead": "Today's matches live — no betting.",
     "followAria": "Follow {name}",
     "unfollowAria": "Unfollow {name}",
     "yourMatches": "Your matches",

@@ -32,32 +32,12 @@ interface PageProps {
 
 const baseUrl = BASE_URL;
 
-// ── Per-locale metadata ──
-
-const HOME_META: Record<Locale, { title: string; description: string }> = {
-  fr: {
-    title:
-      'DimaScore \u2014 Football marocain : scores en direct, calendrier, classements et couverture des matchs',
-    description:
-      "Scores en direct, calendrier, classements et couverture des matchs pour la Botola, les Lions de l'Atlas, les comp\u00e9titions de la CAF et les Marocains de l'\u00e9tranger.",
-  },
-  en: {
-    title: 'DimaScore \u2014 Moroccan Football Live Scores, Fixtures, Standings & Match Coverage',
-    description:
-      'Live scores, fixtures, standings and match coverage for Botola, the Atlas Lions, CAF competitions and Moroccan players abroad.',
-  },
-  ar: {
-    title:
-      '\u062f\u064a\u0645\u0627 \u0633\u0643\u0648\u0631 \u2014 \u0643\u0631\u0629 \u0627\u0644\u0642\u062f\u0645 \u0627\u0644\u0645\u063a\u0631\u0628\u064a\u0629: \u0646\u062a\u0627\u0626\u062c \u0645\u0628\u0627\u0634\u0631\u0629\u060c \u0645\u0628\u0627\u0631\u064a\u0627\u062a\u060c \u062a\u0631\u062a\u064a\u0628 \u0648\u062a\u063a\u0637\u064a\u0629 \u0634\u0627\u0645\u0644\u0629',
-    description:
-      '\u0646\u062a\u0627\u0626\u062c \u0645\u0628\u0627\u0634\u0631\u0629 \u0648\u0645\u0648\u0627\u0639\u064a\u062f \u0627\u0644\u0645\u0628\u0627\u0631\u064a\u0627\u062a \u0648\u0627\u0644\u062a\u0631\u062a\u064a\u0628 \u0648\u062a\u063a\u0637\u064a\u0629 \u0634\u0627\u0645\u0644\u0629 \u0644\u0643\u0631\u0629 \u0627\u0644\u0642\u062f\u0645 \u0627\u0644\u0645\u063a\u0631\u0628\u064a\u0629: \u0627\u0644\u0628\u0637\u0648\u0644\u0629 \u0627\u0644\u0627\u062d\u062a\u0631\u0627\u0641\u064a\u0629\u060c \u0623\u0633\u0648\u062f \u0627\u0644\u0623\u0637\u0644\u0633\u060c \u0645\u0633\u0627\u0628\u0642\u0627\u062a \u0627\u0644\u0643\u0627\u0641\u060c \u0648\u0627\u0644\u0644\u0627\u0639\u0628\u0648\u0646 \u0627\u0644\u0645\u063a\u0627\u0631\u0628\u0629 \u0627\u0644\u0645\u062d\u062a\u0631\u0641\u0648\u0646 \u0641\u064a \u0627\u0644\u062e\u0627\u0631\u062c.',
-  },
-};
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
   const typedLocale = locale as Locale;
-  const meta = HOME_META[typedLocale];
+  const t = await getTranslations({ locale, namespace: 'homepage' });
+  const title = t('metaTitle');
+  const description = t('metaDescription');
   const pageUrl = `${baseUrl}/${locale}`;
 
   const languages: Record<string, string> = {};
@@ -67,13 +47,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   languages['x-default'] = `${baseUrl}/${defaultLocale}`;
 
   return {
-    title: meta.title,
-    description: meta.description,
+    title,
+    description,
     alternates: { canonical: pageUrl, languages },
     robots: { index: true, follow: true },
     openGraph: {
-      title: meta.title,
-      description: meta.description,
+      title,
+      description,
       url: pageUrl,
       siteName: 'DimaScore',
       locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
@@ -81,8 +61,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image' as const,
-      title: meta.title,
-      description: meta.description,
+      title,
+      description,
     },
   };
 }
