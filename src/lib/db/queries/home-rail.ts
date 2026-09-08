@@ -140,8 +140,6 @@ export interface HomeRailData {
   fifaRanking: ResolvedFifaRankingRow[];
 }
 
-const PRIMARY_RAIL_COMP_IDS = new Set([200]);
-
 async function buildLeagueSnapshots(
   locale: Locale,
   leagues: typeof HOMEPAGE_LEAGUES,
@@ -179,38 +177,40 @@ async function buildLeagueSnapshots(
 }
 
 /**
- * Above-the-fold rail: next match + Botola snapshot only.
- * Secondary European tables / FIFA / performances stream separately.
+ * Above-the-fold rail: next match only.
+ * TABLE|SCORERS lives entirely in the secondary rail so the homepage does not
+ * stack a Botola-only widget on top of the multi-league widget.
  */
 export async function getHomeRailPrimary(locale: Locale): Promise<HomeRailData> {
   'use cache';
   cacheLife('minutes');
+  void locale; // cache key; primary payload is locale-agnostic (next match only)
 
-  const primaryLeagues = HOMEPAGE_LEAGUES.filter((l) => PRIMARY_RAIL_COMP_IDS.has(l.compId));
-  const [nextFeaturedCandidates, leagueSnapshots] = await Promise.all([
-    timedQuery('getNextFeaturedMatches', () => getNextFeaturedMatches(db)),
-    buildLeagueSnapshots(locale, primaryLeagues),
-  ]);
+  const nextFeaturedCandidates = await timedQuery('getNextFeaturedMatches', () =>
+    getNextFeaturedMatches(db),
+  );
 
   return {
     nextFeaturedCandidates,
     liveGroupStandings: [],
     topMatches: [],
     moroccanPerformances: [],
-    leagueSnapshots,
+    leagueSnapshots: [],
     topPerformances: [],
     fifaRanking: [],
   };
 }
 
-/** Below-the-fold rail: other league tables, FIFA ranking, top performances. */
+/**
+ * Below-the-fold rail: one multi-league TABLE|SCORERS widget (Botola included
+ * in the dropdown alongside world leagues), FIFA ranking, top performances.
+ */
 export async function getHomeRailSecondary(locale: Locale): Promise<HomeRailData> {
   'use cache';
   cacheLife('minutes');
 
-  const secondaryLeagues = HOMEPAGE_LEAGUES.filter((l) => !PRIMARY_RAIL_COMP_IDS.has(l.compId));
   const [leagueSnapshots, topPerformances] = await Promise.all([
-    buildLeagueSnapshots(locale, secondaryLeagues),
+    buildLeagueSnapshots(locale, HOMEPAGE_LEAGUES),
     timedQuery('getTopPerformances', () => getTopPerformances(locale, 10)),
   ]);
 
