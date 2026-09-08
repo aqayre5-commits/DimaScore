@@ -10,6 +10,8 @@ import {
   botolaClassementPath,
   botolaClassementTableHash,
   botolaClassementTableHashAliases,
+  botolaProCompetitionMetaDescription,
+  botolaProCompetitionPageTitle,
   isBotolaClassementSlug,
   rewriteBotolaClassementPath,
 } from '@/lib/seo/botola-classement';
@@ -100,10 +102,16 @@ describe('botola classement copy (LANG-022)', () => {
   });
 
   it('uses the locked meta titles and H1s', () => {
-    expect(packs.fr.metaTitle).toBe('Classement Botola Pro en direct 2026/27 | DimaScore');
+    expect(packs.fr.metaTitle).toBe('Classement Botola Pro 2026/27 en direct | DimaScore');
+    expect(packs.en.metaTitle).toBe('Botola Pro standings live 2026/27 | DimaScore');
     expect(packs.ar.metaTitle).toBe('ترتيب البطولة الاحترافية مباشرة 2026/27 | ديماسكور');
-    expect(packs.fr.h1).toBe('Classement Botola Pro en direct');
-    expect(packs.ar.h1).toBe('ترتيب البطولة الاحترافية مباشرة');
+    expect(packs.fr.h1).toBe('Classement Botola Pro 2026/27 en direct');
+    expect(packs.en.h1).toBe('Botola Pro standings live 2026/27');
+    expect(packs.ar.h1).toBe('ترتيب البطولة الاحترافية مباشرة 2026/27');
+    expect(packs.fr.metaTitle.startsWith('Classement Botola')).toBe(true);
+    expect(packs.en.metaTitle.startsWith('Botola Pro standings')).toBe(true);
+    expect(packs.ar.metaTitle).toMatch(/ترتيب البطولة الاحترافية مباشرة/);
+    expect(packs.ar.tableTitle).toMatch(/البطولة الاحترافية/);
   });
 
   it('does not ship FR/AR metas in English standings wording (LANG-019)', () => {
@@ -136,6 +144,35 @@ describe('botola classement copy (LANG-022)', () => {
     for (const pack of Object.values(packs)) {
       expect(Object.values(pack).join('\n')).not.toMatch(ODDS_UI_RE);
     }
+  });
+});
+
+describe('botola pro competition hub meta', () => {
+  it('uses locale-correct matchs/classement/stats titles with product season', () => {
+    expect(botolaProCompetitionPageTitle('fr', null)).toBe(
+      'Botola Pro — matchs, classement et stats | DimaScore',
+    );
+    expect(botolaProCompetitionPageTitle('fr', '2026/27')).toBe(
+      'Botola Pro 2026/27 — matchs, classement et stats | DimaScore',
+    );
+    expect(botolaProCompetitionPageTitle('en', '2026/27')).toBe(
+      'Botola Pro 2026/27 — matches, standings and stats | DimaScore',
+    );
+    expect(botolaProCompetitionPageTitle('ar', '2026/27')).toBe(
+      'البطولة الاحترافية 2026/27 — المباريات والترتيب والإحصائيات | ديماسكور',
+    );
+  });
+
+  it('does not put EN standings wording on FR/AR hub descriptions', () => {
+    expect(botolaProCompetitionMetaDescription('fr', 'Botola Pro 2026/27')).not.toMatch(
+      EN_STANDINGS_META_RE,
+    );
+    expect(botolaProCompetitionMetaDescription('ar', 'البطولة الاحترافية 2026/27')).not.toMatch(
+      EN_STANDINGS_META_RE,
+    );
+    expect(botolaProCompetitionMetaDescription('en', 'Botola Pro 2026/27')).toMatch(
+      EN_STANDINGS_META_RE,
+    );
   });
 });
 

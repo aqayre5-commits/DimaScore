@@ -15,6 +15,11 @@ import {
   botola2CompetitionMetaDescription,
   botola2CompetitionPageTitle,
 } from '@/lib/seo/botola-2-classement';
+import {
+  BOTOLA_PRO_COMPETITION_ID,
+  botolaProCompetitionMetaDescription,
+  botolaProCompetitionPageTitle,
+} from '@/lib/seo/botola-classement';
 import { CompetitionContent, resolveEntry } from './competition-content';
 
 interface PageProps {
@@ -109,6 +114,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       if (competition.id === BOTOLA_2_COMPETITION_ID) {
         title = botola2CompetitionPageTitle(typedLocale, season);
         description = botola2CompetitionMetaDescription(typedLocale, displayName);
+      } else if (competition.id === BOTOLA_PRO_COMPETITION_ID) {
+        title = botolaProCompetitionPageTitle(typedLocale, season);
+        description = botolaProCompetitionMetaDescription(typedLocale, displayName);
       } else {
         description = `${displayName} — standings, matches, and statistics | DimaScore`;
       }
