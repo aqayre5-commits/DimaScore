@@ -1,6 +1,9 @@
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { LEAGUE_IDS } from '@/lib/constants/canonical-ids';
-import { BOTOLA_COMPETITION_TAB_HASH } from '@/lib/seo/botola-season-opener';
+import {
+  BOTOLA_COMPETITION_HUB,
+  BOTOLA_COMPETITION_TAB_HASH,
+} from '@/lib/seo/botola-season-opener';
 
 /** Botola Pro (API-Football / site SoT). */
 export const BOTOLA_PRO_COMPETITION_ID = LEAGUE_IDS.BOTOLA_PRO_1;
@@ -93,4 +96,14 @@ export function botolaProCompetitionMetaDescription(locale: Locale, displayName:
     return `${displayName} — المباريات والترتيب والإحصائيات | ديماسكور`;
   }
   return `${displayName} — matches, standings and statistics | DimaScore`;
+}
+
+/** Self-canonical + hreflang for the Botola Pro competition hub (Latin AR slug). */
+export function botolaProCompetitionHreflang(baseUrl: string): Record<string, string> {
+  const languages: Record<string, string> = {};
+  for (const loc of locales) {
+    languages[loc] = `${baseUrl}${BOTOLA_COMPETITION_HUB[loc]}`;
+  }
+  languages['x-default'] = `${baseUrl}${BOTOLA_COMPETITION_HUB[defaultLocale]}`;
+  return languages;
 }

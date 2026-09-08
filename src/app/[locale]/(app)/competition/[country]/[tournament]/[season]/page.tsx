@@ -14,6 +14,7 @@ import {
 } from '@/lib/seo/botola-2-classement';
 import {
   BOTOLA_PRO_COMPETITION_ID,
+  botolaProCompetitionHreflang,
   botolaProCompetitionMetaDescription,
   botolaProCompetitionPageTitle,
 } from '@/lib/seo/botola-classement';
@@ -65,7 +66,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const currentYear = competition
     ? (await resolveCompetitionSeason(competition.id, null)).currentSeasonYear
     : null;
-  const canonical = currentYear && seasonYear === currentYear ? baseUrlNoSeason : seasonUrl;
+  const hubLanguages =
+    entry.competitionId === BOTOLA_PRO_COMPETITION_ID
+      ? botolaProCompetitionHreflang(BASE_URL)
+      : null;
+  const canonical =
+    currentYear && seasonYear === currentYear
+      ? (hubLanguages?.[typedLocale] ?? baseUrlNoSeason)
+      : seasonUrl;
 
   const languages: Record<string, string> = {};
   for (const loc of locales) {

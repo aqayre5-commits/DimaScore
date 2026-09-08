@@ -17,6 +17,7 @@ import {
 } from '@/lib/seo/botola-2-classement';
 import {
   BOTOLA_PRO_COMPETITION_ID,
+  botolaProCompetitionHreflang,
   botolaProCompetitionMetaDescription,
   botolaProCompetitionPageTitle,
 } from '@/lib/seo/botola-classement';
@@ -134,10 +135,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   languages['x-default'] = languages[defaultLocale];
 
+  const isBotolaPro = entry.competitionId === BOTOLA_PRO_COMPETITION_ID;
+  const hubLanguages = isBotolaPro ? botolaProCompetitionHreflang(baseUrl) : languages;
+  const canonical = hubLanguages[typedLocale] ?? languages[typedLocale];
+
   return {
     title: title ?? `${displayName} | DimaScore`,
     description,
-    alternates: { languages },
+    alternates: { canonical, languages: hubLanguages },
     robots: { index: true, follow: true },
   };
 }

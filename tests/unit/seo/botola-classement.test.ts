@@ -10,6 +10,7 @@ import {
   botolaClassementPath,
   botolaClassementTableHash,
   botolaClassementTableHashAliases,
+  botolaProCompetitionHreflang,
   botolaProCompetitionMetaDescription,
   botolaProCompetitionPageTitle,
   isBotolaClassementSlug,
@@ -173,6 +174,15 @@ describe('botola pro competition hub meta', () => {
     expect(botolaProCompetitionMetaDescription('en', 'Botola Pro 2026/27')).toMatch(
       EN_STANDINGS_META_RE,
     );
+  });
+
+  it('self-canonicalises the Latin hub URLs (IMP-012)', () => {
+    const languages = botolaProCompetitionHreflang('https://dimascore.ma');
+    expect(languages.fr).toBe('https://dimascore.ma/fr/competition/maroc/botola-pro');
+    expect(languages.en).toBe('https://dimascore.ma/en/competition/morocco/botola-pro');
+    expect(languages.ar).toBe('https://dimascore.ma/ar/competition/maroc/botola-pro');
+    expect(languages['x-default']).toBe(languages.fr);
+    expect(languages.ar).not.toMatch(/%|البطولة/);
   });
 });
 
