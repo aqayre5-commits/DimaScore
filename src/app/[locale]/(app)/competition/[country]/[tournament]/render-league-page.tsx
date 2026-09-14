@@ -4,6 +4,9 @@ import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildGraph, buildWebPage, buildBreadcrumbList } from '@/lib/seo/jsonld';
+import { BASE_URL } from '@/lib/constants/site';
 import {
   getRelatedCompetitionIds,
   type MegaMenuEntry,
@@ -269,7 +272,24 @@ export async function renderLeaguePage(
   return (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
-        <SeoBreadcrumb segments={breadcrumbs} compact />
+        <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
+        <JsonLd
+          graph={buildGraph(
+            buildWebPage({
+              url: `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`,
+              name: competitionName,
+              locale,
+              baseUrl: BASE_URL,
+              type: 'CollectionPage',
+              hasBreadcrumb: true,
+            }),
+            buildBreadcrumbList(
+              breadcrumbs,
+              `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`,
+              BASE_URL,
+            ),
+          )}
+        />
         {tLandings && (
           <nav className="mt-2 mb-1 flex flex-wrap gap-3 text-sm">
             <Link href={botolaMatchsPath(locale)} className="text-accent-azure hover:underline">

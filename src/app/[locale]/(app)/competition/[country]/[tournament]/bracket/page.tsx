@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { type Locale } from '@/lib/i18n/config';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildGraph, buildWebPage, buildBreadcrumbList, webPageId } from '@/lib/seo/jsonld';
 import { getMetadataForCompetition } from '@/lib/constants/tournament-metadata';
 import { ALL_ENTRIES, type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
 import { BracketPageClient } from '@/components/tournament/BracketPageClient';
@@ -137,7 +139,41 @@ export default async function BracketPage({ params, searchParams }: PageProps) {
   return (
     <>
       <div className="mx-auto w-full max-w-7xl px-4 py-6">
-        <SeoBreadcrumb segments={breadcrumbs} compact />
+        <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
+        <JsonLd
+          graph={buildGraph(
+            buildWebPage({
+              url: `${baseUrl}/${locale}/competition/${decodeURIComponent(rawCountry)}/${tournament}/bracket`,
+              name: `${competitionName} — ${bracketTitle}`,
+              locale,
+              baseUrl,
+              type: 'CollectionPage',
+              hasBreadcrumb: true,
+            }),
+            buildBreadcrumbList(
+              breadcrumbs,
+              `${baseUrl}/${locale}/competition/${decodeURIComponent(rawCountry)}/${tournament}/bracket`,
+              baseUrl,
+            ),
+            isWc
+              ? {
+                  '@type': 'SportsEvent',
+                  '@id': `${baseUrl}/${locale}/competition/${decodeURIComponent(rawCountry)}/${tournament}/bracket#event`,
+                  name: `${competitionName} — ${bracketTitle}`,
+                  startDate: '2026-06-28',
+                  endDate: '2026-07-19',
+                  location: { '@type': 'Place', name: 'United States, Canada, Mexico' },
+                  organizer: { '@type': 'SportsOrganization', name: 'FIFA' },
+                  description: introText,
+                  mainEntityOfPage: {
+                    '@id': webPageId(
+                      `${baseUrl}/${locale}/competition/${decodeURIComponent(rawCountry)}/${tournament}/bracket`,
+                    ),
+                  },
+                }
+              : null,
+          )}
+        />
         <h1 className="mt-4 text-2xl font-semibold text-text-primary">
           {competitionName} — {bracketTitle}
         </h1>
@@ -153,30 +189,6 @@ export default async function BracketPage({ params, searchParams }: PageProps) {
           gridConfig={bracketData?.gridConfig}
         />
       </div>
-
-      {isWc && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'SportsEvent',
-              name: `${competitionName} — ${bracketTitle}`,
-              startDate: '2026-06-28',
-              endDate: '2026-07-19',
-              location: {
-                '@type': 'Place',
-                name: 'United States, Canada, Mexico',
-              },
-              organizer: {
-                '@type': 'SportsOrganization',
-                name: 'FIFA',
-              },
-              description: introText,
-            }),
-          }}
-        />
-      )}
     </>
   );
 }

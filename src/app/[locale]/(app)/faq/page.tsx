@@ -4,7 +4,9 @@ import { type Locale } from '@/lib/i18n/config';
 import { SITE_PAGES_CONTENT } from '@/lib/constants/site-pages-content';
 import { buildStaticPageMetadata } from '@/lib/seo/static-page-metadata';
 import { SeoBreadcrumb } from '@/components/chrome/SeoBreadcrumb';
-import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildGraph, buildWebPage, buildFaqPage, buildBreadcrumbList } from '@/lib/seo/jsonld';
+import { BASE_URL } from '@/lib/constants/site';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -26,6 +28,7 @@ export default async function FaqPage({ params }: PageProps) {
       <SeoBreadcrumb
         segments={[{ label: 'DimaScore', href: `/${locale}` }, { label: content.title }]}
         compact
+        emitJsonLd={false}
       />
       <div className="mt-2">
         <h1 className="text-2xl font-bold text-text-primary">{content.title}</h1>
@@ -41,7 +44,26 @@ export default async function FaqPage({ params }: PageProps) {
         </dl>
       </div>
 
-      <FaqPageJsonLd faqs={content.items.map((it) => ({ question: it.q, answer: it.a }))} />
+      <JsonLd
+        graph={buildGraph(
+          buildWebPage({
+            url: `${BASE_URL}/${locale}/faq`,
+            name: content.title,
+            locale,
+            baseUrl: BASE_URL,
+            hasBreadcrumb: true,
+          }),
+          buildFaqPage(
+            content.items.map((it) => ({ question: it.q, answer: it.a })),
+            `${BASE_URL}/${locale}/faq`,
+          ),
+          buildBreadcrumbList(
+            [{ label: 'DimaScore', href: `/${locale}` }, { label: content.title }],
+            `${BASE_URL}/${locale}/faq`,
+            BASE_URL,
+          ),
+        )}
+      />
     </div>
   );
 }

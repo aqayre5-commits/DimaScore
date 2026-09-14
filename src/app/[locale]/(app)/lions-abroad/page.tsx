@@ -4,7 +4,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { SeoBreadcrumb } from '@/components/chrome/SeoBreadcrumb';
-import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildGraph, buildWebPage, buildFaqPage, buildBreadcrumbList } from '@/lib/seo/jsonld';
 import { getLionsAbroadHubData } from '@/lib/db/queries/lions-abroad';
 import { LionsAbroadFixtures } from '@/components/lions-abroad/LionsAbroadFixtures';
 import { HomeLionsAbroad } from '@/components/homepage/HomeLionsAbroad';
@@ -80,6 +81,7 @@ export default async function LionsAbroadPage({ params }: PageProps) {
       <SeoBreadcrumb
         segments={[{ label: 'DimaScore', href: `/${locale}` }, { label: t('title') }]}
         compact
+        emitJsonLd={false}
       />
       <h1 className="mt-2 text-2xl font-bold text-text-primary">{t('title')}</h1>
       <p className="mt-2 text-sm text-text-secondary">{t('intro')}</p>
@@ -163,7 +165,26 @@ export default async function LionsAbroadPage({ params }: PageProps) {
         </dl>
       </section>
 
-      <FaqPageJsonLd faqs={faqs.map((it) => ({ question: it.q, answer: it.a }))} />
+      <JsonLd
+        graph={buildGraph(
+          buildWebPage({
+            url: `${BASE_URL}/${locale}/lions-abroad`,
+            name: t('title'),
+            locale,
+            baseUrl: BASE_URL,
+            hasBreadcrumb: true,
+          }),
+          buildFaqPage(
+            faqs.map((it) => ({ question: it.q, answer: it.a })),
+            `${BASE_URL}/${locale}/lions-abroad`,
+          ),
+          buildBreadcrumbList(
+            [{ label: 'DimaScore', href: `/${locale}` }, { label: t('title') }],
+            `${BASE_URL}/${locale}/lions-abroad`,
+            BASE_URL,
+          ),
+        )}
+      />
     </div>
   );
 }
