@@ -10,6 +10,7 @@ import { getCompetitionById } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
 import { BASE_URL } from '@/lib/constants/site';
+import { buildLeagueMeta } from '@/lib/seo/hub-metadata';
 import {
   BOTOLA_2_COMPETITION_ID,
   botola2CompetitionMetaDescription,
@@ -119,7 +120,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         title = botolaProCompetitionPageTitle(typedLocale, season);
         description = botolaProCompetitionMetaDescription(typedLocale, displayName);
       } else {
-        description = `${displayName} — standings, matches, and statistics | DimaScore`;
+        const leagueMeta = buildLeagueMeta({
+          competition: competition.name[typedLocale] ?? competition.name['en'] ?? displayName,
+          seasonLabel: season,
+          locale,
+        });
+        title = leagueMeta.title;
+        description = leagueMeta.description;
       }
     }
   }

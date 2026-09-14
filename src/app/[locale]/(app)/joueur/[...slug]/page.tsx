@@ -27,6 +27,7 @@ import {
 import { getTeamFixturesWithCompetition } from '@/lib/db/queries/team';
 import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
 import { BASE_URL } from '@/lib/constants/site';
+import { buildPlayerMeta } from '@/lib/seo/hub-metadata';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -55,8 +56,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const name = player.name[typedLocale] ?? player.name['en'] ?? playerSlug;
-  const title = `${name} | DimaScore`;
-  const description = `${name} — season stats, career, transfers and more.`;
+  const { title, description } = buildPlayerMeta({ player: name, locale });
   const pageUrl = `${baseUrl}/${locale}/joueur/${rawSlug.join('/')}`;
 
   const languages: Record<string, string> = {};

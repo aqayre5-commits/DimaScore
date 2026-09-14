@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { buildTeamMeta } from '@/lib/seo/hub-metadata';
 import { notFound } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
@@ -127,10 +128,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const name = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
-  const tTeam = await getTranslations({ locale, namespace: 'teamPage' });
-  const sections = tTeam('seoSections');
-  const title = `${name} — ${sections} | DimaScore`;
-  const description = `${name} — ${sections}.`;
+  const { title, description } = buildTeamMeta({ team: name, locale });
   const pageUrl = `${baseUrl}/${locale}/equipe/${rawSlug.join('/')}`;
 
   const languages: Record<string, string> = {};
