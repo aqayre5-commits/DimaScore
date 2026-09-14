@@ -24,7 +24,13 @@ import {
 } from '@/lib/constants/competitions-mega-menu';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
-import { MatchJsonLd } from '@/components/seo/MatchJsonLd';
+import { JsonLd } from '@/components/seo/JsonLd';
+import {
+  buildGraph,
+  buildWebPage,
+  buildSportsEventMatch,
+  buildBreadcrumbList,
+} from '@/lib/seo/jsonld';
 import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
@@ -244,21 +250,37 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const pageContent = (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
-        <SeoBreadcrumb segments={breadcrumbs} compact />
-        <MatchJsonLd
-          url={`${BASE_URL}/${typedLocale}/match/${fixtureId}`}
-          homeName={home}
-          awayName={away}
-          homeLogo={match.homeTeam?.logoUrl}
-          awayLogo={match.awayTeam?.logoUrl}
-          competitionName={compName}
-          kickoffAt={match.kickoffAt}
-          statusCode={match.statusCode}
-          venueName={match.venue?.name}
-          venueCity={match.venue?.city}
-          homeSameAs={sameAsForTeam(match.homeTeam?.id)}
-          awaySameAs={sameAsForTeam(match.awayTeam?.id)}
-          competitionSameAs={sameAsForCompetition(match.competition.id)}
+        <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
+        <JsonLd
+          graph={buildGraph(
+            buildWebPage({
+              url: `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+              name: `${home} - ${away} — ${compName}`,
+              locale: typedLocale,
+              baseUrl: BASE_URL,
+              hasBreadcrumb: true,
+            }),
+            buildSportsEventMatch({
+              url: `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+              homeName: home,
+              awayName: away,
+              homeLogo: match.homeTeam?.logoUrl,
+              awayLogo: match.awayTeam?.logoUrl,
+              competitionName: compName,
+              kickoffAt: match.kickoffAt,
+              statusCode: match.statusCode,
+              venueName: match.venue?.name,
+              venueCity: match.venue?.city,
+              homeSameAs: sameAsForTeam(match.homeTeam?.id),
+              awaySameAs: sameAsForTeam(match.awayTeam?.id),
+              competitionSameAs: sameAsForCompetition(match.competition.id),
+            }),
+            buildBreadcrumbList(
+              breadcrumbs,
+              `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+              BASE_URL,
+            ),
+          )}
         />
       </div>
 

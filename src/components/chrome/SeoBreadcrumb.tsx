@@ -15,13 +15,23 @@ interface SeoBreadcrumbProps {
    * search engines consume and is unaffected by this flag.
    */
   compact?: boolean;
+  /**
+   * Emit the BreadcrumbList JSON-LD from this component. Default true. Set false on pages that
+   * fold the breadcrumb into a single page-level `@graph` (via `buildBreadcrumbList`) so the trail
+   * is not double-emitted — the visible row still renders.
+   */
+  emitJsonLd?: boolean;
 }
 
 /**
  * SEO breadcrumb with schema.org BreadcrumbList JSON-LD.
  * Last segment is non-clickable (current page). Server component.
  */
-export function SeoBreadcrumb({ segments, compact = false }: SeoBreadcrumbProps) {
+export function SeoBreadcrumb({
+  segments,
+  compact = false,
+  emitJsonLd = true,
+}: SeoBreadcrumbProps) {
   // BreadcrumbList rules: every ListItem except the last requires an absolute `item` URL. The
   // visible trail can include an unlinkable node (e.g. a country with no landing page) — drop
   // such non-last hrefless nodes from the JSON-LD and renumber so it stays valid, and emit
@@ -76,10 +86,12 @@ export function SeoBreadcrumb({ segments, compact = false }: SeoBreadcrumbProps)
           </li>
         ))}
       </ol>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {emitJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
     </nav>
   );
 }

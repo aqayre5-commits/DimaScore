@@ -5,7 +5,8 @@ import { notFound } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
-import { SportsTeamJsonLd } from '@/components/seo/SportsTeamJsonLd';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildGraph, buildWebPage, buildSportsTeam, buildBreadcrumbList } from '@/lib/seo/jsonld';
 import { sameAsForTeam } from '@/lib/constants/entity-links';
 import {
   findEntryByCompetitionId,
@@ -306,15 +307,32 @@ export default async function TeamPage({ params }: PageProps) {
   return (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
-        <SeoBreadcrumb segments={breadcrumbs} compact />
-        <SportsTeamJsonLd
-          url={`${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(teamSlug)}`}
-          name={teamName}
-          logo={team.logoUrl}
-          competitionName={
-            primaryComp ? (primaryComp.name[typedLocale] ?? primaryComp.name['en']) : null
-          }
-          sameAs={sameAsForTeam(team.id)}
+        <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
+        <JsonLd
+          graph={buildGraph(
+            buildWebPage({
+              url: `${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(teamSlug)}`,
+              name: teamName,
+              locale: typedLocale,
+              baseUrl,
+              hasBreadcrumb: true,
+              primaryImage: team.logoUrl,
+            }),
+            buildSportsTeam({
+              url: `${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(teamSlug)}`,
+              name: teamName,
+              logo: team.logoUrl,
+              competitionName: primaryComp
+                ? (primaryComp.name[typedLocale] ?? primaryComp.name['en'])
+                : null,
+              sameAs: sameAsForTeam(team.id),
+            }),
+            buildBreadcrumbList(
+              breadcrumbs,
+              `${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(teamSlug)}`,
+              baseUrl,
+            ),
+          )}
         />
       </div>
 

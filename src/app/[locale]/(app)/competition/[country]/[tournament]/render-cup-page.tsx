@@ -28,9 +28,16 @@ import { RightRail } from '@/components/tournament/RightRail';
 import { CompetitionMediaSection } from '@/components/tournament/CompetitionMediaSection';
 import { AboutCard } from '@/components/tournament/AboutCard';
 import { TournamentInfoStrip } from '@/components/tournament/TournamentInfoStrip';
-import { SportsEventJsonLd } from '@/components/seo/SportsEventJsonLd';
 import { sameAsForCompetition } from '@/lib/constants/entity-links';
-import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
+import { JsonLd } from '@/components/seo/JsonLd';
+import {
+  buildGraph,
+  buildWebPage,
+  buildSportsEventTournament,
+  buildFaqPage,
+  buildBreadcrumbList,
+} from '@/lib/seo/jsonld';
+import { BASE_URL } from '@/lib/constants/site';
 import { HashScrollHighlight } from '@/components/shared/HashScrollHighlight';
 import { getAboutContent } from '@/lib/constants/about-content';
 import { computeBestThirdPlaced } from '@/lib/standings/best-third';
@@ -347,7 +354,7 @@ export async function renderCupPage(
     { label: pageTitle },
   ];
 
-  const breadcrumb = <SeoBreadcrumb segments={breadcrumbSegments} compact />;
+  const breadcrumb = <SeoBreadcrumb segments={breadcrumbSegments} compact emitJsonLd={false} />;
 
   // About card content
   const aboutContent = getAboutContent(competitionId, locale);
@@ -560,16 +567,32 @@ export async function renderCupPage(
             />
             <CompetitionMediaSection competitionId={competitionId} locale={locale} />
             {aboutContent && <AboutCard content={aboutContent} />}
-            <SportsEventJsonLd
-              metadata={metadata}
-              tournamentName={pageTitle}
-              alternateNames={
-                cupContent ? Object.values(cupContent.titles).filter((t) => t !== pageTitle) : []
-              }
-              canonicalUrl={cupContent?.urls[locale] ?? ''}
-              sameAs={sameAsForCompetition(competitionId)}
+            <JsonLd
+              graph={buildGraph(
+                buildWebPage({
+                  url: cupContent?.urls[locale] ?? '',
+                  name: pageTitle,
+                  locale,
+                  baseUrl: BASE_URL,
+                  hasBreadcrumb: true,
+                }),
+                buildSportsEventTournament({
+                  url: cupContent?.urls[locale] ?? '',
+                  tournamentName: pageTitle,
+                  alternateNames: cupContent
+                    ? Object.values(cupContent.titles).filter((t) => t !== pageTitle)
+                    : [],
+                  kickoffDate: metadata.kickoffDate,
+                  finalDate: metadata.finalDate,
+                  hostCountryCodes: metadata.hostCountryCodes,
+                  sameAs: sameAsForCompetition(competitionId),
+                }),
+                buildBreadcrumbList(breadcrumbSegments, cupContent?.urls[locale] ?? '', BASE_URL),
+                aboutContent
+                  ? buildFaqPage(aboutContent.faqs, cupContent?.urls[locale] ?? '')
+                  : null,
+              )}
             />
-            {aboutContent && <FaqPageJsonLd faqs={aboutContent.faqs} />}
           </>
         }
       />
