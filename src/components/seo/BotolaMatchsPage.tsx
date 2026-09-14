@@ -5,7 +5,9 @@ import type { Locale } from '@/lib/i18n/config';
 import { db } from '@/lib/db/client';
 import { getLeagueRounds, getCurrentRound, getLeagueFixtures } from '@/lib/db/queries/league';
 import { SeoBreadcrumb } from '@/components/chrome/SeoBreadcrumb';
-import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildGraph, buildWebPage, buildFaqPage, buildBreadcrumbList } from '@/lib/seo/jsonld';
+import { BASE_URL } from '@/lib/constants/site';
 import { LeagueFixturesTab } from '@/components/league/LeagueFixturesTab';
 import {
   BOTOLA_SEASON_OPENER_YEAR,
@@ -17,7 +19,11 @@ import {
 } from '@/lib/seo/botola-season-opener';
 import { botolaClassementPath } from '@/lib/seo/botola-classement';
 import { botola2CompetitionFixturesHref } from '@/lib/seo/botola-2-classement';
-import { botolaMatchsEmbedHash, botolaMatchsEmbedHashAliases } from '@/lib/seo/botola-matchs';
+import {
+  botolaMatchsEmbedHash,
+  botolaMatchsEmbedHashAliases,
+  botolaMatchsPath,
+} from '@/lib/seo/botola-matchs';
 
 async function getCachedBotola2026Fixtures() {
   'use cache';
@@ -67,6 +73,7 @@ export async function BotolaMatchsPage({ locale }: { locale: Locale }) {
           { label: t('breadcrumb') },
         ]}
         compact
+        emitJsonLd={false}
       />
 
       <h1 className="mt-2 text-2xl font-bold text-text-primary">{t('h1')}</h1>
@@ -174,7 +181,30 @@ export async function BotolaMatchsPage({ locale }: { locale: Locale }) {
         </dl>
       </section>
 
-      <FaqPageJsonLd faqs={faqs.map((it) => ({ question: it.q, answer: it.a }))} />
+      <JsonLd
+        graph={buildGraph(
+          buildWebPage({
+            url: `${BASE_URL}${botolaMatchsPath(locale)}`,
+            name: t('h1'),
+            locale,
+            baseUrl: BASE_URL,
+            hasBreadcrumb: true,
+          }),
+          buildFaqPage(
+            faqs.map((it) => ({ question: it.q, answer: it.a })),
+            `${BASE_URL}${botolaMatchsPath(locale)}`,
+          ),
+          buildBreadcrumbList(
+            [
+              { label: 'DimaScore', href: homeHref },
+              { label: t('linkMaroc'), href: marocHref },
+              { label: t('breadcrumb') },
+            ],
+            `${BASE_URL}${botolaMatchsPath(locale)}`,
+            BASE_URL,
+          ),
+        )}
+      />
     </div>
   );
 }

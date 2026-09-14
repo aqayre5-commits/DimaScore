@@ -5,7 +5,9 @@ import type { Locale } from '@/lib/i18n/config';
 import { db } from '@/lib/db/client';
 import { getStandings } from '@/lib/db/queries';
 import { SeoBreadcrumb } from '@/components/chrome/SeoBreadcrumb';
-import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildGraph, buildWebPage, buildFaqPage, buildBreadcrumbList } from '@/lib/seo/jsonld';
+import { BASE_URL } from '@/lib/constants/site';
 import { LeagueStandingsTab } from '@/components/league/LeagueStandingsTab';
 import {
   BOTOLA_SEASON_OPENER_YEAR,
@@ -18,6 +20,7 @@ import {
 import {
   botolaClassementTableHash,
   botolaClassementTableHashAliases,
+  botolaClassementPath,
 } from '@/lib/seo/botola-classement';
 
 async function getCachedBotola2026Standings() {
@@ -55,6 +58,7 @@ export async function BotolaClassementPage({ locale }: { locale: Locale }) {
           { label: t('breadcrumb') },
         ]}
         compact
+        emitJsonLd={false}
       />
 
       <h1 className="mt-2 text-2xl font-bold text-text-primary">{t('h1')}</h1>
@@ -145,7 +149,30 @@ export async function BotolaClassementPage({ locale }: { locale: Locale }) {
         </dl>
       </section>
 
-      <FaqPageJsonLd faqs={faqs.map((it) => ({ question: it.q, answer: it.a }))} />
+      <JsonLd
+        graph={buildGraph(
+          buildWebPage({
+            url: `${BASE_URL}${botolaClassementPath(locale)}`,
+            name: t('h1'),
+            locale,
+            baseUrl: BASE_URL,
+            hasBreadcrumb: true,
+          }),
+          buildFaqPage(
+            faqs.map((it) => ({ question: it.q, answer: it.a })),
+            `${BASE_URL}${botolaClassementPath(locale)}`,
+          ),
+          buildBreadcrumbList(
+            [
+              { label: 'DimaScore', href: homeHref },
+              { label: t('linkMaroc'), href: marocHref },
+              { label: t('breadcrumb') },
+            ],
+            `${BASE_URL}${botolaClassementPath(locale)}`,
+            BASE_URL,
+          ),
+        )}
+      />
     </div>
   );
 }

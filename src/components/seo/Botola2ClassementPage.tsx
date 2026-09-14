@@ -6,7 +6,9 @@ import { db } from '@/lib/db/client';
 import { getStandings } from '@/lib/db/queries';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { SeoBreadcrumb } from '@/components/chrome/SeoBreadcrumb';
-import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildGraph, buildWebPage, buildFaqPage, buildBreadcrumbList } from '@/lib/seo/jsonld';
+import { BASE_URL } from '@/lib/constants/site';
 import { LeagueStandingsTab } from '@/components/league/LeagueStandingsTab';
 import { BOTOLA_COMPETITION_HUB } from '@/lib/seo/botola-season-opener';
 import { botolaClassementPath } from '@/lib/seo/botola-classement';
@@ -18,6 +20,7 @@ import {
   botola2CompetitionFixturesHref,
   botola2CompetitionStandingsHref,
   botola2SeasonLabel,
+  botola2ClassementPath,
 } from '@/lib/seo/botola-2-classement';
 
 async function getCachedBotola2Standings(seasonYear: number) {
@@ -58,6 +61,7 @@ export async function Botola2ClassementPage({ locale }: { locale: Locale }) {
           { label: t('breadcrumb') },
         ]}
         compact
+        emitJsonLd={false}
       />
 
       <h1 className="mt-2 text-2xl font-bold text-text-primary">{t('h1')}</h1>
@@ -150,7 +154,30 @@ export async function Botola2ClassementPage({ locale }: { locale: Locale }) {
         </dl>
       </section>
 
-      <FaqPageJsonLd faqs={faqs.map((it) => ({ question: it.q, answer: it.a }))} />
+      <JsonLd
+        graph={buildGraph(
+          buildWebPage({
+            url: `${BASE_URL}${botola2ClassementPath(locale)}`,
+            name: t('h1'),
+            locale,
+            baseUrl: BASE_URL,
+            hasBreadcrumb: true,
+          }),
+          buildFaqPage(
+            faqs.map((it) => ({ question: it.q, answer: it.a })),
+            `${BASE_URL}${botola2ClassementPath(locale)}`,
+          ),
+          buildBreadcrumbList(
+            [
+              { label: 'DimaScore', href: homeHref },
+              { label: t('linkMaroc'), href: marocHref },
+              { label: t('breadcrumb') },
+            ],
+            `${BASE_URL}${botola2ClassementPath(locale)}`,
+            BASE_URL,
+          ),
+        )}
+      />
     </div>
   );
 }

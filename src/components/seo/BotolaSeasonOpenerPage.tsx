@@ -6,7 +6,9 @@ import { db } from '@/lib/db/client';
 import { getStandings } from '@/lib/db/queries';
 import { getLeagueRounds, getCurrentRound, getLeagueFixtures } from '@/lib/db/queries/league';
 import { SeoBreadcrumb } from '@/components/chrome/SeoBreadcrumb';
-import { FaqPageJsonLd } from '@/components/seo/FaqPageJsonLd';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { buildGraph, buildWebPage, buildFaqPage, buildBreadcrumbList } from '@/lib/seo/jsonld';
+import { BASE_URL } from '@/lib/constants/site';
 import { LeagueFixturesTab } from '@/components/league/LeagueFixturesTab';
 import { LeagueStandingsTab } from '@/components/league/LeagueStandingsTab';
 import {
@@ -16,6 +18,7 @@ import {
   BOTOLA_COMPETITION_HUB,
   botolaCompetitionFixturesHref,
   botolaCompetitionStandingsHref,
+  botolaSeasonOpenerPath,
 } from '@/lib/seo/botola-season-opener';
 
 async function getCachedBotola2026Embed() {
@@ -64,6 +67,7 @@ export async function BotolaSeasonOpenerPage({ locale }: { locale: Locale }) {
           { label: t('breadcrumb') },
         ]}
         compact
+        emitJsonLd={false}
       />
 
       <h1 className="mt-2 text-2xl font-bold text-text-primary">{t('h1')}</h1>
@@ -188,7 +192,30 @@ export async function BotolaSeasonOpenerPage({ locale }: { locale: Locale }) {
         </dl>
       </section>
 
-      <FaqPageJsonLd faqs={faqs.map((it) => ({ question: it.q, answer: it.a }))} />
+      <JsonLd
+        graph={buildGraph(
+          buildWebPage({
+            url: `${BASE_URL}${botolaSeasonOpenerPath(locale)}`,
+            name: t('h1'),
+            locale,
+            baseUrl: BASE_URL,
+            hasBreadcrumb: true,
+          }),
+          buildFaqPage(
+            faqs.map((it) => ({ question: it.q, answer: it.a })),
+            `${BASE_URL}${botolaSeasonOpenerPath(locale)}`,
+          ),
+          buildBreadcrumbList(
+            [
+              { label: 'DimaScore', href: homeHref },
+              { label: t('linkMaroc'), href: marocHref },
+              { label: t('breadcrumb') },
+            ],
+            `${BASE_URL}${botolaSeasonOpenerPath(locale)}`,
+            BASE_URL,
+          ),
+        )}
+      />
     </div>
   );
 }
