@@ -14,6 +14,7 @@ import {
   getNextFixtures,
 } from '@/lib/db/queries/match-detail';
 import { getMatchState, LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { buildMatchMeta } from '@/lib/seo/match-metadata';
 import { qk } from '@/lib/query-keys';
 import { previewFromMatchDetail } from '@/lib/match-header-preview';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
@@ -114,9 +115,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     locale,
   );
 
-  const title = `${home} vs ${away} | ${compName} | DimaScore`;
-  const roundLabel = match.groupLabel ?? match.round;
-  const description = `${home} vs ${away} — ${compName}${roundLabel ? `, ${roundLabel}` : ''}`;
+  const matchState = getMatchState(match.statusCode, match.kickoffAt);
+  const { title, description } = buildMatchMeta({
+    home,
+    away,
+    competition: compName,
+    locale,
+    state: matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming',
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
+  });
   const canonical = `${BASE_URL}/${locale}/match/${fixtureId}`;
 
   return {
