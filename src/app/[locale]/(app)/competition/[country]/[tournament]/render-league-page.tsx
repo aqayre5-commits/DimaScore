@@ -5,7 +5,12 @@ import type { Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { buildGraph, buildWebPage, buildBreadcrumbList } from '@/lib/seo/jsonld';
+import {
+  buildGraph,
+  buildWebPage,
+  buildBreadcrumbList,
+  buildFixtureItemList,
+} from '@/lib/seo/jsonld';
 import { BASE_URL } from '@/lib/constants/site';
 import {
   getRelatedCompetitionIds,
@@ -282,12 +287,27 @@ export async function renderLeaguePage(
               baseUrl: BASE_URL,
               type: 'CollectionPage',
               hasBreadcrumb: true,
+              mainEntityId: `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}#fixtures`,
             }),
             buildBreadcrumbList(
               breadcrumbs,
               `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`,
               BASE_URL,
             ),
+            buildFixtureItemList({
+              fixtures: fixtures
+                .filter((f) => f.homeTeam && f.awayTeam)
+                .map((f) => ({
+                  id: f.id,
+                  kickoffAt: f.kickoffAt,
+                  statusCode: f.statusCode,
+                  homeName: f.homeTeam!.name[locale] ?? f.homeTeam!.name['en'] ?? '',
+                  awayName: f.awayTeam!.name[locale] ?? f.awayTeam!.name['en'] ?? '',
+                })),
+              locale,
+              baseUrl: BASE_URL,
+              pageUrl: `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`,
+            }),
           )}
         />
         {tLandings && (
