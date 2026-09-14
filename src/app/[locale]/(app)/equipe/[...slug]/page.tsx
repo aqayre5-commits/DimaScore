@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { buildTeamMeta } from '@/lib/seo/hub-metadata';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
@@ -130,13 +130,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const name = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
   const { title, description } = buildTeamMeta({ team: name, locale });
-  const pageUrl = `${baseUrl}/${locale}/equipe/${rawSlug.join('/')}`;
+  // Canonical uses the resolved stored slug (not the requested one) so a soft-rendered variant
+  // still declares the true URL — the SEO consolidation signal, alongside the self-heal redirect.
+  const pageUrl = `${baseUrl}/${locale}/equipe/${team.slug}`;
 
   const languages: Record<string, string> = {};
   for (const loc of locales) {
-    languages[loc] = `${baseUrl}/${loc}/equipe/${rawSlug.join('/')}`;
+    languages[loc] = `${baseUrl}/${loc}/equipe/${team.slug}`;
   }
-  languages['x-default'] = `${baseUrl}/${defaultLocale}/equipe/${rawSlug.join('/')}`;
+  languages['x-default'] = `${baseUrl}/${defaultLocale}/equipe/${team.slug}`;
 
   return {
     title,
@@ -182,6 +184,10 @@ export default async function TeamPage({ params }: PageProps) {
     tournamentScorers,
     worldCupResults,
   } = data;
+  // Canonical URL uses the stored slug; 301 any stale/variant name-part (resolution was by ID).
+  if (team.slug !== teamSlug) {
+    permanentRedirect(`/${locale}/equipe/${team.slug}`);
+  }
   const nationalTeamAbout = getNationalTeamContent(team.id, typedLocale);
   const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
 

@@ -5,6 +5,7 @@ import * as schema from '../schema';
 import type { FixtureWithTeams, StandingRow } from '../queries';
 import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
+import { parseTrailingId } from '@/lib/seo/entity-slug';
 
 // ── Types ──
 
@@ -43,6 +44,9 @@ export async function getTeamBySlug(
   db: NeonHttpDatabase<typeof schema>,
   slug: string,
 ): Promise<TeamDetail | null> {
+  // Resolve by the stable trailing ID so a stale/renamed name-part still finds the team (the page
+  // then 301s to the canonical slug). Fall back to an exact slug match for any legacy id-less slug.
+  const trailingId = parseTrailingId(slug);
   const rows = await db
     .select({
       id: schema.teams.id,
@@ -58,7 +62,7 @@ export async function getTeamBySlug(
       venueId: schema.teams.venueId,
     })
     .from(schema.teams)
-    .where(eq(schema.teams.slug, slug))
+    .where(trailingId != null ? eq(schema.teams.id, trailingId) : eq(schema.teams.slug, slug))
     .limit(1);
 
   if (rows.length === 0) return null;

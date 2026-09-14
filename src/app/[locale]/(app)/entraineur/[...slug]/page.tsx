@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-import { locales, type Locale } from '@/lib/i18n/config';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { slugify } from '@/lib/ingestion/slug';
+import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -40,7 +41,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const title = `${displayName} — ${t('manager')} | DimaScore`;
   const description = `${displayName} — ${t('careerHistory')}.`;
-  const slugPath = rawSlug.map(decodeURIComponent).join('/');
+  // Canonical uses the computed canonical slug (slugify(name)-id), not the requested one, so a
+  // soft-rendered variant still declares the true URL (matches the self-heal redirect target).
+  const slugPath = `${slugify(coach.name)}-${coachId}`;
   const canonical = `${BASE_URL}/${locale}/entraineur/${slugPath}`;
 
   return {
@@ -48,9 +51,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     alternates: {
       canonical,
-      languages: Object.fromEntries(
-        locales.map((l) => [l, `${BASE_URL}/${l}/entraineur/${slugPath}`]),
-      ),
+      languages: {
+        ...Object.fromEntries(locales.map((l) => [l, `${BASE_URL}/${l}/entraineur/${slugPath}`])),
+        'x-default': `${BASE_URL}/${defaultLocale}/entraineur/${slugPath}`,
+      },
     },
     openGraph: {
       title,
@@ -80,6 +84,12 @@ export default async function CoachPage({ params }: PageProps) {
 
   const coach = await getCoachById(db, coachId);
   if (!coach) notFound();
+  // Coaches have no stored slug; the canonical name-part is slugify(name). 301 any variant so the
+  // ID-resolved page doesn't serve duplicate URLs (matches the link format in TeamPageHeader).
+  const canonicalSlug = `${slugify(coach.name)}-${coachId}`;
+  if (canonicalSlug !== lastSegment) {
+    permanentRedirect(`/${locale}/entraineur/${canonicalSlug}`);
+  }
 
   const tBc = await getTranslations({ locale, namespace: 'breadcrumb' });
   const displayName =

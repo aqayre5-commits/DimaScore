@@ -4,6 +4,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { FixtureWithTeams } from '../queries';
 import { hydrateFixtures } from '../queries-hydrate';
+import { parseTrailingId } from '@/lib/seo/entity-slug';
 
 // ── Types ──
 
@@ -68,6 +69,9 @@ export async function getPlayerBySlug(
   db: NeonHttpDatabase<typeof schema>,
   slug: string,
 ): Promise<PlayerDetail | null> {
+  // Resolve by the stable trailing ID (self-heals a stale/renamed name-part; the page 301s to the
+  // canonical slug). Fall back to an exact slug match for any legacy id-less slug.
+  const trailingId = parseTrailingId(slug);
   const rows = await db
     .select({
       id: schema.players.id,
@@ -88,7 +92,7 @@ export async function getPlayerBySlug(
       currentTeamId: schema.players.currentTeamId,
     })
     .from(schema.players)
-    .where(eq(schema.players.slug, slug))
+    .where(trailingId != null ? eq(schema.players.id, trailingId) : eq(schema.players.slug, slug))
     .limit(1);
 
   if (rows.length === 0) return null;

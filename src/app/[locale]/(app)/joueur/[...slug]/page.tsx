@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
@@ -58,13 +58,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const name = player.name[typedLocale] ?? player.name['en'] ?? playerSlug;
   const { title, description } = buildPlayerMeta({ player: name, locale });
-  const pageUrl = `${baseUrl}/${locale}/joueur/${rawSlug.join('/')}`;
+  // Canonical uses the resolved stored slug (not the requested one) so a soft-rendered variant
+  // still declares the true URL — the SEO consolidation signal, alongside the self-heal redirect.
+  const pageUrl = `${baseUrl}/${locale}/joueur/${player.slug}`;
 
   const languages: Record<string, string> = {};
   for (const loc of locales) {
-    languages[loc] = `${baseUrl}/${loc}/joueur/${rawSlug.join('/')}`;
+    languages[loc] = `${baseUrl}/${loc}/joueur/${player.slug}`;
   }
-  languages['x-default'] = `${baseUrl}/${defaultLocale}/joueur/${rawSlug.join('/')}`;
+  languages['x-default'] = `${baseUrl}/${defaultLocale}/joueur/${player.slug}`;
 
   return {
     title,
@@ -92,6 +94,10 @@ export default async function PlayerPage({ params }: PageProps) {
 
   const player = await getPlayerBySlug(db, playerSlug);
   if (!player) notFound();
+  // Canonical URL uses the stored slug; 301 any stale/variant name-part (resolution was by ID).
+  if (player.slug !== playerSlug) {
+    permanentRedirect(`/${locale}/joueur/${player.slug}`);
+  }
 
   const tBc = await getTranslations({ locale, namespace: 'breadcrumb' });
   const playerName =

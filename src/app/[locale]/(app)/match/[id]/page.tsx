@@ -43,7 +43,7 @@ import { getCachedPredictedXI } from '@/lib/db/queries/predicted-lineup';
 import { MatchClientLeftRail, MatchClientRightRail } from '@/components/match/MatchClientSidebar';
 
 import { cacheLife } from 'next/cache';
-import { locales, type Locale } from '@/lib/i18n/config';
+import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 
 const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
@@ -138,7 +138,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     alternates: {
       canonical,
-      languages: Object.fromEntries(locales.map((l) => [l, `${BASE_URL}/${l}/match/${fixtureId}`])),
+      languages: {
+        ...Object.fromEntries(locales.map((l) => [l, `${BASE_URL}/${l}/match/${fixtureId}`])),
+        'x-default': `${BASE_URL}/${defaultLocale}/match/${fixtureId}`,
+      },
     },
     openGraph: {
       title,
