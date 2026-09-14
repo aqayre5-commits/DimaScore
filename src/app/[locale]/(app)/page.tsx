@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
-import { WebSiteJsonLd } from '@/components/seo/WebSiteJsonLd';
-import { OrganizationJsonLd } from '@/components/seo/OrganizationJsonLd';
 import { Suspense } from 'react';
 import { HomeFeatured } from '@/components/homepage/HomeFeatured';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
@@ -230,9 +228,6 @@ export default async function HomePage({ params }: PageProps) {
           </aside>
         </div>
       </div>
-
-      <WebSiteJsonLd baseUrl={baseUrl} locale={typedLocale} />
-      <OrganizationJsonLd baseUrl={baseUrl} />
     </>
   );
 }
