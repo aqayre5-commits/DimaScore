@@ -161,9 +161,9 @@
   },
   "homepage": {
     "pageHeading": "Matchs du jour en direct",
-    "metaTitle": "Matchs du jour en direct — résultats et calendrier | DimaScore",
+    "metaTitle": "Matchs du jour en direct — résultats et calendrier",
     "metaDescription": "Matchs du jour en direct : résultats et calendrier. Couverture gratuite, sans paris ni cotes.",
-    "editionMetaTitle": "Matchs du Maroc aujourd'hui en direct — Botola et Lions de l'Atlas | DimaScore",
+    "editionMetaTitle": "Matchs du Maroc aujourd'hui en direct — Botola et Lions de l'Atlas",
     "editionMetaDescription": "Matchs du Maroc aujourd'hui en direct : résultats et calendrier Botola, Coupe du Trône et Lions de l'Atlas. Couverture gratuite, sans paris.",
     "editionH1": "Football marocain aujourd'hui — matchs et scores en direct",
     "editionLead": "Matchs du jour en direct, sans paris.",
@@ -782,8 +782,8 @@
     "faq3a": "Non. Les coups d'envoi s'affichent dans le fuseau de votre appareil après le chargement de la page."
   },
   "botolaSeasonOpener": {
-    "metaTitle": "Calendrier Botola Pro 2026/2027 : reprise le 24 sept. | DimaScore",
-    "metaDescription": "La Botola Pro Inwi 2026/2027 reprend le jeudi 24 septembre 2026 (LNFP). Date de reprise, affiches par journée, matchs et classement en direct. Gratuit, sans cotes. Horaires en heure locale.",
+    "metaTitle": "Calendrier Botola Pro 2026/2027 : reprise le 24 sept.",
+    "metaDescription": "La Botola Pro Inwi 2026/2027 reprend le jeudi 24 septembre 2026. Date de reprise, affiches par journée, matchs et classement en direct. Gratuit, sans cotes.",
     "h1": "Calendrier Botola Pro 2026/2027 : date de reprise & affiches",
     "breadcrumb": "Calendrier 2026/27",
     "lead": "La Ligue nationale de football professionnel (LNFP) a fixé la reprise de la Botola Pro Inwi 2026/2027 au jeudi 24 septembre 2026. Cette page donne la date de reprise, les affiches du début de saison, et les matchs plus le classement 2026/27 en direct. Couverture gratuite, sans paris ni cotes. Les coups d'envoi s'affichent dans le fuseau horaire de votre appareil.",
@@ -827,7 +827,7 @@
     "faq4a": "Sur cette page (widgets 2026/27) et sur la page compétition Botola Pro, onglets Matchs et Classement."
   },
   "botolaClassement": {
-    "metaTitle": "Classement Botola Pro 2026/27 en direct | DimaScore",
+    "metaTitle": "Classement Botola Pro 2026/27 en direct",
     "metaDescription": "Classement Botola Pro Inwi 2026/27 en direct — le même tableau que l'onglet Classement de la page compétition. Gratuit, sans cotes. Date de reprise et affiches sur le calendrier.",
     "h1": "Classement Botola Pro 2026/27 en direct",
     "breadcrumb": "Classement 2026/27",
@@ -859,7 +859,7 @@
     "faq4a": "Sur l'onglet Matchs de la page compétition Botola Pro, et sur la landing calendrier 2026/27."
   },
   "botola2Classement": {
-    "metaTitle": "Classement Botola 2 en direct | DimaScore",
+    "metaTitle": "Classement Botola 2 en direct",
     "metaDescription": "Classement de la Botola 2 ({season}) — le même tableau que l'onglet Classement de la page compétition. Gratuit, sans cotes. Distinct de la Botola Pro.",
     "h1": "Classement Botola 2 en direct",
     "breadcrumb": "Classement Botola 2",
@@ -892,7 +892,7 @@
     "faq4a": "Sur l'onglet Matchs de la page compétition Botola 2."
   },
   "botolaMatchs": {
-    "metaTitle": "Matchs & scores Botola Pro en direct 2026/27 | DimaScore",
+    "metaTitle": "Matchs & scores Botola Pro en direct 2026/27",
     "metaDescription": "Matchs, scores et résultats en direct Botola Pro Inwi 2026/27 — aujourd'hui, prochains et LIVE. Gratuit, sans cotes. Classement et calendrier en lien.",
     "h1": "Matchs & scores Botola Pro en direct",
     "breadcrumb": "Matchs 2026/27",

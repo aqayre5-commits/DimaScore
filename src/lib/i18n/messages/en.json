@@ -161,9 +161,9 @@
   },
   "homepage": {
     "pageHeading": "Today's matches live",
-    "metaTitle": "Today's matches live — results and fixtures | DimaScore",
+    "metaTitle": "Today's matches live — results and fixtures",
     "metaDescription": "Today's matches live: results and fixtures. Free coverage, no betting odds.",
-    "editionMetaTitle": "Morocco matches today live — Botola and Atlas Lions | DimaScore",
+    "editionMetaTitle": "Morocco matches today live — Botola and Atlas Lions",
     "editionMetaDescription": "Morocco matches today live: Botola results and fixtures, Coupe du Trône and Atlas Lions. Free coverage, no betting.",
     "editionH1": "Moroccan football today — live matches and results",
     "editionLead": "Today's matches live — no betting.",
@@ -782,8 +782,8 @@
     "faq3a": "No. Kickoffs are shown in your device timezone after the page loads."
   },
   "botolaSeasonOpener": {
-    "metaTitle": "Botola Pro 2026/27 calendar: season starts 24 Sep | DimaScore",
-    "metaDescription": "Botola Pro Inwi 2026/27 starts Thursday 24 September 2026 (LNFP). Season-start date, round-level posters, live fixtures and standings. Free, no odds. Kickoffs in your local timezone.",
+    "metaTitle": "Botola Pro 2026/27 calendar: season starts 24 Sep",
+    "metaDescription": "Botola Pro Inwi 2026/27 starts Thursday 24 September 2026. Season-start date, round-level posters, live fixtures and standings. Free, no odds.",
     "h1": "Botola Pro 2026/27 season start",
     "breadcrumb": "2026/27 calendar",
     "lead": "The Ligue nationale de football professionnel (LNFP) set the Botola Pro Inwi 2026/27 kickoff for Thursday 24 September 2026. This page answers the start date, lists early-season posters, and embeds live 2026/27 fixtures and the table. Free coverage, no betting odds. Kickoff times use your device timezone.",
@@ -827,7 +827,7 @@
     "faq4a": "On this page (2026/27 widgets) and on the Botola Pro competition page, Fixtures and Standings tabs."
   },
   "botolaClassement": {
-    "metaTitle": "Botola Pro standings live 2026/27 | DimaScore",
+    "metaTitle": "Botola Pro standings live 2026/27",
     "metaDescription": "Live Botola Pro Inwi 2026/27 table — the same standings as the competition Standings tab. Free, no odds. Season start date and posters on the calendar page.",
     "h1": "Botola Pro standings live 2026/27",
     "breadcrumb": "2026/27 standings",
@@ -859,7 +859,7 @@
     "faq4a": "On the Botola Pro competition page Matches tab, and on the 2026/27 calendar landing."
   },
   "botola2Classement": {
-    "metaTitle": "Botola 2 standings live | DimaScore",
+    "metaTitle": "Botola 2 standings live",
     "metaDescription": "Botola 2 table ({season}) — the same standings as the competition Standings tab. Free, no odds. Distinct from Botola Pro.",
     "h1": "Botola 2 standings live",
     "breadcrumb": "Botola 2 standings",
@@ -892,7 +892,7 @@
     "faq4a": "On the Matches tab of the Botola 2 competition page."
   },
   "botolaMatchs": {
-    "metaTitle": "Botola Pro matches & live scores 2026/27 | DimaScore",
+    "metaTitle": "Botola Pro matches & live scores 2026/27",
     "metaDescription": "Botola Pro Inwi 2026/27 matches and live scores — today, upcoming and LIVE. Same fixtures as the competition Matches tab. Free, no odds. Cross-links to standings and the calendar.",
     "h1": "Botola Pro matches & live scores",
     "breadcrumb": "2026/27 matches",
