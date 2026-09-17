@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { db } from '@/lib/db/client';
@@ -43,6 +43,8 @@ import {
 } from '@/lib/seo/jsonld';
 import { getMediaVideos } from '@/lib/db/queries/media';
 import { getStandings } from '@/lib/db/queries';
+import { parseTrailingId } from '@/lib/seo/entity-slug';
+import { buildMatchSlug } from '@/lib/seo/match-slug';
 import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
@@ -65,11 +67,11 @@ interface PageProps {
 }
 
 function parseFixtureId(raw: string): number | null {
-  const id = Number(raw);
-  // Upper bound caps pathological inputs (e.g. /match/999999999999999) before they hit
-  // the DB. API-Football fixture ids are <10M today; 2B leaves comfortable headroom while
-  // staying inside Postgres int4 range.
-  return Number.isFinite(id) && Number.isInteger(id) && id > 0 && id < 2_000_000_000 ? id : null;
+  // Accepts both the legacy bare id ("1570386") and the slug+id form
+  // ("real-betis-getafe-1570386") — resolution is always by the trailing id.
+  // Upper bound caps pathological inputs before they hit the DB (API-Football ids are <10M today).
+  const id = parseTrailingId(raw);
+  return id != null && id > 0 && id < 2_000_000_000 ? id : null;
 }
 
 async function getCachedMatchData(fixtureId: number) {
@@ -156,7 +158,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     homeScore: match.homeScore,
     awayScore: match.awayScore,
   });
-  const canonical = `${BASE_URL}/${locale}/match/${fixtureId}`;
+  // Slug+ID canonical (Latin, identical across locales); the bare-id request 301s to this.
+  const matchSlug = buildMatchSlug(match.homeTeam?.slug, match.awayTeam?.slug, fixtureId);
+  const canonical = `${BASE_URL}/${locale}/match/${matchSlug}`;
 
   return {
     title,
@@ -164,8 +168,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     alternates: {
       canonical,
       languages: {
-        ...Object.fromEntries(locales.map((l) => [l, `${BASE_URL}/${l}/match/${fixtureId}`])),
-        'x-default': `${BASE_URL}/${defaultLocale}/match/${fixtureId}`,
+        ...Object.fromEntries(locales.map((l) => [l, `${BASE_URL}/${l}/match/${matchSlug}`])),
+        'x-default': `${BASE_URL}/${defaultLocale}/match/${matchSlug}`,
       },
     },
     openGraph: {
@@ -198,6 +202,13 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const { match, coverage, prefetch } = data;
 
   const typedLocale = locale as Locale;
+
+  // Canonical slug+ID URL; 301 the legacy bare-id (or any stale name-part) to it. Resolution was
+  // by the trailing ID, so the page still renders the right match regardless of the name-part.
+  const matchSlug = buildMatchSlug(match.homeTeam?.slug, match.awayTeam?.slug, fixtureId);
+  if (decodeURIComponent(rawId) !== matchSlug) {
+    permanentRedirect(`/${locale}/match/${matchSlug}`);
+  }
 
   const homeTeamId = match.homeTeam?.id ?? -1;
   const awayTeamId = match.awayTeam?.id ?? -1;
@@ -558,14 +569,14 @@ export default async function MatchDetailPage({ params }: PageProps) {
         <JsonLd
           graph={buildGraph(
             buildWebPage({
-              url: `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+              url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
               name: `${home} - ${away} — ${compName}`,
               locale: typedLocale,
               baseUrl: BASE_URL,
               hasBreadcrumb: true,
             }),
             buildSportsEventMatch({
-              url: `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+              url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
               homeName: home,
               awayName: away,
               homeLogo: match.homeTeam?.logoUrl,
@@ -581,12 +592,12 @@ export default async function MatchDetailPage({ params }: PageProps) {
             }),
             buildBreadcrumbList(
               breadcrumbs,
-              `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+              `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
               BASE_URL,
             ),
             recapText
               ? buildNewsArticle({
-                  url: `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+                  url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
                   baseUrl: BASE_URL,
                   headline: buildMatchMeta({
                     home,
@@ -603,7 +614,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
               : null,
             prefetch.highlightVideo
               ? buildVideoObject({
-                  url: `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+                  url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
                   youtubeId: prefetch.highlightVideo.youtubeId,
                   name: prefetch.highlightVideo.title,
                   description: prefetch.highlightVideo.title,

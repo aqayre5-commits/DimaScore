@@ -1,7 +1,9 @@
 import type { MetadataRoute } from 'next';
-import { isNotNull, asc, sql } from 'drizzle-orm';
+import { isNotNull, asc, eq, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
+import { buildMatchSlug } from '@/lib/seo/match-slug';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { ALL_ENTRIES, buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
 import { BASE_URL } from '@/lib/constants/site';
@@ -172,15 +174,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  // ── Matches (trimmed window) ──
+  // ── Matches (trimmed window) — slug+ID URLs ──
+  const homeT = alias(schema.teams, 'sitemap_home_team');
+  const awayT = alias(schema.teams, 'sitemap_away_team');
   const matches = await db
-    .select({ id: schema.fixtures.id })
+    .select({ id: schema.fixtures.id, homeSlug: homeT.slug, awaySlug: awayT.slug })
     .from(schema.fixtures)
+    .leftJoin(homeT, eq(homeT.id, schema.fixtures.homeTeamId))
+    .leftJoin(awayT, eq(awayT.id, schema.fixtures.awayTeamId))
     .where(SITEMAP_MATCH_FILTER)
     .orderBy(asc(schema.fixtures.id));
   for (const m of matches) {
-    const id = m.id;
-    entries.push(entry((l) => `/${l}/match/${id}`, { priority: 0.5, changeFrequency: 'weekly' }));
+    const slug = buildMatchSlug(m.homeSlug, m.awaySlug, m.id);
+    entries.push(entry((l) => `/${l}/match/${slug}`, { priority: 0.5, changeFrequency: 'weekly' }));
   }
 
   return entries;
