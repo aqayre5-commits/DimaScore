@@ -13,12 +13,14 @@ export interface WorldCupResult {
   home: {
     name: Record<string, string>;
     logoUrl: string | null;
+    slug: string | null;
     score: number | null;
     pen: number | null;
   };
   away: {
     name: Record<string, string>;
     logoUrl: string | null;
+    slug: string | null;
     score: number | null;
     pen: number | null;
   };
@@ -40,8 +42,10 @@ interface RawRow {
   away_score_pen: number | null;
   home_name: Record<string, string>;
   home_logo: string | null;
+  home_slug: string | null;
   away_name: Record<string, string>;
   away_logo: string | null;
+  away_slug: string | null;
 }
 
 /** A national team's most recent finished World Cup (competition 1) results, newest first. */
@@ -54,8 +58,8 @@ export async function getTeamWorldCupResults(
     SELECT f.id, f.kickoff_at, f.season_year, f.round, f.status_code,
            f.home_team_id, f.away_team_id,
            f.home_score, f.away_score, f.home_score_pen, f.away_score_pen,
-           ht.name AS home_name, ht.logo_url AS home_logo,
-           at.name AS away_name, at.logo_url AS away_logo
+           ht.name AS home_name, ht.logo_url AS home_logo, ht.slug AS home_slug,
+           at.name AS away_name, at.logo_url AS away_logo, at.slug AS away_slug
     FROM fixtures f
     JOIN teams ht ON ht.id = f.home_team_id
     JOIN teams at ON at.id = f.away_team_id
@@ -84,8 +88,20 @@ export async function getTeamWorldCupResults(
       seasonYear: r.season_year,
       round: r.round,
       statusCode: r.status_code,
-      home: { name: r.home_name, logoUrl: r.home_logo, score: r.home_score, pen: r.home_score_pen },
-      away: { name: r.away_name, logoUrl: r.away_logo, score: r.away_score, pen: r.away_score_pen },
+      home: {
+        name: r.home_name,
+        logoUrl: r.home_logo,
+        slug: r.home_slug,
+        score: r.home_score,
+        pen: r.home_score_pen,
+      },
+      away: {
+        name: r.away_name,
+        logoUrl: r.away_logo,
+        slug: r.away_slug,
+        score: r.away_score,
+        pen: r.away_score_pen,
+      },
       result,
     };
   });

@@ -19,6 +19,8 @@ export interface LionsAbroadFixture {
   awayScore: number | null;
   homeTeamName: string;
   awayTeamName: string;
+  homeTeamSlug: string | null;
+  awayTeamSlug: string | null;
   competitionId: number | null;
   competitionName: string;
   players: {
@@ -66,6 +68,8 @@ async function loadLionsAbroadFixtures(): Promise<LionsAbroadFixture[]> {
       COALESCE(c.name->>'en', '') AS competition_name,
       COALESCE(ht.name->>'en', 'TBD') AS home_team_name,
       COALESCE(at.name->>'en', 'TBD') AS away_team_name,
+      ht.slug AS home_team_slug,
+      at.slug AS away_team_slug,
       l.player_id,
       l.player_name,
       l.player_slug,
@@ -98,6 +102,8 @@ async function loadLionsAbroadFixtures(): Promise<LionsAbroadFixture[]> {
         awayScore: row.away_score == null ? null : Number(row.away_score),
         homeTeamName: String(row.home_team_name),
         awayTeamName: String(row.away_team_name),
+        homeTeamSlug: (row.home_team_slug as string | null) ?? null,
+        awayTeamSlug: (row.away_team_slug as string | null) ?? null,
         competitionId: row.competition_id == null ? null : Number(row.competition_id),
         competitionName: String(row.competition_name),
         players: [],

@@ -575,6 +575,9 @@ export interface NextFixture {
   id: number;
   kickoffAt: Date;
   teamId: number;
+  /** Both teams' stored slugs → the card links straight to the canonical slug match URL. */
+  homeSlug: string | null;
+  awaySlug: string | null;
   opponentName: Record<string, string>;
   opponentLogoUrl: string | null;
   competitionName: Record<string, string>;
@@ -631,13 +634,21 @@ export async function getNextFixtures(
     teamIds.add(row.away_team_id);
   }
 
-  const teamsMap = new Map<number, { name: Record<string, string>; logoUrl: string | null }>();
+  const teamsMap = new Map<
+    number,
+    { name: Record<string, string>; logoUrl: string | null; slug: string }
+  >();
   if (teamIds.size > 0) {
     const teams = await db
-      .select({ id: schema.teams.id, name: schema.teams.name, logoUrl: schema.teams.logoUrl })
+      .select({
+        id: schema.teams.id,
+        name: schema.teams.name,
+        logoUrl: schema.teams.logoUrl,
+        slug: schema.teams.slug,
+      })
       .from(schema.teams)
       .where(inArray(schema.teams.id, [...teamIds]));
-    for (const t of teams) teamsMap.set(t.id, { name: t.name, logoUrl: t.logoUrl });
+    for (const t of teams) teamsMap.set(t.id, { name: t.name, logoUrl: t.logoUrl, slug: t.slug });
   }
 
   return raw.map(({ row: r, ourTeamId }) => {
@@ -648,6 +659,8 @@ export async function getNextFixtures(
       id: r.id,
       kickoffAt: new Date(r.kickoff_at),
       teamId: ourTeamId,
+      homeSlug: teamsMap.get(r.home_team_id)?.slug ?? null,
+      awaySlug: teamsMap.get(r.away_team_id)?.slug ?? null,
       opponentName: opponent?.name ?? { en: 'TBD' },
       opponentLogoUrl: opponent?.logoUrl ?? null,
       competitionName: r.comp_name,

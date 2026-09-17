@@ -6,6 +6,7 @@ import { LocalTime } from '@/components/shared/LocalTime';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import type { LionsAbroadFixture } from '@/lib/db/queries/lions-abroad';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 
 const LIVE = new Set<string>(LIVE_CODES_ARRAY);
 const emptySubscribe = () => () => {};
@@ -90,7 +91,11 @@ export function LionsAbroadFixtures({ fixtures, locale, labels }: Props) {
             {section.rows.map((f) => (
               <li key={f.id}>
                 <Link
-                  href={`/${locale}/match/${f.id}`}
+                  href={matchHref(locale, {
+                    id: f.id,
+                    homeSlug: f.homeTeamSlug,
+                    awaySlug: f.awayTeamSlug,
+                  })}
                   className="flex flex-col gap-1 px-4 py-3 transition-colors hover:bg-bg-surface-2"
                 >
                   <div className="flex items-center justify-between gap-3">

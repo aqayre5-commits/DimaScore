@@ -7,6 +7,7 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { NextFixture } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 
 interface TeamRef {
   name: Record<string, string>;
@@ -117,7 +118,11 @@ function NextFixtureRow({
 
   return (
     <Link
-      href={`/${locale}/match/${fixture.id}`}
+      href={matchHref(locale, {
+        id: fixture.id,
+        homeSlug: fixture.homeSlug,
+        awaySlug: fixture.awaySlug,
+      })}
       prefetch={false}
       className="block px-4 py-3 transition-colors hover:bg-bg-surface-2"
     >

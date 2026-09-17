@@ -329,3 +329,9 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   These 3 were deferred because they need DB-query changes, which were outside the approved D2 plan ("type + mapping additions, no DB query change"). All are low-traffic; the hop is harmless (Google follows/consolidates the 301).
   4. **H2HPanel is dead** (`src/components/match/H2HPanel.tsx`) — zero renders in the tree (removed from the match right rail in 15.x). Its link was NOT migrated. Candidate for deletion.
   Pre-existing eslint warnings noticed (not touched, Rule 5): `LeagueRightRailCard.tsx:80` unused `idx`; `WCFixturesTab.tsx:4` unused `Image` import.
+
+- [2026-09-17][phase 15 — Task D3: 3 deferred slim sites migrated] Resolved items 1–3 of the D2 residual (2026-09-17) entry. Added a team `slug` column to 3 queries (each already joined the team tables — no new joins) and threaded it through the type + component to `matchHref()`:
+  1. **NextMatchCard** ← `getNextFixtures` (`match-detail.ts`): `NextFixture` gains `homeSlug`/`awaySlug` (teamsMap select now includes slug).
+  2. **LionsAbroadFixtures** ← `lions-abroad.ts`: SELECT adds `ht.slug`/`at.slug`; `LionsAbroadFixture` gains `homeTeamSlug`/`awayTeamSlug`.
+  3. **WorldCupHistoryCard** ← `team-world-cup.ts`: SELECT adds `ht.slug`/`at.slug`; `WorldCupResult.home/away` gain `slug`.
+  All internal match links now emit canonical slug URLs. Still open: **item 4 — `H2HPanel` is dead code** (`src/components/match/H2HPanel.tsx`, zero renders) → deletion candidate, separate task.

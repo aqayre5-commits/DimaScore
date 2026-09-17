@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { Locale } from '@/lib/i18n/config';
 import { formatMatchDate } from '@/lib/utils/date';
 import type { WorldCupResult } from '@/lib/db/queries/team-world-cup';
+import { matchHref } from '@/lib/seo/match-slug';
 
 // Self-contained content labels (same inline-locale pattern as the about/league content).
 const HEADING: Record<Locale, string> = {
@@ -63,7 +64,11 @@ export function WorldCupHistoryCard({
           return (
             <li key={r.fixtureId}>
               <Link
-                href={`/${locale}/match/${r.fixtureId}`}
+                href={matchHref(locale, {
+                  id: r.fixtureId,
+                  homeSlug: r.home.slug,
+                  awaySlug: r.away.slug,
+                })}
                 className="flex items-center gap-2.5 border-b border-border-subtle px-4 py-2.5 transition-colors last:border-b-0 hover:bg-bg-surface-2"
               >
                 <span
