@@ -78,8 +78,8 @@ export function botola2CompetitionStandingsHref(locale: Locale): string {
   return `${BOTOLA_2_COMPETITION_HUB[locale]}#${BOTOLA_COMPETITION_TAB_HASH[locale].standings}`;
 }
 
-const HUB_TITLE_FR = 'Botola 2 — classement, matchs et stats | DimaScore';
-const HUB_TITLE_AR = 'القسم الثاني — الترتيب والمباريات والإحصائيات | ديماسكور';
+const HUB_TITLE_FR = 'Botola 2 — classement, matchs et stats';
+const HUB_TITLE_AR = 'القسم الثاني — الترتيب والمباريات والإحصائيات';
 
 /**
  * FR/AR Botola 2 competition hub title (LANG-023). Season label is appended
@@ -91,12 +91,10 @@ export function botola2CompetitionPageTitle(
 ): string | null {
   const season = seasonLabel?.trim() || '';
   if (locale === 'fr') {
-    return season ? `Botola 2 ${season} — classement, matchs et stats | DimaScore` : HUB_TITLE_FR;
+    return season ? `Botola 2 ${season} — classement, matchs et stats` : HUB_TITLE_FR;
   }
   if (locale === 'ar') {
-    return season
-      ? `القسم الثاني ${season} — الترتيب والمباريات والإحصائيات | ديماسكور`
-      : HUB_TITLE_AR;
+    return season ? `القسم الثاني ${season} — الترتيب والمباريات والإحصائيات` : HUB_TITLE_AR;
   }
   return null;
 }
@@ -104,12 +102,12 @@ export function botola2CompetitionPageTitle(
 /** FR/AR competition meta description: classement / matchs, not EN “standings” (LANG-019). */
 export function botola2CompetitionMetaDescription(locale: Locale, displayName: string): string {
   if (locale === 'fr') {
-    return `${displayName} — classement, matchs et statistiques | DimaScore`;
+    return `${displayName} — classement, matchs et statistiques`;
   }
   if (locale === 'ar') {
-    return `${displayName} — الترتيب والمباريات والإحصائيات | ديماسكور`;
+    return `${displayName} — الترتيب والمباريات والإحصائيات`;
   }
-  return `${displayName} — standings, matches, and statistics | DimaScore`;
+  return `${displayName} — standings, matches, and statistics`;
 }
 
 /** Product SoT season label — never invent 2026/27. */

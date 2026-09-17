@@ -53,13 +53,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     entry.competitionId === BOTOLA_PRO_COMPETITION_ID
       ? botolaProCompetitionPageTitle(typedLocale, seasonLabel || null)
       : null;
-  const title = botola2Title ?? botolaProTitle ?? `${fullName} | DimaScore`;
+  const title = botola2Title ?? botolaProTitle ?? fullName;
   const description =
     entry.competitionId === BOTOLA_2_COMPETITION_ID
       ? botola2CompetitionMetaDescription(typedLocale, fullName)
       : entry.competitionId === BOTOLA_PRO_COMPETITION_ID
         ? botolaProCompetitionMetaDescription(typedLocale, fullName)
-        : `${fullName} — standings, results, and statistics | DimaScore`;
+        : `${fullName} — standings, results and statistics`;
 
   const seasonUrl = `${BASE_URL}/${locale}/competition/${country}/${tournament}/${season}`;
   const baseUrlNoSeason = `${BASE_URL}/${locale}/competition/${country}/${tournament}`;

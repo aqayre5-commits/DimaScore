@@ -147,7 +147,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonical = hubLanguages[typedLocale] ?? languages[typedLocale];
 
   return {
-    title: title ?? `${displayName} | DimaScore`,
+    title: title ?? displayName,
     description,
     alternates: { canonical, languages: hubLanguages },
     robots: { index: true, follow: true },

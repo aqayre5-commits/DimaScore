@@ -63,9 +63,9 @@ export function botolaClassementTableHashAliases(locale: Locale): string[] {
   return primary === 'standings' ? [] : ['standings'];
 }
 
-const HUB_TITLE_FR = 'Botola Pro — matchs, classement et stats | DimaScore';
-const HUB_TITLE_EN = 'Botola Pro — matches, standings and stats | DimaScore';
-const HUB_TITLE_AR = 'البطولة الاحترافية — المباريات والترتيب والإحصائيات | ديماسكور';
+const HUB_TITLE_FR = 'Botola Pro — matchs, classement et stats';
+const HUB_TITLE_EN = 'Botola Pro — matches, standings and stats';
+const HUB_TITLE_AR = 'البطولة الاحترافية — المباريات والترتيب والإحصائيات';
 
 /**
  * Locale-correct Botola Pro competition hub title. Season label is appended
@@ -77,25 +77,23 @@ export function botolaProCompetitionPageTitle(
 ): string {
   const season = seasonLabel?.trim() || '';
   if (locale === 'fr') {
-    return season ? `Botola Pro ${season} — matchs, classement et stats | DimaScore` : HUB_TITLE_FR;
+    return season ? `Botola Pro ${season} — matchs, classement et stats` : HUB_TITLE_FR;
   }
   if (locale === 'ar') {
-    return season
-      ? `البطولة الاحترافية ${season} — المباريات والترتيب والإحصائيات | ديماسكور`
-      : HUB_TITLE_AR;
+    return season ? `البطولة الاحترافية ${season} — المباريات والترتيب والإحصائيات` : HUB_TITLE_AR;
   }
-  return season ? `Botola Pro ${season} — matches, standings and stats | DimaScore` : HUB_TITLE_EN;
+  return season ? `Botola Pro ${season} — matches, standings and stats` : HUB_TITLE_EN;
 }
 
 /** Locale-correct hub meta: matchs/classement/stats, not a bare season name. */
 export function botolaProCompetitionMetaDescription(locale: Locale, displayName: string): string {
   if (locale === 'fr') {
-    return `${displayName} — matchs, classement et statistiques | DimaScore`;
+    return `${displayName} — matchs, classement et statistiques`;
   }
   if (locale === 'ar') {
-    return `${displayName} — المباريات والترتيب والإحصائيات | ديماسكور`;
+    return `${displayName} — المباريات والترتيب والإحصائيات`;
   }
-  return `${displayName} — matches, standings and statistics | DimaScore`;
+  return `${displayName} — matches, standings and statistics`;
 }
 
 /** Self-canonical + hreflang for the Botola Pro competition hub (Latin AR slug). */
