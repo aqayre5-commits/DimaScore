@@ -7,7 +7,6 @@ import type { MatchDetail, MatchCoverage } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
 import type { TeamSnapshot } from '@/lib/db/queries-hydrate';
 import { MatchInfoCard } from '@/components/match/MatchInfoCard';
-import { H2HPanel } from '@/components/match/H2HPanel';
 import { NextMatchCard } from '@/components/match/NextMatchCard';
 import { MatchTopStats } from '@/components/match/MatchTopStats';
 import { fetchMatchStats } from '@/lib/api/match';
@@ -118,29 +117,12 @@ export function MatchClientLeftRail({
 }
 
 export function MatchClientRightRail({
-  matchId,
   locale,
   match,
   competitionHref,
-  homeTeamId,
-  awayTeamId,
-  homeName,
-  awayName,
 }: Omit<MatchClientSidebarProps, 'coverage' | 'isUpcoming'>) {
-  const sidebarKey = [...qk.match(matchId), 'sidebar'] as const;
-
-  const { data: sidebar } = useQuery({
-    queryKey: sidebarKey,
-    queryFn: () => fetchMatchSidebar(matchId),
-  });
-
-  // Rehydrate dates and map to H2HFixture shape
-  const h2hFixtures = (sidebar?.h2h ?? []).map((f) => ({
-    ...f,
-    kickoffAt: new Date(f.kickoffAt),
-  }));
-
-  // MatchInfoCard expects MatchDetail with Date — rehydrate
+  // Head-to-head now lives in the centre "Face-à-face" section (server-rendered, narrative +
+  // results); the rail no longer duplicates it, so no client sidebar fetch is needed here.
   const matchForInfo = {
     ...match,
     kickoffAt: new Date(match.kickoffAt),
@@ -149,13 +131,6 @@ export function MatchClientRightRail({
   return (
     <div className="space-y-4">
       <MatchInfoCard match={matchForInfo} locale={locale} competitionHref={competitionHref} />
-      <H2HPanel
-        fixtures={h2hFixtures}
-        homeTeamId={homeTeamId}
-        homeTeamName={homeName}
-        awayTeamName={awayName}
-        locale={locale}
-      />
     </div>
   );
 }

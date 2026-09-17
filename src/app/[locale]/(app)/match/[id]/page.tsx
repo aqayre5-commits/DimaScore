@@ -42,6 +42,7 @@ import {
   buildVideoObject,
 } from '@/lib/seo/jsonld';
 import { getMediaVideos } from '@/lib/db/queries/media';
+import { getStandings } from '@/lib/db/queries';
 import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
@@ -105,6 +106,11 @@ async function getCachedMatchData(fixtureId: number) {
       null)
     : null;
 
+  // Top of the competition table for the right-rail "Classement" card.
+  const standings = hasTeams
+    ? (await getStandings(db, match.competition.id, match.seasonYear)).slice(0, 5)
+    : [];
+
   return {
     match,
     coverage,
@@ -119,6 +125,7 @@ async function getCachedMatchData(fixtureId: number) {
       homeForm,
       awayForm,
       highlightVideo,
+      standings,
     },
   };
 }
@@ -255,17 +262,49 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
   // Rendered twice: in the right rail (desktop) and, via belowCenter, as an
   // lg:hidden block so mobile/tablet (where the rail is hidden) still gets match info + H2H.
+  const classementCard =
+    prefetch.standings.length > 0 ? (
+      <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
+        <div className="border-b border-border-subtle bg-bg-surface-2 px-4 py-2.5">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-accent-green">
+            {typedLocale === 'ar'
+              ? 'الترتيب — أفضل 5'
+              : typedLocale === 'en'
+                ? 'Standings — top 5'
+                : 'Classement — top 5'}
+          </h3>
+        </div>
+        <div className="divide-y divide-border-subtle">
+          {prefetch.standings.map((r) => (
+            <div key={r.teamId ?? r.rank} className="flex items-center gap-2 px-4 py-2 text-sm">
+              <span className="w-5 text-center text-xs font-semibold tabular-nums text-text-tertiary">
+                {r.rank}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-text-primary">
+                {r.team?.name[typedLocale] ?? r.team?.name['en'] ?? '—'}
+              </span>
+              <span className="text-xs font-semibold tabular-nums text-text-secondary">
+                {r.points}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null;
   const matchSidebar = (
-    <MatchClientRightRail
-      matchId={matchId}
-      locale={typedLocale}
-      match={serializedMatch}
-      competitionHref={competitionHref}
-      homeTeamId={homeTeamId}
-      awayTeamId={awayTeamId}
-      homeName={home}
-      awayName={away}
-    />
+    <>
+      <MatchClientRightRail
+        matchId={matchId}
+        locale={typedLocale}
+        match={serializedMatch}
+        competitionHref={competitionHref}
+        homeTeamId={homeTeamId}
+        awayTeamId={awayTeamId}
+        homeName={home}
+        awayName={away}
+      />
+      {classementCard}
+    </>
   );
 
   // ── SEO editorial layer (Task 15.11): server-rendered prose per state ──
@@ -301,6 +340,27 @@ export default async function MatchDetailPage({ params }: PageProps) {
       timeZone: 'Africa/Casablanca',
     },
   ).format(match.kickoffAt);
+  const bcp = typedLocale === 'ar' ? 'ar-MA' : typedLocale === 'en' ? 'en-GB' : 'fr-MA';
+  const dateShort = new Intl.DateTimeFormat(bcp, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Africa/Casablanca',
+  }).format(match.kickoffAt);
+  const stateWord = (
+    {
+      finished: { fr: 'Terminé', en: 'Finished', ar: 'انتهت' },
+      live: { fr: 'En direct', en: 'Live', ar: 'مباشر' },
+      upcoming: { fr: 'À venir', en: 'Upcoming', ar: 'قادمة' },
+    } as const
+  )[narrativeState][typedLocale];
+  const stateColor =
+    narrativeState === 'live'
+      ? 'text-accent-crimson'
+      : narrativeState === 'finished'
+        ? 'text-accent-green'
+        : 'text-accent-azure';
+  const bylineWord = ({ fr: 'publié le', en: 'published', ar: 'نُشر في' } as const)[typedLocale];
   const secLabels = (
     {
       fr: {
@@ -308,17 +368,51 @@ export default async function MatchDetailPage({ params }: PageProps) {
         preview: 'Avant-match',
         h2h: 'Face-à-face',
         faq: 'Questions fréquentes',
+        notes: 'Notes des joueurs',
       },
-      en: { recap: 'Match recap', preview: 'Preview', h2h: 'Head-to-head', faq: 'FAQ' },
+      en: {
+        recap: 'Match recap',
+        preview: 'Preview',
+        h2h: 'Head-to-head',
+        faq: 'FAQ',
+        notes: 'Player ratings',
+      },
       ar: {
         recap: 'ملخص المباراة',
         preview: 'قبل المباراة',
         h2h: 'المواجهات المباشرة',
         faq: 'الأسئلة الشائعة',
+        notes: 'تقييمات اللاعبين',
       },
     } as const
   )[typedLocale];
   const h2hNarr = buildH2HNarrative({ home, away, h2h: h2hSummary, locale: typedLocale });
+  const h2hRows = (match.homeTeam?.id != null ? prefetch.h2h : [])
+    .filter((f) => f.homeScore != null && f.awayScore != null)
+    .slice(0, 5)
+    .map((f) => {
+      const homeIsThisHome = f.homeTeamId === match.homeTeam?.id;
+      return {
+        date: new Intl.DateTimeFormat(bcp, {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        }).format(f.kickoffAt),
+        hn: homeIsThisHome ? home : away,
+        hs: (homeIsThisHome ? f.homeScore : f.awayScore) as number,
+        as: (homeIsThisHome ? f.awayScore : f.homeScore) as number,
+        an: homeIsThisHome ? away : home,
+      };
+    });
+  const topRated = (prefetch.playerStats ?? [])
+    .map((p) => ({
+      name: p.playerName[typedLocale] ?? p.playerName['en'] ?? '—',
+      side: (p.teamId === match.homeTeam?.id ? 'home' : 'away') as 'home' | 'away',
+      rating: p.rating ? Number(p.rating) : NaN,
+    }))
+    .filter((p) => Number.isFinite(p.rating))
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
   const matchFaq = buildMatchFaq({
     state: narrativeState,
     home,
@@ -349,9 +443,10 @@ export default async function MatchDetailPage({ params }: PageProps) {
       : null;
   const narrativeLead = recapText ? (
     <section aria-labelledby="recap-h">
-      <h2 id="recap-h" className="mb-1.5 text-base font-semibold text-text-primary">
+      <h2 id="recap-h" className="mb-1 text-base font-semibold text-text-primary">
         {secLabels.recap}
       </h2>
+      <p className="mb-2 text-xs text-text-tertiary">{`DimaScore · ${bylineWord} ${dateShort}`}</p>
       <p className="text-sm leading-relaxed text-text-secondary">{recapText}</p>
     </section>
   ) : narrativeState === 'upcoming' ? (
@@ -374,12 +469,50 @@ export default async function MatchDetailPage({ params }: PageProps) {
   ) : null;
   const narrativeTail = (
     <>
+      {topRated.length > 0 && (
+        <section aria-labelledby="notes-h">
+          <h2 id="notes-h" className="mb-1.5 text-base font-semibold text-text-primary">
+            {secLabels.notes}
+          </h2>
+          <div className="max-w-md">
+            {topRated.map((p, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between border-t border-border-subtle py-1.5 text-sm first:border-t-0"
+              >
+                <span className="text-text-secondary">
+                  <span className="font-semibold text-text-primary">{p.name}</span>
+                  {` · ${p.side === 'home' ? home : away}`}
+                </span>
+                <span className="rounded bg-accent-green/10 px-1.5 py-0.5 font-mono text-xs font-bold tabular-nums text-accent-green">
+                  {p.rating.toFixed(1)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       {h2hNarr && (
         <section aria-labelledby="h2h-h">
           <h2 id="h2h-h" className="mb-1.5 text-base font-semibold text-text-primary">
             {secLabels.h2h}
           </h2>
           <p className="text-sm leading-relaxed text-text-secondary">{h2hNarr}</p>
+          {h2hRows.length > 0 && (
+            <div className="mt-2 max-w-md">
+              {h2hRows.map((r, i) => (
+                <div
+                  key={i}
+                  className="flex justify-between border-t border-border-subtle py-1.5 text-sm text-text-secondary first:border-t-0"
+                >
+                  <span>{r.date}</span>
+                  <span className="font-semibold text-text-primary">
+                    {r.hn} {r.hs}–{r.as} {r.an}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       )}
       {matchFaq.length > 0 && (
@@ -416,6 +549,12 @@ export default async function MatchDetailPage({ params }: PageProps) {
             awayScore: match.awayScore,
           })}
         </h1>
+        <p className="mb-1 px-1 text-xs text-text-tertiary">
+          <span className={`font-semibold uppercase tracking-wide ${stateColor}`}>{stateWord}</span>
+          {` · ${compName}`}
+          {match.round ? ` · ${match.round}` : ''}
+          {` · ${dateShort}`}
+        </p>
         <JsonLd
           graph={buildGraph(
             buildWebPage({

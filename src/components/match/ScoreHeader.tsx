@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import { Flag } from '@/components/shared/Flag';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
@@ -29,8 +28,6 @@ export function ScoreHeader({
   competitionHref,
   goalScorers = [],
 }: ScoreHeaderProps) {
-  const t = useTranslations('matchDetail');
-
   const homeName = getTeamDisplayName(match.homeTeam, locale);
   const awayName = getTeamDisplayName(match.awayTeam, locale);
   const compName = getLocalizedCompetitionName(
@@ -160,8 +157,8 @@ export function ScoreHeader({
           {match.venue && (match.venue.name || match.venue.city) && (
             <span>{[match.venue.name, match.venue.city].filter(Boolean).join(', ')}</span>
           )}
-          {match.venue && match.referee && <span className="text-border-subtle">&middot;</span>}
-          {match.referee && <span>{match.referee}</span>}
+          {/* Referee lives in the Match Info card (right rail); kept out of the hero to match the
+              design and avoid a lone floating name when there is no venue. */}
         </div>
       </div>
     </div>
