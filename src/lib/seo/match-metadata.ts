@@ -98,3 +98,20 @@ export function buildMatchMeta(input: MatchMetaInput): MatchMeta {
   const byLocale = TEMPLATES[input.locale] ?? TEMPLATES.fr;
   return byLocale[state]({ home: input.home, away: input.away, comp: input.competition, score });
 }
+
+/**
+ * On-page <h1> for the match page — keyword-first, state-varied, no brand suffix (distinct from the
+ * <title>, which carries the SERP copy). Finished shows the score; upcoming/live show the fixture
+ * name with the locale's separator. Mirrors buildMatchMeta's finished-without-score fallback.
+ */
+export function buildMatchH1(input: MatchMetaInput): string {
+  const score = hasScore(input.homeScore, input.awayScore)
+    ? `${input.homeScore}–${input.awayScore}`
+    : null;
+  const vs = input.locale === 'en' ? 'vs' : input.locale === 'ar' ? 'ضد' : '–';
+  const fixture =
+    input.state === 'finished' && score
+      ? `${input.home} ${score} ${input.away}`
+      : `${input.home} ${vs} ${input.away}`;
+  return `${fixture} — ${input.competition}`;
+}

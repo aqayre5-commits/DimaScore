@@ -14,7 +14,7 @@ import {
   getNextFixtures,
 } from '@/lib/db/queries/match-detail';
 import { getMatchState, LIVE_CODES_ARRAY } from '@/lib/match-status';
-import { buildMatchMeta } from '@/lib/seo/match-metadata';
+import { buildMatchMeta, buildMatchH1 } from '@/lib/seo/match-metadata';
 import { qk } from '@/lib/query-keys';
 import { previewFromMatchDetail } from '@/lib/match-header-preview';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
@@ -254,6 +254,18 @@ export default async function MatchDetailPage({ params }: PageProps) {
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
         <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
+        <h1 className="mt-1 px-1 text-base font-semibold text-text-primary sm:text-lg">
+          {buildMatchH1({
+            home,
+            away,
+            competition: compName,
+            locale: typedLocale,
+            state:
+              matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming',
+            homeScore: match.homeScore,
+            awayScore: match.awayScore,
+          })}
+        </h1>
         <JsonLd
           graph={buildGraph(
             buildWebPage({
