@@ -15,6 +15,14 @@ import {
 } from '@/lib/db/queries/match-detail';
 import { getMatchState, LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { buildMatchMeta, buildMatchH1 } from '@/lib/seo/match-metadata';
+import {
+  buildRecap,
+  buildPreview,
+  buildH2HNarrative,
+  buildMatchFaq,
+  summarizeH2H,
+  type NarrativeScorer,
+} from '@/lib/seo/match-narrative';
 import { qk } from '@/lib/query-keys';
 import { previewFromMatchDetail } from '@/lib/match-header-preview';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
@@ -250,6 +258,137 @@ export default async function MatchDetailPage({ params }: PageProps) {
     />
   );
 
+  // ── SEO editorial layer (Task 15.11): server-rendered prose per state ──
+  const narrativeState =
+    matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming';
+  const scorers: NarrativeScorer[] = (prefetch.events ?? []).flatMap((e) => {
+    const type = e.type?.toLowerCase() ?? '';
+    const detail = (e.detail ?? '').toLowerCase();
+    if (type !== 'goal' || detail.includes('missed')) return [];
+    return [
+      {
+        name: e.player?.name?.[typedLocale] ?? e.player?.name?.en ?? '—',
+        minute: e.minute,
+        extra: e.extraMinute,
+        side: (e.teamId === match.homeTeam?.id ? 'home' : 'away') as 'home' | 'away',
+        isPenalty: detail.includes('penalty'),
+        isOwnGoal: detail.includes('own goal'),
+      },
+    ];
+  });
+  const h2hSummary =
+    match.homeTeam?.id != null && match.awayTeam?.id != null
+      ? summarizeH2H(prefetch.h2h, match.homeTeam.id, match.awayTeam.id)
+      : { played: 0, homeWins: 0, draws: 0, awayWins: 0 };
+  const kickoffLabel = new Intl.DateTimeFormat(
+    typedLocale === 'ar' ? 'ar-MA' : typedLocale === 'en' ? 'en-GB' : 'fr-MA',
+    {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Africa/Casablanca',
+    },
+  ).format(match.kickoffAt);
+  const secLabels = (
+    {
+      fr: {
+        recap: 'Résumé du match',
+        preview: 'Avant-match',
+        h2h: 'Face-à-face',
+        faq: 'Questions fréquentes',
+      },
+      en: { recap: 'Match recap', preview: 'Preview', h2h: 'Head-to-head', faq: 'FAQ' },
+      ar: {
+        recap: 'ملخص المباراة',
+        preview: 'قبل المباراة',
+        h2h: 'المواجهات المباشرة',
+        faq: 'الأسئلة الشائعة',
+      },
+    } as const
+  )[typedLocale];
+  const h2hNarr = buildH2HNarrative({ home, away, h2h: h2hSummary, locale: typedLocale });
+  const matchFaq = buildMatchFaq({
+    state: narrativeState,
+    home,
+    away,
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
+    scorers,
+    kickoffLabel,
+    locale: typedLocale,
+  });
+  // Recap only for genuinely-played results (FT/AET/PEN). Awarded/walkover/abandoned scores are
+  // administrative — their goal events can contradict the scoreline, so they get no played recap.
+  const isPlayedResult = ['FT', 'AET', 'PEN'].includes(match.statusCode);
+  const narrativeLead =
+    narrativeState === 'finished' &&
+    isPlayedResult &&
+    typeof match.homeScore === 'number' &&
+    typeof match.awayScore === 'number' ? (
+      <section aria-labelledby="recap-h">
+        <h2 id="recap-h" className="mb-1.5 text-base font-semibold text-text-primary">
+          {secLabels.recap}
+        </h2>
+        <p className="text-sm leading-relaxed text-text-secondary">
+          {buildRecap({
+            home,
+            away,
+            homeScore: match.homeScore,
+            awayScore: match.awayScore,
+            scorers,
+            competition: compName,
+            locale: typedLocale,
+          })}
+        </p>
+      </section>
+    ) : narrativeState === 'upcoming' ? (
+      <section aria-labelledby="preview-h">
+        <h2 id="preview-h" className="mb-1.5 text-base font-semibold text-text-primary">
+          {secLabels.preview}
+        </h2>
+        <p className="text-sm leading-relaxed text-text-secondary">
+          {buildPreview({
+            home,
+            away,
+            competition: compName,
+            kickoffLabel,
+            venue: match.venue?.name,
+            h2h: h2hSummary,
+            locale: typedLocale,
+          })}
+        </p>
+      </section>
+    ) : null;
+  const narrativeTail = (
+    <>
+      {h2hNarr && (
+        <section aria-labelledby="h2h-h">
+          <h2 id="h2h-h" className="mb-1.5 text-base font-semibold text-text-primary">
+            {secLabels.h2h}
+          </h2>
+          <p className="text-sm leading-relaxed text-text-secondary">{h2hNarr}</p>
+        </section>
+      )}
+      {matchFaq.length > 0 && (
+        <section aria-labelledby="faq-h">
+          <h2 id="faq-h" className="mb-1.5 text-base font-semibold text-text-primary">
+            {secLabels.faq}
+          </h2>
+          <dl className="space-y-2">
+            {matchFaq.map((f, i) => (
+              <div key={i}>
+                <dt className="text-sm font-semibold text-text-primary">{f.q}</dt>
+                <dd className="text-sm text-text-secondary">{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
+    </>
+  );
+
   const pageContent = (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
@@ -333,6 +472,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
                 ];
               })}
             />
+            {narrativeLead}
             {isUpcoming && (
               <PreMatchForm
                 locale={typedLocale}
@@ -361,6 +501,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
               awayName={away}
               isUpcoming={isUpcoming}
             />
+            {narrativeTail}
           </div>
         }
         rightRail={matchSidebar}
