@@ -335,3 +335,5 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   2. **LionsAbroadFixtures** ← `lions-abroad.ts`: SELECT adds `ht.slug`/`at.slug`; `LionsAbroadFixture` gains `homeTeamSlug`/`awayTeamSlug`.
   3. **WorldCupHistoryCard** ← `team-world-cup.ts`: SELECT adds `ht.slug`/`at.slug`; `WorldCupResult.home/away` gain `slug`.
   All internal match links now emit canonical slug URLs. Still open: **item 4 — `H2HPanel` is dead code** (`src/components/match/H2HPanel.tsx`, zero renders) → deletion candidate, separate task.
+
+- [2026-09-17][phase 15 — Task D4: dead H2HPanel deleted] Removed `src/components/match/H2HPanel.tsx` (zero renders; had been dropped from the match right rail earlier in Phase 15). Resolves item 4 of the D2-residual entry. `H2HFixture` type + `getHeadToHead` query retained — still consumed by the match page and `/api/v1/match/[id]/sidebar`. Closes out the Phase-15 match-URL / SEO thread.
