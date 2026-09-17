@@ -47,3 +47,11 @@ FROM (VALUES
   (1567,'العراق'),(1548,'الأردن'),(1551,'لبنان'),(1565,'سوريا'),(1562,'فلسطين'),(1550,'اليمن')
 ) AS v(id, ar)
 WHERE t.id = v.id;
+
+-- Batch 3 — national teams' shortName.ar = name.ar (country name IS the short form; cleans AR
+-- compact labels in the ticker / score strips). Derived from the verified name.ar above.
+UPDATE teams
+SET short_name = jsonb_set(COALESCE(short_name, '{}'::jsonb), '{ar}', name->'ar', true)
+WHERE is_national
+  AND COALESCE(name->>'ar','') <> ''
+  AND COALESCE(short_name->>'ar','') = '';
