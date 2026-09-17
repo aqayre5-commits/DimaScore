@@ -10,6 +10,7 @@ import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 
 interface MatchesThisWeekProps {
   locale: Locale;
@@ -53,6 +54,7 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
 
   type TeamSnap = {
     id: number;
+    slug: string;
     name: Record<string, string>;
     shortName: Record<string, string>;
     code: string | null;
@@ -63,6 +65,7 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
     const teams = await db
       .select({
         id: schema.teams.id,
+        slug: schema.teams.slug,
         name: schema.teams.name,
         shortName: schema.teams.shortName,
         code: schema.teams.code,
@@ -112,7 +115,7 @@ export async function MatchesThisWeek({ locale }: MatchesThisWeekProps) {
             <li key={row.id}>
               <MatchLink
                 matchId={String(row.id)}
-                href={`/${locale}/match/${row.id}`}
+                href={matchHref(locale, { id: row.id, homeSlug: home?.slug, awaySlug: away?.slug })}
                 preview={preview}
                 ariaLabel={`${homeName} vs ${awayName}`}
                 className="block rounded-lg px-3 py-2 transition-colors hover:bg-bg-surface-2"

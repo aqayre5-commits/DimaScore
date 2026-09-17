@@ -26,3 +26,15 @@ export function buildMatchSlug(
   const away = teamSlugBase(awaySlug);
   return home && away ? `${home}-${away}-${fixtureId}` : `${fixtureId}`;
 }
+
+/**
+ * Canonical internal href for a match: `/{locale}/match/{home}-{away}-{id}`. Use this at every
+ * link site so clicks land directly on the canonical slug URL (no bare-id → 301 hop). Degrades to
+ * `/{locale}/match/{id}` when team slugs aren't in scope — still resolvable, self-heals to canonical.
+ */
+export function matchHref(
+  locale: string,
+  fixture: { id: number; homeSlug?: string | null; awaySlug?: string | null },
+): string {
+  return `/${locale}/match/${buildMatchSlug(fixture.homeSlug, fixture.awaySlug, fixture.id)}`;
+}

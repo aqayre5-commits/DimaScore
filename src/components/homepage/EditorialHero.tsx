@@ -7,6 +7,7 @@ import { formatMatchTime } from '@/lib/utils/date';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow, type MatchHeaderPreview } from '@/lib/match-header-preview';
+import { matchHref } from '@/lib/seo/match-slug';
 import type { Locale } from '@/lib/i18n/config';
 
 interface EditorialHeroProps {
@@ -81,7 +82,11 @@ function resolveContent(
             </p>
           </div>
         ),
-        href: `/${locale}/match/${fixture.id}`,
+        href: matchHref(locale, {
+          id: fixture.id,
+          homeSlug: fixture.homeTeam?.slug,
+          awaySlug: fixture.awayTeam?.slug,
+        }),
         matchId: String(fixture.id),
         preview: heroPreview(fixture),
       };
@@ -108,7 +113,11 @@ function resolveContent(
             </p>
           </div>
         ),
-        href: `/${locale}/match/${fixture.id}`,
+        href: matchHref(locale, {
+          id: fixture.id,
+          homeSlug: fixture.homeTeam?.slug,
+          awaySlug: fixture.awayTeam?.slug,
+        }),
         matchId: String(fixture.id),
         preview: heroPreview(fixture),
       };
@@ -131,7 +140,11 @@ function resolveContent(
             </p>
           </div>
         ),
-        href: `/${locale}/match/${fixture.id}`,
+        href: matchHref(locale, {
+          id: fixture.id,
+          homeSlug: fixture.homeTeam?.slug,
+          awaySlug: fixture.awayTeam?.slug,
+        }),
         matchId: String(fixture.id),
         preview: heroPreview(fixture),
       };

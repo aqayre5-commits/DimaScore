@@ -12,6 +12,7 @@ import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { TopPlayerRow } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 
 interface LeagueRightRailCardProps {
   featuredMatches: FixtureWithTeams[];
@@ -189,7 +190,11 @@ function CompactMatch({
   return (
     <MatchLink
       matchId={String(fixture.id)}
-      href={`/${locale}/match/${fixture.id}`}
+      href={matchHref(locale, {
+        id: fixture.id,
+        homeSlug: homeTeam?.slug,
+        awaySlug: awayTeam?.slug,
+      })}
       preview={preview}
       className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-accent-azure/5"
     >

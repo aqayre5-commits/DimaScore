@@ -11,6 +11,7 @@ import { stripWomenSuffix } from '@/lib/team-display';
 import { Flag } from '@/components/shared/Flag';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 
 interface FeaturedMatchCardProps {
   fixture: FixtureWithTeams;
@@ -59,7 +60,11 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       <MatchLink
         matchId={String(fixture.id)}
-        href={`/${locale}/match/${fixture.id}`}
+        href={matchHref(locale, {
+          id: fixture.id,
+          homeSlug: homeTeam?.slug,
+          awaySlug: awayTeam?.slug,
+        })}
         preview={preview}
         prefetchIntent
         className="flex h-full flex-col transition-colors hover:bg-accent-azure/5"

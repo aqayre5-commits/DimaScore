@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { TeamSnapshot } from '@/lib/db/queries-hydrate';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 
 interface KnockoutMatchCardProps {
   fixture: FixtureWithTeams;
@@ -53,7 +54,7 @@ export function KnockoutMatchCard({ fixture: raw, locale }: KnockoutMatchCardPro
 
   return (
     <Link
-      href={`/${locale}/match/${f.id}`}
+      href={matchHref(locale, { id: f.id, homeSlug: f.homeTeam?.slug, awaySlug: f.awayTeam?.slug })}
       className="flex items-stretch overflow-hidden rounded-xl border border-border-subtle bg-bg-surface transition-colors hover:border-accent-azure/40"
     >
       {/* Teams + scores */}

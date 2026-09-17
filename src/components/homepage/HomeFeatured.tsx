@@ -12,6 +12,7 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
 import { teamCrestUrl } from '@/lib/utils/crest';
+import { matchHref } from '@/lib/seo/match-slug';
 
 type FeatureTag = NonNullable<HomeFixture['featureTag']>;
 
@@ -223,7 +224,11 @@ function HeroCard({
 
   return (
     <Link
-      href={`/${locale}/match/${match.id}`}
+      href={matchHref(locale, {
+        id: match.id,
+        homeSlug: match.homeTeam?.slug,
+        awaySlug: match.awayTeam?.slug,
+      })}
       className="relative block overflow-hidden rounded-xl border border-border-subtle bg-bg-surface"
     >
       <div className="absolute start-4 top-4 z-10">

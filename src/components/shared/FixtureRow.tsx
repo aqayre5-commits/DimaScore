@@ -8,8 +8,10 @@ import { getMatchState, getMatchStatusLabelKey } from '@/lib/match-status';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 
 interface FixtureTeam {
+  slug?: string | null;
   name: Record<string, string>;
   shortName: Record<string, string>;
   code: string | null;
@@ -94,7 +96,11 @@ export function FixtureRow({
   return (
     <MatchLink
       matchId={String(fixtureId)}
-      href={`/${locale}/match/${fixtureId}`}
+      href={matchHref(locale, {
+        id: fixtureId,
+        homeSlug: homeTeam?.slug,
+        awaySlug: awayTeam?.slug,
+      })}
       preview={preview}
       prefetchIntent
       ariaLabel={`${homeName} vs ${awayName}`}

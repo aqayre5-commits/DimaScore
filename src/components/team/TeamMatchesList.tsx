@@ -14,6 +14,7 @@ import { formatMatchDate, SITE_TZ } from '@/lib/utils/date';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 
 interface TeamMatchesListProps {
   fixtures: FixtureWithCompetition[];
@@ -156,7 +157,10 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
     : '';
 
   return (
-    <a href={`/${locale}/match/${f.id}`} className="block transition-colors hover:bg-bg-surface-2">
+    <a
+      href={matchHref(locale, { id: f.id, homeSlug: f.homeTeam?.slug, awaySlug: f.awayTeam?.slug })}
+      className="block transition-colors hover:bg-bg-surface-2"
+    >
       {/* ── Single layout (all breakpoints): competition header (multi-comp) + teams · divider · meta ── */}
       <div className="px-3">
         {compName && (

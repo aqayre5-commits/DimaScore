@@ -15,6 +15,7 @@ import { getMatchState, getMatchStatusLabelKey } from '@/lib/match-status';
 import { useTranslations } from 'next-intl';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 import { CompetitionLogo } from '@/components/shared/Logo';
 import { Flag } from '@/components/shared/Flag';
 import { useMounted } from '@/hooks/useMounted';
@@ -133,7 +134,11 @@ function MatchRow({
   return (
     <MatchLink
       matchId={String(fixture.id)}
-      href={`/${locale}/match/${fixture.id}`}
+      href={matchHref(locale, {
+        id: fixture.id,
+        homeSlug: fixture.homeTeam?.slug,
+        awaySlug: fixture.awayTeam?.slug,
+      })}
       preview={preview}
       prefetchIntent={enablePrefetch}
       ariaLabel={`${homeName} vs ${awayName}`}

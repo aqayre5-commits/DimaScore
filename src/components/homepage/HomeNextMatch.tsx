@@ -8,6 +8,7 @@ import { LocalTime } from '@/components/shared/LocalTime';
 import { useLiveFixtures, useLiveFeedReady } from '@/hooks/useLiveFixtures';
 import type { RightRailFixture, GoalEvent } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 import Image from 'next/image';
 import { Flag } from '@/components/shared/Flag';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
@@ -182,7 +183,11 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
         {/* CTA */}
         <MatchLink
           matchId={String(match.id)}
-          href={`/${locale}/match/${match.id}`}
+          href={matchHref(locale, {
+            id: match.id,
+            homeSlug: match.homeTeam?.slug,
+            awaySlug: match.awayTeam?.slug,
+          })}
           preview={preview}
           prefetchIntent
           className={`mt-4 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-colors sm:mx-auto sm:max-w-sm ${

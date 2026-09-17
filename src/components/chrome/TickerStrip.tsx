@@ -10,6 +10,7 @@ import { isLiveStatus } from '@/lib/data/types';
 import type { TickerFixture } from '@/lib/db/queries';
 import { getCompactTeamLabel } from '@/lib/utils/team-name';
 import { LocalTime } from '@/components/shared/LocalTime';
+import { matchHref } from '@/lib/seo/match-slug';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import { useQueryClient } from '@tanstack/react-query';
@@ -96,7 +97,11 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
   return (
     <MatchLink
       matchId={String(fixture.id)}
-      href={`/${locale}/match/${fixture.id}`}
+      href={matchHref(locale, {
+        id: fixture.id,
+        homeSlug: fixture.homeTeam?.slug,
+        awaySlug: fixture.awayTeam?.slug,
+      })}
       preview={previewFromTickerFixture(fixture)}
       prefetchIntent
       dir={dir}

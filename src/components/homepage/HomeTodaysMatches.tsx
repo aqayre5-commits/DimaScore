@@ -7,6 +7,7 @@ import { formatDateLabel } from '@/lib/utils/date';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { TopMatchDateGroup } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 import { Flag } from '@/components/shared/Flag';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
@@ -83,7 +84,11 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                 <MatchLink
                   key={f.id}
                   matchId={String(f.id)}
-                  href={`/${locale}/match/${f.id}`}
+                  href={matchHref(locale, {
+                    id: f.id,
+                    homeSlug: f.homeTeam?.slug,
+                    awaySlug: f.awayTeam?.slug,
+                  })}
                   preview={preview}
                   ariaLabel={`${homeName} vs ${awayName}`}
                   className="flex items-center gap-2 px-4 py-2 transition-colors hover:bg-bg-surface-2"

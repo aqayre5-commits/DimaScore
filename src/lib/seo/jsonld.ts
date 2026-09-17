@@ -10,6 +10,8 @@
  * pinned to what Google documents.
  */
 
+import { buildMatchSlug } from '@/lib/seo/match-slug';
+
 export interface JsonLdNode {
   '@type': string | string[];
   '@id'?: string;
@@ -289,19 +291,26 @@ export function buildSportsEventTournament(args: {
   };
 }
 
-/** Minimal fixture shape for the hub ItemList — resolved names + kickoff + status. */
+/** Minimal fixture shape for the hub ItemList — resolved names + kickoff + status + team slugs. */
 export interface FixtureListItem {
   id: number;
   kickoffAt: Date;
   statusCode: string;
   homeName: string;
   awayName: string;
+  /** Stored team slugs (`name-id`) → the compact node's URL matches the per-match page's slug URL. */
+  homeSlug: string | null;
+  awaySlug: string | null;
 }
 
 /**
  * ItemList of a hub's season fixtures, each a compact SportsEvent that reconciles by @id with the
  * per-match page's own SportsEvent node. Returns null for an empty list. Kept compact (no logos /
  * competitors) since a full season can be hundreds of entries.
+ *
+ * The @id/url use the canonical slug URL (`/match/{home}-{away}-{id}`, via buildMatchSlug) so each
+ * compact SportsEvent reconciles by @id with the per-match page's own SportsEvent node — which moved
+ * to the slug URL in Task D.
  */
 export function buildFixtureItemList(args: {
   fixtures: readonly FixtureListItem[];
@@ -314,19 +323,22 @@ export function buildFixtureItemList(args: {
     '@type': 'ItemList',
     '@id': `${args.pageUrl}#fixtures`,
     numberOfItems: args.fixtures.length,
-    itemListElement: args.fixtures.map((f, i) => ({
-      '@type': 'ListItem',
-      position: i + 1,
-      item: {
-        '@type': 'SportsEvent',
-        '@id': `${args.baseUrl}/${args.locale}/match/${f.id}#event`,
-        name: `${f.homeName} vs ${f.awayName}`,
-        sport: 'https://schema.org/Soccer',
-        startDate: f.kickoffAt.toISOString(),
-        eventStatus: eventStatus(f.statusCode),
-        url: `${args.baseUrl}/${args.locale}/match/${f.id}`,
-      },
-    })),
+    itemListElement: args.fixtures.map((f, i) => {
+      const matchUrl = `${args.baseUrl}/${args.locale}/match/${buildMatchSlug(f.homeSlug, f.awaySlug, f.id)}`;
+      return {
+        '@type': 'ListItem',
+        position: i + 1,
+        item: {
+          '@type': 'SportsEvent',
+          '@id': `${matchUrl}#event`,
+          name: `${f.homeName} vs ${f.awayName}`,
+          sport: 'https://schema.org/Soccer',
+          startDate: f.kickoffAt.toISOString(),
+          eventStatus: eventStatus(f.statusCode),
+          url: matchUrl,
+        },
+      };
+    }),
   };
 }
 

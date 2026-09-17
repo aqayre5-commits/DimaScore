@@ -303,6 +303,8 @@ export async function renderLeaguePage(
                   statusCode: f.statusCode,
                   homeName: f.homeTeam!.name[locale] ?? f.homeTeam!.name['en'] ?? '',
                   awayName: f.awayTeam!.name[locale] ?? f.awayTeam!.name['en'] ?? '',
+                  homeSlug: f.homeTeam!.slug,
+                  awaySlug: f.awayTeam!.slug,
                 })),
               locale,
               baseUrl: BASE_URL,

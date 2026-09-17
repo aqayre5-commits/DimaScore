@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromDayFixture } from '@/lib/match-header-preview';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 import { Flag } from '@/components/shared/Flag';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 
@@ -53,7 +54,11 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
   return (
     <MatchLink
       matchId={String(fixture.id)}
-      href={`/${locale}/match/${fixture.id}`}
+      href={matchHref(locale, {
+        id: fixture.id,
+        homeSlug: fixture.homeTeam?.slug,
+        awaySlug: fixture.awayTeam?.slug,
+      })}
       preview={preview}
       prefetchIntent={enablePrefetch}
       ariaLabel={`${homeLabel} vs ${awayLabel}`}

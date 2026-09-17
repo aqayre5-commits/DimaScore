@@ -21,6 +21,7 @@ import {
 } from '@/lib/competitions/select-default-round';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
+import { matchHref } from '@/lib/seo/match-slug';
 
 type StatusFilter = CupStatusFilter;
 
@@ -263,7 +264,11 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
   return (
     <MatchLink
       matchId={String(fixture.id)}
-      href={`/${locale}/match/${fixture.id}`}
+      href={matchHref(locale, {
+        id: fixture.id,
+        homeSlug: homeTeam?.slug,
+        awaySlug: awayTeam?.slug,
+      })}
       preview={preview}
       className="block transition-colors hover:bg-accent-azure/5"
     >
