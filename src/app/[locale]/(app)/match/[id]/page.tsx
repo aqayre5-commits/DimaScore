@@ -38,7 +38,10 @@ import {
   buildWebPage,
   buildSportsEventMatch,
   buildBreadcrumbList,
+  buildNewsArticle,
+  buildVideoObject,
 } from '@/lib/seo/jsonld';
+import { getMediaVideos } from '@/lib/db/queries/media';
 import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
@@ -96,6 +99,12 @@ async function getCachedMatchData(fixtureId: number) {
   const homeForm = formMap.get(homeTeamId) ?? [];
   const awayForm = formMap.get(awayTeamId) ?? [];
 
+  // Highlights video for the recap VideoObject (finished/live only; null when none is linked).
+  const highlightVideo = !isUpcoming
+    ? ((await getMediaVideos(db, { fixtureId, category: 'highlights', limit: 1 })).videos[0] ??
+      null)
+    : null;
+
   return {
     match,
     coverage,
@@ -109,6 +118,7 @@ async function getCachedMatchData(fixtureId: number) {
       nextFixtures,
       homeForm,
       awayForm,
+      highlightVideo,
     },
   };
 }
@@ -322,45 +332,46 @@ export default async function MatchDetailPage({ params }: PageProps) {
   // Recap only for genuinely-played results (FT/AET/PEN). Awarded/walkover/abandoned scores are
   // administrative — their goal events can contradict the scoreline, so they get no played recap.
   const isPlayedResult = ['FT', 'AET', 'PEN'].includes(match.statusCode);
-  const narrativeLead =
+  const recapText =
     narrativeState === 'finished' &&
     isPlayedResult &&
     typeof match.homeScore === 'number' &&
-    typeof match.awayScore === 'number' ? (
-      <section aria-labelledby="recap-h">
-        <h2 id="recap-h" className="mb-1.5 text-base font-semibold text-text-primary">
-          {secLabels.recap}
-        </h2>
-        <p className="text-sm leading-relaxed text-text-secondary">
-          {buildRecap({
-            home,
-            away,
-            homeScore: match.homeScore,
-            awayScore: match.awayScore,
-            scorers,
-            competition: compName,
-            locale: typedLocale,
-          })}
-        </p>
-      </section>
-    ) : narrativeState === 'upcoming' ? (
-      <section aria-labelledby="preview-h">
-        <h2 id="preview-h" className="mb-1.5 text-base font-semibold text-text-primary">
-          {secLabels.preview}
-        </h2>
-        <p className="text-sm leading-relaxed text-text-secondary">
-          {buildPreview({
-            home,
-            away,
-            competition: compName,
-            kickoffLabel,
-            venue: match.venue?.name,
-            h2h: h2hSummary,
-            locale: typedLocale,
-          })}
-        </p>
-      </section>
-    ) : null;
+    typeof match.awayScore === 'number'
+      ? buildRecap({
+          home,
+          away,
+          homeScore: match.homeScore,
+          awayScore: match.awayScore,
+          scorers,
+          competition: compName,
+          locale: typedLocale,
+        })
+      : null;
+  const narrativeLead = recapText ? (
+    <section aria-labelledby="recap-h">
+      <h2 id="recap-h" className="mb-1.5 text-base font-semibold text-text-primary">
+        {secLabels.recap}
+      </h2>
+      <p className="text-sm leading-relaxed text-text-secondary">{recapText}</p>
+    </section>
+  ) : narrativeState === 'upcoming' ? (
+    <section aria-labelledby="preview-h">
+      <h2 id="preview-h" className="mb-1.5 text-base font-semibold text-text-primary">
+        {secLabels.preview}
+      </h2>
+      <p className="text-sm leading-relaxed text-text-secondary">
+        {buildPreview({
+          home,
+          away,
+          competition: compName,
+          kickoffLabel,
+          venue: match.venue?.name,
+          h2h: h2hSummary,
+          locale: typedLocale,
+        })}
+      </p>
+    </section>
+  ) : null;
   const narrativeTail = (
     <>
       {h2hNarr && (
@@ -434,6 +445,36 @@ export default async function MatchDetailPage({ params }: PageProps) {
               `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
               BASE_URL,
             ),
+            recapText
+              ? buildNewsArticle({
+                  url: `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+                  baseUrl: BASE_URL,
+                  headline: buildMatchMeta({
+                    home,
+                    away,
+                    competition: compName,
+                    locale: typedLocale,
+                    state: 'finished',
+                    homeScore: match.homeScore,
+                    awayScore: match.awayScore,
+                  }).title,
+                  body: recapText,
+                  datePublished: match.kickoffAt.toISOString(),
+                })
+              : null,
+            prefetch.highlightVideo
+              ? buildVideoObject({
+                  url: `${BASE_URL}/${typedLocale}/match/${fixtureId}`,
+                  youtubeId: prefetch.highlightVideo.youtubeId,
+                  name: prefetch.highlightVideo.title,
+                  description: prefetch.highlightVideo.title,
+                  thumbnailUrl: prefetch.highlightVideo.thumbnailUrl,
+                  uploadDate: (
+                    prefetch.highlightVideo.publishedAt ?? match.kickoffAt
+                  ).toISOString(),
+                  durationSeconds: prefetch.highlightVideo.duration,
+                })
+              : null,
           )}
         />
       </div>

@@ -346,3 +346,58 @@ export function buildFaqPage(
     })),
   };
 }
+
+/** NewsArticle (match recap) — a supported rich result. Linked to the WebPage + SportsEvent by @id. */
+export function buildNewsArticle(args: {
+  url: string;
+  baseUrl: string;
+  headline: string;
+  body: string;
+  datePublished: string;
+  dateModified?: string;
+  image?: string | null;
+}): JsonLdNode {
+  return {
+    '@type': 'NewsArticle',
+    '@id': `${args.url}#recap`,
+    headline: args.headline,
+    articleBody: args.body,
+    datePublished: args.datePublished,
+    dateModified: args.dateModified ?? args.datePublished,
+    author: { '@id': organizationId(args.baseUrl) },
+    publisher: { '@id': organizationId(args.baseUrl) },
+    mainEntityOfPage: { '@id': webPageId(args.url) },
+    about: { '@id': `${args.url}#event` },
+    ...(args.image ? { image: [args.image] } : {}),
+  };
+}
+
+/**
+ * VideoObject (match highlights) — a supported rich result. Only emit with a REAL hosted video
+ * (YouTube here); a fabricated contentUrl is a schema violation, so callers gate on actual data.
+ */
+export function buildVideoObject(args: {
+  url: string;
+  youtubeId: string;
+  name: string;
+  description?: string | null;
+  thumbnailUrl?: string | null;
+  uploadDate: string;
+  durationSeconds?: number | null;
+}): JsonLdNode {
+  const iso =
+    args.durationSeconds && args.durationSeconds > 0
+      ? `PT${Math.floor(args.durationSeconds / 60)}M${args.durationSeconds % 60}S`
+      : undefined;
+  return {
+    '@type': 'VideoObject',
+    '@id': `${args.url}#highlights`,
+    name: args.name,
+    description: args.description ?? args.name,
+    thumbnailUrl: args.thumbnailUrl ?? `https://i.ytimg.com/vi/${args.youtubeId}/hqdefault.jpg`,
+    uploadDate: args.uploadDate,
+    contentUrl: `https://www.youtube.com/watch?v=${args.youtubeId}`,
+    embedUrl: `https://www.youtube.com/embed/${args.youtubeId}`,
+    ...(iso ? { duration: iso } : {}),
+  };
+}
