@@ -20,6 +20,8 @@ import {
   buildPreview,
   buildH2HNarrative,
   buildMatchFaq,
+  buildMatchAnswer,
+  buildLiveNarrative,
   summarizeH2H,
   type NarrativeScorer,
 } from '@/lib/seo/match-narrative';
@@ -48,6 +50,7 @@ import { buildMatchSlug } from '@/lib/seo/match-slug';
 import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
+import { MatchAnswerBlock } from '@/components/match/MatchAnswerBlock';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 import { MatchClientCenter } from '@/components/match/MatchClientCenter';
 import { PreMatchForm } from '@/components/match/PreMatchForm';
@@ -452,32 +455,44 @@ export default async function MatchDetailPage({ params }: PageProps) {
           locale: typedLocale,
         })
       : null;
-  const narrativeLead = recapText ? (
-    <section aria-labelledby="recap-h">
-      <h2 id="recap-h" className="mb-1 text-base font-semibold text-text-primary">
-        {secLabels.recap}
-      </h2>
-      <p className="mb-2 text-xs text-text-tertiary">{`DimaScore · ${bylineWord} ${dateShort}`}</p>
-      <p className="text-sm leading-relaxed text-text-secondary">{recapText}</p>
-    </section>
-  ) : narrativeState === 'upcoming' ? (
-    <section aria-labelledby="preview-h">
-      <h2 id="preview-h" className="mb-1.5 text-base font-semibold text-text-primary">
-        {secLabels.preview}
-      </h2>
-      <p className="text-sm leading-relaxed text-text-secondary">
-        {buildPreview({
-          home,
-          away,
-          competition: compName,
-          kickoffLabel,
-          venue: match.venue?.name,
-          h2h: h2hSummary,
-          locale: typedLocale,
-        })}
-      </p>
-    </section>
-  ) : null;
+  // ── Answer-First block (top of page): one-line answer + recap/preview/live + byline ──
+  const answerText = buildMatchAnswer({
+    state: narrativeState,
+    home,
+    away,
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
+    competition: compName,
+    kickoffLabel,
+    venue: match.venue?.name,
+    minute: match.minute,
+    locale: typedLocale,
+  });
+  const stageRecap =
+    narrativeState === 'finished'
+      ? recapText
+      : narrativeState === 'upcoming'
+        ? buildPreview({
+            home,
+            away,
+            competition: compName,
+            kickoffLabel,
+            venue: match.venue?.name,
+            h2h: h2hSummary,
+            locale: typedLocale,
+          })
+        : buildLiveNarrative({
+            home,
+            away,
+            homeScore: match.homeScore,
+            awayScore: match.awayScore,
+            scorers,
+            minute: match.minute,
+            competition: compName,
+            locale: typedLocale,
+          });
+  const answerByline =
+    narrativeState === 'finished' && recapText ? `DimaScore · ${bylineWord} ${dateShort}` : null;
   const narrativeTail = (
     <>
       {topRated.length > 0 && (
@@ -643,6 +658,15 @@ export default async function MatchDetailPage({ params }: PageProps) {
         }
         center={
           <div className="space-y-4">
+            <MatchAnswerBlock
+              state={narrativeState}
+              stateLabel={stateWord}
+              answer={answerText}
+              recap={stageRecap}
+              byline={answerByline}
+              facts={[]}
+              locale={typedLocale}
+            />
             <ScoreHeader
               match={match}
               locale={typedLocale}
@@ -663,7 +687,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
                 ];
               })}
             />
-            {narrativeLead}
             {isUpcoming && (
               <PreMatchForm
                 locale={typedLocale}

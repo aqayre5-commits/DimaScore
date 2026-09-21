@@ -175,6 +175,113 @@ export function buildPreview(input: {
   return s;
 }
 
+// ── Answer-first one-liner (any state) ───────────────────────────────────
+/**
+ * The single-sentence direct answer shown at the very top of the match page (Answer-First / AEO).
+ * Adapts across upcoming → live → finished. Kept deliberately crisp; the fuller prose lives in the
+ * recap/preview/live paragraph beneath it.
+ */
+export function buildMatchAnswer(input: {
+  state: 'upcoming' | 'live' | 'finished';
+  home: string;
+  away: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  competition: string;
+  kickoffLabel: string; // pre-formatted, locale-aware
+  venue?: string | null;
+  minute?: number | null;
+  locale: string;
+}): string {
+  const { state, home, away, competition, kickoffLabel, venue, minute, locale } = input;
+  const hs = input.homeScore ?? 0;
+  const as = input.awayScore ?? 0;
+  const score = `${hs}–${as}`;
+  const draw = hs === as;
+  const leader = hs > as ? home : away;
+  const trailer = hs > as ? away : home;
+  const mm = minute != null ? ` (${minute}’)` : '';
+
+  if (state === 'upcoming') {
+    if (locale === 'ar')
+      return `يستضيف ${home} ${away} في ${competition}، ${kickoffLabel}${venue ? ` على ملعب ${venue}` : ''}.`;
+    if (locale === 'en')
+      return `${home} host ${away} in the ${competition}, ${kickoffLabel}${venue ? ` at ${venue}` : ''}.`;
+    return `${home} reçoit ${away} en ${competition}, ${kickoffLabel}${venue ? ` au ${venue}` : ''}.`;
+  }
+
+  if (state === 'live') {
+    if (draw) {
+      if (locale === 'ar') return `${home} و${away} متعادلان ${score}${mm} في ${competition}.`;
+      if (locale === 'en')
+        return `${home} and ${away} are level ${score}${mm} in the ${competition}.`;
+      return `${home} et ${away} font jeu égal ${score}${mm} en ${competition}.`;
+    }
+    if (locale === 'ar') return `${leader} يتقدّم على ${trailer} ${score}${mm} في ${competition}.`;
+    if (locale === 'en') return `${leader} lead ${trailer} ${score}${mm} in the ${competition}.`;
+    return `${leader} mène face à ${trailer} ${score}${mm} en ${competition}.`;
+  }
+
+  // finished
+  if (draw) {
+    if (locale === 'ar') return `تعادل ${home} و${away} ${score} في ${competition}.`;
+    if (locale === 'en') return `${home} and ${away} drew ${score} in the ${competition}.`;
+    return `${home} et ${away} ont fait match nul ${score} en ${competition}.`;
+  }
+  if (locale === 'ar') return `فاز ${leader} على ${trailer} ${score} في ${competition}.`;
+  if (locale === 'en') return `${leader} beat ${trailer} ${score} in the ${competition}.`;
+  return `${leader} a battu ${trailer} ${score} en ${competition}.`;
+}
+
+// ── Live narrative paragraph ─────────────────────────────────────────────
+/** Fuller live blurb beneath the answer: current scoreline + minute + scorers so far. */
+export function buildLiveNarrative(input: {
+  home: string;
+  away: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  scorers: NarrativeScorer[];
+  minute?: number | null;
+  competition: string;
+  locale: string;
+}): string {
+  const { home, away, scorers, minute, competition, locale } = input;
+  const hs = input.homeScore ?? 0;
+  const as = input.awayScore ?? 0;
+  const score = `${hs}–${as}`;
+  const homeGoals = scorerClause(scorers, 'home', locale);
+  const awayGoals = scorerClause(scorers, 'away', locale);
+
+  if (locale === 'ar') {
+    const lead =
+      minute != null
+        ? `مع مرور ${minute} دقيقة، النتيجة ${home} ${hs} - ${away} ${as} في ${competition}.`
+        : `النتيجة ${score} بين ${home} و${away} في ${competition}.`;
+    const goals = [homeGoals && `${home}: ${homeGoals}`, awayGoals && `${away}: ${awayGoals}`]
+      .filter(Boolean)
+      .join('، ');
+    return `${lead}${goals ? ' ' + goals + '.' : ''}`;
+  }
+  if (locale === 'en') {
+    const lead =
+      minute != null
+        ? `After ${minute} minutes it's ${home} ${hs}, ${away} ${as} in the ${competition}.`
+        : `It's ${score} between ${home} and ${away} in the ${competition}.`;
+    const goals = [homeGoals && `${home}: ${homeGoals}`, awayGoals && `${away}: ${awayGoals}`]
+      .filter(Boolean)
+      .join('. ');
+    return `${lead}${goals ? ' ' + goals + '.' : ''}`;
+  }
+  const lead =
+    minute != null
+      ? `Après ${minute} minutes, ${home} ${hs}, ${away} ${as} en ${competition}.`
+      : `Score de ${score} entre ${home} et ${away} en ${competition}.`;
+  const goals = [homeGoals && `${home} : ${homeGoals}`, awayGoals && `${away} : ${awayGoals}`]
+    .filter(Boolean)
+    .join('. ');
+  return `${lead}${goals ? ' ' + goals + '.' : ''}`;
+}
+
 // ── Head-to-head narrative (any state) ───────────────────────────────────
 export function buildH2HNarrative(input: {
   home: string;

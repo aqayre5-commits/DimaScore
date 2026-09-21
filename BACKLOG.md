@@ -348,3 +348,13 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   1. **Staleness is a data-layer bug, not a strip bug** — a match stuck in `2H` (never finalized to FT) can show a frozen 90' on BOTH strip and homepage. Fix belongs in the finalize-stale cron (`/api/cron/finalize-stale`), not a strip-only filter (that would break parity). The old strip's `updated_at < 6h` guard was removed for parity.
   2. **Composite v2** — add a tournament-active-window boost (fixes seasonality: a dormant WC/AFCON shouldn't float up off-season) and a knockout-stage boost. Deferred to keep v1 focused.
   3. **Re-rank `display_priority` from GSC/Plausible** — the prestige bands (UCL vs top-5 leagues, etc.) should be ordered from the site's own Search Console impressions + Plausible views (Morocco-leaning audience), not editorial gut.
+
+- [2026-09-21][match page — Answer-First + recap at top (Version A, off Phase 15, user-directed)] Added a stage-aware Answer-First block at the top of the match page, above the score card:
+  - **New** `MatchAnswerBlock.tsx` (pill + one-line answer + recap/preview/live paragraph + optional byline + facts row).
+  - **New builders** in `match-narrative.ts`: `buildMatchAnswer` (the one-line direct answer, upcoming/live/finished, FR/AR/EN) and `buildLiveNarrative` (live blurb — previously only finished-recap + upcoming-preview existed).
+  - **page.tsx:** renders the block above `ScoreHeader`; the old below-score recap/preview (`narrativeLead`) was removed and folded into the top block (no duplication). JSON-LD NewsArticle still uses `recapText`.
+  DELIBERATE v1 CUTS / follow-ups:
+  1. **Facts row omitted (passed `facts={[]}`)** — the mockup's fact chips (kickoff/venue/round) would duplicate the existing eyebrow line (comp·round·date) and the right-rail MatchInfoCard (venue). The component keeps `facts` support; add genuinely-additive facts (e.g. live "last goal") if wanted.
+  2. **Live answer is an SSR snapshot** — the score card keeps ticking via the client updater, but the answer sentence won't re-word mid-match until refresh/revalidate. Make it live-reactive (client) as a follow-up.
+  3. **FR/AR answer QA** — the new one-liners are templated; spot-check Arabic RTL rendering and French phrasing on real fixtures.
+  4. Minor: the stage word now appears both in the eyebrow ("Finished · …") and the block pill — tolerable; drop one if it reads redundant once live.
