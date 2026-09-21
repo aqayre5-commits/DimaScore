@@ -337,3 +337,14 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   All internal match links now emit canonical slug URLs. Still open: **item 4 — `H2HPanel` is dead code** (`src/components/match/H2HPanel.tsx`, zero renders) → deletion candidate, separate task.
 
 - [2026-09-17][phase 15 — Task D4: dead H2HPanel deleted] Removed `src/components/match/H2HPanel.tsx` (zero renders; had been dropped from the match right rail earlier in Phase 15). Resolves item 4 of the D2-residual entry. `H2HFixture` type + `getHeadToHead` query retained — still consumed by the match page and `/api/v1/match/[id]/sidebar`. Closes out the Phase-15 match-URL / SEO thread.
+
+- [2026-09-21][ticker overhaul — SHIPPED (off Phase 15, user-directed)] Rebuilt the global top strip (`getTickerFixtures` + `TickerStrip`):
+  - **Parity, not curation:** strip now shows the same set as the homepage (all comps, no allowlist) through the SAME `isDisplayableFixture` filter (exported from `queries/homepage.ts`) — fixes the old mismatch where youth friendlies (Japan U18 etc.) showed on the strip but were hidden on the main page.
+  - **Scope:** live + upcoming (≤48h) + scored results (FT/AET/PEN, ≤24h). Results render final score + FT/AET/PEN badge (new third render mode via `MatchState`). Windows are tighter than the homepage's ±window (a marquee of multi-day results is unusable); cap 60 after sort.
+  - **Composite order (option A):** live-first → Moroccan pinned → competition `display_priority` → upcoming-before-results within a comp → time. Verified against prod: marquee results/matches lead, women's/youth/minor leagues fall to the tail.
+  - **3-code labels:** new `getTickerCode` (real `team.code`, else derived tri-code from short/name; AR bidi-safe) — code coverage is only 50–65%, so a code-only chip would have blanked half the teams.
+  - **Client merge:** a live→FT transition now becomes a result cell (kept), not removed; only non-scored terminals (PST/CANC/ABD/SUSP/AWD/WO) are dropped.
+  FOLLOW-UPS (not done here):
+  1. **Staleness is a data-layer bug, not a strip bug** — a match stuck in `2H` (never finalized to FT) can show a frozen 90' on BOTH strip and homepage. Fix belongs in the finalize-stale cron (`/api/cron/finalize-stale`), not a strip-only filter (that would break parity). The old strip's `updated_at < 6h` guard was removed for parity.
+  2. **Composite v2** — add a tournament-active-window boost (fixes seasonality: a dormant WC/AFCON shouldn't float up off-season) and a knockout-stage boost. Deferred to keep v1 focused.
+  3. **Re-rank `display_priority` from GSC/Plausible** — the prestige bands (UCL vs top-5 leagues, etc.) should be ordered from the site's own Search Console impressions + Plausible views (Morocco-leaning audience), not editorial gut.

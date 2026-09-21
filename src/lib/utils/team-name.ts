@@ -86,3 +86,72 @@ function truncate(value: string | undefined, maxLen: number): string | null {
   if (!value) return null;
   return value.length <= maxLen ? value : value.slice(0, maxLen).trimEnd();
 }
+
+// Generic club-name prefixes/suffixes that carry no identity — skipped when deriving a code.
+const CODE_STOPWORDS = new Set([
+  'FC',
+  'CF',
+  'CS',
+  'AS',
+  'US',
+  'SC',
+  'AC',
+  'CD',
+  'SV',
+  'SS',
+  'RC',
+  'ES',
+  'CA',
+  'FK',
+  'SK',
+  'BK',
+  'IF',
+  'W',
+  'CLUB',
+  'DE',
+  'THE',
+]);
+
+/** Derive a ~3-letter uppercase code from a team name when no real `code` exists. */
+function deriveTriCode(value: string | undefined | null): string | null {
+  const cleaned = value?.trim();
+  if (!cleaned) return null;
+  const words = cleaned.split(/[\s.\-_/]+/).filter(Boolean);
+  const significant = words.filter((w) => !CODE_STOPWORDS.has(w.toUpperCase()));
+  const source = significant.length > 0 ? significant : words;
+  if (source.length >= 3)
+    return source
+      .slice(0, 3)
+      .map((w) => w[0]!.toUpperCase())
+      .join('');
+  if (source.length === 2) return (source[0][0]! + source[1].slice(0, 2)).toUpperCase();
+  return source[0].slice(0, 3).toUpperCase();
+}
+
+/**
+ * 3-letter scoreboard code for the ticker.
+ *
+ * EN/FR: real `team.code` wins (BRA, ARS, JUV, S04); else a tri-code derived from short/full name.
+ * AR: Arabic short/name first (Latin codes inside RTL text cause bidi artifacts), Latin code/derived
+ * only as a last resort. Never returns blank — falls back to 'TBD'.
+ */
+export function getTickerCode(team: TeamLike | null, locale: string): string {
+  if (!team) return '—';
+
+  if (locale === 'ar') {
+    const ar = team.shortName['ar'] ?? team.name['ar'];
+    if (ar) return truncate(ar, 12) ?? ar;
+    return (
+      (team.code && team.code.trim()) ||
+      deriveTriCode(team.shortName['en'] ?? team.name['en']) ||
+      'TBD'
+    );
+  }
+
+  if (team.code && team.code.trim().length > 0) return team.code.trim().toUpperCase();
+  return (
+    deriveTriCode(
+      team.shortName[locale] ?? team.shortName['en'] ?? team.name[locale] ?? team.name['en'],
+    ) ?? 'TBD'
+  );
+}

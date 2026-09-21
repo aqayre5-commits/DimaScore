@@ -77,9 +77,17 @@ const YOUTH_NAME_RE = /\bU-?\d{2}\b/;
 const isYouthTeam = (team: TeamSnapshot | null): boolean =>
   !!team && Object.values(team.name).some((n) => YOUTH_NAME_RE.test(n));
 
-/** Hide broken/noise rows from the homepage match list: fixtures with an unresolved team
- *  (which render as "TBD"), and youth (U18–U23) entries in the Friendlies feed. */
-function isDisplayableFixture(f: HomeFixture): boolean {
+/** Minimal shape shared by HomeFixture and TickerFixture, enough to gate display. */
+export type DisplayableFixture = {
+  competition: { id: number };
+  homeTeam: TeamSnapshot | null;
+  awayTeam: TeamSnapshot | null;
+};
+
+/** Hide broken/noise rows from any match surface (homepage list AND the global ticker, so the two
+ *  never diverge): fixtures with an unresolved team (which render as "TBD"), and youth (U18–U23)
+ *  entries in the Friendlies feed. */
+export function isDisplayableFixture(f: DisplayableFixture): boolean {
   if (!f.homeTeam || !f.awayTeam) return false;
   if (f.competition.id === FRIENDLIES_ID && (isYouthTeam(f.homeTeam) || isYouthTeam(f.awayTeam)))
     return false;

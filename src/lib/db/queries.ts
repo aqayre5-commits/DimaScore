@@ -5,6 +5,7 @@ import * as schema from './schema';
 import type { TeamSnapshot, VenueSnapshot } from './queries-hydrate';
 import { applyComputedStandings } from '@/lib/standings/compute';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { isDisplayableFixture } from './queries/homepage';
 
 export interface FixtureWithTeams {
   id: number;
@@ -282,11 +283,19 @@ export interface TickerFixture {
   homeTeam: TeamSnapshot | null;
   awayTeam: TeamSnapshot | null;
   competition: CompetitionSnapshot;
+  /** Competition display_priority (lower = more prominent) — carried for composite ordering. */
+  displayPriority: number;
 }
 
 export type TickerResult = { mode: 'fixtures'; fixtures: TickerFixture[] } | { mode: 'empty' };
 
 const LIVE_STATUSES: string[] = [...LIVE_CODES_ARRAY];
+const LIVE_SET = new Set<string>(LIVE_CODES_ARRAY);
+// Scored results only — a highlight strip shows a final score, so WO/AWD/CANC/ABD are excluded.
+const RESULT_STATUSES: string[] = ['FT', 'AET', 'PEN'];
+const MOROCCO_CC = 'MA';
+// Cap after composite sort so a busy night can't produce a 200-cell marquee.
+const TICKER_MAX = 60;
 
 const TICKER_SELECT = {
   id: schema.fixtures.id,
@@ -301,44 +310,99 @@ const TICKER_SELECT = {
   compName: schema.competitions.name,
   compLogo: schema.competitions.logoUrl,
   compSlug: schema.competitions.slug,
+  displayPriority: schema.competitions.displayPriority,
 } as const;
 
 /**
- * Get fixtures for the global ticker strip.
- * Runs live + upcoming queries in parallel, concatenates (live first),
- * caps at max(15, liveCount). Hydrates teams in one batch. 3 queries total.
+ * Fixtures for the global ticker strip.
+ *
+ * Membership parity with the homepage: same competitions (no allowlist) and the SAME
+ * isDisplayableFixture filter — so no match reaches the ticker that the main page hides, and
+ * vice-versa. Three buckets are fetched in parallel — all live, upcoming ≤48h, scored results
+ * ≤24h (tighter than the homepage's ±window, since a marquee of multi-day results is unusable) —
+ * hydrated in one batch, filtered, composite-sorted, then capped at TICKER_MAX.
  */
 export async function getTickerFixtures(
   db: NeonHttpDatabase<typeof schema>,
 ): Promise<TickerResult> {
-  const [liveRows, upcomingRows] = await Promise.all([
+  const [liveRows, upcomingRows, resultRows] = await Promise.all([
+    db
+      .select(TICKER_SELECT)
+      .from(schema.fixtures)
+      .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
+      .where(inArray(schema.fixtures.statusCode, LIVE_STATUSES)),
     db
       .select(TICKER_SELECT)
       .from(schema.fixtures)
       .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
       .where(
         and(
-          inArray(schema.fixtures.statusCode, LIVE_STATUSES),
-          sql`${schema.fixtures.updatedAt} > NOW() - INTERVAL '6 hours'`,
+          eq(schema.fixtures.statusCode, 'NS'),
+          sql`${schema.fixtures.kickoffAt} > NOW()`,
+          sql`${schema.fixtures.kickoffAt} < NOW() + INTERVAL '48 hours'`,
         ),
-      )
-      .orderBy(asc(schema.fixtures.kickoffAt)),
+      ),
     db
       .select(TICKER_SELECT)
       .from(schema.fixtures)
       .innerJoin(schema.competitions, eq(schema.fixtures.competitionId, schema.competitions.id))
-      .where(and(eq(schema.fixtures.statusCode, 'NS'), sql`${schema.fixtures.kickoffAt} > NOW()`))
-      .orderBy(asc(schema.fixtures.kickoffAt))
-      .limit(15),
+      .where(
+        and(
+          inArray(schema.fixtures.statusCode, RESULT_STATUSES),
+          sql`${schema.fixtures.kickoffAt} > NOW() - INTERVAL '24 hours'`,
+          sql`${schema.fixtures.kickoffAt} <= NOW()`,
+        ),
+      ),
   ]);
 
-  const upcomingSlack = Math.max(0, 15 - liveRows.length);
-  const combined = [...liveRows, ...upcomingRows.slice(0, upcomingSlack)];
+  const rows: TickerRow[] = [...liveRows, ...upcomingRows, ...resultRows];
+  if (rows.length === 0) return { mode: 'empty' };
 
-  if (combined.length === 0) return { mode: 'empty' };
+  const fixtures = await hydrateTickerRows(db, rows);
+  const ordered = sortTickerFixtures(fixtures).slice(0, TICKER_MAX);
+  if (ordered.length === 0) return { mode: 'empty' };
+  return { mode: 'fixtures', fixtures: ordered };
+}
 
-  const fixtures = await hydrateTickerRows(db, combined);
-  return { mode: 'fixtures', fixtures };
+function isLiveCode(code: string): boolean {
+  return LIVE_SET.has(code);
+}
+
+function isResultCode(code: string): boolean {
+  return !LIVE_SET.has(code) && code !== 'NS';
+}
+
+function isMoroccanFixture(f: TickerFixture): boolean {
+  return f.homeTeam?.countryCode === MOROCCO_CC || f.awayTeam?.countryCode === MOROCCO_CC;
+}
+
+/**
+ * Composite order (option A): (1) live first, (2) Moroccan pinned, (3) competition display_priority,
+ * (4) within the same competition upcoming before results, (5) time — upcoming/live soonest first,
+ * results most recent first. Priority sits ABOVE the upcoming/results split so a marquee result (e.g.
+ * a La Liga fixture just finished) outranks a trivial upcoming (a lower-tier match two days out),
+ * instead of all upcoming burying all results. Mirrors SofaScore/LiveScore (live-first + geo-bias +
+ * competition popularity), tuned Morocco-first. Also drops rows the homepage hides so the two
+ * surfaces stay in parity.
+ */
+function sortTickerFixtures(fixtures: TickerFixture[]): TickerFixture[] {
+  return fixtures
+    .filter((f) => isDisplayableFixture(f))
+    .sort((a, b) => {
+      const la = isLiveCode(a.statusCode) ? 0 : 1;
+      const lb = isLiveCode(b.statusCode) ? 0 : 1;
+      if (la !== lb) return la - lb;
+      const ma = isMoroccanFixture(a) ? 0 : 1;
+      const mb = isMoroccanFixture(b) ? 0 : 1;
+      if (ma !== mb) return ma - mb;
+      if (a.displayPriority !== b.displayPriority) return a.displayPriority - b.displayPriority;
+      const ka = isResultCode(a.statusCode) ? 1 : 0; // upcoming (0) before results (1)
+      const kb = isResultCode(b.statusCode) ? 1 : 0;
+      if (ka !== kb) return ka - kb;
+      const ta = a.kickoffAt.getTime();
+      const tb = b.kickoffAt.getTime();
+      return ka === 1 ? tb - ta : ta - tb; // results: most recent first; else soonest first
+    });
 }
 
 type TickerRow = {
@@ -354,6 +418,7 @@ type TickerRow = {
   compName: Record<string, string>;
   compLogo: string | null;
   compSlug: string;
+  displayPriority: number | null;
 };
 
 async function hydrateTickerRows(
@@ -382,6 +447,7 @@ async function hydrateTickerRows(
       logoUrl: r.compLogo,
       slug: r.compSlug,
     },
+    displayPriority: r.displayPriority ?? 100,
   }));
 }
 

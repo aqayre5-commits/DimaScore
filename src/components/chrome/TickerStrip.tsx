@@ -8,7 +8,7 @@ import { Pause, Play } from 'lucide-react';
 import { Flag } from '@/components/shared/Flag';
 import { isLiveStatus } from '@/lib/data/types';
 import type { TickerFixture } from '@/lib/db/queries';
-import { getCompactTeamLabel } from '@/lib/utils/team-name';
+import { getTickerCode, getTeamDisplayName } from '@/lib/utils/team-name';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { matchHref } from '@/lib/seo/match-slug';
 import { getPusherClient } from '@/lib/realtime/pusher-client';
@@ -18,10 +18,12 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { Locale } from '@/lib/i18n/config';
 import type { FixtureStatus } from '@/lib/data/types';
 
-// Terminal for the ticker = FINISHED_CODES_ARRAY plus PST. Postponed fixtures never go
-// live so the ticker can treat them as final-state for filtering. Kept local because the
-// canonical FINISHED_CODES_ARRAY excludes PST (its semantics are "scored result" elsewhere).
-const TERMINAL_STATUSES = new Set(['FT', 'AET', 'PEN', 'PST', 'CANC', 'ABD', 'AWD', 'WO']);
+// Scored results the strip keeps as result cells (final score + FT/AET/PEN badge).
+const RESULT_CODES = new Set(['FT', 'AET', 'PEN']);
+// Non-scored terminal states: when a live match transitions to one of these, drop it from the strip
+// (nothing meaningful to show, not live). Scored results are kept, so a live→FT match stays visible
+// as a result cell — parity with the main page.
+const REMOVE_STATUSES = new Set(['PST', 'CANC', 'ABD', 'SUSP', 'AWD', 'WO']);
 
 type ScorePatch = {
   homeScore: number | null;
@@ -59,7 +61,7 @@ function TeamCell({
 }) {
   if (!team) return <span className="text-sm text-text-tertiary">&mdash;</span>;
 
-  const code = getCompactTeamLabel(team, locale);
+  const code = getTickerCode(team, locale);
 
   const logo = (
     <Flag
@@ -90,8 +92,48 @@ function TeamCell({
   );
 }
 
-function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale: Locale }) {
+/** Live score + minute · finished score + FT/AET/PEN badge · or upcoming kickoff time. */
+function MatchState({ fixture, locale }: { fixture: TickerFixture; locale: Locale }) {
   const live = isLiveStatus(fixture.statusCode as FixtureStatus);
+
+  if (live) {
+    return (
+      <span className="flex items-center gap-1.5 rounded px-2 py-0.5">
+        <span className="live-pulse size-1.5 rounded-full bg-red-500" />
+        <span className="text-sm font-semibold tabular-nums text-text-primary">
+          {fixture.homeScore ?? 0}&ndash;{fixture.awayScore ?? 0}
+        </span>
+        {fixture.minute != null && (
+          <span className="text-xs tabular-nums text-text-secondary">{fixture.minute}&apos;</span>
+        )}
+      </span>
+    );
+  }
+
+  if (RESULT_CODES.has(fixture.statusCode)) {
+    return (
+      <span className="flex items-center gap-1.5 rounded px-2 py-0.5">
+        <span className="text-sm font-semibold tabular-nums text-text-primary">
+          {fixture.homeScore ?? 0}&ndash;{fixture.awayScore ?? 0}
+        </span>
+        <span className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">
+          {fixture.statusCode === 'FT' ? 'FT' : fixture.statusCode}
+        </span>
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary"
+      suppressHydrationWarning
+    >
+      <LocalTime date={fixture.kickoffAt} locale={locale} format="time" />
+    </span>
+  );
+}
+
+function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale: Locale }) {
   const dir = locale === 'ar' ? 'rtl' : undefined;
 
   return (
@@ -105,31 +147,14 @@ function TickerItemContent({ fixture, locale }: { fixture: TickerFixture; locale
       preview={previewFromTickerFixture(fixture)}
       prefetchIntent
       dir={dir}
-      ariaLabel={`${getCompactTeamLabel(fixture.homeTeam, locale)} vs ${getCompactTeamLabel(fixture.awayTeam, locale)}`}
+      ariaLabel={`${getTeamDisplayName(fixture.homeTeam, locale)} vs ${getTeamDisplayName(fixture.awayTeam, locale)}`}
       className="flex shrink-0 items-center gap-2 px-4 py-1 transition-colors hover:bg-white/5"
     >
       {/* Home team */}
       <TeamCell team={fixture.homeTeam} locale={locale} />
 
-      {/* Score (live) or kickoff time (upcoming) */}
-      {live ? (
-        <span className="flex items-center gap-1.5 rounded px-2 py-0.5">
-          <span className="live-pulse size-1.5 rounded-full bg-red-500" />
-          <span className="text-sm font-semibold tabular-nums text-text-primary">
-            {fixture.homeScore ?? 0}&ndash;{fixture.awayScore ?? 0}
-          </span>
-          {fixture.minute != null && (
-            <span className="text-xs tabular-nums text-text-secondary">{fixture.minute}&apos;</span>
-          )}
-        </span>
-      ) : (
-        <span
-          className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary"
-          suppressHydrationWarning
-        >
-          <LocalTime date={fixture.kickoffAt} locale={locale} format="time" />
-        </span>
-      )}
+      {/* Live score · finished result · or kickoff time */}
+      <MatchState fixture={fixture} locale={locale} />
 
       {/* Away team — mirrored: code then logo */}
       <TeamCell team={fixture.awayTeam} locale={locale} reverse />
@@ -156,33 +181,13 @@ function TickerCellsInert({ fixtures, locale }: TickerStripProps) {
   return (
     <>
       {fixtures.map((fixture, i) => {
-        const live = isLiveStatus(fixture.statusCode as FixtureStatus);
         const dir = locale === 'ar' ? 'rtl' : undefined;
         return (
           <span key={fixture.id} className="flex shrink-0 items-center">
             {i > 0 && <span className="mx-1 h-4 w-px shrink-0 bg-border-strong" />}
             <span dir={dir} className="flex shrink-0 items-center gap-2 px-4 py-1">
               <TeamCell team={fixture.homeTeam} locale={locale} />
-              {live ? (
-                <span className="flex items-center gap-1.5 rounded px-2 py-0.5">
-                  <span className="live-pulse size-1.5 rounded-full bg-red-500" />
-                  <span className="text-sm font-semibold tabular-nums text-text-primary">
-                    {fixture.homeScore ?? 0}&ndash;{fixture.awayScore ?? 0}
-                  </span>
-                  {fixture.minute != null && (
-                    <span className="text-xs tabular-nums text-text-secondary">
-                      {fixture.minute}&apos;
-                    </span>
-                  )}
-                </span>
-              ) : (
-                <span
-                  className="rounded px-2 py-0.5 text-sm tabular-nums text-text-secondary"
-                  suppressHydrationWarning
-                >
-                  <LocalTime date={fixture.kickoffAt} locale={locale} format="time" />
-                </span>
-              )}
+              <MatchState fixture={fixture} locale={locale} />
               <TeamCell team={fixture.awayTeam} locale={locale} reverse />
             </span>
           </span>
@@ -236,7 +241,7 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
     const patches = new Map<number, ScorePatch>();
     const removed = new Set<number>();
     for (const [id, p] of livePatches) {
-      if (TERMINAL_STATUSES.has(p.statusCode)) {
+      if (REMOVE_STATUSES.has(p.statusCode)) {
         removed.add(id);
       } else {
         patches.set(id, {
