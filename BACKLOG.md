@@ -358,3 +358,5 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   2. **Live answer is an SSR snapshot** — the score card keeps ticking via the client updater, but the answer sentence won't re-word mid-match until refresh/revalidate. Make it live-reactive (client) as a follow-up.
   3. **FR/AR answer QA** — the new one-liners are templated; spot-check Arabic RTL rendering and French phrasing on real fixtures.
   4. Minor: the stage word now appears both in the eyebrow ("Finished · …") and the block pill — tolerable; drop one if it reads redundant once live.
+
+- [2026-09-21][match page — ratings cleanup (off Phase 15, user-directed)] Removed the editorial "Player ratings" top-5 list from `narrativeTail` in the match page (redundant with the RATINGS tab; H2H + FAQ kept). Capped the RATINGS tab (`PlayerRatingsPanel`/`TeamRatings`) to each team's top 10 by rating via `.slice(0,10)`. Note: the now-unused `secLabels.notes` key was left in place (harmless).

@@ -100,10 +100,11 @@ function TeamRatings({
   t: ReturnType<typeof useTranslations>;
   isRight?: boolean;
 }) {
-  // Only show players who have a rating, sorted highest first
+  // Only show players who have a rating, sorted highest first, capped at the team's top 10.
   const rated = players
     .filter((p) => p.rating != null)
-    .sort((a, b) => parseFloat(b.rating!) - parseFloat(a.rating!));
+    .sort((a, b) => parseFloat(b.rating!) - parseFloat(a.rating!))
+    .slice(0, 10);
   if (rated.length === 0) return null;
 
   const starters = rated.filter((p) => !p.substitute);

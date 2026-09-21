@@ -418,15 +418,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
         an: homeIsThisHome ? away : home,
       };
     });
-  const topRated = (prefetch.playerStats ?? [])
-    .map((p) => ({
-      name: p.playerName[typedLocale] ?? p.playerName['en'] ?? '—',
-      side: (p.teamId === match.homeTeam?.id ? 'home' : 'away') as 'home' | 'away',
-      rating: p.rating ? Number(p.rating) : NaN,
-    }))
-    .filter((p) => Number.isFinite(p.rating))
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 5);
   const matchFaq = buildMatchFaq({
     state: narrativeState,
     home,
@@ -495,29 +486,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
     narrativeState === 'finished' && recapText ? `DimaScore · ${bylineWord} ${dateShort}` : null;
   const narrativeTail = (
     <>
-      {topRated.length > 0 && (
-        <section aria-labelledby="notes-h">
-          <h2 id="notes-h" className="mb-1.5 text-base font-semibold text-text-primary">
-            {secLabels.notes}
-          </h2>
-          <div className="max-w-md">
-            {topRated.map((p, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between border-t border-border-subtle py-1.5 text-sm first:border-t-0"
-              >
-                <span className="text-text-secondary">
-                  <span className="font-semibold text-text-primary">{p.name}</span>
-                  {` · ${p.side === 'home' ? home : away}`}
-                </span>
-                <span className="rounded bg-accent-green/10 px-1.5 py-0.5 font-mono text-xs font-bold tabular-nums text-accent-green">
-                  {p.rating.toFixed(1)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
       {h2hNarr && (
         <section aria-labelledby="h2h-h">
           <h2 id="h2h-h" className="mb-1.5 text-base font-semibold text-text-primary">
