@@ -360,3 +360,10 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   4. Minor: the stage word now appears both in the eyebrow ("Finished · …") and the block pill — tolerable; drop one if it reads redundant once live.
 
 - [2026-09-21][match page — ratings cleanup (off Phase 15, user-directed)] Removed the editorial "Player ratings" top-5 list from `narrativeTail` in the match page (redundant with the RATINGS tab; H2H + FAQ kept). Capped the RATINGS tab (`PlayerRatingsPanel`/`TeamRatings`) to each team's top 10 by rating via `.slice(0,10)`. Note: the now-unused `secLabels.notes` key was left in place (harmless).
+
+- [2026-09-21][security — public-API rate limit + JSON-LD escape (off Phase 15, $0)] Added per-IP fixed-window rate limiting to the public JSON API and fixed a JSON-LD escape inconsistency.
+  - **`src/lib/security/rate-limit.ts`** (new): **in-memory** fixed-window limiter — no external service, no dependency, no cost (user declined Upstash). FAIL-OPEN — any error ⇒ request allowed. Env: `RATE_LIMIT_MAX` (default 200), `RATE_LIMIT_WINDOW` (default 10s), `RATE_LIMIT_DISABLED=1`. Memory bounded (per-window sweep + 50k-key hard cap).
+  - **`middleware.ts`**: matcher extended to `/api/v1/:path*`; limits only `/api/v1/(match|search|media)` — **excludes `/api/v1/live`** (own clients poll it every 30s). 429 + `Retry-After` on breach. Crawler-safe by construction (Googlebot/AI fetch HTML, not this API), so no bot allowlist needed; no page routes limited.
+  - **`SeoBreadcrumb.tsx`**: JSON-LD now escapes `<` → `<` (parity with the `JsonLd` component).
+  - Threshold set HIGH (200/10s) on purpose — Moroccan mobile CGNAT shares IPs, so a low limit would 429 real users; tune via env if needed.
+  - KNOWN LIMITATION of in-memory: state is per warm serverless instance and resets on cold start, so the real ceiling ≈ MAX × live instances — best-effort against single-IP scraping, not a hard global cap. Upgrade to a shared store later if a distributed scraper becomes a real problem. Also (free) consider restricting Neon `allowed_ips` in the console (currently open, gated only by the connection string).
