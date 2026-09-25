@@ -46,6 +46,8 @@ export interface HomeFixture {
   venueName: string | null;
   venueCity: string | null;
   venueCapacity: number | null;
+  /** Goal scorers for the live hero card — populated only for live featured fixtures. */
+  goals?: HeroGoal[];
 }
 
 export type FormResult = 'W' | 'D' | 'L';
@@ -53,6 +55,13 @@ export type FormResult = 'W' | 'D' | 'L';
 export interface GoalEvent {
   minute: number;
   playerName: string;
+}
+
+/** Goal with team attribution, for per-team scorer lists on the live hero card. */
+export interface HeroGoal {
+  minute: number;
+  playerName: string;
+  teamId: number | null;
 }
 
 export interface TrendingPlayer {
@@ -413,6 +422,46 @@ export async function getLiveMatchGoals(
   return (rows.rows as { minute: number | null; player_name: string }[])
     .filter((r) => r.minute != null)
     .map((r) => ({ minute: Number(r.minute), playerName: r.player_name }));
+}
+
+/**
+ * Goals with team attribution for a set of live featured fixtures, batched into one query.
+ * Returns a map fixtureId → goals (minute-ordered) so the hero can list scorers under each team.
+ */
+export async function getFeaturedLiveGoals(
+  db: NeonHttpDatabase<typeof schema>,
+  fixtureIds: number[],
+): Promise<Map<number, HeroGoal[]>> {
+  const map = new Map<number, HeroGoal[]>();
+  if (fixtureIds.length === 0) return map;
+  const rows = await db.execute(
+    sql`SELECT fe.fixture_id, fe.minute, fe.team_id,
+               COALESCE(p.name->>'en', p.name->>'fr', 'Unknown') AS player_name
+        FROM fixture_events fe
+        LEFT JOIN players p ON p.id = fe.player_id
+        WHERE fe.fixture_id IN (${sql.join(
+          fixtureIds.map((id) => sql`${id}`),
+          sql`, `,
+        )}) AND fe.type = 'Goal'
+        ORDER BY fe.minute ASC`,
+  );
+  for (const r of rows.rows as {
+    fixture_id: number | string;
+    minute: number | null;
+    team_id: number | string | null;
+    player_name: string;
+  }[]) {
+    if (r.minute == null) continue;
+    const fid = Number(r.fixture_id);
+    const arr = map.get(fid) ?? [];
+    arr.push({
+      minute: Number(r.minute),
+      playerName: r.player_name,
+      teamId: r.team_id == null ? null : Number(r.team_id),
+    });
+    map.set(fid, arr);
+  }
+  return map;
 }
 
 /** Top scorers across all competitions for trending players strip. */

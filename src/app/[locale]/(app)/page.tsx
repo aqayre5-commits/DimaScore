@@ -14,8 +14,10 @@ import {
   getFeaturedMatches,
   getHomeMatchesByCategory,
   getCompetitionsByIds,
+  getFeaturedLiveGoals,
 } from '@/lib/db/queries/homepage';
 import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
+import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { cacheLife } from 'next/cache';
 import { partitionHomeMatches, slimHomeFixture } from '@/lib/homepage/slim-payload';
 import {
@@ -98,6 +100,14 @@ async function getCachedHomepagePrimary() {
     getHomeMatchesByCategory(db),
     getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
   ]);
+  // Attach goal scorers to live featured fixtures so the hero can list them under each team.
+  const liveSet = new Set<string>(LIVE_CODES_ARRAY);
+  const liveIds = featured.filter((f) => liveSet.has(f.statusCode)).map((f) => f.id);
+  const goalsByFixture = await getFeaturedLiveGoals(db, liveIds);
+  for (const f of featured) {
+    const goals = goalsByFixture.get(f.id);
+    if (goals) f.goals = goals;
+  }
   return { featured, matchesByCategory, leftRailComps };
 }
 
@@ -155,12 +165,20 @@ export default async function HomePage({ params }: PageProps) {
     featured: t('featured'),
     kicksOffIn: t('kicksOffIn'),
     live: t('live'),
+    noGoals: t('heroNoGoals'),
     tags: {
       atlasLions: t('tagAtlasLions'),
       atlasClub: t('tagAtlasClub'),
       derby: t('tagDerby'),
       knockout: t('tagKnockout'),
       opener: t('tagOpener'),
+    },
+    half: {
+      firstHalf: t('heroFirstHalf'),
+      secondHalf: t('heroSecondHalf'),
+      halftime: t('heroHalftime'),
+      extraTime: t('heroExtraTime'),
+      penalties: t('heroPenalties'),
     },
   };
 

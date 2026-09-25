@@ -24,8 +24,45 @@ interface Props {
     featured: string;
     kicksOffIn: string;
     live: string;
+    noGoals: string;
     tags: Record<FeatureTag, string>;
+    half: {
+      firstHalf: string;
+      secondHalf: string;
+      halftime: string;
+      extraTime: string;
+      penalties: string;
+    };
   };
+}
+
+type HalfLabels = Props['labels']['half'];
+
+/** Live status line for the hero center, e.g. "2nd half · 67'". */
+function heroStatusLabel(statusCode: string, minute: number | null, half: HalfLabels): string {
+  const min = minute != null ? ` · ${minute}'` : '';
+  switch (statusCode) {
+    case 'HT':
+    case 'BT':
+      return half.halftime;
+    case '1H':
+      return `${half.firstHalf}${min}`;
+    case '2H':
+      return `${half.secondHalf}${min}`;
+    case 'ET':
+      return `${half.extraTime}${min}`;
+    case 'P':
+    case 'PEN':
+      return half.penalties;
+    default:
+      return minute != null ? `${minute}'` : '';
+  }
+}
+
+/** Surname only, to keep hero scorer lines compact ("23' Shaw"). */
+function surname(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return parts.length > 1 ? parts[parts.length - 1] : name;
 }
 
 function applyPatch(m: HomeFixture, patch: ReturnType<ReturnType<typeof useLiveFixtures>['get']>) {
@@ -221,6 +258,10 @@ function HeroCard({
   const state = getMatchState(match.statusCode, match.kickoffAt);
   const isLive = state === 'live';
   const showScore = isLive && match.homeScore != null && match.awayScore != null;
+  const allGoals = match.goals ?? [];
+  const homeGoals = allGoals.filter((g) => g.teamId === match.homeTeamId).slice(0, 4);
+  const awayGoals = allGoals.filter((g) => g.teamId === match.awayTeamId).slice(0, 4);
+  const hasGoals = isLive && (homeGoals.length > 0 || awayGoals.length > 0);
 
   return (
     <Link
@@ -231,23 +272,23 @@ function HeroCard({
       })}
       className="relative block overflow-hidden rounded-xl border border-border-subtle bg-bg-surface"
     >
+      {/* Left badge — always the featured / match-of-day marker */}
       <div className="absolute start-4 top-4 z-10">
+        <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-azure/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-accent-azure">
+          ★ {isLead ? labels.matchOfDay : labels.featured}
+        </span>
+      </div>
+      {/* Right badge — LIVE when live, otherwise the why-featured tag */}
+      <div className="absolute end-4 top-4 z-10">
         {isLive ? (
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-score-live/16 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-score-live">
-            <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-score-live px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
+            <span className="size-1.5 animate-pulse rounded-full bg-white" />
             {labels.live}
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-accent-azure/12 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-accent-azure">
-            ★ {isLead ? labels.matchOfDay : labels.featured}
-          </span>
+          match.featureTag && <TagChip tag={match.featureTag} labels={labels} />
         )}
       </div>
-      {match.featureTag && (
-        <div className="absolute end-4 top-4 z-10">
-          <TagChip tag={match.featureTag} labels={labels} />
-        </div>
-      )}
 
       <div className="flex flex-col items-center px-4 pb-2 pt-14 text-center sm:px-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
@@ -257,21 +298,22 @@ function HeroCard({
           )}
         </p>
 
+        {/* Match row — crest + name stay put; the center is a FIXED width and height so the flags
+            never shift or re-center between the VS/time and score/status states. */}
         <div className="mt-4 flex w-full items-center justify-center gap-3">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:w-[160px] sm:flex-none">
             <TeamCrest team={match.homeTeam} />
             <span className="w-full truncate text-sm font-bold text-text-primary">{homeName}</span>
           </div>
 
-          <div className="flex shrink-0 flex-col items-center gap-2 px-2">
+          <div className="flex min-h-[68px] w-[128px] shrink-0 flex-col items-center justify-center gap-1.5">
             {showScore ? (
               <>
-                <span className="text-3xl font-black tabular-nums tracking-tight text-text-primary">
+                <span className="text-4xl font-black tabular-nums tracking-tight text-accent-azure">
                   {match.homeScore} - {match.awayScore}
                 </span>
-                <span className="flex items-center gap-1 text-xs font-bold text-score-live">
-                  <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
-                  {match.statusCode === 'HT' ? 'HT' : `${match.minute ?? ''}'`}
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-text-tertiary">
+                  {heroStatusLabel(match.statusCode, match.minute, labels.half)}
                 </span>
               </>
             ) : (
@@ -293,22 +335,48 @@ function HeroCard({
           </div>
         </div>
 
-        {/* Countdown reserves its space on live/finished slides (invisible, not unmounted) so the
-            hero card keeps a constant height as it rotates — no resize jump. */}
-        <div
-          className={`mt-4 flex flex-col items-center gap-2 ${state === 'upcoming' ? '' : 'invisible'}`}
-          aria-hidden={state !== 'upcoming'}
-        >
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
-            {labels.kicksOffIn}
-          </span>
-          <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
-            <CountdownUnit value={remaining.days} label="DAYS" />
-            <div className="h-12 w-px bg-border-subtle" />
-            <CountdownUnit value={remaining.hours} label="HOURS" />
-            <div className="h-12 w-px bg-border-subtle" />
-            <CountdownUnit value={remaining.minutes} label="MINS" />
-          </div>
+        {/* Status band — constant min-height across states so the card height never changes.
+            Upcoming: countdown. Live: goal scorers under each team, top-anchored so they grow
+            DOWNWARD and never push the crests/names above them. 0-0 live shows "no goals yet". */}
+        <div className="mt-4 flex min-h-[104px] w-full items-start justify-center">
+          {state === 'upcoming' ? (
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
+                {labels.kicksOffIn}
+              </span>
+              <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
+                <CountdownUnit value={remaining.days} label="DAYS" />
+                <div className="h-12 w-px bg-border-subtle" />
+                <CountdownUnit value={remaining.hours} label="HOURS" />
+                <div className="h-12 w-px bg-border-subtle" />
+                <CountdownUnit value={remaining.minutes} label="MINS" />
+              </div>
+            </div>
+          ) : isLive ? (
+            hasGoals ? (
+              <div className="flex w-full items-start justify-center gap-3">
+                <ul className="min-w-0 flex-1 space-y-1 text-start text-xs text-text-secondary sm:w-[160px] sm:flex-none">
+                  {homeGoals.map((g, i) => (
+                    <li key={i} className="truncate">
+                      <span className="tabular-nums text-text-tertiary">{g.minute}&apos;</span>{' '}
+                      {surname(g.playerName)}
+                    </li>
+                  ))}
+                </ul>
+                <div className="w-[128px] shrink-0" />
+                <ul className="min-w-0 flex-1 space-y-1 text-start text-xs text-text-secondary sm:w-[160px] sm:flex-none">
+                  {awayGoals.map((g, i) => (
+                    <li key={i} className="truncate">
+                      <span className="tabular-nums text-text-tertiary">{g.minute}&apos;</span>{' '}
+                      {surname(g.playerName)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <span className="pt-2 text-xs font-medium text-text-tertiary">{labels.noGoals}</span>
+            )
+          ) : null}
         </div>
       </div>
 
