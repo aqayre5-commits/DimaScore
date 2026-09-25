@@ -379,3 +379,11 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   - **Badges:** left = FEATURED/Match-of-day (always); right = solid red LIVE pill when live, else the why-featured tag.
   - **Data:** new `getFeaturedLiveGoals(ids)` (batched, team-attributed via `fixture_events.team_id`) + `HomeFixture.goals`; attached to live featured fixtures in `page.tsx` inside the minutes-cached primary fetch; rides through `slimHomeFixture`.
   - CAVEAT (v1): the live poll updates score/minute but NOT the scorer list — a goal scored while watching bumps the score immediately; the new scorer name appears on next load/revalidate (cache is `cacheLife('minutes')`). Making scorers live-reactive is a follow-up.
+
+- [2026-09-25][analytics — GA4 live via GTM (reference + follow-ups)] Google Analytics 4 is now collecting on dimascore.ma. It is wired through Google Tag Manager, NOT directly in code:
+  - GTM container: **GTM-MQN45393** (loaded site-wide by `src/components/analytics/GoogleTagManager.tsx`, no consent gate).
+  - GA4 Measurement ID: **G-6XP3GSM9J2** — configured as a "Google Tag" (Initialization – All Pages) inside GTM; published as container Version 2 (25/09/2026). Verified in GA4 Realtime.
+  - There is also a "Google Analytics GA4 Event" tag firing on All Pages — review whether it has a real purpose or is noise; drop if not.
+  FOLLOW-UPS (all in GA4/GTM, not code):
+  1. **Cookie-consent gate (GDPR / Loi 09-08)** — GTM/GA4 currently fire for all visitors with no consent. Add a consent gate (or GTM Consent Mode) before scaling real traffic. (Same item noted in the GoogleTagManager component.)
+  2. **SPA page-views** — confirm GA4 Enhanced Measurement "page changes based on browser history events" is ON, else Next.js client navigations aren't counted as page views.
