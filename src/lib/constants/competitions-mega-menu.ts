@@ -232,6 +232,13 @@ const ALL_ENTRIES: MegaMenuEntry[] = [
     slugs: { fr: 'ligue-europa-conference', en: 'conference-league', ar: 'دوري-المؤتمر-الأوروبي' },
     isCurrentlyVisible: true,
   },
+  {
+    competitionId: 5,
+    labelKey: 'nationsLeague',
+    countryKey: 'uefa',
+    slugs: { fr: 'ligue-des-nations', en: 'nations-league', ar: 'دوري-الأمم-الأوروبية' },
+    isCurrentlyVisible: true,
+  },
 
   // Europe — women's
   {
@@ -416,6 +423,7 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
       'championsLeague',
       'europaLeague',
       'conferenceLeague',
+      'nationsLeague',
     ]),
   },
   {
@@ -509,10 +517,11 @@ const COMPETITION_FAMILIES: Record<number, number[]> = {
   12: [20, 6, 36], // CAF CL → CAF Confed, AFCON, AFCON Qual
   20: [12, 6, 36], // CAF Confed → CAF CL, AFCON, AFCON Qual
 
-  // UEFA club cups
-  2: [3, 848], // UCL → UEL, UECL
-  3: [2, 848], // UEL → UCL, UECL
-  848: [2, 3], // UECL → UCL, UEL
+  // UEFA competitions
+  2: [3, 848, 5], // UCL → UEL, UECL, Nations League
+  3: [2, 848, 5], // UEL → UCL, UECL, Nations League
+  848: [2, 3, 5], // UECL → UCL, UEL, Nations League
+  5: [2, 3, 848], // Nations League → UCL, UEL, UECL
 
   // Top-5 European leagues (siblings)
   39: [140, 78, 135, 61], // PL → La Liga, Bundesliga, Serie A, Ligue 1

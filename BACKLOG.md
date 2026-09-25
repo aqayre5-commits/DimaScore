@@ -387,3 +387,11 @@ Claude Code is required by `CLAUDE.md` Rule 5 to deposit observations here inste
   FOLLOW-UPS (all in GA4/GTM, not code):
   1. **Cookie-consent gate (GDPR / Loi 09-08)** — GTM/GA4 currently fire for all visitors with no consent. Add a consent gate (or GTM Consent Mode) before scaling real traffic. (Same item noted in the GoogleTagManager component.)
   2. **SPA page-views** — confirm GA4 Enhanced Measurement "page changes based on browser history events" is ON, else Next.js client navigations aren't counted as page views.
+
+- [2026-09-25][competitions — added UEFA Nations League (id 5) with its own page (off Phase 15, user-directed)] Featured + ingested UNL (was a reference-only stub: 0 seasons/standings).
+  - **`VERIFIED_COMPETITIONS`** (competitions.ts): added id 5 `nations-league`, tier 4, isFeatured false, isMoroccoFocus false, `displayPriority 48` (below UEFA club cups 45–47; national-team comp, not hero-featured). This is the ingestion source of truth (reference-data cron reads it).
+  - **`ALL_ENTRIES` + mega-menu** (competitions-mega-menu.ts): entry `{5, labelKey nationsLeague, countryKey uefa, slugs fr/en/ar}`, added to the Europe section + the UEFA related-competitions family. Gives it the hub page, nav, and sitemap entry.
+  - **i18n** `nationsLeague` in en/fr/ar (both label namespaces).
+  - **`scripts/ingest-nations-league.ts`** (new): reference-data → teams → fixtures → standings for comp 5. APPLIED: 54 teams, 158 fixtures, 54 standings, seasons flagged (current 2026/27). Ongoing sync is now automatic (the crons key off the `seasons` row).
+  - Renders via the existing generic cup page at `/{locale}/competition/uefa/nations-league` (Overview/Matches/Standings, League A–D group filter). Verified in dev + mega-menu label resolves.
+  - Optional follow-up: curated hub SEO content (`cup-content.ts`) for richer copy.

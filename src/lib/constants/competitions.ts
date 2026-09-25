@@ -232,6 +232,15 @@ export const VERIFIED_COMPETITIONS: CompetitionMeta[] = [
     isMoroccoFocus: false,
     displayPriority: 47,
   },
+  {
+    id: 5,
+    slug: 'nations-league',
+    tier: 4,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 48,
+  },
 
   // ── Tier 5: Women's European + UEFA women's ──
   {
