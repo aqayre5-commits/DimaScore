@@ -270,7 +270,7 @@ function HeroCard({
         homeSlug: match.homeTeam?.slug,
         awaySlug: match.awayTeam?.slug,
       })}
-      className="relative block overflow-hidden rounded-xl border border-border-subtle bg-bg-surface"
+      className="relative flex min-h-[380px] flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface"
     >
       {/* Left badge — always the featured / match-of-day marker */}
       <div className="absolute start-4 top-4 z-10">
@@ -290,7 +290,7 @@ function HeroCard({
         )}
       </div>
 
-      <div className="flex flex-col items-center px-4 pb-2 pt-14 text-center sm:px-8">
+      <div className="flex flex-1 flex-col items-center justify-center px-4 pb-2 pt-12 text-center sm:px-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
           {compName}
           {match.contextLabel && (
@@ -300,7 +300,7 @@ function HeroCard({
 
         {/* Match row — crest + name stay put; the center is a FIXED width and height so the flags
             never shift or re-center between the VS/time and score/status states. */}
-        <div className="mt-9 flex w-full items-center justify-center gap-3">
+        <div className="mt-6 flex w-full items-center justify-center gap-3">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:w-[160px] sm:flex-none">
             <TeamCrest team={match.homeTeam} />
             <span className="w-full truncate text-sm font-bold text-text-primary">{homeName}</span>
@@ -355,7 +355,7 @@ function HeroCard({
           ) : isLive ? (
             hasGoals ? (
               <div className="flex w-full items-start justify-center gap-3">
-                <ul className="min-w-0 flex-1 space-y-1 text-start text-xs text-text-secondary sm:w-[160px] sm:flex-none">
+                <ul className="min-w-0 flex-1 space-y-1 text-center text-xs text-text-secondary sm:w-[160px] sm:flex-none">
                   {homeGoals.map((g, i) => (
                     <li key={i} className="truncate">
                       <span className="tabular-nums text-text-tertiary">{g.minute}&apos;</span>{' '}
@@ -364,7 +364,7 @@ function HeroCard({
                   ))}
                 </ul>
                 <div className="w-[128px] shrink-0" />
-                <ul className="min-w-0 flex-1 space-y-1 text-start text-xs text-text-secondary sm:w-[160px] sm:flex-none">
+                <ul className="min-w-0 flex-1 space-y-1 text-center text-xs text-text-secondary sm:w-[160px] sm:flex-none">
                   {awayGoals.map((g, i) => (
                     <li key={i} className="truncate">
                       <span className="tabular-nums text-text-tertiary">{g.minute}&apos;</span>{' '}
