@@ -300,7 +300,7 @@ function HeroCard({
 
         {/* Match row — crest + name stay put; the center is a FIXED width and height so the flags
             never shift or re-center between the VS/time and score/status states. */}
-        <div className="mt-4 flex w-full items-center justify-center gap-3">
+        <div className="mt-9 flex w-full items-center justify-center gap-3">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:w-[160px] sm:flex-none">
             <TeamCrest team={match.homeTeam} />
             <span className="w-full truncate text-sm font-bold text-text-primary">{homeName}</span>
