@@ -61,7 +61,7 @@ export function GroupTable({
             isMoroccoGroup ? 'text-accent-azure' : 'text-text-primary',
           )}
         >
-          {t('groupLabel', { label: groupLabel })}
+          {/group/i.test(groupLabel) ? groupLabel : t('groupLabel', { label: groupLabel })}
         </h3>
         {groupHasLive && (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-score-live/10 px-1.5 py-0.5 text-[10px] font-bold text-score-live">

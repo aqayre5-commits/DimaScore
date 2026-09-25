@@ -40,6 +40,7 @@ import { InjuriesTab } from '@/components/league/InjuriesTab';
 import { LeagueAboutCard } from '@/components/league/LeagueAboutCard';
 import { LeaguePageHeader } from '@/components/league/LeaguePageHeader';
 import { LeagueStandingsTab } from '@/components/league/LeagueStandingsTab';
+import { GenericGroupStandings } from '@/components/tournament/GenericGroupStandings';
 import { LeagueRightRail } from '@/components/league/LeagueRightRail';
 import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
@@ -153,6 +154,9 @@ export async function renderGenericCupPage(
   ).length;
 
   const hasStandings = standings.length > 0;
+  // Multi-group cups (e.g. UEFA Nations League) render one table per group; single-table comps
+  // keep the flat league table (with qualification-zone legend).
+  const standingsGroupCount = new Set(standings.map((s) => s.groupLabel || '')).size;
   const hasKnockout = knockoutFixtures.length > 0;
 
   // Build bracket data for knockout tab
@@ -193,7 +197,12 @@ export async function renderGenericCupPage(
             hash: 'standings',
             labelKey: 'standings',
             icon: 'table',
-            content: <LeagueStandingsTab standings={standings} locale={locale} />,
+            content:
+              standingsGroupCount > 1 ? (
+                <GenericGroupStandings standings={standings} locale={locale} />
+              ) : (
+                <LeagueStandingsTab standings={standings} locale={locale} />
+              ),
           },
         ]
       : []),
