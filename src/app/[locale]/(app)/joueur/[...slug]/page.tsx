@@ -57,6 +57,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const name = player.name[typedLocale] ?? player.name['en'] ?? playerSlug;
+  // Name-less players carry the placeholder slug "unknown-{id}" (name "Unknown Player") — thin,
+  // duplicate pages, so keep them out of the index.
+  const isNamed = !player.slug.startsWith('unknown-');
   const { title, description } = buildPlayerMeta({ player: name, locale });
   // Canonical uses the resolved stored slug (not the requested one) so a soft-rendered variant
   // still declares the true URL — the SEO consolidation signal, alongside the self-heal redirect.
@@ -72,7 +75,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: { canonical: pageUrl, languages },
-    robots: { index: true, follow: true },
+    robots: { index: isNamed, follow: true },
     openGraph: {
       title,
       description,

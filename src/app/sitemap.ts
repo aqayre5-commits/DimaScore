@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { isNotNull, asc, eq, sql } from 'drizzle-orm';
+import { isNotNull, asc, eq, and, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
@@ -161,7 +161,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const players = await db
     .select({ slug: schema.players.slug })
     .from(schema.players)
-    .where(isNotNull(schema.players.slug))
+    .where(
+      and(
+        isNotNull(schema.players.slug),
+        // Exclude name-less players (placeholder "Unknown Player" → slug "unknown-{id}") — thin
+        // pages Google flags as duplicates.
+        sql`${schema.players.slug} NOT LIKE 'unknown-%'`,
+      ),
+    )
     .orderBy(asc(schema.players.id));
   for (const p of players) {
     if (!p.slug) continue;
