@@ -42,9 +42,6 @@ const nextConfig: NextConfig = {
     // Shared league-season lookup — short so AR/EN/FR static routes cannot pin a finished year.
     season: { stale: 0, revalidate: 60, expire: 300 },
   },
-  experimental: {
-    viewTransition: true,
-  },
   images: {
     remotePatterns: [
       { hostname: 'media.api-sports.io' },

@@ -4,7 +4,6 @@ import { getMatchDetail } from '@/lib/db/queries/match-detail';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 
-export const runtime = 'edge';
 export const alt = 'Match — DimaScore';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';

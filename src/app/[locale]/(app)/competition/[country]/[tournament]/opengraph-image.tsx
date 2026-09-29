@@ -4,7 +4,6 @@ import { getCompetitionById } from '@/lib/db/queries/league';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { ALL_ENTRIES } from '@/lib/constants/competitions-mega-menu';
 
-export const runtime = 'edge';
 export const alt = 'Competition — DimaScore';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
