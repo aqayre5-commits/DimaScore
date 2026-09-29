@@ -116,6 +116,8 @@ const coverageColumns = COVERAGE_COLUMNS.map((col) => ({
 const legalLinks = [
   { key: 'legalNotice', route: 'legal' },
   { key: 'privacyPolicy', route: 'privacy' },
+  { key: 'terms', route: 'terms' },
+  { key: 'cookiePolicy', route: 'cookies' },
   { key: 'contact', route: 'contact' },
 ] as const;
 

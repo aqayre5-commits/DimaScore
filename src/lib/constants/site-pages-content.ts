@@ -35,6 +35,8 @@ export interface FaqPageContent {
 export interface SitePagesContent {
   legal: StaticPageContent;
   privacy: StaticPageContent;
+  terms: StaticPageContent;
+  cookiePolicy: StaticPageContent;
   about: StaticPageContent;
   contact: StaticPageContent;
   faq: FaqPageContent;
@@ -42,6 +44,100 @@ export interface SitePagesContent {
 
 export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
   en: {
+    terms: {
+      title: 'Terms of Use',
+      description: 'The terms governing your use of DimaScore.',
+      sections: [
+        {
+          heading: 'Acceptance',
+          body: [
+            'By accessing DimaScore you agree to these terms. If you do not agree, please do not use the site.',
+          ],
+        },
+        {
+          heading: 'The service',
+          body: [
+            'DimaScore provides football scores, fixtures, standings and statistics for information purposes only.',
+          ],
+        },
+        {
+          heading: 'Data accuracy',
+          body: [
+            'Data is supplied by third-party providers and offered "as is". Scores and times may be delayed or contain errors. DimaScore is not liable for decisions made in reliance on it.',
+          ],
+        },
+        {
+          heading: 'No betting',
+          body: ['DimaScore does not offer betting or odds and is not a gambling service.'],
+        },
+        {
+          heading: 'Intellectual property',
+          body: [
+            'The site, its design and original content are protected. Club and competition names and logos belong to their respective owners.',
+          ],
+        },
+        {
+          heading: 'Acceptable use',
+          body: ['You may not scrape, disrupt, or attempt to compromise the service.'],
+        },
+        {
+          heading: 'Liability',
+          body: [
+            'The service is provided without warranty of availability or accuracy, to the extent permitted by law.',
+          ],
+        },
+        {
+          heading: 'Changes',
+          body: [
+            'These terms may be updated. Continued use of the site constitutes acceptance of the current version.',
+          ],
+        },
+        {
+          heading: 'Governing law',
+          body: ['These terms are governed by the laws of the Kingdom of Morocco.'],
+        },
+        { heading: 'Contact', body: ['Questions about these terms: contact@dimascore.com'] },
+      ],
+    },
+    cookiePolicy: {
+      title: 'Cookie Policy',
+      description: 'How DimaScore uses cookies and similar technologies.',
+      sections: [
+        {
+          heading: 'What cookies are',
+          body: [
+            'Cookies are small files stored on your device that help the site work and let us measure how it is used.',
+          ],
+        },
+        {
+          heading: 'Strictly necessary',
+          body: [
+            'These remember your language and theme preference and your cookie-notice choice. They are always active.',
+          ],
+        },
+        {
+          heading: 'Analytics',
+          body: [
+            'Google Analytics 4, loaded through Google Tag Manager, helps us understand aggregate traffic.',
+          ],
+        },
+        {
+          heading: 'Marketing',
+          body: ['The Meta Pixel helps us measure the reach of DimaScore content.'],
+        },
+        {
+          heading: 'Managing cookies',
+          body: [
+            'You can block or delete cookies in your browser settings. Some features may then not work as intended.',
+          ],
+        },
+        {
+          heading: 'Changes',
+          body: ['This policy may be updated. The most recent version always applies.'],
+        },
+        { heading: 'Contact', body: ['Questions about cookies: contact@dimascore.com'] },
+      ],
+    },
     about: {
       title: 'About DimaScore',
       description:
@@ -176,6 +272,106 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
   },
 
   fr: {
+    terms: {
+      title: "Conditions d'utilisation",
+      description: 'Les conditions régissant votre utilisation de DimaScore.',
+      sections: [
+        {
+          heading: 'Acceptation',
+          body: [
+            "En accédant à DimaScore, vous acceptez ces conditions. Si vous n'êtes pas d'accord, veuillez ne pas utiliser le site.",
+          ],
+        },
+        {
+          heading: 'Le service',
+          body: [
+            'DimaScore fournit des scores, calendriers, classements et statistiques de football à titre informatif uniquement.',
+          ],
+        },
+        {
+          heading: 'Exactitude des données',
+          body: [
+            "Les données proviennent de fournisseurs tiers et sont fournies « en l'état ». Les scores et horaires peuvent être retardés ou comporter des erreurs. DimaScore décline toute responsabilité quant aux décisions prises sur cette base.",
+          ],
+        },
+        {
+          heading: 'Pas de paris',
+          body: [
+            "DimaScore ne propose ni paris ni cotes et n'est pas un service de jeux d'argent.",
+          ],
+        },
+        {
+          heading: 'Propriété intellectuelle',
+          body: [
+            'Le site, son design et son contenu original sont protégés. Les noms et logos des clubs et compétitions appartiennent à leurs propriétaires respectifs.',
+          ],
+        },
+        {
+          heading: 'Utilisation acceptable',
+          body: [
+            "Il est interdit d'extraire des données, de perturber ou de tenter de compromettre le service.",
+          ],
+        },
+        {
+          heading: 'Responsabilité',
+          body: [
+            "Le service est fourni sans garantie de disponibilité ni d'exactitude, dans les limites autorisées par la loi.",
+          ],
+        },
+        {
+          heading: 'Modifications',
+          body: [
+            "Ces conditions peuvent être mises à jour. La poursuite de l'utilisation vaut acceptation de la version en vigueur.",
+          ],
+        },
+        {
+          heading: 'Droit applicable',
+          body: ['Ces conditions sont régies par le droit du Royaume du Maroc.'],
+        },
+        { heading: 'Contact', body: ['Questions sur ces conditions : contact@dimascore.com'] },
+      ],
+    },
+    cookiePolicy: {
+      title: 'Politique relative aux cookies',
+      description: 'Comment DimaScore utilise les cookies et technologies similaires.',
+      sections: [
+        {
+          heading: 'Que sont les cookies',
+          body: [
+            "Les cookies sont de petits fichiers stockés sur votre appareil qui font fonctionner le site et nous permettent d'en mesurer l'utilisation.",
+          ],
+        },
+        {
+          heading: 'Strictement nécessaires',
+          body: [
+            "Ils mémorisent votre langue, votre thème et votre choix concernant l'avis sur les cookies. Toujours actifs.",
+          ],
+        },
+        {
+          heading: "Mesure d'audience",
+          body: [
+            'Google Analytics 4, chargé via Google Tag Manager, nous aide à comprendre le trafic global.',
+          ],
+        },
+        {
+          heading: 'Marketing',
+          body: ['Le pixel Meta nous aide à mesurer la portée des contenus DimaScore.'],
+        },
+        {
+          heading: 'Gérer les cookies',
+          body: [
+            'Vous pouvez bloquer ou supprimer les cookies dans les paramètres de votre navigateur. Certaines fonctionnalités pourraient alors ne plus fonctionner.',
+          ],
+        },
+        {
+          heading: 'Modifications',
+          body: [
+            "Cette politique peut être mise à jour. La version la plus récente s'applique toujours.",
+          ],
+        },
+        { heading: 'Contact', body: ['Questions sur les cookies : contact@dimascore.com'] },
+      ],
+    },
     about: {
       title: 'À propos de DimaScore',
       description:
@@ -314,6 +510,94 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
   },
 
   ar: {
+    terms: {
+      title: 'شروط الاستخدام',
+      description: 'الشروط التي تحكم استخدامك لديماسكور.',
+      sections: [
+        {
+          heading: 'القبول',
+          body: [
+            'بدخولك إلى ديماسكور فإنك توافق على هذه الشروط. إذا لم توافق، يُرجى عدم استخدام الموقع.',
+          ],
+        },
+        {
+          heading: 'الخدمة',
+          body: [
+            'يقدّم ديماسكور نتائج كرة القدم والمباريات والترتيب والإحصاءات لأغراض إعلامية فقط.',
+          ],
+        },
+        {
+          heading: 'دقة البيانات',
+          body: [
+            'تُقدَّم البيانات من مزوّدين خارجيين «كما هي». قد تتأخر النتائج والأوقات أو تحتوي على أخطاء. لا يتحمّل ديماسكور مسؤولية القرارات المتخذة بناءً عليها.',
+          ],
+        },
+        {
+          heading: 'لا مراهنات',
+          body: ['لا يقدّم ديماسكور مراهنات أو احتمالات، وليس خدمة قمار.'],
+        },
+        {
+          heading: 'الملكية الفكرية',
+          body: [
+            'الموقع وتصميمه ومحتواه الأصلي محمية. أسماء وشعارات الأندية والبطولات ملك لأصحابها.',
+          ],
+        },
+        {
+          heading: 'الاستخدام المقبول',
+          body: ['يُمنع استخراج البيانات أو تعطيل الخدمة أو محاولة اختراقها.'],
+        },
+        {
+          heading: 'المسؤولية',
+          body: ['تُقدَّم الخدمة دون ضمان للتوفّر أو الدقة، في الحدود التي يسمح بها القانون.'],
+        },
+        {
+          heading: 'التغييرات',
+          body: ['قد تُحدَّث هذه الشروط. استمرارك في الاستخدام يعني قبول النسخة السارية.'],
+        },
+        {
+          heading: 'القانون المطبّق',
+          body: ['تخضع هذه الشروط لقوانين المملكة المغربية.'],
+        },
+        { heading: 'اتصل بنا', body: ['أسئلة حول هذه الشروط: contact@dimascore.com'] },
+      ],
+    },
+    cookiePolicy: {
+      title: 'سياسة ملفات تعريف الارتباط',
+      description: 'كيف يستخدم ديماسكور ملفات تعريف الارتباط والتقنيات المشابهة.',
+      sections: [
+        {
+          heading: 'ما هي ملفات تعريف الارتباط',
+          body: [
+            'هي ملفات صغيرة تُخزَّن على جهازك تساعد الموقع على العمل وتتيح لنا قياس استخدامه.',
+          ],
+        },
+        {
+          heading: 'ضرورية تمامًا',
+          body: ['تتذكّر لغتك وسمتك واختيارك بشأن إشعار ملفات تعريف الارتباط. تعمل دائمًا.'],
+        },
+        {
+          heading: 'قياس الأداء',
+          body: [
+            'يساعدنا Google Analytics 4، المُحمّل عبر Google Tag Manager، على فهم إجمالي الزيارات.',
+          ],
+        },
+        {
+          heading: 'التسويق',
+          body: ['يساعدنا Meta Pixel على قياس مدى وصول محتوى ديماسكور.'],
+        },
+        {
+          heading: 'إدارة ملفات تعريف الارتباط',
+          body: [
+            'يمكنك حظر أو حذف ملفات تعريف الارتباط من إعدادات متصفحك. قد لا تعمل بعض الميزات حينها.',
+          ],
+        },
+        {
+          heading: 'التغييرات',
+          body: ['قد تُحدَّث هذه السياسة. تسري دائمًا النسخة الأحدث.'],
+        },
+        { heading: 'اتصل بنا', body: ['أسئلة حول ملفات تعريف الارتباط: contact@dimascore.com'] },
+      ],
+    },
     about: {
       title: 'عن ديماسكور',
       description:
