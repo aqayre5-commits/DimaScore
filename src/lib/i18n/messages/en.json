@@ -938,5 +938,10 @@
     "message": "We use cookies to measure traffic and improve DimaScore.",
     "accept": "Got it",
     "learnMore": "Learn more"
+  },
+  "notFound": {
+    "heading": "Page not found",
+    "body": "The page you're looking for doesn't exist or has been moved.",
+    "cta": "Go home"
   }
 }

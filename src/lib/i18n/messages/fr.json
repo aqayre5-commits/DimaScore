@@ -938,5 +938,10 @@
     "message": "Nous utilisons des cookies pour mesurer l'audience et améliorer DimaScore.",
     "accept": "J'ai compris",
     "learnMore": "En savoir plus"
+  },
+  "notFound": {
+    "heading": "Page introuvable",
+    "body": "La page que vous cherchez n'existe pas ou a été déplacée.",
+    "cta": "Retour à l'accueil"
   }
 }
