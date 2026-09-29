@@ -1,9 +1,10 @@
 /**
- * Starter copy for the static footer pages (legal, privacy, about, contact, faq).
+ * Copy for the static footer pages (legal, privacy, terms, cookiePolicy, about, contact, faq).
  *
- * Intentionally concise — these are launch placeholders to be refined editorially.
- * Items marked [TODO] need real legal/identity details before launch. Keep the prose
- * here (not in the i18n message bundles) so it stays co-located and easy to revise.
+ * Intentionally concise — starter copy to be refined editorially. Legal identity: publisher /
+ * data controller is REN Technology Limited (England & Wales, company no. 13694812); framework is
+ * GDPR. Keep the prose here (not in the i18n message bundles) so it stays co-located and easy to
+ * revise. Legal wording is starter text, not legal advice — have it reviewed before relying on it.
  */
 import type { Locale } from '@/lib/i18n/config';
 
@@ -94,7 +95,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         },
         {
           heading: 'Governing law',
-          body: ['These terms are governed by the laws of the Kingdom of Morocco.'],
+          body: ['These terms are governed by the laws of England and Wales.'],
         },
         { heading: 'Contact', body: ['Questions about these terms: contact@dimascore.com'] },
       ],
@@ -170,12 +171,12 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
     privacy: {
       title: 'Privacy policy',
       description:
-        'How DimaScore collects, uses and protects your personal data, in line with Law 09-08.',
+        'How DimaScore collects, uses and protects your personal data, in line with the GDPR.',
       sections: [
         {
           heading: 'Overview',
           body: [
-            'This policy explains what data DimaScore collects and how we use it. We comply with Moroccan Law 09-08 on the protection of individuals with regard to the processing of personal data.',
+            'This policy explains what data DimaScore collects and how we use it. We process personal data in accordance with the EU General Data Protection Regulation (GDPR).',
           ],
         },
         {
@@ -195,26 +196,22 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'Your rights',
           body: [
-            `Under Law 09-08 you may request access to, correction of, or deletion of your personal data. Email us at ${CONTACT_EMAIL}.`,
-            '[TODO: data controller identity and CNDP declaration reference.]',
+            `Under the GDPR you may request access to, correction or erasure of your personal data, and object to or restrict its processing. Email us at ${CONTACT_EMAIL}.`,
+            'The data controller is REN Technology Limited, a company registered in England and Wales (company number 13694812).',
           ],
         },
       ],
     },
     legal: {
       title: 'Legal notice',
-      description: 'Publisher, hosting and intellectual-property information for DimaScore.',
+      description: 'Publisher and intellectual-property information for DimaScore.',
       sections: [
         {
           heading: 'Publisher',
           body: [
-            '[TODO: legal entity / publisher name, address and registration details.]',
+            'DimaScore is published by REN Technology Limited, a company registered in England and Wales under company number 13694812.',
             `Contact: ${CONTACT_EMAIL}`,
           ],
-        },
-        {
-          heading: 'Hosting',
-          body: ['This site is hosted by Vercel Inc. [TODO: confirm host name and address.]'],
         },
         {
           heading: 'Intellectual property',
@@ -326,7 +323,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         },
         {
           heading: 'Droit applicable',
-          body: ['Ces conditions sont régies par le droit du Royaume du Maroc.'],
+          body: ["Ces conditions sont régies par le droit de l'Angleterre et du Pays de Galles."],
         },
         { heading: 'Contact', body: ['Questions sur ces conditions : contact@dimascore.com'] },
       ],
@@ -404,12 +401,12 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
     privacy: {
       title: 'Politique de confidentialité',
       description:
-        'Comment DimaScore collecte, utilise et protège vos données personnelles, conformément à la loi 09-08.',
+        'Comment DimaScore collecte, utilise et protège vos données personnelles, conformément au RGPD.',
       sections: [
         {
           heading: 'Aperçu',
           body: [
-            'Cette politique explique quelles données DimaScore collecte et comment nous les utilisons. Nous respectons la loi marocaine 09-08 relative à la protection des personnes à l’égard du traitement des données à caractère personnel.',
+            'Cette politique explique quelles données DimaScore collecte et comment nous les utilisons. Nous traitons les données personnelles conformément au Règlement général sur la protection des données (RGPD).',
           ],
         },
         {
@@ -429,28 +426,21 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'Vos droits',
           body: [
-            `Conformément à la loi 09-08, vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles. Écrivez-nous à ${CONTACT_EMAIL}.`,
-            '[TODO : identité du responsable de traitement et référence de la déclaration CNDP.]',
+            `Conformément au RGPD, vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles, et vous opposer à leur traitement ou en demander la limitation. Écrivez-nous à ${CONTACT_EMAIL}.`,
+            'Le responsable du traitement est REN Technology Limited, société immatriculée en Angleterre et au Pays de Galles (numéro de société 13694812).',
           ],
         },
       ],
     },
     legal: {
       title: 'Mentions légales',
-      description:
-        'Informations sur l’éditeur, l’hébergement et la propriété intellectuelle de DimaScore.',
+      description: 'Informations sur l’éditeur et la propriété intellectuelle de DimaScore.',
       sections: [
         {
           heading: 'Éditeur',
           body: [
-            '[TODO : raison sociale / nom de l’éditeur, adresse et informations d’immatriculation.]',
+            'DimaScore est édité par REN Technology Limited, société immatriculée en Angleterre et au Pays de Galles sous le numéro 13694812.',
             `Contact : ${CONTACT_EMAIL}`,
-          ],
-        },
-        {
-          heading: 'Hébergement',
-          body: [
-            'Ce site est hébergé par Vercel Inc. [TODO : confirmer le nom et l’adresse de l’hébergeur.]',
           ],
         },
         {
@@ -556,7 +546,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         },
         {
           heading: 'القانون المطبّق',
-          body: ['تخضع هذه الشروط لقوانين المملكة المغربية.'],
+          body: ['تخضع هذه الشروط لقوانين إنجلترا وويلز.'],
         },
         { heading: 'اتصل بنا', body: ['أسئلة حول هذه الشروط: contact@dimascore.com'] },
       ],
@@ -630,12 +620,12 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
     privacy: {
       title: 'سياسة الخصوصية',
       description:
-        'كيف يجمع ديماسكور بياناتك الشخصية ويستخدمها ويحميها، بما يتوافق مع القانون 09-08.',
+        'كيف يجمع ديماسكور بياناتك الشخصية ويستخدمها ويحميها، بما يتوافق مع اللائحة العامة لحماية البيانات (GDPR).',
       sections: [
         {
           heading: 'لمحة عامة',
           body: [
-            'توضّح هذه السياسة البيانات التي يجمعها ديماسكور وكيفية استخدامها. نلتزم بالقانون المغربي 09-08 المتعلّق بحماية الأشخاص الذاتيين تجاه معالجة المعطيات ذات الطابع الشخصي.',
+            'توضّح هذه السياسة البيانات التي يجمعها ديماسكور وكيفية استخدامها. نعالج البيانات الشخصية وفقًا للائحة العامة لحماية البيانات في الاتحاد الأوروبي (GDPR).',
           ],
         },
         {
@@ -655,26 +645,22 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'حقوقك',
           body: [
-            `وفقًا للقانون 09-08، يمكنك طلب الاطّلاع على بياناتك الشخصية أو تصحيحها أو حذفها. راسلنا على ${CONTACT_EMAIL}.`,
-            '[TODO: هوية المسؤول عن المعالجة ومرجع التصريح لدى اللجنة الوطنية (CNDP).]',
+            `وفقًا للائحة العامة لحماية البيانات (GDPR)، يمكنك طلب الاطّلاع على بياناتك الشخصية أو تصحيحها أو حذفها، والاعتراض على معالجتها أو تقييدها. راسلنا على ${CONTACT_EMAIL}.`,
+            'المسؤول عن المعالجة هو REN Technology Limited، شركة مسجّلة في إنجلترا وويلز (رقم الشركة 13694812).',
           ],
         },
       ],
     },
     legal: {
       title: 'إشعار قانوني',
-      description: 'معلومات النشر والاستضافة والملكية الفكرية الخاصة بديماسكور.',
+      description: 'معلومات النشر والملكية الفكرية الخاصة بديماسكور.',
       sections: [
         {
           heading: 'الناشر',
           body: [
-            '[TODO: الكيان القانوني / اسم الناشر والعنوان وبيانات التسجيل.]',
+            'ديماسكور تصدره REN Technology Limited، شركة مسجّلة في إنجلترا وويلز تحت رقم 13694812.',
             `للتواصل: ${CONTACT_EMAIL}`,
           ],
-        },
-        {
-          heading: 'الاستضافة',
-          body: ['يُستضاف هذا الموقع لدى Vercel Inc. [TODO: تأكيد اسم المستضيف وعنوانه.]'],
         },
         {
           heading: 'الملكية الفكرية',

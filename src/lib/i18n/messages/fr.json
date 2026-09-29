@@ -937,8 +937,9 @@
     "faq4a": "Sur la page classement Botola Pro, et sur l'onglet Classement de la page compétition."
   },
   "cookieNotice": {
-    "message": "Nous utilisons des cookies pour mesurer l'audience et améliorer DimaScore.",
-    "accept": "J'ai compris",
+    "message": "Nous utilisons des cookies pour mesurer l'audience et améliorer DimaScore. Acceptez la mesure d'audience, ou gardez uniquement les cookies essentiels.",
+    "accept": "Accepter",
+    "reject": "Refuser",
     "learnMore": "En savoir plus"
   },
   "notFound": {
