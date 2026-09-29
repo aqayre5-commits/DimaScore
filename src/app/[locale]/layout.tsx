@@ -10,6 +10,7 @@ import { BASE_URL } from '@/lib/constants/site';
 import { Suspense } from 'react';
 import { MetaPixel } from '@/components/analytics/MetaPixel';
 import { GoogleTagManager } from '@/components/analytics/GoogleTagManager';
+import { CookieNotice } from '@/components/analytics/CookieNotice';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { buildGraph, buildOrganization, buildWebSite } from '@/lib/seo/jsonld';
 import '../globals.css';
@@ -158,6 +159,7 @@ export default async function LocaleLayout({
         <GoogleTagManager />
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
+          <CookieNotice />
         </NextIntlClientProvider>
         <Suspense fallback={null}>
           <MetaPixel />

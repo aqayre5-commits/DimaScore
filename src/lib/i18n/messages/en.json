@@ -933,5 +933,10 @@
     "faq3a": "Kickoffs display in your device timezone. Until a time is confirmed in site data, we show “kickoff to confirm”. DimaScore does not invent kickoff times.",
     "faq4q": "Where can I see the table?",
     "faq4a": "On the Botola Pro standings landing, and on the Standings tab of the competition page."
+  },
+  "cookieNotice": {
+    "message": "We use cookies to measure traffic and improve DimaScore.",
+    "accept": "Got it",
+    "learnMore": "Learn more"
   }
 }

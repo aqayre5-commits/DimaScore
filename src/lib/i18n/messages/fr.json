@@ -933,5 +933,10 @@
     "faq3a": "Les coups d'envoi s'affichent dans le fuseau de votre appareil. Tant qu'un horaire n'est pas confirmé dans les données du site, nous indiquons « horaire à confirmer ». DimaScore n'invente pas les heures.",
     "faq4q": "Où voir le classement ?",
     "faq4a": "Sur la page classement Botola Pro, et sur l'onglet Classement de la page compétition."
+  },
+  "cookieNotice": {
+    "message": "Nous utilisons des cookies pour mesurer l'audience et améliorer DimaScore.",
+    "accept": "J'ai compris",
+    "learnMore": "En savoir plus"
   }
 }
