@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { db } from '@/lib/db/client';
 import { getEditorialHeroData, type EditorialHeroData } from '@/lib/db/queries/editorial-hero';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { formatMatchTime } from '@/lib/utils/date';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow, type MatchHeaderPreview } from '@/lib/match-header-preview';
@@ -100,7 +100,7 @@ function resolveContent(
         { id: fixture.competitionId, name: fixture.competitionName, slug: fixture.competitionSlug },
         locale,
       );
-      const kickoffTime = formatMatchTime(fixture.kickoffAt, locale);
+      const kickoffTime = <LocalTime date={fixture.kickoffAt} locale={locale} format="time" />;
       return {
         content: (
           <div className="flex items-center gap-3 overflow-hidden">
@@ -127,7 +127,7 @@ function resolveContent(
       const { fixture } = data;
       const home = getTeamDisplayName(fixture.homeTeam, locale);
       const away = getTeamDisplayName(fixture.awayTeam, locale);
-      const kickoffTime = formatMatchTime(fixture.kickoffAt, locale);
+      const kickoffTime = <LocalTime date={fixture.kickoffAt} locale={locale} format="time" />;
       return {
         content: (
           <div className="flex items-center gap-3 overflow-hidden">

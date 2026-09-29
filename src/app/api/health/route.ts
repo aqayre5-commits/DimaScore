@@ -4,8 +4,10 @@ import { getDataProvider } from '@/lib/data';
 export async function GET() {
   try {
     const provider = getDataProvider();
-    const status = await provider.getStatus();
-    return NextResponse.json({ status: 'ok', account: status });
+    // Liveness only: confirm the upstream provider is reachable, but never serialize the
+    // account payload (holder name/email, subscription, quota) to unauthenticated callers.
+    await provider.getStatus();
+    return NextResponse.json({ status: 'ok' });
   } catch (error) {
     console.error('Health check failed:', error);
     return NextResponse.json(
