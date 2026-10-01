@@ -44,7 +44,7 @@ export function VideoTable({ videos, total, page, pageSize }: VideoTableProps) {
       <div className="overflow-x-auto rounded-lg border border-border-subtle">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border-subtle bg-bg-raised text-left text-xs font-medium text-text-secondary">
+            <tr className="border-b border-border-subtle bg-bg-surface text-left text-xs font-medium text-text-secondary">
               <th className="px-3 py-2">Video</th>
               <th className="px-3 py-2">Category</th>
               <th className="px-3 py-2">Tags</th>
@@ -86,7 +86,7 @@ export function VideoTable({ videos, total, page, pageSize }: VideoTableProps) {
                     </div>
                   </td>
                   <td className="px-3 py-2">
-                    <span className="inline-block rounded bg-bg-raised px-1.5 py-0.5 text-xs font-medium text-text-secondary">
+                    <span className="inline-block rounded bg-bg-surface px-1.5 py-0.5 text-xs font-medium text-text-secondary">
                       {v.category}
                     </span>
                   </td>
@@ -142,7 +142,7 @@ export function VideoTable({ videos, total, page, pageSize }: VideoTableProps) {
             {page > 1 && (
               <Link
                 href={`/admin/media?page=${page - 1}`}
-                className="rounded border border-border-subtle px-2.5 py-1 hover:bg-bg-raised"
+                className="rounded border border-border-subtle px-2.5 py-1 hover:bg-bg-surface"
               >
                 Prev
               </Link>
@@ -150,7 +150,7 @@ export function VideoTable({ videos, total, page, pageSize }: VideoTableProps) {
             {page < totalPages && (
               <Link
                 href={`/admin/media?page=${page + 1}`}
-                className="rounded border border-border-subtle px-2.5 py-1 hover:bg-bg-raised"
+                className="rounded border border-border-subtle px-2.5 py-1 hover:bg-bg-surface"
               >
                 Next
               </Link>

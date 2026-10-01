@@ -69,7 +69,7 @@ function TagSelect({
         {selectedItems.map((item) => (
           <span
             key={item.id}
-            className="inline-flex items-center gap-1 rounded bg-bg-raised px-2 py-0.5 text-xs font-medium text-text-secondary"
+            className="inline-flex items-center gap-1 rounded bg-bg-surface px-2 py-0.5 text-xs font-medium text-text-secondary"
           >
             {item.label}
             <button
@@ -98,7 +98,7 @@ function TagSelect({
                 <button
                   type="button"
                   onClick={() => add(item.id)}
-                  className="w-full px-3 py-1.5 text-left text-sm text-text-primary hover:bg-bg-raised"
+                  className="w-full px-3 py-1.5 text-left text-sm text-text-primary hover:bg-bg-surface"
                 >
                   {item.label}
                 </button>
@@ -139,7 +139,7 @@ function NumericIdInput({
         {selected.map((id) => (
           <span
             key={id}
-            className="inline-flex items-center gap-1 rounded bg-bg-raised px-2 py-0.5 text-xs font-medium text-text-secondary"
+            className="inline-flex items-center gap-1 rounded bg-bg-surface px-2 py-0.5 text-xs font-medium text-text-secondary"
           >
             {id}
             <button
@@ -170,7 +170,7 @@ function NumericIdInput({
           type="button"
           onClick={add}
           disabled={!value.trim()}
-          className="h-8 rounded-md border border-border-subtle px-3 text-xs font-medium text-text-secondary hover:bg-bg-raised disabled:opacity-50"
+          className="h-8 rounded-md border border-border-subtle px-3 text-xs font-medium text-text-secondary hover:bg-bg-surface disabled:opacity-50"
         >
           Add
         </button>

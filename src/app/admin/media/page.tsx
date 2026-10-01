@@ -28,13 +28,13 @@ export default async function AdminMediaPage({
           <div className="flex gap-1 text-xs">
             <Link
               href="/admin/media"
-              className={`rounded px-2 py-1 ${!showArchived ? 'bg-bg-raised text-text-primary' : 'text-text-tertiary hover:text-text-secondary'}`}
+              className={`rounded px-2 py-1 ${!showArchived ? 'bg-bg-surface text-text-primary' : 'text-text-tertiary hover:text-text-secondary'}`}
             >
               Active
             </Link>
             <Link
               href="/admin/media?archived=true"
-              className={`rounded px-2 py-1 ${showArchived ? 'bg-bg-raised text-text-primary' : 'text-text-tertiary hover:text-text-secondary'}`}
+              className={`rounded px-2 py-1 ${showArchived ? 'bg-bg-surface text-text-primary' : 'text-text-tertiary hover:text-text-secondary'}`}
             >
               Archived
             </Link>

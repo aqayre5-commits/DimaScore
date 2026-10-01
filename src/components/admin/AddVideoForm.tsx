@@ -94,7 +94,7 @@ export function AddVideoForm({ competitions, initialTeams }: AddVideoFormProps) 
         <PasteUrlForm onResult={setOembed} />
 
         {oembed && (
-          <div className="mt-4 flex gap-3 rounded-md bg-bg-raised p-3">
+          <div className="mt-4 flex gap-3 rounded-md bg-bg-surface p-3">
             <Image
               src={oembed.thumbnail_url}
               alt=""
