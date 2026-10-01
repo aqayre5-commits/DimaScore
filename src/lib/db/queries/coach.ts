@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { eq } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
@@ -25,7 +26,9 @@ export interface CoachDetail {
   } | null;
 }
 
-export async function getCoachById(
+// Cached per-request so generateMetadata and the page body share one DB query.
+export const getCoachById = cache(getCoachByIdImpl);
+async function getCoachByIdImpl(
   db: NeonHttpDatabase<typeof schema>,
   id: number,
 ): Promise<CoachDetail | null> {

@@ -52,9 +52,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const playerSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
   const player = await getPlayerBySlug(db, playerSlug);
 
-  if (!player) {
-    return { title: 'Player | DimaScore' };
-  }
+  // Unknown player → noindex so thin/fake entity URLs stay out of the index. (A true 404 status
+  // isn't reachable here: cacheComponents commits the prerendered 200 shell before notFound() runs;
+  // the page body still notFound()s to render the branded 404 UI.)
+  if (!player) return { title: 'Player | DimaScore', robots: { index: false, follow: false } };
 
   const name = player.name[typedLocale] ?? player.name['en'] ?? playerSlug;
   // Name-less players carry the placeholder slug "unknown-{id}" (name "Unknown Player") — thin,

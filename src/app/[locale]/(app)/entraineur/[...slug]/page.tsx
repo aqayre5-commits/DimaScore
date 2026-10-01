@@ -30,10 +30,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const lastSegment = rawSlug.map(decodeURIComponent).pop() ?? '';
   const coachId = extractIdFromSlug(lastSegment);
 
-  if (!coachId) return { title: 'Coach | DimaScore' };
+  // Unknown coach → noindex (thin/fake entity URLs stay out of the index; body still notFound()s
+  // for the branded 404 UI — a true 404 status isn't reachable under cacheComponents here).
+  if (!coachId) return { title: 'Coach | DimaScore', robots: { index: false, follow: false } };
 
   const coach = await getCoachById(db, coachId);
-  if (!coach) return { title: 'Coach | DimaScore' };
+  if (!coach) return { title: 'Coach | DimaScore', robots: { index: false, follow: false } };
 
   const displayName =
     coach.firstname && coach.lastname ? `${coach.firstname} ${coach.lastname}` : coach.name;

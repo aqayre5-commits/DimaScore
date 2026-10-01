@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { eq, and, or, asc, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
@@ -40,7 +41,9 @@ export interface SquadPlayer {
 
 // ── Q1: Team by slug ──
 
-export async function getTeamBySlug(
+// Cached per-request so generateMetadata and the page body share one DB query.
+export const getTeamBySlug = cache(getTeamBySlugImpl);
+async function getTeamBySlugImpl(
   db: NeonHttpDatabase<typeof schema>,
   slug: string,
 ): Promise<TeamDetail | null> {

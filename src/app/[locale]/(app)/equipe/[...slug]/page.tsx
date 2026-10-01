@@ -124,9 +124,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getCachedTeamData(teamSlug, locale);
   const team = data?.team;
 
-  if (!team) {
-    return { title: 'Team | DimaScore' };
-  }
+  // Unknown team → noindex so thin/fake entity URLs stay out of the index. (A true 404 status
+  // isn't reachable here: cacheComponents commits the prerendered 200 shell before notFound() runs;
+  // the page body still notFound()s to render the branded 404 UI.)
+  if (!team) return { title: 'Team | DimaScore', robots: { index: false, follow: false } };
 
   const name = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
   const { title, description } = buildTeamMeta({ team: name, locale });

@@ -138,10 +138,12 @@ async function getCachedMatchData(fixtureId: number) {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, id: rawId } = await params;
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
-  if (!fixtureId) return { title: 'Match | DimaScore' };
+  // Unknown match → noindex (thin/fake entity URLs stay out of the index; body still notFound()s
+  // for the branded 404 UI — a true 404 status isn't reachable under cacheComponents here).
+  if (!fixtureId) return { title: 'Match | DimaScore', robots: { index: false, follow: false } };
 
   const data = await getCachedMatchData(fixtureId);
-  if (!data) return { title: 'Match | DimaScore' };
+  if (!data) return { title: 'Match | DimaScore', robots: { index: false, follow: false } };
   const { match } = data;
 
   const home = getTeamDisplayName(match.homeTeam, locale);
