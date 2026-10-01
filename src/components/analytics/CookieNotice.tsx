@@ -23,7 +23,7 @@ export function CookieNotice() {
     <div
       role="dialog"
       aria-label={t('message')}
-      className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-50 border-t border-border-subtle bg-bg-raised px-4 py-3 shadow-lg md:bottom-0"
+      className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-50 border-t border-border-subtle bg-bg-surface px-4 py-3 shadow-lg md:bottom-0"
     >
       <div className="mx-auto flex w-full max-w-[1280px] flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-text-secondary">
