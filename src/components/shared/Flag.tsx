@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import { teamCrestUrl } from '@/lib/utils/crest';
 
 export interface FlagProps {
   /** ISO-3166 alpha-2 code (e.g. 'MA') — renders the country flag for national teams / nationalities. */
@@ -34,9 +33,15 @@ export function Flag({
   className,
 }: FlagProps) {
   const cc = countryCode?.trim().toLowerCase();
-  const crest = logoUrl ?? (teamId != null ? teamCrestUrl(teamId) : null);
-  // National teams and bare country codes → the 4:3 country flag (uniform, ignores any crest).
-  const asFlag = !!cc && (Boolean(isNational) || !crest);
+  // Use only a real stored logo — NOT teamCrestUrl(id), which 200s with API-Football's grey
+  // placeholder for logo-less teams. A null logo_url means no real logo → fall through to the
+  // initials monogram below (national teams still render their flag via `asFlag`).
+  void teamId;
+  const crest = logoUrl ?? null;
+  // Flag only for: an explicit national team (isNational === true), OR a bare nationality badge
+  // (isNational not provided and no crest). A CLUB (isNational === false) must NEVER render the
+  // country flag even when it has a country code and no logo — it falls through to initials.
+  const asFlag = !!cc && (isNational === true || (isNational == null && !crest));
   // Flags are width-driven at 4:3 (api-sports SVGs are 640×480): width = size so a flag occupies the
   // same width as a square crest — names stay aligned and flags never read "too wide". Height is the
   // shorter 4:3 side; crests stay square. `size` is the badge's width footprint.

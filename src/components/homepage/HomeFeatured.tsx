@@ -11,7 +11,6 @@ import { getMatchState } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
-import { teamCrestUrl } from '@/lib/utils/crest';
 import { matchHref } from '@/lib/seo/match-slug';
 
 type FeatureTag = NonNullable<HomeFixture['featureTag']>;
@@ -213,7 +212,9 @@ function TagChip({ tag, labels }: { tag: FeatureTag; labels: Props['labels'] }) 
 }
 
 function TeamCrest({ team }: { team: HomeFixture['homeTeam'] }) {
-  const url = team ? (getNationalFlagUrl(team) ?? team.logoUrl ?? teamCrestUrl(team.id)) : null;
+  // National team → flag; club with a real logo → its logo; otherwise null → initials fallback
+  // below. (No teamCrestUrl(id) fallback: it 200s with the grey placeholder for logo-less teams.)
+  const url = team ? (getNationalFlagUrl(team) ?? team.logoUrl ?? null) : null;
   if (url) {
     return (
       <Image
