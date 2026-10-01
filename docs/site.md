@@ -1,0 +1,14 @@
+# Site profile
+- Name: DimaScore
+- Site type: content / data (live football scores) — closest to "blog / content" + "tool"
+- What it offers (one line): Real-time football scores, fixtures, standings, stats and editorial, Morocco-first and trilingual.
+- Primary audience: Football fans in Morocco, the wider MENA region, Africa, and the Francophone & Arabophone world.
+- Markets / regions: Morocco (primary), MENA, Africa, France.
+- Base URL (staging): http://localhost:3000  (production: https://dimascore.com)
+- Locales: fr, en, ar — default: fr
+- RTL locales: ar
+- Brand voice (3 adjectives): fast, factual, Morocco-proud (strictly no betting/odds)
+- Design tokens / fonts location: src/styles/tokens.css, src/app/globals.css; fonts IBM Plex Sans + IBM Plex Sans Arabic (body), Fraunces (display)
+- Business goal of the site (one line): Become the go-to trilingual live-score destination for Moroccan and African football and grow organic traffic (no betting, no odds — Loi 09-08 / brand protection).
+- Real proof available: none
+- Status: INFERRED

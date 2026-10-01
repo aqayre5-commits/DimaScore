@@ -11,6 +11,7 @@
     "language": "اللغة"
   },
   "chrome": {
+    "skipToContent": "تخطّي إلى المحتوى",
     "competitions": "المسابقات",
     "teams": "الفرق",
     "players": "اللاعبون",
