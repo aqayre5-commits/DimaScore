@@ -17,6 +17,19 @@ const baseUrl = BASE_URL;
 type ChangeFreq = MetadataRoute.Sitemap[number]['changeFrequency'];
 
 /**
+ * Percent-encode non-ASCII path segments (e.g. the Arabic competition country/tournament slugs)
+ * while preserving '/'. Keeps the sitemap's <loc>/hreflang hrefs XML-sitemap conformant. Only
+ * applied to raw (unencoded) builders like buildCompetitionHref — team/player slugs are already
+ * encodeURIComponent'd at their call sites, so they are not routed through here (no double-encoding).
+ */
+function encodePath(path: string): string {
+  return path
+    .split('/')
+    .map((seg) => (seg ? encodeURIComponent(seg) : seg))
+    .join('/');
+}
+
+/**
  * One <url> entry per page, listing every locale as an hreflang alternate (+ x-default). Using a
  * single entry per page (instead of one per locale) keeps the whole site under Google's 50k-URL
  * limit, so it fits in a single /sitemap.xml — no generateSitemaps() chunking, whose
@@ -88,7 +101,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const e = ALL_ENTRIES.find((x) => x.competitionId === id);
     if (!e) continue;
     entries.push(
-      entry((l) => buildCompetitionHref(e, l), {
+      entry((l) => encodePath(buildCompetitionHref(e, l)), {
         priority: tierMap.get(id) ?? 0.8,
         changeFrequency: 'daily',
         lastModified: now,
