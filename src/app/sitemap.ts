@@ -4,6 +4,7 @@ import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { buildMatchSlug } from '@/lib/seo/match-slug';
+import { playerIndexableSitemapCondition } from '@/lib/seo/indexable';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { ALL_ENTRIES, buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
 import { BASE_URL } from '@/lib/constants/site';
@@ -179,9 +180,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .where(
       and(
         isNotNull(schema.players.slug),
-        // Exclude name-less players (placeholder "Unknown Player" → slug "unknown-{id}") — thin
-        // pages Google flags as duplicates.
-        sql`${schema.players.slug} NOT LIKE 'unknown-%'`,
+        // Data-gate: only sitemap players with a real data signal (current team / season stats /
+        // transfer / trophy); excludes "unknown-%" placeholders. Mirrors isPlayerIndexable so the
+        // sitemap and each page's robots.index agree.
+        playerIndexableSitemapCondition,
       ),
     )
     .orderBy(asc(schema.players.id));

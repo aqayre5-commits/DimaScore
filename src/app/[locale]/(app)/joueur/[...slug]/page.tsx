@@ -29,6 +29,7 @@ import { getTeamFixturesWithCompetition } from '@/lib/db/queries/team';
 import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
 import { BASE_URL } from '@/lib/constants/site';
 import { buildPlayerMeta } from '@/lib/seo/hub-metadata';
+import { isPlayerIndexable } from '@/lib/seo/indexable';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -58,9 +59,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!player) return { title: 'Player | DimaScore', robots: { index: false, follow: false } };
 
   const name = player.name[typedLocale] ?? player.name['en'] ?? playerSlug;
-  // Name-less players carry the placeholder slug "unknown-{id}" (name "Unknown Player") — thin,
-  // duplicate pages, so keep them out of the index.
-  const isNamed = !player.slug.startsWith('unknown-');
+  // Data-gate indexing: only index players with a real data signal (current team, season stats,
+  // transfer or trophy). Placeholder "unknown-%" slugs and empty profiles stay noindex. Mirrors
+  // playerIndexableSitemapCondition so the page and sitemap agree.
+  const indexable = await isPlayerIndexable(db, player.id, player.slug, player.currentTeam != null);
   const { title, description } = buildPlayerMeta({ player: name, locale });
   // Canonical uses the resolved stored slug (not the requested one) so a soft-rendered variant
   // still declares the true URL — the SEO consolidation signal, alongside the self-heal redirect.
@@ -76,7 +78,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: { canonical: pageUrl, languages },
-    robots: { index: isNamed, follow: true },
+    robots: { index: indexable, follow: true },
     openGraph: {
       title,
       description,
