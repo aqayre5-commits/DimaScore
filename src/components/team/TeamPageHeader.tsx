@@ -29,6 +29,15 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
   const t = useTranslations('teamPage');
   const name = resolveTeamName(team, locale);
   const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
+  // Initials monogram for logo-less clubs (consistent with the shared Flag fallback).
+  const initials =
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || '—';
   // National teams have no single home stadium — the API's "default venue" is misleading,
   // so suppress venue/capacity for them (founded year still shows). Audit P2-3.
   const headerVenue = team.isNational ? null : team.venue;
@@ -49,8 +58,8 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
         ) : flag ? (
           <span className="hidden text-6xl md:flex md:items-center">{flag}</span>
         ) : (
-          <div className="hidden size-24 shrink-0 items-center justify-center rounded-lg bg-bg-surface-2 md:flex">
-            <span className="text-3xl">&#9917;</span>
+          <div className="hidden size-24 shrink-0 items-center justify-center rounded-lg bg-bg-surface-2 font-bold uppercase text-text-tertiary md:flex">
+            <span className="text-3xl">{initials}</span>
           </div>
         )}
         {/* Mobile-only logo — fills card height */}
@@ -65,7 +74,11 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
           />
         ) : flag ? (
           <span className="flex items-center self-stretch text-5xl md:hidden">{flag}</span>
-        ) : null}
+        ) : (
+          <div className="flex size-20 shrink-0 items-center justify-center self-center rounded-lg bg-bg-surface-2 text-2xl font-bold uppercase text-text-tertiary md:hidden">
+            {initials}
+          </div>
+        )}
 
         {/* Identity */}
         <div className="flex min-w-0 flex-1 flex-col py-1">
