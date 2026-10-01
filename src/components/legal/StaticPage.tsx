@@ -2,20 +2,30 @@ import type { ReactNode } from 'react';
 import { SeoBreadcrumb } from '@/components/chrome/SeoBreadcrumb';
 import type { StaticPageContent } from '@/lib/constants/site-pages-content';
 import type { Locale } from '@/lib/i18n/config';
+import { INTL_LOCALE } from '@/lib/utils/date';
+
+const LAST_UPDATED_LABEL: Record<Locale, string> = {
+  fr: 'Dernière mise à jour',
+  en: 'Last updated',
+  ar: 'آخر تحديث',
+};
 
 /**
  * Shared presentational shell for the static footer pages (legal, privacy, about,
  * contact). Renders a compact breadcrumb, the title/description and the prose
  * sections. The optional children slot is appended after the sections (e.g. the
- * contact page's mailto button).
+ * contact page's mailto button). `lastUpdated` renders a localized effective-date
+ * line under the description — pass it for legal/utility pages only.
  */
 export function StaticPage({
   content,
   locale,
+  lastUpdated,
   children,
 }: {
   content: StaticPageContent;
   locale: Locale;
+  lastUpdated?: Date;
   children?: ReactNode;
 }) {
   return (
@@ -27,6 +37,16 @@ export function StaticPage({
       <article className="mt-2">
         <h1 className="text-2xl font-bold text-text-primary">{content.title}</h1>
         <p className="mt-2 text-sm text-text-secondary">{content.description}</p>
+        {lastUpdated && (
+          <p className="mt-1 text-xs text-text-tertiary">
+            {LAST_UPDATED_LABEL[locale]}:{' '}
+            {new Intl.DateTimeFormat(INTL_LOCALE[locale], {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            }).format(lastUpdated)}
+          </p>
+        )}
 
         <div className="mt-6 space-y-6">
           {content.sections.map((section, i) => (

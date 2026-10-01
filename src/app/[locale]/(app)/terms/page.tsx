@@ -19,5 +19,7 @@ export default async function TermsPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const content = SITE_PAGES_CONTENT[locale as Locale].terms;
-  return <StaticPage content={content} locale={locale as Locale} />;
+  return (
+    <StaticPage content={content} locale={locale as Locale} lastUpdated={new Date(2026, 9, 1)} />
+  );
 }
