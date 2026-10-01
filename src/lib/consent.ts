@@ -39,6 +39,24 @@ export function setConsent(value: ConsentValue): void {
   }
 }
 
+/**
+ * Withdraw / re-open the chooser (GDPR Art. 7(3) — withdrawing must be as easy as granting). Clears
+ * the stored choice and reloads so any already-loaded GTM/Meta Pixel is torn down and the fresh
+ * Accept/Reject banner reappears.
+ */
+export function resetConsent(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore — private mode / blocked storage
+  }
+  try {
+    window.location.reload();
+  } catch {
+    // ignore — non-browser environment
+  }
+}
+
 function subscribe(callback: () => void): () => void {
   window.addEventListener(CHANGE_EVENT, callback);
   window.addEventListener('storage', callback);
