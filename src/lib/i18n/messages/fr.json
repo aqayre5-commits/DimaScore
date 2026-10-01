@@ -11,6 +11,7 @@
     "language": "Langue"
   },
   "chrome": {
+    "skipToContent": "Aller au contenu",
     "competitions": "Compétitions",
     "teams": "Équipes",
     "players": "Joueurs",
@@ -196,6 +197,9 @@
     "featuredVideos": "Vidéos à la une",
     "featured": "À la une",
     "kicksOffIn": "Coup d'envoi dans",
+    "countdownDays": "Jours",
+    "countdownHours": "Heures",
+    "countdownMins": "Min",
     "heroFirstHalf": "1re mi-temps",
     "heroSecondHalf": "2e mi-temps",
     "heroHalftime": "Mi-temps",

@@ -23,6 +23,9 @@ interface Props {
     matchOfDay: string;
     featured: string;
     kicksOffIn: string;
+    countdownDays: string;
+    countdownHours: string;
+    countdownMins: string;
     live: string;
     noGoals: string;
     tags: Record<FeatureTag, string>;
@@ -345,11 +348,11 @@ function HeroCard({
                 {labels.kicksOffIn}
               </span>
               <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
-                <CountdownUnit value={remaining.days} label="DAYS" />
+                <CountdownUnit value={remaining.days} label={labels.countdownDays} />
                 <div className="h-12 w-px bg-border-subtle" />
-                <CountdownUnit value={remaining.hours} label="HOURS" />
+                <CountdownUnit value={remaining.hours} label={labels.countdownHours} />
                 <div className="h-12 w-px bg-border-subtle" />
-                <CountdownUnit value={remaining.minutes} label="MINS" />
+                <CountdownUnit value={remaining.minutes} label={labels.countdownMins} />
               </div>
             </div>
           ) : isLive ? (

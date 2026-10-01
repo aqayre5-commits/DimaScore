@@ -164,6 +164,9 @@ export default async function HomePage({ params }: PageProps) {
     matchOfDay: t('matchOfDay'),
     featured: t('featured'),
     kicksOffIn: t('kicksOffIn'),
+    countdownDays: t('countdownDays'),
+    countdownHours: t('countdownHours'),
+    countdownMins: t('countdownMins'),
     live: t('live'),
     noGoals: t('heroNoGoals'),
     tags: {
