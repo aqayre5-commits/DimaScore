@@ -112,9 +112,9 @@ describe('botola 2 classement copy (LANG-023)', () => {
   });
 
   it('uses the locked meta titles and H1s', () => {
-    expect(packs.fr.metaTitle).toBe('Classement Botola 2 en direct | DimaScore');
-    expect(packs.ar.metaTitle).toBe('ترتيب القسم الثاني مباشرة | ديماسكور');
-    expect(packs.en.metaTitle).toBe('Botola 2 standings live | DimaScore');
+    expect(packs.fr.metaTitle).toBe('Classement Botola 2 en direct');
+    expect(packs.ar.metaTitle).toBe('ترتيب القسم الثاني مباشرة');
+    expect(packs.en.metaTitle).toBe('Botola 2 standings live');
     expect(packs.fr.h1).toBe('Classement Botola 2 en direct');
     expect(packs.ar.h1).toBe('ترتيب القسم الثاني مباشرة');
     expect(packs.en.h1).toBe('Botola 2 standings live');
@@ -165,17 +165,15 @@ describe('botola 2 classement copy (LANG-023)', () => {
 
 describe('botola 2 competition hub meta (LANG-023)', () => {
   it('uses locked FR/AR titles and appends the product season', () => {
-    expect(botola2CompetitionPageTitle('fr', null)).toBe(
-      'Botola 2 — classement, matchs et stats | DimaScore',
-    );
+    expect(botola2CompetitionPageTitle('fr', null)).toBe('Botola 2 — classement, matchs et stats');
     expect(botola2CompetitionPageTitle('fr', '2025/26')).toBe(
-      'Botola 2 2025/26 — classement, matchs et stats | DimaScore',
+      'Botola 2 2025/26 — classement, matchs et stats',
     );
     expect(botola2CompetitionPageTitle('ar', null)).toBe(
-      'القسم الثاني — الترتيب والمباريات والإحصائيات | ديماسكور',
+      'القسم الثاني — الترتيب والمباريات والإحصائيات',
     );
     expect(botola2CompetitionPageTitle('ar', '2025/26')).toBe(
-      'القسم الثاني 2025/26 — الترتيب والمباريات والإحصائيات | ديماسكور',
+      'القسم الثاني 2025/26 — الترتيب والمباريات والإحصائيات',
     );
     expect(botola2CompetitionPageTitle('en', '2025/26')).toBeNull();
   });

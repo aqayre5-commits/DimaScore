@@ -32,16 +32,14 @@ describe('AR homepage + Edition Maroc SERP polish (IMP-013)', () => {
   });
 
   it('uses the AR home title with مباريات اليوم + مباشر/نتائج', () => {
-    expect(packs.ar.metaTitle).toBe('مباريات اليوم مباشرة — نتائج وجدول | ديماسكور');
+    expect(packs.ar.metaTitle).toBe('مباريات اليوم مباشرة — نتائج وجدول');
     expect(packs.ar.metaTitle).toMatch(/مباريات اليوم/);
     expect(packs.ar.metaTitle).toMatch(/مباشر|نتائج/);
     expect(packs.ar.pageHeading).toBe('مباريات اليوم مباشرة');
   });
 
   it('uses the AR edition title with المغرب + اليوم + مباشر/مباريات', () => {
-    expect(packs.ar.editionMetaTitle).toBe(
-      'مباريات المغرب اليوم مباشرة — البطولة وأسود الأطلس | ديماسكور',
-    );
+    expect(packs.ar.editionMetaTitle).toBe('مباريات المغرب اليوم مباشرة — البطولة وأسود الأطلس');
     expect(packs.ar.editionMetaTitle).toMatch(/المغرب/);
     expect(packs.ar.editionMetaTitle).toMatch(/اليوم/);
     expect(packs.ar.editionMetaTitle).toMatch(/مباشر|مباريات/);

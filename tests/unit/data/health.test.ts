@@ -13,13 +13,14 @@ vi.mock('@upstash/redis', () => ({
 const { GET } = await import('@/app/api/health/route');
 
 describe('/api/health route', () => {
-  it('returns ok with account info on success', async () => {
+  it('returns ok without leaking account info on success', async () => {
     const response = await GET();
     const body = await response.json();
     expect(response.status).toBe(200);
     expect(body.status).toBe('ok');
-    expect(body.account).toHaveProperty('subscription');
-    expect(body.account.requests).toHaveProperty('limitDay');
+    // SEC-001: the provider account/subscription/quota must never be serialized.
+    expect(body.account).toBeUndefined();
+    expect(body.subscription).toBeUndefined();
   });
 
   it('returns 502 on upstream failure', async () => {

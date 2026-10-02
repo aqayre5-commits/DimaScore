@@ -86,13 +86,9 @@ describe('botola season opener copy (LANG-018)', () => {
   });
 
   it('uses the locked meta titles and H1s', () => {
-    expect(packs.fr.metaTitle).toBe(
-      'Calendrier Botola Pro 2026/2027 : reprise le 24 sept. | DimaScore',
-    );
-    expect(packs.en.metaTitle).toBe(
-      'Botola Pro 2026/27 calendar: season starts 24 Sep | DimaScore',
-    );
-    expect(packs.ar.metaTitle).toBe('برنامج البطولة 2026/2027: الانطلاق 24 شتنبر | ديماسكور');
+    expect(packs.fr.metaTitle).toBe('Calendrier Botola Pro 2026/2027 : reprise le 24 sept.');
+    expect(packs.en.metaTitle).toBe('Botola Pro 2026/27 calendar: season starts 24 Sep');
+    expect(packs.ar.metaTitle).toBe('برنامج البطولة 2026/2027: الانطلاق 24 شتنبر');
     expect(packs.fr.h1).toBe('Calendrier Botola Pro 2026/2027 : date de reprise & affiches');
     expect(packs.en.h1).toBe('Botola Pro 2026/27 season start');
     expect(packs.ar.h1).toBe('برنامج البطولة الاحترافية 2026/2027');

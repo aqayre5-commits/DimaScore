@@ -114,8 +114,10 @@ describe('mapCoverageToInsert', () => {
     expect(result.standings).toBe(true);
     expect(result.players).toBe(true);
     expect(result.topScorers).toBe(true);
-    expect(result.injuries).toBe(true);
-    expect(result.predictions).toBe(true);
+    // Hardcoded false by design (like odds): no injuries data is ingested and predictions are
+    // editorial-only, so the provider's capability flags must not gate these tabs on.
+    expect(result.injuries).toBe(false);
+    expect(result.predictions).toBe(false);
     expect(result.odds).toBe(false); // always false — no betting
   });
 });

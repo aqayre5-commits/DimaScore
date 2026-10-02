@@ -106,9 +106,9 @@ describe('botola matchs copy', () => {
   });
 
   it('uses titles that say matchs / scores / مباريات, not only Botola Pro', () => {
-    expect(packs.fr.metaTitle).toBe('Matchs & scores Botola Pro en direct 2026/27 | DimaScore');
-    expect(packs.ar.metaTitle).toBe('مباريات ونتائج البطولة الاحترافية مباشرة 2026/27 | ديماسكور');
-    expect(packs.en.metaTitle).toBe('Botola Pro matches & live scores 2026/27 | DimaScore');
+    expect(packs.fr.metaTitle).toBe('Matchs & scores Botola Pro en direct 2026/27');
+    expect(packs.ar.metaTitle).toBe('مباريات ونتائج البطولة الاحترافية مباشرة 2026/27');
+    expect(packs.en.metaTitle).toBe('Botola Pro matches & live scores 2026/27');
     expect(packs.fr.h1).toBe('Matchs & scores Botola Pro en direct');
     expect(packs.en.h1).toBe('Botola Pro matches & live scores');
     expect(packs.ar.h1).toBe('مباريات ونتائج البطولة الاحترافية مباشرة');
