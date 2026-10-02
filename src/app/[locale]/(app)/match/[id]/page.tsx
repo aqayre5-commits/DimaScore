@@ -15,6 +15,7 @@ import {
 } from '@/lib/db/queries/match-detail';
 import { getMatchState, LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { buildMatchMeta, buildMatchH1 } from '@/lib/seo/match-metadata';
+import { isMatchIndexable } from '@/lib/seo/indexable';
 import {
   buildRecap,
   buildPreview,
@@ -166,10 +167,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Slug+ID canonical (Latin, identical across locales); the bare-id request 301s to this.
   const matchSlug = buildMatchSlug(match.homeTeam?.slug, match.awayTeam?.slug, fixtureId);
   const canonical = `${BASE_URL}/${locale}/match/${matchSlug}`;
+  // Data-gate: index matches in featured competitions or with real data (events/lineups/stats);
+  // noindex no-data fixtures in uncovered leagues. Mirrors matchIndexableSitemapCondition.
+  const indexable = await isMatchIndexable(db, fixtureId, match.competition.id);
 
   return {
     title,
     description,
+    robots: { index: indexable, follow: true },
     alternates: {
       canonical,
       languages: {

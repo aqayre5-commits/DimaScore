@@ -4,7 +4,11 @@ import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { buildMatchSlug } from '@/lib/seo/match-slug';
-import { playerIndexableSitemapCondition } from '@/lib/seo/indexable';
+import {
+  playerIndexableSitemapCondition,
+  teamIndexableSitemapCondition,
+  matchIndexableSitemapCondition,
+} from '@/lib/seo/indexable';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { ALL_ENTRIES, buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
 import { BASE_URL } from '@/lib/constants/site';
@@ -163,6 +167,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const teams = await db
     .select({ slug: schema.teams.slug })
     .from(schema.teams)
+    // Data-gate: only sitemap teams with real data (fixtures / squad / standings). Mirrors
+    // isTeamIndexable; also drops leftover test rows.
+    .where(teamIndexableSitemapCondition)
     .orderBy(asc(schema.teams.id));
   for (const t of teams) {
     entries.push(
@@ -206,7 +213,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from(schema.fixtures)
     .leftJoin(homeT, eq(homeT.id, schema.fixtures.homeTeamId))
     .leftJoin(awayT, eq(awayT.id, schema.fixtures.awayTeamId))
-    .where(SITEMAP_MATCH_FILTER)
+    // Window/crawl-budget filter AND the data-gate (featured comp or real match data) so the
+    // sitemap matches each match page's robots.index (mirrors isMatchIndexable).
+    .where(and(SITEMAP_MATCH_FILTER, matchIndexableSitemapCondition))
     .orderBy(asc(schema.fixtures.id));
   for (const m of matches) {
     const slug = buildMatchSlug(m.homeSlug, m.awaySlug, m.id);

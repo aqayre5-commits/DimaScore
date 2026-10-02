@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { buildTeamMeta } from '@/lib/seo/hub-metadata';
+import { isTeamIndexable } from '@/lib/seo/indexable';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
@@ -130,6 +131,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!team) return { title: 'Team | DimaScore', robots: { index: false, follow: false } };
 
   const name = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
+  // Data-gate: only index teams with real data (fixtures / squad / standings). Mirrors
+  // teamIndexableSitemapCondition so the page and sitemap agree.
+  const indexable = await isTeamIndexable(db, team.id);
   const { title, description } = buildTeamMeta({ team: name, locale });
   // Canonical uses the resolved stored slug (not the requested one) so a soft-rendered variant
   // still declares the true URL — the SEO consolidation signal, alongside the self-heal redirect.
@@ -145,7 +149,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: { canonical: pageUrl, languages },
-    robots: { index: true, follow: true },
+    robots: { index: indexable, follow: true },
     openGraph: {
       title,
       description,

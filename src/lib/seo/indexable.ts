@@ -43,3 +43,54 @@ export const isPlayerIndexable = cache(async function isPlayerIndexable(
   ) AS indexable`);
   return Boolean((res.rows[0] as { indexable: boolean } | undefined)?.indexable);
 });
+
+/**
+ * Team rule (approved): indexable if the team has any real data — at least one fixture (home or
+ * away), OR squad members, OR a standings row. Reserve/youth/defunct/test teams with none are
+ * noindex + de-sitemapped.
+ */
+export const teamIndexableSitemapCondition = sql`(
+  EXISTS (SELECT 1 FROM fixtures f WHERE f.home_team_id = ${schema.teams.id} OR f.away_team_id = ${schema.teams.id})
+  OR EXISTS (SELECT 1 FROM squad_members sm WHERE sm.team_id = ${schema.teams.id})
+  OR EXISTS (SELECT 1 FROM standings st WHERE st.team_id = ${schema.teams.id})
+)`;
+
+export const isTeamIndexable = cache(async function isTeamIndexable(
+  db: DB,
+  id: number,
+): Promise<boolean> {
+  const res = await db.execute(sql`SELECT (
+    EXISTS (SELECT 1 FROM fixtures WHERE home_team_id = ${id} OR away_team_id = ${id})
+    OR EXISTS (SELECT 1 FROM squad_members WHERE team_id = ${id})
+    OR EXISTS (SELECT 1 FROM standings WHERE team_id = ${id})
+  ) AS indexable`);
+  return Boolean((res.rows[0] as { indexable: boolean } | undefined)?.indexable);
+});
+
+/**
+ * Match rule (approved): indexable if it belongs to a featured/covered competition (World Cup,
+ * AFCON, WAFCON, Botola Pro, Botola 2, Coupe du Trône) OR it has real match data (events, lineups
+ * or statistics). No-data fixtures in uncovered leagues (e.g. far-future previews) stay noindex.
+ */
+export const FEATURED_COMPETITION_IDS: number[] = [1, 6, 922, 200, 201, 822];
+
+export const matchIndexableSitemapCondition = sql`(
+  ${schema.fixtures.competitionId} IN (1, 6, 922, 200, 201, 822)
+  OR EXISTS (SELECT 1 FROM fixture_events fe WHERE fe.fixture_id = ${schema.fixtures.id})
+  OR EXISTS (SELECT 1 FROM fixture_lineups fl WHERE fl.fixture_id = ${schema.fixtures.id})
+  OR EXISTS (SELECT 1 FROM fixture_statistics fsx WHERE fsx.fixture_id = ${schema.fixtures.id})
+)`;
+
+export const isMatchIndexable = cache(async function isMatchIndexable(
+  db: DB,
+  fixtureId: number,
+  competitionId: number | null | undefined,
+): Promise<boolean> {
+  if (competitionId != null && FEATURED_COMPETITION_IDS.includes(competitionId)) return true;
+  const res = await db.execute(sql`SELECT (
+    EXISTS (SELECT 1 FROM fixture_events WHERE fixture_id = ${fixtureId})
+    OR EXISTS (SELECT 1 FROM fixture_lineups WHERE fixture_id = ${fixtureId})
+    OR EXISTS (SELECT 1 FROM fixture_statistics WHERE fixture_id = ${fixtureId})
+  ) AS indexable`);
+  return Boolean((res.rows[0] as { indexable: boolean } | undefined)?.indexable);
+});
