@@ -134,7 +134,7 @@ export default async function LionsAbroadPage({ params }: PageProps) {
           <li className="rounded-full bg-accent-emerald/10 px-2 py-0.5 font-medium text-accent-emerald">
             {tHome('assist')}
           </li>
-          <li className="rounded-full bg-accent-gold/10 px-2 py-0.5 font-medium text-accent-gold">
+          <li className="rounded-full bg-accent-amber/10 px-2 py-0.5 font-medium text-accent-amber">
             {tHome('cleanSheet')}
           </li>
         </ul>

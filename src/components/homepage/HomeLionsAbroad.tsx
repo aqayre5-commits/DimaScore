@@ -84,7 +84,7 @@ export function HomeLionsAbroad({ performances, locale, labels }: Props) {
                       </span>
                     )}
                     {p.cleanSheet && (
-                      <span className="inline-flex items-center gap-0.5 rounded-full bg-accent-gold/10 px-1.5 py-0.5 text-[10px] font-medium text-accent-gold">
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-accent-amber/10 px-1.5 py-0.5 text-[10px] font-medium text-accent-amber">
                         {labels.cleanSheet}
                       </span>
                     )}

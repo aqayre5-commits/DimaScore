@@ -54,7 +54,7 @@ export function PlayerSeasonStats({ stats, locale }: PlayerSeasonStatsProps) {
         <select
           value={activeSeason}
           onChange={(e) => setActiveSeason(Number(e.target.value))}
-          className="min-w-[120px] rounded-lg border border-border-subtle bg-bg-page px-2.5 py-1.5 pr-7 text-[13px] text-text-primary focus:border-accent-azure focus:outline-none focus:ring-1 focus:ring-accent-azure"
+          className="min-w-[120px] rounded-lg border border-border-subtle bg-bg-canvas px-2.5 py-1.5 pr-7 text-[13px] text-text-primary focus:border-accent-azure focus:outline-none focus:ring-1 focus:ring-accent-azure"
         >
           {seasons.map((s) => (
             <option key={s} value={s}>

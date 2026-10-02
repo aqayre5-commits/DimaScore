@@ -93,7 +93,7 @@ export function GenericKnockoutList({ fixtures, locale }: GenericKnockoutListPro
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
             {ROUND_LABEL_KEYS[round] ? t(ROUND_LABEL_KEYS[round] as never) : round}
           </h3>
-          <div className="divide-y divide-border-default rounded-lg border border-border-default bg-bg-surface-1">
+          <div className="divide-y divide-border-subtle rounded-lg border border-border-subtle bg-bg-surface">
             {roundFixtures.map((f) => (
               <div key={f.id} className="px-3">
                 <FixtureRow

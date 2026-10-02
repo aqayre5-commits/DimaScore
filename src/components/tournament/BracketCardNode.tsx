@@ -186,7 +186,7 @@ function NodeRow({
           className={cn(
             'w-5 text-sm font-bold',
             mirrored ? 'text-left' : 'text-right',
-            !showScore ? 'text-text-quaternary' : isLive ? 'text-score-live' : 'text-text-primary',
+            !showScore ? 'text-text-tertiary' : isLive ? 'text-score-live' : 'text-text-primary',
           )}
         >
           {showScore ? (score ?? '–') : '–'}

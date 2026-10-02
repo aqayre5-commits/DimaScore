@@ -56,7 +56,7 @@ export function SeoBreadcrumb({
         className={cn(
           'flex items-center',
           compact
-            ? 'gap-0.5 text-[10px] leading-none text-text-quaternary'
+            ? 'gap-0.5 text-[10px] leading-none text-text-tertiary'
             : 'gap-1.5 text-[13px] text-text-secondary',
         )}
       >
@@ -69,7 +69,7 @@ export function SeoBreadcrumb({
             )}
           >
             {i > 0 && (
-              <span aria-hidden="true" className="text-text-quaternary">
+              <span aria-hidden="true" className="text-text-tertiary">
                 ›
               </span>
             )}

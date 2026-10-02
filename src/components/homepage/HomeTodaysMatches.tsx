@@ -154,7 +154,7 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                       {compName}
                     </span>
                     {(f.groupLabel ?? f.round) && (
-                      <span className="truncate text-[10px] text-text-quaternary max-w-[80px]">
+                      <span className="truncate text-[10px] text-text-tertiary max-w-[80px]">
                         {f.groupLabel ?? f.round}
                       </span>
                     )}

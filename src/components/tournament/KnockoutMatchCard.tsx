@@ -142,7 +142,7 @@ function TeamRow({
         <span
           className={cn(
             'w-8 text-right text-2xl font-bold',
-            !showScore ? 'text-text-quaternary' : isLive ? 'text-score-live' : 'text-text-primary',
+            !showScore ? 'text-text-tertiary' : isLive ? 'text-score-live' : 'text-text-primary',
           )}
         >
           {showScore ? (score ?? '–') : '–'}

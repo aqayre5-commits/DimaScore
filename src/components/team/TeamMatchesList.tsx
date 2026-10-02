@@ -108,7 +108,7 @@ export function TeamMatchesList({ fixtures, locale }: TeamMatchesListProps) {
             {s === 'live' && (
               <span className="live-pulse mr-1 inline-block size-1.5 rounded-full bg-accent-crimson align-middle" />
             )}
-            {stateLabel[s]} <span className="text-text-quaternary">({buckets[s].length})</span>
+            {stateLabel[s]} <span className="text-text-tertiary">({buckets[s].length})</span>
           </button>
         ))}
       </div>

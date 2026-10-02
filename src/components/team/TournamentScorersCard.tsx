@@ -18,9 +18,7 @@ function ScorerSection({ title, rows }: { title: string; rows: TournamentScorerR
       <ol>
         {rows.map((r, i) => (
           <li key={`${r.playerId ?? r.name}-${i}`} className="flex items-center gap-2 px-4 py-1.5">
-            <span className="w-4 text-center text-xs tabular-nums text-text-quaternary">
-              {i + 1}
-            </span>
+            <span className="w-4 text-center text-xs tabular-nums text-text-tertiary">{i + 1}</span>
             {r.photo ? (
               <Image
                 src={r.photo}

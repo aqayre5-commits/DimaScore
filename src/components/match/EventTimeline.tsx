@@ -129,11 +129,11 @@ function resolveEventDisplay(
 
     if (isMissed) {
       return {
-        icon: <Circle className="size-4 text-score-loss" />,
+        icon: <Circle className="size-4 text-accent-crimson" />,
         content: (
           <p className="text-sm text-text-secondary">
             <span className="font-medium text-text-primary">{name}</span>{' '}
-            <span className="text-xs text-score-loss">({t('penaltyMissed')})</span>
+            <span className="text-xs text-accent-crimson">({t('penaltyMissed')})</span>
           </p>
         ),
       };
@@ -141,11 +141,11 @@ function resolveEventDisplay(
 
     if (isOwn) {
       return {
-        icon: <Circle className="size-4 fill-score-loss text-score-loss" />,
+        icon: <Circle className="size-4 fill-accent-crimson text-accent-crimson" />,
         content: (
           <p className="text-sm text-text-secondary">
             <span className="font-medium text-text-primary">{name}</span>{' '}
-            <span className="text-xs text-score-loss">({t('ownGoal')})</span>
+            <span className="text-xs text-accent-crimson">({t('ownGoal')})</span>
           </p>
         ),
       };
