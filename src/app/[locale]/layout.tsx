@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic, Fraunces } from 'next/font/google';
+import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -28,14 +28,6 @@ const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
   display: 'swap',
   // Only used on the Arabic locale — don't preload it on en/fr pages.
-  preload: false,
-});
-
-const fraunces = Fraunces({
-  variable: '--font-fraunces',
-  subsets: ['latin'],
-  display: 'swap',
-  // Display face for sparse headings — load on demand, not in the FCP window.
   preload: false,
 });
 
@@ -144,7 +136,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={dir}
-      className={`${ibmPlexSans.variable} ${ibmPlexSansArabic.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${ibmPlexSans.variable} ${ibmPlexSansArabic.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

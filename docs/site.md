@@ -8,7 +8,7 @@
 - Locales: fr, en, ar — default: fr
 - RTL locales: ar
 - Brand voice (3 adjectives): fast, factual, Morocco-proud (strictly no betting/odds)
-- Design tokens / fonts location: src/styles/tokens.css, src/app/globals.css; fonts IBM Plex Sans + IBM Plex Sans Arabic (body), Fraunces (display)
+- Design tokens / fonts location: src/styles/tokens.css, src/app/globals.css; fonts IBM Plex Sans (Latin body + display, via --font-display) + IBM Plex Sans Arabic (AR body)
 - Business goal of the site (one line): Become the go-to trilingual live-score destination for Moroccan and African football and grow organic traffic (no betting, no odds — Loi 09-08 / brand protection).
 - Real proof available: none
 - Status: INFERRED
