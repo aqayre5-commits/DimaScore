@@ -1,17 +1,20 @@
 /**
- * Strip the trailing women's-team marker (" W" or " (W)") that API-Football appends to
- * women's national-team names. We adopt Sofascore's convention: on women's-competition
- * surfaces, "Morocco W" is redundant — the page context (a women's tournament) implies it.
+ * Strip the trailing women's-team marker that marks women's teams. We adopt Sofascore's
+ * convention: on compact/standings/match-row surfaces, "Morocco Women" is redundant — the page
+ * context (a women's tournament) implies it. Handles every localized form we store: EN "W"/"(W)"/
+ * "Women", FR "F"/"(F)", AR "سيدات"/"للسيدات".
  *
  * Source-of-truth names in the DB are left alone so the API-Football sync still works;
- * stripping happens at display time only.
+ * stripping happens at display time only. Surfaces that SHOULD show the label (team page, search,
+ * favourites, H2H) render the full localized name and don't call this.
  */
 export function stripWomenSuffix(name: string | null | undefined): string {
   if (!name) return '';
   return name
+    .replace(/\s+Women$/i, '')
     .replace(/\s+\(?W\)?$/i, '')
     .replace(/\s+\(?F\)?$/i, '')
-    .replace(/\s+\(?سيدات\)?$/, '');
+    .replace(/\s+\(?(لل)?سيدات\)?$/, '');
 }
 
 /**
