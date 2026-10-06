@@ -1,1 +1,1 @@
-Phase 15 — SEO overhaul
+Phase 16 — team/player data model & image pipeline
