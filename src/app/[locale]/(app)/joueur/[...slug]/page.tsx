@@ -58,7 +58,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // the page body still notFound()s to render the branded 404 UI.)
   if (!player) return { title: 'Player | DimaScore', robots: { index: false, follow: false } };
 
-  const name = player.name[typedLocale] ?? player.name['en'] ?? playerSlug;
+  // Prefer the FULL name (firstname + lastname) for the SEO title where available; fall back to the
+  // short display name (Phase 16 · Task H). Matches the JSON-LD/breadcrumb name below.
+  const name =
+    [player.firstname, player.lastname].filter(Boolean).join(' ') ||
+    player.name[typedLocale] ||
+    player.name['en'] ||
+    playerSlug;
   // Data-gate indexing: only index players with a real data signal (current team, season stats,
   // transfer or trophy). Placeholder "unknown-%" slugs and empty profiles stay noindex. Mirrors
   // playerIndexableSitemapCondition so the page and sitemap agree.

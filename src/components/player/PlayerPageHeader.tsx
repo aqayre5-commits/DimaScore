@@ -15,12 +15,10 @@ interface PlayerPageHeaderProps {
 }
 
 function resolvePlayerName(player: PlayerDetail, locale: Locale): string {
-  return (
-    player.name[locale] ??
-    player.name['en'] ??
-    [player.firstname, player.lastname].filter(Boolean).join(' ') ??
-    '—'
-  );
+  // Profile page shows the FULL name (firstname + lastname) where available; falls back to the
+  // short display name (API-Football's `name`, used in lineups/match lists) — Phase 16 · Task H.
+  const full = [player.firstname, player.lastname].filter(Boolean).join(' ');
+  return full || player.name[locale] || player.name['en'] || '—';
 }
 
 function computeAge(birthDate: string | null): number | null {
