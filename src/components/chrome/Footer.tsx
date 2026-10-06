@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { resetConsent } from '@/lib/consent';
 import type { Locale } from '@/lib/i18n/config';
 import {
   buildCompetitionHref,
@@ -187,15 +186,6 @@ export function Footer() {
                     </Link>
                   </li>
                 ))}
-                <li>
-                  <button
-                    type="button"
-                    onClick={resetConsent}
-                    className="text-left text-base text-text-secondary transition-colors hover:text-text-primary"
-                  >
-                    {t('cookieSettings')}
-                  </button>
-                </li>
               </ul>
             </div>
 

@@ -942,9 +942,8 @@
     "faq4a": "On the Botola Pro standings landing, and on the Standings tab of the competition page."
   },
   "cookieNotice": {
-    "message": "We use cookies to measure traffic and improve DimaScore. Accept analytics, or keep only essential cookies.",
-    "accept": "Accept",
-    "reject": "Reject",
+    "message": "We use cookies to measure traffic and improve DimaScore.",
+    "dismiss": "Got it",
     "learnMore": "Learn more"
   },
   "notFound": {

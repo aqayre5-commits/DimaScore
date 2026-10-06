@@ -3,7 +3,6 @@
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { useConsent } from '@/lib/consent';
 
 const PIXEL_ID = '1671058513950399';
 
@@ -14,34 +13,29 @@ declare global {
 }
 
 /**
- * Meta (Facebook/Instagram) Pixel, gated on cookie consent.
+ * Meta (Facebook/Instagram) Pixel. Loads unconditionally (no consent gate) so reach is measured for
+ * all visitors; a non-blocking cookie notice informs them.
  *
- * Nothing loads until consent === 'granted'. Once granted, the inline init fires the first PageView
- * and the effect fires PageView on client-side route changes (SPA navigations aren't full loads).
- * The first effect run is skipped so the initial PageView isn't double-counted.
- *
- * The <noscript> pixel fallback is intentionally omitted — it cannot be consent-gated.
+ * Fires PageView on first load (inline init) and on client-side route changes (SPA navigations
+ * aren't full loads, so they'd otherwise go uncounted). The first effect run is skipped so the
+ * initial PageView isn't double-counted.
  */
 export function MetaPixel() {
   const pathname = usePathname();
-  const consent = useConsent();
-  const granted = consent === 'granted';
   const firstRun = useRef(true);
 
   useEffect(() => {
-    if (!granted) return;
     if (firstRun.current) {
       firstRun.current = false;
       return;
     }
     window.fbq?.('track', 'PageView');
-  }, [pathname, granted]);
-
-  if (!granted) return null;
+  }, [pathname]);
 
   return (
-    <Script id="meta-pixel" strategy="afterInteractive">
-      {`!function(f,b,e,v,n,t,s)
+    <>
+      <Script id="meta-pixel" strategy="afterInteractive">
+        {`!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
@@ -51,6 +45,17 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '${PIXEL_ID}');
 fbq('track', 'PageView');`}
-    </Script>
+      </Script>
+      <noscript>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          height="1"
+          width="1"
+          alt=""
+          style={{ display: 'none' }}
+          src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`}
+        />
+      </noscript>
+    </>
   );
 }

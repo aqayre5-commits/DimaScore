@@ -1,31 +1,34 @@
-'use client';
-
 import Script from 'next/script';
-import { useConsent } from '@/lib/consent';
 
 const GTM_ID = 'GTM-MQN45393';
 
 /**
- * Google Tag Manager container, gated on cookie consent.
+ * Google Tag Manager container. GA4 (and the Meta Pixel, if desired) are configured as tags inside
+ * the GTM dashboard — no further code needed here.
  *
- * GA4 (and any other tags) are configured inside the GTM dashboard, so gating GTM gates them too.
- * Nothing loads until consent === 'granted': a fresh/opted-out visitor makes no googletagmanager
- * request. On mount we read stored consent (returning granted visitors load immediately); a live
- * Accept re-renders this via the consent store and injects the script without a reload.
- *
- * The <noscript> iframe fallback is intentionally omitted — it cannot be consent-gated.
+ * Loads unconditionally on every page (no consent gate): a non-blocking cookie notice informs
+ * visitors, and tags fire for everyone so GA4 measures all traffic. SPA page-views are handled by
+ * GTM's built-in History Change trigger (enabled in the GTM UI), so no route-change code is needed.
  */
 export function GoogleTagManager() {
-  const consent = useConsent();
-  if (consent !== 'granted') return null;
-
   return (
-    <Script id="gtm" strategy="afterInteractive">
-      {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    <>
+      <Script id="gtm" strategy="afterInteractive">
+        {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','${GTM_ID}');`}
-    </Script>
+      </Script>
+      <noscript>
+        <iframe
+          src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+          height="0"
+          width="0"
+          style={{ display: 'none', visibility: 'hidden' }}
+          title="Google Tag Manager"
+        />
+      </noscript>
+    </>
   );
 }

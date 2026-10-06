@@ -1,23 +1,47 @@
 'use client';
 
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
-import { useConsent, setConsent } from '@/lib/consent';
+
+const STORAGE_KEY = 'dimascore-cookie-notice';
 
 /**
- * Opt-in cookie-consent banner.
- *
- * Shown only while the visitor has made no choice (consent === null). Accept enables analytics /
- * marketing tags (GTM/GA4, Meta Pixel); Reject keeps only essential cookies. Both persist via the
- * consent store, which the tag components subscribe to — no reload needed. SSR renders nothing
- * (consent is null on the server), so there is no hydration mismatch.
+ * Non-blocking cookie notice. Analytics (GTM/GA4, Meta Pixel) load unconditionally; this banner only
+ * informs and links to the privacy page — it does not gate anything. Dismissal is persisted per
+ * browser in localStorage. SSR renders nothing (server snapshot = dismissed) to avoid a hydration
+ * mismatch; after mount the client snapshot reads localStorage.
  */
+const emptySubscribe = () => () => {};
+
+function getStoredDismissed(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === 'dismissed';
+  } catch {
+    return false;
+  }
+}
+
 export function CookieNotice() {
   const t = useTranslations('cookieNotice');
   const locale = useLocale();
-  const consent = useConsent();
+  const storedDismissed = useSyncExternalStore(
+    emptySubscribe,
+    getStoredDismissed,
+    () => true, // server / first hydration render: treat as dismissed → render nothing
+  );
+  const [dismissedNow, setDismissedNow] = useState(false);
 
-  if (consent !== null) return null;
+  if (storedDismissed || dismissedNow) return null;
+
+  const dismiss = () => {
+    try {
+      localStorage.setItem(STORAGE_KEY, 'dismissed');
+    } catch {
+      // ignore — private mode / blocked storage
+    }
+    setDismissedNow(true);
+  };
 
   return (
     <div
@@ -32,22 +56,13 @@ export function CookieNotice() {
             {t('learnMore')}
           </Link>
         </p>
-        <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setConsent('denied')}
-            className="rounded-lg border border-border-subtle px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
-          >
-            {t('reject')}
-          </button>
-          <button
-            type="button"
-            onClick={() => setConsent('granted')}
-            className="rounded-lg bg-accent-azure px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-azure/90"
-          >
-            {t('accept')}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={dismiss}
+          className="shrink-0 rounded-lg bg-accent-azure px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-azure/90"
+        >
+          {t('dismiss')}
+        </button>
       </div>
     </div>
   );
