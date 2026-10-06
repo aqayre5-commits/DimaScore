@@ -85,12 +85,13 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
            COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
            p.photo_url,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
-           t.logo_url AS team_logo,
+           COALESCE(t.logo_url, tp.logo_url) AS team_logo,
            fps.position, fps.rating
     FROM fixture_player_stats fps
     JOIN fixtures f ON f.id = fps.fixture_id
     JOIN players p ON p.id = fps.player_id
     LEFT JOIN teams t ON t.id = fps.team_id
+    LEFT JOIN teams tp ON tp.id = t.parent_team_id
     WHERE f.status_code IN ('FT', 'AET', 'PEN')
       AND f.kickoff_at >= NOW() - INTERVAL '7 days'
       AND fps.rating IS NOT NULL

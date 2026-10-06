@@ -43,6 +43,13 @@
       "when": 1782732843351,
       "tag": "0005_furry_apocalypse",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791309073608,
+      "tag": "0006_add_parent_team_id",
+      "breakpoints": true
     }
   ]
 }

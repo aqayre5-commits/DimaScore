@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import { eq, and, or, asc, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { FixtureWithTeams, StandingRow } from '../queries';
@@ -50,6 +51,7 @@ async function getTeamBySlugImpl(
   // Resolve by the stable trailing ID so a stale/renamed name-part still finds the team (the page
   // then 301s to the canonical slug). Fall back to an exact slug match for any legacy id-less slug.
   const trailingId = parseTrailingId(slug);
+  const teamParent = alias(schema.teams, 'team_parent');
   const rows = await db
     .select({
       id: schema.teams.id,
@@ -59,12 +61,14 @@ async function getTeamBySlugImpl(
       code: schema.teams.code,
       countryCode: schema.teams.countryCode,
       founded: schema.teams.founded,
-      logoUrl: schema.teams.logoUrl,
+      // Crest resolution: own logo ?? parent club's logo (Phase 16 · Task G).
+      logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${teamParent.logoUrl})`,
       isNational: schema.teams.isNational,
       isWomen: schema.teams.isWomen,
       venueId: schema.teams.venueId,
     })
     .from(schema.teams)
+    .leftJoin(teamParent, eq(schema.teams.parentTeamId, teamParent.id))
     .where(trailingId != null ? eq(schema.teams.id, trailingId) : eq(schema.teams.slug, slug))
     .limit(1);
 
@@ -358,15 +362,16 @@ export async function getTeamKeyPlayers(
 
   const rows = await db.execute(
     sql`SELECT p.id, p.name, p.position, p.photo_url AS "photoUrl",
-               ct.name AS "clubName", ct.logo_url AS "clubLogoUrl",
+               ct.name AS "clubName", COALESCE(ct.logo_url, ctp.logo_url) AS "clubLogoUrl",
                SUM(COALESCE((pss.stats->>'goals')::int, 0)) AS goals,
                SUM(COALESCE((pss.stats->>'assists')::int, 0)) AS assists
         FROM player_season_stats pss
         JOIN players p ON p.id = pss.player_id
         JOIN squad_members sm ON sm.team_id = ${teamId} AND sm.player_id = p.id
         LEFT JOIN teams ct ON ct.id = p.current_team_id
+        LEFT JOIN teams ctp ON ctp.id = ct.parent_team_id
         WHERE pss.team_id = ${teamId} AND pss.season_year >= ${cutoff}
-        GROUP BY p.id, p.name, p.position, p.photo_url, ct.name, ct.logo_url
+        GROUP BY p.id, p.name, p.position, p.photo_url, ct.name, ct.logo_url, ctp.logo_url
         HAVING SUM(COALESCE((pss.stats->>'goals')::int, 0))
              + SUM(COALESCE((pss.stats->>'assists')::int, 0)) > 0
         ORDER BY (SUM(COALESCE((pss.stats->>'goals')::int, 0))
@@ -501,33 +506,37 @@ export async function getTeamTournamentScorers(
   const scorerRows = await db.execute(
     sql`SELECT p.id AS player_id, p.photo_url AS photo,
                COALESCE(p.name->>${locale}, p.name->>'en') AS name,
-               COALESCE(t.name->>${locale}, t.name->>'en') AS team_name, t.logo_url AS team_logo,
+               COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
+               COALESCE(t.logo_url, tp.logo_url) AS team_logo,
                COUNT(*)::int AS value
         FROM fixture_events e
         JOIN fixtures f ON f.id = e.fixture_id
         JOIN players p ON p.id = e.player_id
         LEFT JOIN teams t ON t.id = e.team_id
+        LEFT JOIN teams tp ON tp.id = t.parent_team_id
         WHERE f.competition_id = ${compId} AND f.season_year = ${season} AND e.team_id = ${teamId}
           AND e.type = 'Goal' AND e.detail IN ('Normal Goal', 'Penalty')
           AND e.comments IS DISTINCT FROM 'Penalty Shootout'
-        GROUP BY p.id, t.id
+        GROUP BY p.id, t.id, tp.logo_url
         ORDER BY value DESC, p.slug
         LIMIT ${limit}`,
   );
   const assistRows = await db.execute(
     sql`SELECT p.id AS player_id, p.photo_url AS photo,
                COALESCE(p.name->>${locale}, p.name->>'en') AS name,
-               COALESCE(t.name->>${locale}, t.name->>'en') AS team_name, t.logo_url AS team_logo,
+               COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
+               COALESCE(t.logo_url, tp.logo_url) AS team_logo,
                COUNT(*)::int AS value
         FROM fixture_events e
         JOIN fixtures f ON f.id = e.fixture_id
         JOIN players p ON p.id = e.assist_player_id
         LEFT JOIN teams t ON t.id = e.team_id
+        LEFT JOIN teams tp ON tp.id = t.parent_team_id
         WHERE f.competition_id = ${compId} AND f.season_year = ${season} AND e.team_id = ${teamId}
           AND e.type = 'Goal' AND e.detail IN ('Normal Goal', 'Penalty')
           AND e.comments IS DISTINCT FROM 'Penalty Shootout'
           AND e.assist_player_id IS NOT NULL
-        GROUP BY p.id, t.id
+        GROUP BY p.id, t.id, tp.logo_url
         ORDER BY value DESC, p.slug
         LIMIT ${limit}`,
   );

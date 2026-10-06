@@ -881,7 +881,7 @@ export async function getRightRailTopScorers(
                  p.slug AS player_slug,
                  p.photo_url,
                  COALESCE(t.name->>'en', 'Unknown') AS team_name,
-                 t.logo_url AS team_logo_url,
+                 COALESCE(t.logo_url, tp.logo_url) AS team_logo_url,
                  (pss.stats->>'goals')::int AS goals,
                  c.name AS comp_name,
                  ROW_NUMBER() OVER (
@@ -894,6 +894,7 @@ export async function getRightRailTopScorers(
             AND s.is_current = true
           JOIN players p ON p.id = pss.player_id
           LEFT JOIN teams t ON t.id = pss.team_id
+          LEFT JOIN teams tp ON tp.id = t.parent_team_id
           JOIN competitions c ON c.id = pss.competition_id
           WHERE pss.competition_id IN (${compsList})
             AND (pss.stats->>'goals')::int > 0
@@ -906,7 +907,7 @@ export async function getRightRailTopScorers(
                  p.slug AS player_slug,
                  p.photo_url,
                  COALESCE(t.name->>'en', 'Unknown') AS team_name,
-                 t.logo_url AS team_logo_url,
+                 COALESCE(t.logo_url, tp.logo_url) AS team_logo_url,
                  COUNT(*)::int AS goals,
                  c.name AS comp_name,
                  ROW_NUMBER() OVER (
@@ -920,12 +921,13 @@ export async function getRightRailTopScorers(
             AND s.is_current = true
           JOIN players p ON p.id = e.player_id
           LEFT JOIN teams t ON t.id = e.team_id
+          LEFT JOIN teams tp ON tp.id = t.parent_team_id
           JOIN competitions c ON c.id = f.competition_id
           WHERE f.competition_id IN (${compsList})
             AND e.type = 'Goal'
             AND e.detail IN ('Normal Goal', 'Penalty')
             AND e.comments IS DISTINCT FROM 'Penalty Shootout'
-          GROUP BY f.competition_id, e.player_id, p.name, p.slug, p.photo_url, t.id, t.name, t.logo_url, c.name
+          GROUP BY f.competition_id, e.player_id, p.name, p.slug, p.photo_url, t.id, t.name, t.logo_url, tp.logo_url, c.name
         )
         SELECT * FROM pss_top WHERE rn <= ${limit}
         UNION ALL

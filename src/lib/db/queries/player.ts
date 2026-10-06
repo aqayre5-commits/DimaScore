@@ -1,6 +1,7 @@
 import { cache } from 'react';
 import { eq, and, or, asc, desc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import type { FixtureWithTeams } from '../queries';
@@ -101,6 +102,7 @@ async function getPlayerBySlugImpl(
   if (rows.length === 0) return null;
   const player = rows[0];
 
+  const ctParent = alias(schema.teams, 'ct_parent');
   const currentTeam = player.currentTeamId
     ? await db
         .select({
@@ -109,10 +111,11 @@ async function getPlayerBySlugImpl(
           name: schema.teams.name,
           shortName: schema.teams.shortName,
           code: schema.teams.code,
-          logoUrl: schema.teams.logoUrl,
+          logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${ctParent.logoUrl})`,
           countryCode: schema.teams.countryCode,
         })
         .from(schema.teams)
+        .leftJoin(ctParent, eq(schema.teams.parentTeamId, ctParent.id))
         .where(eq(schema.teams.id, player.currentTeamId))
         .limit(1)
         .then((r) => r[0] ?? null)
@@ -227,6 +230,7 @@ export async function getPlayerTransfers(
     if (r.toTeamId != null) teamIds.add(r.toTeamId);
   }
 
+  const trParent = alias(schema.teams, 'tr_parent');
   const teams =
     teamIds.size > 0
       ? await db
@@ -234,9 +238,10 @@ export async function getPlayerTransfers(
             id: schema.teams.id,
             name: schema.teams.name,
             code: schema.teams.code,
-            logoUrl: schema.teams.logoUrl,
+            logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${trParent.logoUrl})`,
           })
           .from(schema.teams)
+          .leftJoin(trParent, eq(schema.teams.parentTeamId, trParent.id))
           .where(inArray(schema.teams.id, [...teamIds]))
       : [];
 

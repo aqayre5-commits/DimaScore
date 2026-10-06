@@ -438,18 +438,19 @@ export async function getEditionTopScorers(
            COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
            p.photo_url AS player_photo,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
-           t.logo_url AS team_logo,
+           COALESCE(t.logo_url, tp.logo_url) AS team_logo,
            COUNT(*)::int AS goals
     FROM fixture_events e
     JOIN fixtures f ON f.id = e.fixture_id
     JOIN players p ON p.id = e.player_id
     LEFT JOIN teams t ON t.id = e.team_id
+    LEFT JOIN teams tp ON tp.id = t.parent_team_id
     WHERE f.competition_id = ${competitionId}
       AND f.season_year = ${seasonYear}
       AND e.type = 'Goal'
       AND e.detail IN ('Normal Goal', 'Penalty')
       AND e.comments IS DISTINCT FROM 'Penalty Shootout'
-    GROUP BY p.id, t.id
+    GROUP BY p.id, t.id, tp.logo_url
     ORDER BY goals DESC, p.slug
     LIMIT ${limit}
   `);
@@ -478,19 +479,20 @@ export async function getEditionTopAssists(
            COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
            p.photo_url AS player_photo,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
-           t.logo_url AS team_logo,
+           COALESCE(t.logo_url, tp.logo_url) AS team_logo,
            COUNT(*)::int AS assists
     FROM fixture_events e
     JOIN fixtures f ON f.id = e.fixture_id
     JOIN players p ON p.id = e.assist_player_id
     LEFT JOIN teams t ON t.id = e.team_id
+    LEFT JOIN teams tp ON tp.id = t.parent_team_id
     WHERE f.competition_id = ${competitionId}
       AND f.season_year = ${seasonYear}
       AND e.type = 'Goal'
       AND e.detail IN ('Normal Goal', 'Penalty')
       AND e.comments IS DISTINCT FROM 'Penalty Shootout'
       AND e.assist_player_id IS NOT NULL
-    GROUP BY p.id, t.id
+    GROUP BY p.id, t.id, tp.logo_url
     ORDER BY assists DESC, p.slug
     LIMIT ${limit}
   `);

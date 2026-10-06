@@ -1,9 +1,10 @@
 import { cache } from 'react';
 import { eq, and, asc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
-import type { TeamSnapshot } from '../queries-hydrate';
+import { getTeamsMap, type TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { resolveGroupLabel } from './right-rail';
 
@@ -101,26 +102,8 @@ export const getMatchDetail = cache(async function getMatchDetail(
   if (row.homeTeamId != null) teamIds.push(row.homeTeamId);
   if (row.awayTeamId != null) teamIds.push(row.awayTeamId);
 
-  const teamsMap = new Map<number, TeamSnapshot>();
-  if (teamIds.length > 0) {
-    const teams = await db
-      .select({
-        id: schema.teams.id,
-        slug: schema.teams.slug,
-        name: schema.teams.name,
-        shortName: schema.teams.shortName,
-        code: schema.teams.code,
-        countryCode: schema.teams.countryCode,
-        logoUrl: schema.teams.logoUrl,
-        isNational: schema.teams.isNational,
-      })
-      .from(schema.teams)
-      .where(inArray(schema.teams.id, teamIds));
-
-    for (const t of teams) {
-      teamsMap.set(t.id, t);
-    }
-  }
+  // Reuse the shared hydrator (own ?? parent-club logo resolution included — Phase 16 · Task G).
+  const teamsMap = await getTeamsMap(db, teamIds);
 
   // Fixtures carry no group; resolve the real group ("Group C") from standings for group-stage rounds.
   let groupLabel: string | null = null;
@@ -647,14 +630,17 @@ export async function getNextFixtures(
     { name: Record<string, string>; logoUrl: string | null; slug: string }
   >();
   if (teamIds.size > 0) {
+    const oppParent = alias(schema.teams, 'opp_parent');
     const teams = await db
       .select({
         id: schema.teams.id,
         name: schema.teams.name,
-        logoUrl: schema.teams.logoUrl,
+        // own logo ?? parent club's logo (Phase 16 · Task G).
+        logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${oppParent.logoUrl})`,
         slug: schema.teams.slug,
       })
       .from(schema.teams)
+      .leftJoin(oppParent, eq(schema.teams.parentTeamId, oppParent.id))
       .where(inArray(schema.teams.id, [...teamIds]));
     for (const t of teams) teamsMap.set(t.id, { name: t.name, logoUrl: t.logoUrl, slug: t.slug });
   }

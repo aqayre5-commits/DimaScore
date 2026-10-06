@@ -7,6 +7,7 @@
 
 import { relations } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   pgTable,
   pgEnum,
   text,
@@ -137,11 +138,18 @@ export const teams = pgTable(
     secondaryColor: text('secondary_color'),
     isNational: boolean('is_national').default(false),
     isWomen: boolean('is_women').default(false),
+    // Club reserve/youth/women sides point at their senior parent club so crest resolution can
+    // fall back to the parent logo (own logo_url ?? parent logo_url ?? initials). National youth
+    // sides have no parent — they group by country_code. Self-referencing FK (Phase 16 · Task G).
+    parentTeamId: bigint('parent_team_id', { mode: 'number' }).references(
+      (): AnyPgColumn => teams.id,
+    ),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
   },
   (t) => [
     index('teams_country_code_idx').on(t.countryCode),
     index('teams_is_women_idx').on(t.isWomen),
+    index('teams_parent_team_id_idx').on(t.parentTeamId),
   ],
 );
 

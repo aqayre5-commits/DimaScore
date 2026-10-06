@@ -1,5 +1,6 @@
 import { cache } from 'react';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 
@@ -32,6 +33,7 @@ async function getCoachByIdImpl(
   db: NeonHttpDatabase<typeof schema>,
   id: number,
 ): Promise<CoachDetail | null> {
+  const coachTeamParent = alias(schema.teams, 'coach_team_parent');
   const rows = await db
     .select({
       id: schema.coaches.id,
@@ -45,10 +47,14 @@ async function getCoachByIdImpl(
       career: schema.coaches.career,
       teamId: schema.teams.id,
       teamName: schema.teams.name,
-      teamLogoUrl: schema.teams.logoUrl,
+      // own logo ?? parent club's logo (Phase 16 · Task G).
+      teamLogoUrl: sql<
+        string | null
+      >`COALESCE(${schema.teams.logoUrl}, ${coachTeamParent.logoUrl})`,
     })
     .from(schema.coaches)
     .leftJoin(schema.teams, eq(schema.coaches.currentTeamId, schema.teams.id))
+    .leftJoin(coachTeamParent, eq(schema.teams.parentTeamId, coachTeamParent.id))
     .where(eq(schema.coaches.id, id))
     .limit(1);
 

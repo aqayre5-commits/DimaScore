@@ -1,5 +1,6 @@
 import { eq, and, asc, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 import type { TeamSnapshot, VenueSnapshot } from './queries-hydrate';
@@ -221,6 +222,7 @@ async function getTeamsMap(
 ): Promise<Map<number, TeamSnapshot>> {
   if (teamIds.length === 0) return new Map();
 
+  const parent = alias(schema.teams, 'parent_team');
   const teams = await db
     .select({
       id: schema.teams.id,
@@ -229,10 +231,12 @@ async function getTeamsMap(
       shortName: schema.teams.shortName,
       code: schema.teams.code,
       countryCode: schema.teams.countryCode,
-      logoUrl: schema.teams.logoUrl,
+      // Crest resolution: own logo ?? parent club's logo (Phase 16 · Task G).
+      logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${parent.logoUrl})`,
       isNational: schema.teams.isNational,
     })
     .from(schema.teams)
+    .leftJoin(parent, eq(schema.teams.parentTeamId, parent.id))
     .where(inArray(schema.teams.id, teamIds));
 
   const map = new Map<number, TeamSnapshot>();

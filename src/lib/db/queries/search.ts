@@ -1,4 +1,5 @@
-import { sql, inArray } from 'drizzle-orm';
+import { sql, inArray, eq } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { escapeLikePattern } from '@/lib/utils/sql';
@@ -58,6 +59,7 @@ export async function searchAll(
   const pattern = `%${escapeLikePattern(trimmed)}%`;
   const clampedLimit = Math.min(Math.max(limit, 1), 20);
 
+  const teamParent = alias(schema.teams, 'team_parent');
   const [teams, players, competitions] = await Promise.all([
     // Teams: search name (en/fr/ar), shortName, code
     db
@@ -66,11 +68,12 @@ export async function searchAll(
         slug: schema.teams.slug,
         name: schema.teams.name,
         code: schema.teams.code,
-        logoUrl: schema.teams.logoUrl,
+        logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${teamParent.logoUrl})`,
         isNational: schema.teams.isNational,
         countryCode: schema.teams.countryCode,
       })
       .from(schema.teams)
+      .leftJoin(teamParent, eq(schema.teams.parentTeamId, teamParent.id))
       .where(
         sql`(
           ${schema.teams.name}->>'en' ILIKE ${pattern} OR
@@ -139,9 +142,10 @@ export async function searchAll(
       .select({
         id: schema.teams.id,
         name: schema.teams.name,
-        logoUrl: schema.teams.logoUrl,
+        logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${teamParent.logoUrl})`,
       })
       .from(schema.teams)
+      .leftJoin(teamParent, eq(schema.teams.parentTeamId, teamParent.id))
       .where(inArray(schema.teams.id, teamIds));
 
     for (const t of teamRows) teamMap.set(t.id, { name: t.name, logoUrl: t.logoUrl });
