@@ -24,8 +24,11 @@ function slimTeam(team: TeamSnapshot | null, locale: Locale): TeamSnapshot | nul
     shortName: slimNameMap(team.shortName, locale),
     code: team.code,
     countryCode: team.countryCode,
-    // Crest reconstructed from id in Flag — do not inline media.api-sports.io URLs.
-    logoUrl: team.logoUrl?.startsWith('/') ? team.logoUrl : null,
+    // Keep the resolved crest URL (includes Task G's parent-club fallback). This used to be nulled
+    // on the assumption Flag rebuilds the crest from the team id, but Flag no longer does that (id
+    // reconstruction 200s with API-Football's grey placeholder) — so nulling here left every club
+    // on the featured hero with no crest → initials. Logo-less teams are already null in the DB.
+    logoUrl: team.logoUrl,
     isNational: team.isNational,
   };
 }
