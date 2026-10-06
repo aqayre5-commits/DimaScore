@@ -44,7 +44,9 @@ export function slimHomeFixture(fixture: HomeFixture, locale: Locale): HomeFixtu
     competition: {
       ...fixture.competition,
       name: slimNameMap(fixture.competition.name, locale),
-      logoUrl: fixture.competition.logoUrl?.startsWith('/') ? fixture.competition.logoUrl : null,
+      // Keep the resolved competition logo (local override or the provider URL) — same reasoning as
+      // the team crest above; nulling external URLs dropped unmapped-competition logos.
+      logoUrl: fixture.competition.logoUrl,
     },
   };
 }
