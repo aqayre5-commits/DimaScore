@@ -3,23 +3,12 @@ import { Flag } from '@/components/shared/Flag';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
+import { computeAge, isUnderage } from '@/lib/utils/age';
 import Image from 'next/image';
 
 interface PlayerInfoCardProps {
   player: PlayerDetail;
   locale: Locale;
-}
-
-function computeAge(birthDate: string | null): number | null {
-  if (!birthDate) return null;
-  const birth = new Date(birthDate);
-  const today = new Date();
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
-  }
-  return age;
 }
 
 function formatBirthDate(birthDate: string | null, locale: Locale): string {
@@ -50,6 +39,8 @@ function positionFullLabel(position: string | null, t: ReturnType<typeof useTran
 export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
   const t = useTranslations('playerPage');
   const age = computeAge(player.birthDate);
+  // Under-16 safeguarding: hide exact DOB + physical details (age stays — it's coarse).
+  const underage = isUnderage(player.birthDate);
   const clubName = player.currentTeam
     ? (player.currentTeam.name[locale] ?? player.currentTeam.name['en'] ?? '—')
     : null;
@@ -72,7 +63,7 @@ export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
     });
   }
 
-  if (player.birthDate) {
+  if (player.birthDate && !underage) {
     rows.push({
       label: t('dateOfBirth'),
       value: formatBirthDate(player.birthDate, locale),
@@ -93,12 +84,12 @@ export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
     rows.push({ label: t('birthPlace'), value: birthPlaceDisplay });
   }
 
-  if (player.height) {
+  if (player.height && !underage) {
     const h = player.height.includes('cm') ? player.height : `${player.height} cm`;
     rows.push({ label: t('height'), value: h });
   }
 
-  if (player.weight) {
+  if (player.weight && !underage) {
     const w = player.weight.includes('kg') ? player.weight : `${player.weight} kg`;
     rows.push({ label: t('weight'), value: w });
   }

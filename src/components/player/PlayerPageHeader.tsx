@@ -5,6 +5,7 @@ import { RatingSparkline } from '@/components/shared/FormSparkline';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
+import { isUnderage } from '@/lib/utils/age';
 import Image from 'next/image';
 
 interface PlayerPageHeaderProps {
@@ -78,6 +79,8 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
   const t = useTranslations('playerPage');
   const name = resolvePlayerName(player, locale);
   const age = computeAge(player.birthDate);
+  // Under-16 safeguarding: force the silhouette and hide the shirt number.
+  const underage = isUnderage(player.birthDate);
   const nationalityName = player.nationalityCode
     ? (getLeagueCountryName(player.nationalityCode, locale) ?? player.nationalityCode)
     : null;
@@ -98,8 +101,8 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
   return (
     <div className="h-full overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15">
       <div className="flex h-full items-stretch">
-        {/* Player photo — fills left side edge-to-edge */}
-        {player.photoUrl ? (
+        {/* Player photo — fills left side edge-to-edge (hidden for under-16s) */}
+        {player.photoUrl && !underage ? (
           <>
             {/* Desktop: full-height photo with gradient fade */}
             <div className="relative hidden w-[180px] shrink-0 md:block">
@@ -159,7 +162,7 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
                   </span>
                 </>
               )}
-              {player.shirtNumber != null && (
+              {player.shirtNumber != null && !underage && (
                 <>
                   <span className="text-text-tertiary">·</span>
                   <span>#{player.shirtNumber}</span>

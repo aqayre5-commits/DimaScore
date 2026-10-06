@@ -283,6 +283,8 @@ export async function getPredictedLineup(
     pos: p.pos,
     grid: null,
     photoUrl: p.photo,
+    // Predicted XI doesn't yet carry birth_date — under-16 photo-hiding here is a follow-up (BACKLOG).
+    birthDate: null,
   }));
 
   return { teamId, formation, coach: null, starters, substitutes: [] };

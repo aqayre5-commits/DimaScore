@@ -258,6 +258,7 @@ export interface LineupPlayer {
   pos: string | null;
   grid: string | null;
   photoUrl: string | null;
+  birthDate: string | null;
 }
 
 export interface MatchLineup {
@@ -312,14 +313,19 @@ export async function getMatchLineups(
     };
   });
 
-  // Batch-fetch photos from players table
-  const photoMap = new Map<number, string | null>();
+  // Batch-fetch photo + birth date from players table (birth date drives under-16 safeguarding)
+  const hydrateMap = new Map<number, { photoUrl: string | null; birthDate: string | null }>();
   if (allPlayerIds.size > 0) {
     const playerRows = await db
-      .select({ id: schema.players.id, photoUrl: schema.players.photoUrl })
+      .select({
+        id: schema.players.id,
+        photoUrl: schema.players.photoUrl,
+        birthDate: schema.players.birthDate,
+      })
       .from(schema.players)
       .where(inArray(schema.players.id, [...allPlayerIds]));
-    for (const pr of playerRows) photoMap.set(pr.id, pr.photoUrl);
+    for (const pr of playerRows)
+      hydrateMap.set(pr.id, { photoUrl: pr.photoUrl, birthDate: pr.birthDate });
   }
 
   return parsed.map((r) => ({
@@ -332,14 +338,16 @@ export async function getMatchLineups(
       number: s.number,
       pos: s.pos,
       grid: s.grid ?? null,
-      photoUrl: photoMap.get(s.id) ?? null,
+      photoUrl: hydrateMap.get(s.id)?.photoUrl ?? null,
+      birthDate: hydrateMap.get(s.id)?.birthDate ?? null,
     })),
     substitutes: r.rawSubs.map((s) => ({
       id: s.id,
       name: s.name,
       number: s.number,
       pos: s.pos,
-      photoUrl: photoMap.get(s.id) ?? null,
+      photoUrl: hydrateMap.get(s.id)?.photoUrl ?? null,
+      birthDate: hydrateMap.get(s.id)?.birthDate ?? null,
     })),
   }));
 }

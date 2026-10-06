@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import type { MatchLineup, LineupPlayer, MatchEvent } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
+import { isUnderage } from '@/lib/utils/age';
 
 type BadgeType = 'goal' | 'ownGoal' | 'yellowCard' | 'redCard' | 'secondYellow' | 'subOut';
 
@@ -430,7 +431,7 @@ function PlayerDot({
 
   return (
     <g>
-      {player.photoUrl ? (
+      {player.photoUrl && !isUnderage(player.birthDate) ? (
         <>
           <defs>
             <clipPath id={clipId}>
@@ -480,7 +481,7 @@ function PlayerDot({
             dominantBaseline="central"
             className={`text-[12px] font-bold ${isHome ? 'fill-[#1e293b]' : 'fill-white'}`}
           >
-            {player.number}
+            {isUnderage(player.birthDate) ? '' : player.number}
           </text>
         </>
       )}
