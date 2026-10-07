@@ -54,11 +54,12 @@ function fixture(partial: Partial<HomeFixture> & Pick<HomeFixture, 'id'>): HomeF
 }
 
 describe('slimHomeFixture', () => {
-  it('drops remote crest URLs and unused venue fields', () => {
+  it('keeps crest URLs, drops unused venue fields, and slims names', () => {
     const slim = slimHomeFixture(fixture({ id: 10 }), 'fr');
-    expect(slim.homeTeam?.logoUrl).toBeNull();
-    expect(slim.awayTeam?.logoUrl).toBeNull();
-    expect(slim.competition.logoUrl).toBeNull();
+    // Crests are kept so the featured hero can render them (Flag no longer rebuilds from id).
+    expect(slim.homeTeam?.logoUrl).toBe('https://media.api-sports.io/football/teams/1.png');
+    expect(slim.awayTeam?.logoUrl).toBe('https://media.api-sports.io/football/teams/2.png');
+    expect(slim.competition.logoUrl).toBe('https://media.api-sports.io/football/leagues/200.png');
     expect(slim.venueName).toBeNull();
     expect(slim.venueCapacity).toBeNull();
     expect(slim.homeTeam?.name).toEqual({ fr: 'Wydad', en: 'Wydad' });
