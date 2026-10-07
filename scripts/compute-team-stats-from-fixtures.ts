@@ -70,7 +70,8 @@ function buildStatsJson(teamId: number, fixtures: FixtureRow[]): Record<string, 
     if (f.home_score == null || f.away_score == null) continue;
     if (!FINISHED_CODES.has(f.status_code)) continue;
 
-    const isHome = f.home_team_id === teamId;
+    // Raw SQL returns bigint ids as strings — coerce, else every match counts as "away".
+    const isHome = Number(f.home_team_id) === teamId;
     const gf = isHome ? f.home_score : f.away_score;
     const ga = isHome ? f.away_score : f.home_score;
 
