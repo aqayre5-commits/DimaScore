@@ -1,3 +1,4 @@
+import { and, eq } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedStandingEntry } from '@/lib/data/types';
@@ -72,34 +73,25 @@ export async function syncStandings(
   const groupLabels = disambiguateGroupLabels(groups);
 
   await runWrites(async (tx) => {
+    // Delete-before-insert so changed group labels don't accumulate stale duplicate tables. The
+    // provider has relabeled multi-group cups over time (e.g. UEFA Nations League: "Group 1" →
+    // "League A · Group 1" → "League A - Group A"); upserting keyed on group_label left every old
+    // generation behind. Guarded by `groups.length > 0` so an empty API response can't wipe data.
+    if (groups.length > 0) {
+      await tx
+        .delete(schema.standings)
+        .where(
+          and(
+            eq(schema.standings.competitionId, params.leagueId),
+            eq(schema.standings.seasonYear, params.season),
+          ),
+        );
+    }
     for (let gi = 0; gi < groups.length; gi++) {
       const group = groups[gi];
       for (const entry of group) {
         const row = mapStandingToInsert(entry, params.leagueId, params.season, groupLabels[gi]);
-        await tx
-          .insert(schema.standings)
-          .values(row)
-          .onConflictDoUpdate({
-            target: [
-              schema.standings.competitionId,
-              schema.standings.seasonYear,
-              schema.standings.groupLabel,
-              schema.standings.teamId,
-            ],
-            set: {
-              rank: row.rank,
-              points: row.points,
-              played: row.played,
-              won: row.won,
-              drawn: row.drawn,
-              lost: row.lost,
-              goalsFor: row.goalsFor,
-              goalsAgainst: row.goalsAgainst,
-              goalDiff: row.goalDiff,
-              form: row.form,
-              description: row.description,
-            },
-          });
+        await tx.insert(schema.standings).values(row);
         updated++;
       }
     }
