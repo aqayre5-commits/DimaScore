@@ -621,8 +621,9 @@ export async function getNextFixtures(
   // Hydrate opponent teams
   const teamIds = new Set<number>();
   for (const { row } of raw) {
-    teamIds.add(row.home_team_id);
-    teamIds.add(row.away_team_id);
+    // Raw SQL returns bigint ids as strings — coerce so the Set/Map keys match the numeric ids.
+    teamIds.add(Number(row.home_team_id));
+    teamIds.add(Number(row.away_team_id));
   }
 
   const teamsMap = new Map<
@@ -646,15 +647,17 @@ export async function getNextFixtures(
   }
 
   return raw.map(({ row: r, ourTeamId }) => {
-    const isOurTeamHome = r.home_team_id === ourTeamId;
-    const opponentId = isOurTeamHome ? r.away_team_id : r.home_team_id;
+    const homeId = Number(r.home_team_id);
+    const awayId = Number(r.away_team_id);
+    const isOurTeamHome = homeId === ourTeamId;
+    const opponentId = isOurTeamHome ? awayId : homeId;
     const opponent = teamsMap.get(opponentId);
     return {
       id: r.id,
       kickoffAt: new Date(r.kickoff_at),
       teamId: ourTeamId,
-      homeSlug: teamsMap.get(r.home_team_id)?.slug ?? null,
-      awaySlug: teamsMap.get(r.away_team_id)?.slug ?? null,
+      homeSlug: teamsMap.get(homeId)?.slug ?? null,
+      awaySlug: teamsMap.get(awayId)?.slug ?? null,
       opponentName: opponent?.name ?? { en: 'TBD' },
       opponentLogoUrl: opponent?.logoUrl ?? null,
       competitionName: r.comp_name,
