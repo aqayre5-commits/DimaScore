@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { eq, and, or, asc, desc, inArray } from 'drizzle-orm';
+import { eq, and, or, asc, desc, gte, inArray } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
@@ -788,6 +788,8 @@ export interface TeamSeasonStatsEntry {
 export interface TeamSeasonStatsResult {
   competitions: CompetitionSnapshot[];
   seasons: number[];
+  /** Seasons (≥ 2020/21) available per competition, newest first — scopes the season dropdown. */
+  seasonsByComp: Record<number, number[]>;
   statsByCompSeason: Record<string, TeamSeasonStatsEntry>; // key: `${compId}-${season}`
 }
 
@@ -802,10 +804,14 @@ export async function getTeamSeasonStats(
       stats: schema.teamSeasonStats.stats,
     })
     .from(schema.teamSeasonStats)
-    .where(eq(schema.teamSeasonStats.teamId, teamId))
+    // Floor at the 2020/21 season — older campaigns are not surfaced.
+    .where(
+      and(eq(schema.teamSeasonStats.teamId, teamId), gte(schema.teamSeasonStats.seasonYear, 2020)),
+    )
     .orderBy(desc(schema.teamSeasonStats.seasonYear));
 
-  if (rows.length === 0) return { competitions: [], seasons: [], statsByCompSeason: {} };
+  if (rows.length === 0)
+    return { competitions: [], seasons: [], seasonsByComp: {}, statsByCompSeason: {} };
 
   const compIds = [...new Set(rows.map((r) => r.competitionId))];
   const seasons = [...new Set(rows.map((r) => r.seasonYear))].sort((a, b) => b - a);
@@ -815,6 +821,9 @@ export async function getTeamSeasonStats(
     .map((id) => compsMap.get(id))
     .filter((c): c is CompetitionSnapshot => c != null);
 
+  // Seasons available per competition (newest first) — the season dropdown is scoped to the
+  // selected competition so a comp/season combo without stats can't be picked.
+  const seasonsByComp: Record<number, number[]> = {};
   const statsByCompSeason: Record<string, TeamSeasonStatsEntry> = {};
   for (const row of rows) {
     const key = `${row.competitionId}-${row.seasonYear}`;
@@ -823,9 +832,14 @@ export async function getTeamSeasonStats(
       seasonYear: row.seasonYear,
       stats: row.stats as Record<string, unknown>,
     };
+    (seasonsByComp[row.competitionId] ??= []).push(row.seasonYear);
+  }
+  for (const id of Object.keys(seasonsByComp)) {
+    const n = Number(id);
+    seasonsByComp[n] = [...new Set(seasonsByComp[n])].sort((a, b) => b - a);
   }
 
-  return { competitions, seasons, statsByCompSeason };
+  return { competitions, seasons, seasonsByComp, statsByCompSeason };
 }
 
 // ── Q8: Team's primary competition (for breadcrumb) ──

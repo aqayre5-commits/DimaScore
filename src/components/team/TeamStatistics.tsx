@@ -147,10 +147,12 @@ function CardsSummary({ cards }: { cards: Record<string, unknown> }) {
 
 export function TeamStatistics({ data, locale }: TeamStatisticsProps) {
   const t = useTranslations('teamPage');
-  const { competitions, seasons, statsByCompSeason } = data;
+  const { competitions, seasonsByComp, statsByCompSeason } = data;
 
   const [activeCompId, setActiveCompId] = useState<number>(competitions[0]?.id ?? 0);
-  const [activeSeason, setActiveSeason] = useState<number>(seasons[0] ?? 0);
+  // Seasons scoped to the selected competition (never an empty/invalid combo).
+  const seasonsForComp = seasonsByComp[activeCompId] ?? [];
+  const [activeSeason, setActiveSeason] = useState<number>(seasonsForComp[0] ?? 0);
 
   if (competitions.length === 0) {
     return (
@@ -229,7 +231,12 @@ export function TeamStatistics({ data, locale }: TeamStatisticsProps) {
           )}
           <select
             value={activeCompId}
-            onChange={(e) => setActiveCompId(Number(e.target.value))}
+            onChange={(e) => {
+              const id = Number(e.target.value);
+              setActiveCompId(id);
+              // Reset to the new competition's newest season so the combo always has data.
+              setActiveSeason((seasonsByComp[id] ?? [])[0] ?? 0);
+            }}
             className={`min-w-[140px] flex-1 ${selectCls}`}
           >
             {competitions.map((c) => {
@@ -246,7 +253,7 @@ export function TeamStatistics({ data, locale }: TeamStatisticsProps) {
             onChange={(e) => setActiveSeason(Number(e.target.value))}
             className={`min-w-[90px] ${selectCls}`}
           >
-            {seasons.map((s) => (
+            {seasonsForComp.map((s) => (
               <option key={s} value={s}>
                 {s}/{(s + 1) % 100}
               </option>

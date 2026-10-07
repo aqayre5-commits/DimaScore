@@ -164,6 +164,7 @@ async function main() {
             AND tss.season_year = fc.season_year
         )
         AND EXISTS (SELECT 1 FROM teams t WHERE t.id = fc.team_id)
+        AND fc.season_year >= 2020
         ORDER BY fc.team_id, fc.competition_id, fc.season_year`,
   );
 
