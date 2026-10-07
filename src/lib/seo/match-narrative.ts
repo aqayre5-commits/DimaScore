@@ -144,34 +144,60 @@ export function buildRecap(input: {
   return `${lead}${goals ? ' ' + goals + '.' : ''}${cs}`;
 }
 
+/** EN only: some competitions take a definite article ("the Premier League") and some don't
+ * ("Ligue 1", "Serie A", "La Liga"). Heuristic: add "the" for League/Cup/Championship names. */
+function withArticleEn(competition: string): string {
+  return /\b(League|Cup|Championship)\b/i.test(competition) ? `the ${competition}` : competition;
+}
+
+function ordinalEn(n: number): string {
+  const v = n % 100;
+  const suffix = v >= 11 && v <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th');
+  return `${n}${suffix}`;
+}
+
 // ── Preview (upcoming) ───────────────────────────────────────────────────
 export function buildPreview(input: {
   home: string;
   away: string;
   competition: string;
-  kickoffLabel: string; // pre-formatted, locale-aware
+  dateLabel: string; // date only, locale-aware (the exact kickoff time lives in the match card)
   venue?: string | null;
   h2h?: H2HSummary | null;
+  homeRank?: number | null;
+  awayRank?: number | null;
+  homeForm?: string | null; // compact W/D/L form, most recent last (e.g. "WDWDL")
+  awayForm?: string | null;
   locale: string;
 }): string {
-  const { home, away, competition, kickoffLabel, venue, h2h, locale } = input;
+  const { home, away, competition, dateLabel, venue, h2h, locale } = input;
+  const { homeRank, awayRank, homeForm, awayForm } = input;
   const venuePart = venue ? venue : null;
+  const hasH2h = !!h2h && h2h.played > 0;
 
   if (locale === 'en') {
-    let s = `${home} host ${away} in the ${competition}, ${kickoffLabel}${venuePart ? ` at ${venuePart}` : ''}.`;
-    if (h2h && h2h.played > 0)
-      s += ` In their last ${h2h.played} meetings: ${h2h.homeWins} wins for ${home}, ${h2h.draws} draws, ${h2h.awayWins} for ${away}.`;
+    const hp = homeRank ? `${ordinalEn(homeRank)}-placed ` : '';
+    const ap = awayRank ? `${ordinalEn(awayRank)}-placed ` : '';
+    let s = `${hp}${home} host ${ap}${away} in ${withArticleEn(competition)}, ${dateLabel}${venuePart ? ` at ${venuePart}` : ''}.`;
+    if (hasH2h)
+      s += ` In their last ${h2h!.played} meetings: ${h2h!.homeWins} wins for ${home}, ${h2h!.draws} draws, ${h2h!.awayWins} for ${away}.`;
+    else if (homeForm || awayForm)
+      s += ` Recent form — ${home}: ${homeForm || '—'}, ${away}: ${awayForm || '—'}.`;
     return s;
   }
   if (locale === 'ar') {
-    let s = `يستضيف ${home} فريق ${away} في ${competition}، ${kickoffLabel}${venuePart ? ` على ملعب ${venuePart}` : ''}.`;
-    if (h2h && h2h.played > 0)
-      s += ` في آخر ${h2h.played} مواجهات: ${h2h.homeWins} انتصارات لـ${home}، ${h2h.draws} تعادلات، و${h2h.awayWins} لـ${away}.`;
+    let s = `يستضيف ${home} فريق ${away} في ${competition}، ${dateLabel}${venuePart ? ` على ملعب ${venuePart}` : ''}.`;
+    if (hasH2h)
+      s += ` في آخر ${h2h!.played} مواجهات: ${h2h!.homeWins} انتصارات لـ${home}، ${h2h!.draws} تعادلات، و${h2h!.awayWins} لـ${away}.`;
+    else if (homeForm || awayForm)
+      s += ` النتائج الأخيرة — ${home}: ${homeForm || '—'}، ${away}: ${awayForm || '—'}.`;
     return s;
   }
-  let s = `${home} reçoit ${away} en ${competition}, ${kickoffLabel}${venuePart ? ` au ${venuePart}` : ''}.`;
-  if (h2h && h2h.played > 0)
-    s += ` Sur les ${h2h.played} dernières confrontations : ${h2h.homeWins} victoires du ${home}, ${h2h.draws} nuls, ${h2h.awayWins} du ${away}.`;
+  let s = `${home} reçoit ${away} en ${competition}, ${dateLabel}${venuePart ? ` au ${venuePart}` : ''}.`;
+  if (hasH2h)
+    s += ` Sur les ${h2h!.played} dernières confrontations : ${h2h!.homeWins} victoires du ${home}, ${h2h!.draws} nuls, ${h2h!.awayWins} du ${away}.`;
+  else if (homeForm || awayForm)
+    s += ` Forme récente — ${home} : ${homeForm || '—'}, ${away} : ${awayForm || '—'}.`;
   return s;
 }
 
@@ -206,7 +232,7 @@ export function buildMatchAnswer(input: {
     if (locale === 'ar')
       return `يستضيف ${home} ${away} في ${competition}، ${kickoffLabel}${venue ? ` على ملعب ${venue}` : ''}.`;
     if (locale === 'en')
-      return `${home} host ${away} in the ${competition}, ${kickoffLabel}${venue ? ` at ${venue}` : ''}.`;
+      return `${home} host ${away} in ${withArticleEn(competition)}, ${kickoffLabel}${venue ? ` at ${venue}` : ''}.`;
     return `${home} reçoit ${away} en ${competition}, ${kickoffLabel}${venue ? ` au ${venue}` : ''}.`;
   }
 

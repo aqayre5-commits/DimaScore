@@ -113,9 +113,12 @@ async function getCachedMatchData(fixtureId: number) {
     : null;
 
   // Top of the competition table for the right-rail "Classement" card.
-  const standings = hasTeams
-    ? (await getStandings(db, match.competition.id, match.seasonYear)).slice(0, 5)
+  const fullStandings = hasTeams
+    ? await getStandings(db, match.competition.id, match.seasonYear)
     : [];
+  const standings = fullStandings.slice(0, 5);
+  const homeRank = fullStandings.find((s) => s.teamId === homeTeamId)?.rank ?? null;
+  const awayRank = fullStandings.find((s) => s.teamId === awayTeamId)?.rank ?? null;
 
   return {
     match,
@@ -132,6 +135,8 @@ async function getCachedMatchData(fixtureId: number) {
       awayForm,
       highlightVideo,
       standings,
+      homeRank,
+      awayRank,
     },
   };
 }
@@ -368,6 +373,16 @@ export default async function MatchDetailPage({ params }: PageProps) {
     year: 'numeric',
     timeZone: 'Africa/Casablanca',
   }).format(match.kickoffAt);
+  // Date-only label for the answer/preview prose — the exact kickoff time (viewer-local) lives in
+  // the match card + MATCH INFO, so the prose never states a clock that contradicts it.
+  const dateLabel = new Intl.DateTimeFormat(bcp, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'Africa/Casablanca',
+  }).format(match.kickoffAt);
+  const homeFormStr = prefetch.homeForm.length ? prefetch.homeForm.slice(0, 5).join('') : null;
+  const awayFormStr = prefetch.awayForm.length ? prefetch.awayForm.slice(0, 5).join('') : null;
   const stateWord = (
     {
       finished: { fr: 'Terminé', en: 'Finished', ar: 'انتهت' },
@@ -375,12 +390,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
       upcoming: { fr: 'À venir', en: 'Upcoming', ar: 'قادمة' },
     } as const
   )[narrativeState][typedLocale];
-  const stateColor =
-    narrativeState === 'live'
-      ? 'text-accent-crimson'
-      : narrativeState === 'finished'
-        ? 'text-accent-green'
-        : 'text-accent-azure';
   const bylineWord = ({ fr: 'publié le', en: 'published', ar: 'نُشر في' } as const)[typedLocale];
   const secLabels = (
     {
@@ -461,24 +470,36 @@ export default async function MatchDetailPage({ params }: PageProps) {
     homeScore: match.homeScore,
     awayScore: match.awayScore,
     competition: compName,
-    kickoffLabel,
+    // Upcoming: date only (the card owns the exact kickoff). Live/finished: the full label.
+    kickoffLabel: narrativeState === 'upcoming' ? dateLabel : kickoffLabel,
     venue: match.venue?.name,
     minute: match.minute,
     locale: typedLocale,
   });
+  const previewText =
+    narrativeState === 'upcoming'
+      ? buildPreview({
+          home,
+          away,
+          competition: compName,
+          dateLabel,
+          venue: match.venue?.name,
+          h2h: h2hSummary,
+          homeRank: prefetch.homeRank,
+          awayRank: prefetch.awayRank,
+          homeForm: homeFormStr,
+          awayForm: awayFormStr,
+          locale: typedLocale,
+        })
+      : null;
   const stageRecap =
     narrativeState === 'finished'
       ? recapText
-      : narrativeState === 'upcoming'
-        ? buildPreview({
-            home,
-            away,
-            competition: compName,
-            kickoffLabel,
-            venue: match.venue?.name,
-            h2h: h2hSummary,
-            locale: typedLocale,
-          })
+      : // Only show the preview paragraph when it adds something beyond the answer one-liner.
+        narrativeState === 'upcoming'
+        ? previewText && previewText !== answerText
+          ? previewText
+          : null
         : buildLiveNarrative({
             home,
             away,
@@ -550,12 +571,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
             awayScore: match.awayScore,
           })}
         </h1>
-        <p className="mb-1 px-1 text-xs text-text-tertiary">
-          <span className={`font-semibold uppercase tracking-wide ${stateColor}`}>{stateWord}</span>
-          {` · ${compName}`}
-          {match.round ? ` · ${match.round}` : ''}
-          {` · ${dateShort}`}
-        </p>
         <JsonLd
           graph={buildGraph(
             buildWebPage({
