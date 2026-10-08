@@ -8,12 +8,25 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { stripWomenSuffix, getNationalFlagUrl } from '@/lib/team-display';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
+import { useMounted } from '@/hooks/useMounted';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
 
 type FeatureTag = NonNullable<HomeFixture['featureTag']>;
+
+// Purely statusCode-derived match state — no kickoff-vs-now comparison. Used for the first
+// render (server shell + the client's first paint) so both agree regardless of the clock; the
+// time-aware getMatchState takes over after mount. getMatchState is time-dependent ONLY in its
+// "kickoff already passed" fallback for scheduled codes, so calling it with a far-future kickoff
+// yields the code-only state (live/finished/interrupted by code, everything else upcoming).
+// Without this, a PPR/ISR shell prerendered before a kickoff/live boundary hydrates against a
+// client past that boundary → the hero slide structure flips → hydration mismatch (#418).
+const FAR_FUTURE = new Date('2999-01-01T00:00:00Z');
+function codeMatchState(statusCode: string) {
+  return getMatchState(statusCode, FAR_FUTURE);
+}
 
 interface Props {
   matches: HomeFixture[];
@@ -97,19 +110,23 @@ function computeCountdown(kickoffAt: Date) {
  * "Match of the day" badge; other slides read "Featured".
  */
 export function HomeFeatured({ matches, locale, labels }: Props) {
+  const mounted = useMounted();
   const livePatches = useLiveFixtures();
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const patched = matches.map((m) => applyPatch(m, livePatches.get(m.id)));
-  const notFinished = patched.filter(
-    (m) => getMatchState(m.statusCode, m.kickoffAt) !== 'finished',
-  );
+  // Reshape by match state. Before mount use the code-only state so the server shell and the
+  // client's first render agree; after mount the time-aware getMatchState drops finished slides
+  // and pulls live to the front. Deferring the clock-dependent reshape avoids a #418 mismatch.
+  const stateOf = (m: HomeFixture) =>
+    mounted ? getMatchState(m.statusCode, m.kickoffAt) : codeMatchState(m.statusCode);
+  const notFinished = patched.filter((m) => stateOf(m) !== 'finished');
   const base = notFinished.length > 0 ? notFinished : patched;
   // Live-first: a match in progress always leads; the rest keep the server ranking.
-  const live = base.filter((m) => getMatchState(m.statusCode, m.kickoffAt) === 'live');
-  const upcoming = base.filter((m) => getMatchState(m.statusCode, m.kickoffAt) !== 'live');
+  const live = base.filter((m) => stateOf(m) === 'live');
+  const upcoming = base.filter((m) => stateOf(m) !== 'live');
   const view = [...live, ...upcoming].slice(0, 8);
   const matchOfDayId = matches[0]?.id ?? null;
 
@@ -245,6 +262,7 @@ function HeroCard({
   labels: Props['labels'];
   isLead: boolean;
 }) {
+  const mounted = useMounted();
   const [remaining, setRemaining] = useState(() => computeCountdown(match.kickoffAt));
   const [prevKo, setPrevKo] = useState(match.kickoffAt.getTime());
   if (prevKo !== match.kickoffAt.getTime()) {
@@ -259,7 +277,12 @@ function HeroCard({
   const homeName = stripWomenSuffix(getTeamDisplayName(match.homeTeam, locale));
   const awayName = stripWomenSuffix(getTeamDisplayName(match.awayTeam, locale));
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
-  const state = getMatchState(match.statusCode, match.kickoffAt);
+  // Code-only state until mount so the prerendered shell and the first client render agree
+  // (see codeMatchState); the time-aware state takes over after hydration, flipping the slide
+  // to live/finished without a #418 structural mismatch.
+  const state = mounted
+    ? getMatchState(match.statusCode, match.kickoffAt)
+    : codeMatchState(match.statusCode);
   const isLive = state === 'live';
   const showScore = isLive && match.homeScore != null && match.awayScore != null;
   const allGoals = match.goals ?? [];

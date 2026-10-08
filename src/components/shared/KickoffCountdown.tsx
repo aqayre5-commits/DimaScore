@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useMounted } from '@/hooks/useMounted';
 
 interface KickoffCountdownProps {
   kickoffAt: Date;
@@ -22,6 +23,7 @@ function computeRemaining(kickoffAt: Date) {
 }
 
 export function KickoffCountdown({ kickoffAt, label, compact }: KickoffCountdownProps) {
+  const mounted = useMounted();
   const [remaining, setRemaining] = useState(() => computeRemaining(kickoffAt));
 
   useEffect(() => {
@@ -38,12 +40,17 @@ export function KickoffCountdown({ kickoffAt, label, compact }: KickoffCountdown
     return () => clearInterval(id);
   }, [kickoffAt]);
 
-  if (!remaining) return null;
+  // Only drop the countdown after mount. On the server and the client's first render always
+  // render the box structure, so a PPR/ISR shell prerendered before kickoff still matches a
+  // client that hydrates after kickoff — returning null here would be a structural #418 mismatch
+  // (suppressHydrationWarning on the digits only forgives text, not a removed subtree).
+  if (mounted && !remaining) return null;
 
+  const r = remaining ?? { days: 0, hours: 0, minutes: 0, seconds: 0 };
   const units = [
-    { value: remaining.days, unit: 'D' },
-    { value: remaining.hours, unit: 'H' },
-    { value: remaining.minutes, unit: 'M' },
+    { value: r.days, unit: 'D' },
+    { value: r.hours, unit: 'H' },
+    { value: r.minutes, unit: 'M' },
   ];
 
   if (compact) {

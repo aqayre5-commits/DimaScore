@@ -51,20 +51,21 @@ function TabIcon({ name }: { name?: string }) {
 
 export function CenterTabs({ tabs }: CenterTabsProps) {
   const t = useTranslations('tournament');
-  const [activeKey, setActiveKey] = useState<string>(() => {
-    if (typeof window === 'undefined') return tabs[0]?.key ?? '';
-    const hash = window.location.hash.slice(1);
-    return matchTabByHash(tabs, hash)?.key ?? tabs[0]?.key ?? '';
-  });
+  // Always default to the first tab on the server AND the client's first render. Reading
+  // window.location.hash in the initializer would make a #hash deep-link select a different
+  // tab on the client than the server's default → hydration mismatch (React #418). The hash
+  // is applied after mount instead (below), which still supports deep-links.
+  const [activeKey, setActiveKey] = useState<string>(() => tabs[0]?.key ?? '');
 
   useEffect(() => {
-    function onHashChange() {
+    function applyHash() {
       const hash = window.location.hash.slice(1);
       const match = matchTabByHash(tabs, hash);
       if (match) setActiveKey(match.key);
     }
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
+    applyHash(); // deep-link support, post-hydration
+    window.addEventListener('hashchange', applyHash);
+    return () => window.removeEventListener('hashchange', applyHash);
   }, [tabs]);
 
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
