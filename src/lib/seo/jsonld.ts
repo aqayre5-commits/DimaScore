@@ -35,12 +35,8 @@ export function buildOrganization(baseUrl: string): JsonLdNode {
     name: 'DimaScore',
     url: `${baseUrl}/`,
     logo: { '@type': 'ImageObject', url: `${baseUrl}/dimascore-logo.svg` },
-    sameAs: [
-      'https://x.com/dimascore',
-      'https://www.instagram.com/dimascore',
-      'https://www.youtube.com/@dimascore',
-      'https://www.tiktok.com/@dimascore',
-    ],
+    // Only confirmed accounts. Instagram/YouTube/TikTok @dimascore are unconfirmed — omitted.
+    sameAs: ['https://x.com/DimaScoreMa'],
   };
 }
 

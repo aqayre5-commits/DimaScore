@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { hubOgImage } from '@/lib/seo/hub-og-image';
 import { permanentRedirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { type Locale } from '@/lib/i18n/config';
@@ -18,6 +19,8 @@ export async function generateBotolaMatchsMetadata(locale: string): Promise<Meta
   const pageUrl = `${BASE_URL}${botolaMatchsPath(typed)}`;
   const languages = botolaMatchsHreflang(BASE_URL);
 
+  const ogImage = hubOgImage('botola-matchs', locale, t('metaTitle'));
+
   return {
     title: t('metaTitle'),
     description: t('metaDescription'),
@@ -30,11 +33,13 @@ export async function generateBotolaMatchsMetadata(locale: string): Promise<Meta
       siteName: 'DimaScore',
       locale: OG_LOCALE[typed],
       type: 'website',
+      images: ogImage.og,
     },
     twitter: {
       card: 'summary_large_image' as const,
       title: t('metaTitle'),
       description: t('metaDescription'),
+      images: ogImage.twitter,
     },
   };
 }
