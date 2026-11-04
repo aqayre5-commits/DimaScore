@@ -16,7 +16,8 @@ function isConfigured(): boolean {
   return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
 }
 
-function getRedis(): Redis | null {
+/** Shared Upstash client (null when Redis isn't configured). Also used by the rate limiter. */
+export function getRedis(): Redis | null {
   if (!isConfigured()) return null;
   if (!redis) {
     redis = new Redis({

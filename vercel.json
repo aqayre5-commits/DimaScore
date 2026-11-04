@@ -3,12 +3,12 @@
   "crons": [
     { "path": "/api/cron/reference-data", "schedule": "0 3 * * *" },
     { "path": "/api/cron/teams", "schedule": "15 3 * * *" },
-    { "path": "/api/cron/fixtures-schedule", "schedule": "0,30 * * * *" },
+    { "path": "/api/cron/fixtures-schedule", "schedule": "1,31 * * * *" },
     { "path": "/api/cron/standings", "schedule": "15,45 * * * *" },
     { "path": "/api/cron/top-scorers", "schedule": "0 5 * * *" },
-    { "path": "/api/cron/fixture-details", "schedule": "*/15 * * * *" },
-    { "path": "/api/cron/live-details", "schedule": "*/15 * * * *" },
+    { "path": "/api/cron/fixture-details", "schedule": "4,19,34,49 * * * *" },
+    { "path": "/api/cron/live-details", "schedule": "7,22,37,52 * * * *" },
     { "path": "/api/cron/squads-refresh", "schedule": "0 4 * * 0" },
-    { "path": "/api/cron/finalize-stale", "schedule": "*/15 * * * *" }
+    { "path": "/api/cron/finalize-stale", "schedule": "10,25,40,55 * * * *" }
   ]
 }
