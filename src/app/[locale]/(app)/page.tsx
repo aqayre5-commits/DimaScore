@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { hubOgImage } from '@/lib/seo/hub-og-image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
+import { requireLocale } from '@/lib/i18n/require-locale';
 import { BASE_URL } from '@/lib/constants/site';
 import { Suspense } from 'react';
 import { HomeFeatured } from '@/components/homepage/HomeFeatured';
@@ -34,8 +35,8 @@ interface PageProps {
 const baseUrl = BASE_URL;
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale } = await params;
-  const typedLocale = locale as Locale;
+  const locale = requireLocale((await params).locale);
+  const typedLocale: Locale = locale;
   const t = await getTranslations({ locale, namespace: 'homepage' });
   const title = t('metaTitle');
   const description = t('metaDescription');
@@ -119,9 +120,9 @@ async function getCachedHomepagePrimary() {
 // ── Page ──
 
 export default async function HomePage({ params }: PageProps) {
-  const { locale } = await params;
+  const locale = requireLocale((await params).locale);
   setRequestLocale(locale);
-  const typedLocale = locale as Locale;
+  const typedLocale: Locale = locale;
   const [{ featured, matchesByCategory, leftRailComps }, railPrimary, t] = await Promise.all([
     getCachedHomepagePrimary(),
     getHomeRailPrimary(typedLocale),
