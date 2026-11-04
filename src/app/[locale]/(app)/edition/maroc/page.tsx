@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { hubOgImage } from '@/lib/seo/hub-og-image';
 import { getTranslations } from 'next-intl/server';
 import { locales, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
@@ -86,6 +87,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   languages['x-default'] = `${BASE_URL}/fr/edition/maroc`;
 
+  const ogImage = hubOgImage('edition-maroc', locale, title);
+
   return {
     title,
     description,
@@ -98,11 +101,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'DimaScore',
       locale: typedLocale === 'fr' ? 'fr_MA' : typedLocale === 'ar' ? 'ar_MA' : 'en',
       type: 'website',
+      images: ogImage.og,
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: ogImage.twitter,
     },
   };
 }

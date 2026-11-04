@@ -79,24 +79,20 @@ function TiktokIcon({ className }: { className?: string }) {
   );
 }
 
-const socialLinks = [
-  { Icon: XIcon, href: 'https://x.com/dimascore', label: 'X' },
-  {
-    Icon: InstagramIcon,
-    href: 'https://instagram.com/dimascore',
-    label: 'Instagram',
-  },
-  {
-    Icon: YoutubeIcon,
-    href: 'https://youtube.com/@dimascore',
-    label: 'YouTube',
-  },
-  {
-    Icon: TiktokIcon,
-    href: 'https://tiktok.com/@dimascore',
-    label: 'TikTok',
-  },
+// Confirmed official DimaScore account.
+const CONFIRMED_SOCIAL_LINKS = [
+  { Icon: XIcon, href: 'https://x.com/DimaScoreMa', label: 'X' },
 ] as const;
+
+// UNCONFIRMED: these @dimascore handles have not been confirmed as DimaScore's own accounts,
+// so they are intentionally NOT rendered. Move an entry into CONFIRMED_SOCIAL_LINKS once confirmed.
+export const UNCONFIRMED_SOCIAL_LINKS = [
+  { Icon: InstagramIcon, href: 'https://instagram.com/dimascore', label: 'Instagram' },
+  { Icon: YoutubeIcon, href: 'https://youtube.com/@dimascore', label: 'YouTube' },
+  { Icon: TiktokIcon, href: 'https://tiktok.com/@dimascore', label: 'TikTok' },
+] as const;
+
+const socialLinks = CONFIRMED_SOCIAL_LINKS;
 
 // Coverage columns — titleKey is a `megaMenu` i18n key; ids resolve to canonical localized
 // competition entries via the mega-menu (single source of truth for slugs), so links never drift.

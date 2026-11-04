@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { hubOgImage } from '@/lib/seo/hub-og-image';
 import Link from 'next/link';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
@@ -44,6 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const languages: Record<string, string> = {};
   for (const loc of locales) languages[loc] = `${BASE_URL}/${loc}/lions-abroad`;
   languages['x-default'] = `${BASE_URL}/${defaultLocale}/lions-abroad`;
+  const ogImage = hubOgImage('lions-abroad', locale, meta.title);
   return {
     title: meta.title,
     description: meta.description,
@@ -56,6 +58,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'DimaScore',
       locale: typed === 'fr' ? 'fr_FR' : typed === 'ar' ? 'ar_MA' : 'en_US',
       type: 'website',
+      images: ogImage.og,
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      title: meta.title,
+      description: meta.description,
+      images: ogImage.twitter,
     },
   };
 }

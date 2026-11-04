@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { hubOgImage } from '@/lib/seo/hub-og-image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
@@ -46,6 +47,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   languages['x-default'] = `${baseUrl}/${defaultLocale}`;
 
+  const ogImage = hubOgImage('home', locale, title);
+
   return {
     title,
     description,
@@ -58,11 +61,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'DimaScore',
       locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
       type: 'website',
+      images: ogImage.og,
     },
     twitter: {
       card: 'summary_large_image' as const,
       title,
       description,
+      images: ogImage.twitter,
     },
   };
 }
