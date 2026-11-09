@@ -3,8 +3,8 @@
 import { useSyncExternalStore } from 'react';
 import type { Locale } from '@/lib/i18n/config';
 import {
+  formatServerKickoff,
   formatViewerKickoff,
-  KICKOFF_PLACEHOLDER,
   type KickoffTimeFormat,
 } from '@/lib/utils/local-time';
 
@@ -18,11 +18,13 @@ interface Props {
 }
 
 /**
- * Kickoff clock: viewer-local only.
+ * Kickoff clock.
  *
- * SSR / first paint: `<time datetime={iso}>` + a transparent placeholder (never
- * Africa/Casablanca, venue TZ, server TZ, or UTC). After mount, format in the
- * viewer's zone. Placeholder → local is OK; wrong-zone → local is not.
+ * SSR + the client's first render: the real kickoff in the site zone (Africa/Casablanca), inside
+ * `<time datetime={iso}>` — so crawlers and no-JS readers see a true date/time instead of a
+ * "Sat 00 Jan · 00:00" placeholder. Both sides format with the same fixed zone, so hydration is
+ * deterministic; after mount it switches to the viewer's own zone. `suppressHydrationWarning`
+ * covers tiny ICU punctuation differences between Node and the browser.
  */
 const emptySubscribe = () => () => {};
 
@@ -34,16 +36,15 @@ export function LocalTime({ date, locale, format, dateOptions, className }: Prop
   );
 
   const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return null;
   const iso = d.toISOString();
   const text = mounted
     ? formatViewerKickoff(d, locale, format, dateOptions)
-    : KICKOFF_PLACEHOLDER[format];
+    : formatServerKickoff(d, locale, format, dateOptions);
 
   return (
     <time dateTime={iso} className={className}>
-      <span className={mounted ? undefined : 'invisible tabular-nums'} aria-hidden={!mounted}>
-        {text}
-      </span>
+      <span suppressHydrationWarning>{text}</span>
     </time>
   );
 }
