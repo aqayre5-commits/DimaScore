@@ -15,6 +15,7 @@ import { getPusherClient } from '@/lib/realtime/pusher-client';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { useMounted } from '@/hooks/useMounted';
 import type { Locale } from '@/lib/i18n/config';
 import type { FixtureStatus } from '@/lib/data/types';
 
@@ -208,6 +209,10 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('topStrip');
+  // Client-only: the strip is identical site-wide boilerplate (~30 team codes + times) that used
+  // to sit at the top of every page's server HTML. Rendering it after mount keeps it out of what
+  // crawlers index while users still get it on first paint after hydration.
+  const mounted = useMounted();
 
   const queryClient = useQueryClient();
 
@@ -265,7 +270,9 @@ export function TickerStrip({ fixtures, locale }: TickerStripProps) {
     const copyWidth = copy.offsetWidth;
     const duration = Math.max(10, copyWidth / 60);
     track.style.setProperty('--ticker-duration', `${duration}s`);
-  }, [renderable.length]);
+  }, [renderable.length, mounted]);
+
+  if (!mounted) return <div className="h-full" aria-hidden="true" />;
 
   if (renderable.length === 0) {
     return (

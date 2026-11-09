@@ -1,5 +1,6 @@
 import type { Locale } from '@/lib/i18n/config';
 import {
+  SITE_TZ,
   formatFeaturedDate,
   formatKickoff,
   formatMatchDate,
@@ -8,18 +9,9 @@ import {
 
 export type KickoffTimeFormat = 'time' | 'date' | 'kickoff' | 'featured';
 
-/** Neutral placeholders — never a fixed-zone clock. Width-matched for layout. */
-export const KICKOFF_PLACEHOLDER: Record<KickoffTimeFormat, string> = {
-  time: '00:00',
-  date: 'Sat 00 Jan',
-  kickoff: 'Sat 00 Jan · 00:00',
-  featured: 'SAT 00 JANUARY · 00:00',
-};
-
 /**
  * Viewer-local (or explicit IANA zone) kickoff formatter.
- * Callers that render clocks MUST omit `timeZone` on the client so Intl uses
- * the viewer's zone. Do not pass Africa/Casablanca, venue TZ, or UTC.
+ * After mount, callers omit `timeZone` so Intl uses the viewer's zone.
  */
 export function formatViewerKickoff(
   date: Date,
@@ -38,4 +30,19 @@ export function formatViewerKickoff(
     case 'featured':
       return formatFeaturedDate(date, locale, timeZone);
   }
+}
+
+/**
+ * Server-render / first-paint kickoff: the real time in the site zone (Africa/Casablanca).
+ * Deterministic on server and client (fixed zone), so it hydrates cleanly; <LocalTime> then
+ * swaps to the viewer's zone after mount. Replaces the old "Sat 00 Jan · 00:00" placeholders
+ * that crawlers indexed as the page's date.
+ */
+export function formatServerKickoff(
+  date: Date,
+  locale: Locale,
+  format: KickoffTimeFormat,
+  dateOptions?: Intl.DateTimeFormatOptions,
+): string {
+  return formatViewerKickoff(date, locale, format, dateOptions, SITE_TZ);
 }
