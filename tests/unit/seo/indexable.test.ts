@@ -15,7 +15,9 @@ const dialect = new PgDialect();
 const render = (q: SQL) => dialect.sqlToQuery(q).sql.replace(/\s+/g, ' ');
 
 function fakeDb(indexable: boolean) {
-  const execute = vi.fn(async (_q: SQL) => ({ rows: [{ indexable }] }));
+  const execute = vi.fn<(q: SQL) => Promise<{ rows: { indexable: boolean }[] }>>(async () => ({
+    rows: [{ indexable }],
+  }));
   return { db: { execute } as never, execute };
 }
 
