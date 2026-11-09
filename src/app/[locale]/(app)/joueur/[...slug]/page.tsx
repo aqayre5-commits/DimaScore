@@ -65,10 +65,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     player.name[typedLocale] ||
     player.name['en'] ||
     playerSlug;
-  // Data-gate indexing: only index players with a real data signal (current team, season stats,
-  // transfer or trophy). Placeholder "unknown-%" slugs and empty profiles stay noindex. Mirrors
-  // playerIndexableSitemapCondition so the page and sitemap agree.
-  const indexable = await isPlayerIndexable(db, player.id, player.slug, player.currentTeam != null);
+  // Index policy (src/lib/seo/indexable.ts): Moroccan nationals, or a current team + current/
+  // previous-season stats. Runs the same SQL as the sitemap, so page and sitemap agree.
+  const indexable = await isPlayerIndexable(db, player.id, player.slug);
   const { title, description } = buildPlayerMeta({ player: name, locale });
   // Canonical uses the resolved stored slug (not the requested one) so a soft-rendered variant
   // still declares the true URL — the SEO consolidation signal, alongside the self-heal redirect.

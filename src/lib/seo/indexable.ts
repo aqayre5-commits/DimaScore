@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { sql } from 'drizzle-orm';
+import { sql, type SQL } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '@/lib/db/schema';
 
@@ -9,38 +9,44 @@ type DB = NeonHttpDatabase<typeof schema>;
  * Indexability gates — keep thin/empty entity pages out of Google's index (and the sitemap).
  *
  * The SAME rule must apply in two places: a page's `generateMetadata` (`robots.index`) and the
- * sitemap WHERE. To avoid drift, each entity's rule lives here once — a `sql` condition for the
- * sitemap query and a matching per-id helper for `generateMetadata`.
+ * sitemap WHERE. Each entity's rule lives here once as a `sql` condition; the per-id helpers run
+ * that exact fragment (`SELECT <condition> FROM <table> WHERE id = …`), so page and sitemap can't
+ * drift.
  *
- * Player rule (approved): indexable if the slug is real (not the "unknown-%" placeholder) AND the
- * player has at least one real data signal — a current team, OR season stats, OR a transfer, OR a
- * trophy. Everything else is noindex + de-sitemapped.
+ * Player rule (Phase 17 index policy): indexable if the slug is real (not "unknown-%") AND either
+ *   - Moroccan nationality (`nationality_code = 'MA'`, Lions Abroad), OR
+ *   - a current team AND season stats for the current or previous season.
+ * Everything else is noindex,follow + de-sitemapped.
  */
+
+/** Current football season start year (Jul–Jun): Nov 2026 → 2026, Mar 2027 → 2026. */
+const CURRENT_SEASON_YEAR = sql`(EXTRACT(YEAR FROM NOW() - INTERVAL '6 months')::int)`;
+
 export const playerIndexableSitemapCondition = sql`(
   ${schema.players.slug} NOT LIKE 'unknown-%'
   AND (
-    ${schema.players.currentTeamId} IS NOT NULL
-    OR EXISTS (SELECT 1 FROM player_season_stats pss WHERE pss.player_id = ${schema.players.id})
-    OR EXISTS (SELECT 1 FROM transfers tr WHERE tr.player_id = ${schema.players.id})
-    OR EXISTS (SELECT 1 FROM player_trophies ptr WHERE ptr.player_id = ${schema.players.id})
+    ${schema.players.nationalityCode} = 'MA'
+    OR (
+      ${schema.players.currentTeamId} IS NOT NULL
+      AND EXISTS (
+        SELECT 1 FROM player_season_stats pss
+        WHERE pss.player_id = ${schema.players.id}
+          AND pss.season_year >= ${CURRENT_SEASON_YEAR} - 1
+      )
+    )
   )
 )`;
 
-/** Matches `playerIndexableSitemapCondition` for a single player. `hasCurrentTeam` short-circuits
- * the common indexable case so no query runs for players who already have a team. */
+/** Same rule as `playerIndexableSitemapCondition`, for one player (runs the identical SQL). */
 export const isPlayerIndexable = cache(async function isPlayerIndexable(
   db: DB,
   id: number,
   slug: string,
-  hasCurrentTeam: boolean,
 ): Promise<boolean> {
   if (slug.startsWith('unknown-')) return false;
-  if (hasCurrentTeam) return true;
-  const res = await db.execute(sql`SELECT (
-    EXISTS (SELECT 1 FROM player_season_stats WHERE player_id = ${id})
-    OR EXISTS (SELECT 1 FROM transfers WHERE player_id = ${id})
-    OR EXISTS (SELECT 1 FROM player_trophies WHERE player_id = ${id})
-  ) AS indexable`);
+  const res = await db.execute(
+    sql`SELECT ${playerIndexableSitemapCondition} AS indexable FROM players WHERE ${schema.players.id} = ${id}`,
+  );
   return Boolean((res.rows[0] as { indexable: boolean } | undefined)?.indexable);
 });
 
@@ -68,29 +74,85 @@ export const isTeamIndexable = cache(async function isTeamIndexable(
 });
 
 /**
- * Match rule (approved): indexable if it belongs to a featured/covered competition (World Cup,
- * AFCON, WAFCON, Botola Pro, Botola 2, Coupe du Trône) OR it has real match data (events, lineups
- * or statistics). No-data fixtures in uncovered leagues (e.g. far-future previews) stay noindex.
+ * Match rule (Phase 17 index policy). A match page is indexable iff:
+ *   1. it is in a featured competition (WC 1, AFCON 6, WAFCON 922, Botola Pro 200, Botola 2 201,
+ *      Coupe du Trône 822) — any age, any data; OR
+ *   2. ALL of:
+ *      a. not a youth/women fixture (competition.is_women, team.is_women, or a team name with
+ *         U15–U23 / " W" / Women / Ladies);
+ *      b. not a finished game (FT/AET/PEN/AWD/WO) with no events AND no lineups;
+ *      c. and one of:
+ *         - top-tier competition (UCL 2, UEL 3, UECL 848, PL 39, LaLiga 140, Bundesliga 78,
+ *           Serie A 135, Ligue 1 61) with kickoff in [now − 180 days, now + 14 days];
+ *         - Morocco (team 31) plays;
+ *         - a senior men's national side plays (team.is_national and not youth/women).
+ * Everything else is noindex,follow and out of the sitemap.
  */
 export const FEATURED_COMPETITION_IDS: number[] = [1, 6, 922, 200, 201, 822];
+export const TOP_TIER_COMPETITION_IDS: number[] = [2, 3, 848, 39, 140, 78, 135, 61];
+export const MOROCCO_TEAM_ID = 31;
+export const TOP_TIER_PAST_DAYS = 180;
+export const TOP_TIER_FUTURE_DAYS = 14;
 
-export const matchIndexableSitemapCondition = sql`(
-  ${schema.fixtures.competitionId} IN (1, 6, 922, 200, 201, 822)
-  OR EXISTS (SELECT 1 FROM fixture_events fe WHERE fe.fixture_id = ${schema.fixtures.id})
-  OR EXISTS (SELECT 1 FROM fixture_lineups fl WHERE fl.fixture_id = ${schema.fixtures.id})
-  OR EXISTS (SELECT 1 FROM fixture_statistics fsx WHERE fsx.fixture_id = ${schema.fixtures.id})
+/** Team-name pattern for youth / women sides (API-Football English names). */
+const YOUTH_OR_WOMEN_NAME_RE = String.raw`(\mU-?(1[5-9]|2[0-3])\M|\sW$|women|ladies)`;
+
+const idList = (ids: number[]) => sql.raw(ids.map((n) => String(Math.trunc(n))).join(', '));
+
+/** True when team `col` is a youth or women side. */
+const youthOrWomenTeam = (col: SQL) => sql`EXISTS (
+  SELECT 1 FROM teams yt WHERE yt.id = ${col}
+    AND (COALESCE(yt.is_women, false) OR (yt.name->>'en') ~* ${sql.raw(`'${YOUTH_OR_WOMEN_NAME_RE}'`)})
 )`;
 
+/** True when team `col` is a senior men's national side. */
+const seniorNationalTeam = (col: SQL) => sql`EXISTS (
+  SELECT 1 FROM teams nt WHERE nt.id = ${col}
+    AND COALESCE(nt.is_national, false)
+    AND NOT COALESCE(nt.is_women, false)
+    AND NOT ((nt.name->>'en') ~* ${sql.raw(`'${YOUTH_OR_WOMEN_NAME_RE}'`)})
+)`;
+
+const homeCol = sql`${schema.fixtures.homeTeamId}`;
+const awayCol = sql`${schema.fixtures.awayTeamId}`;
+
+export const matchIndexableSitemapCondition = sql`(
+  ${schema.fixtures.competitionId} IN (${idList(FEATURED_COMPETITION_IDS)})
+  OR (
+    NOT EXISTS (
+      SELECT 1 FROM competitions wc
+      WHERE wc.id = ${schema.fixtures.competitionId} AND COALESCE(wc.is_women, false)
+    )
+    AND NOT ${youthOrWomenTeam(homeCol)}
+    AND NOT ${youthOrWomenTeam(awayCol)}
+    AND NOT (
+      ${schema.fixtures.statusCode} IN ('FT', 'AET', 'PEN', 'AWD', 'WO')
+      AND NOT EXISTS (SELECT 1 FROM fixture_events fe WHERE fe.fixture_id = ${schema.fixtures.id})
+      AND NOT EXISTS (SELECT 1 FROM fixture_lineups fl WHERE fl.fixture_id = ${schema.fixtures.id})
+    )
+    AND (
+      (
+        ${schema.fixtures.competitionId} IN (${idList(TOP_TIER_COMPETITION_IDS)})
+        AND ${schema.fixtures.kickoffAt} >= NOW() - INTERVAL '${sql.raw(String(TOP_TIER_PAST_DAYS))} days'
+        AND ${schema.fixtures.kickoffAt} <= NOW() + INTERVAL '${sql.raw(String(TOP_TIER_FUTURE_DAYS))} days'
+      )
+      OR ${homeCol} = ${sql.raw(String(MOROCCO_TEAM_ID))}
+      OR ${awayCol} = ${sql.raw(String(MOROCCO_TEAM_ID))}
+      OR ${seniorNationalTeam(homeCol)}
+      OR ${seniorNationalTeam(awayCol)}
+    )
+  )
+)`;
+
+/** Same rule as `matchIndexableSitemapCondition`, for one fixture (runs the identical SQL). */
 export const isMatchIndexable = cache(async function isMatchIndexable(
   db: DB,
   fixtureId: number,
   competitionId: number | null | undefined,
 ): Promise<boolean> {
   if (competitionId != null && FEATURED_COMPETITION_IDS.includes(competitionId)) return true;
-  const res = await db.execute(sql`SELECT (
-    EXISTS (SELECT 1 FROM fixture_events WHERE fixture_id = ${fixtureId})
-    OR EXISTS (SELECT 1 FROM fixture_lineups WHERE fixture_id = ${fixtureId})
-    OR EXISTS (SELECT 1 FROM fixture_statistics WHERE fixture_id = ${fixtureId})
-  ) AS indexable`);
+  const res = await db.execute(
+    sql`SELECT ${matchIndexableSitemapCondition} AS indexable FROM fixtures WHERE ${schema.fixtures.id} = ${fixtureId}`,
+  );
   return Boolean((res.rows[0] as { indexable: boolean } | undefined)?.indexable);
 });
