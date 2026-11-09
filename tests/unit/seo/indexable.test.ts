@@ -4,6 +4,7 @@ import type { SQL } from 'drizzle-orm';
 import {
   FEATURED_COMPETITION_IDS,
   TOP_TIER_COMPETITION_IDS,
+  TOP_WOMEN_COMPETITION_IDS,
   isMatchIndexable,
   isPlayerIndexable,
   matchIndexableSitemapCondition,
@@ -31,6 +32,21 @@ describe('match index policy SQL', () => {
     expect(q).toContain('"fixtures"."competition_id" IN (2, 3, 848, 39, 140, 78, 135, 61)');
     expect(q).toContain(`"fixtures"."kickoff_at" >= NOW() - INTERVAL '180 days'`);
     expect(q).toContain(`"fixtures"."kickoff_at" <= NOW() + INTERVAL '14 days'`);
+  });
+
+  it('keeps top women competitions in the same window, exempt from the youth/women rule', () => {
+    // UWCL 525, WSL 44, Liga F 142, Frauen-Bundesliga 82, Serie A Women 139, D1 Arkema 64, WWC 8
+    expect(TOP_WOMEN_COMPETITION_IDS).toEqual([525, 44, 142, 82, 139, 64, 8]);
+    const women = q.indexOf('"fixtures"."competition_id" IN (525, 44, 142, 82, 139, 64, 8)');
+    expect(women).toBeGreaterThan(0);
+    // The women branch is OR-ed in *before* (outside) the youth/women exclusion…
+    const youthRule = q.indexOf('COALESCE(wc.is_women, false)');
+    expect(women).toBeLessThan(youthRule);
+    expect(q.slice(women, youthRule)).toMatch(
+      /AND \( "fixtures"\."kickoff_at" >= NOW\(\) - INTERVAL '180 days' AND "fixtures"\."kickoff_at" <= NOW\(\) \+ INTERVAL '14 days' \) \) OR \( NOT EXISTS/,
+    );
+    // …but still behind the finished-with-no-data gate.
+    expect(q.indexOf(`"fixtures"."status_code" IN`)).toBeLessThan(women);
   });
 
   it('keeps Morocco and senior national sides', () => {

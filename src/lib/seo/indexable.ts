@@ -77,11 +77,11 @@ export const isTeamIndexable = cache(async function isTeamIndexable(
  * Match rule (Phase 17 index policy). A match page is indexable iff:
  *   1. it is in a featured competition (WC 1, AFCON 6, WAFCON 922, Botola Pro 200, Botola 2 201,
  *      Coupe du Trône 822) — any age, any data; OR
- *   2. ALL of:
- *      a. not a youth/women fixture (competition.is_women, team.is_women, or a team name with
- *         U15–U23 / " W" / Women / Ladies);
- *      b. not a finished game (FT/AET/PEN/AWD/WO) with no events AND no lineups;
- *      c. and one of:
+ *   2. it is not a finished game (FT/AET/PEN/AWD/WO) with no events AND no lineups, AND one of:
+ *      a. top women's competition (TOP_WOMEN_COMPETITION_IDS) with kickoff in
+ *         [now − 180 days, now + 14 days] — exempt from the youth/women rule below;
+ *      b. not a youth/women fixture (competition.is_women, team.is_women, or a team name with
+ *         U15–U23 / " W" / Women / Ladies) AND one of:
  *         - top-tier competition (UCL 2, UEL 3, UECL 848, PL 39, LaLiga 140, Bundesliga 78,
  *           Serie A 135, Ligue 1 61) with kickoff in [now − 180 days, now + 14 days];
  *         - Morocco (team 31) plays;
@@ -90,6 +90,13 @@ export const isTeamIndexable = cache(async function isTeamIndexable(
  */
 export const FEATURED_COMPETITION_IDS: number[] = [1, 6, 922, 200, 201, 822];
 export const TOP_TIER_COMPETITION_IDS: number[] = [2, 3, 848, 39, 140, 78, 135, 61];
+/**
+ * Top women's competitions (API-Football league ids, verified in the DB): UEFA Champions League
+ * Women 525, FA WSL 44, Liga F ("Primera División Femenina") 142, Frauen-Bundesliga 82,
+ * Serie A Women 139, Première Ligue / D1 Arkema ("Feminine Division 1") 64, Women's World Cup 8.
+ * (Women's Euro isn't in the competitions table yet — add its id here once ingested.)
+ */
+export const TOP_WOMEN_COMPETITION_IDS: number[] = [525, 44, 142, 82, 139, 64, 8];
 export const MOROCCO_TEAM_ID = 31;
 export const TOP_TIER_PAST_DAYS = 180;
 export const TOP_TIER_FUTURE_DAYS = 14;
@@ -116,30 +123,42 @@ const seniorNationalTeam = (col: SQL) => sql`EXISTS (
 const homeCol = sql`${schema.fixtures.homeTeamId}`;
 const awayCol = sql`${schema.fixtures.awayTeamId}`;
 
+const inRecencyWindow = sql`(
+  ${schema.fixtures.kickoffAt} >= NOW() - INTERVAL '${sql.raw(String(TOP_TIER_PAST_DAYS))} days'
+  AND ${schema.fixtures.kickoffAt} <= NOW() + INTERVAL '${sql.raw(String(TOP_TIER_FUTURE_DAYS))} days'
+)`;
+
 export const matchIndexableSitemapCondition = sql`(
   ${schema.fixtures.competitionId} IN (${idList(FEATURED_COMPETITION_IDS)})
   OR (
-    NOT EXISTS (
-      SELECT 1 FROM competitions wc
-      WHERE wc.id = ${schema.fixtures.competitionId} AND COALESCE(wc.is_women, false)
-    )
-    AND NOT ${youthOrWomenTeam(homeCol)}
-    AND NOT ${youthOrWomenTeam(awayCol)}
-    AND NOT (
+    NOT (
       ${schema.fixtures.statusCode} IN ('FT', 'AET', 'PEN', 'AWD', 'WO')
       AND NOT EXISTS (SELECT 1 FROM fixture_events fe WHERE fe.fixture_id = ${schema.fixtures.id})
       AND NOT EXISTS (SELECT 1 FROM fixture_lineups fl WHERE fl.fixture_id = ${schema.fixtures.id})
     )
     AND (
       (
-        ${schema.fixtures.competitionId} IN (${idList(TOP_TIER_COMPETITION_IDS)})
-        AND ${schema.fixtures.kickoffAt} >= NOW() - INTERVAL '${sql.raw(String(TOP_TIER_PAST_DAYS))} days'
-        AND ${schema.fixtures.kickoffAt} <= NOW() + INTERVAL '${sql.raw(String(TOP_TIER_FUTURE_DAYS))} days'
+        ${schema.fixtures.competitionId} IN (${idList(TOP_WOMEN_COMPETITION_IDS)})
+        AND ${inRecencyWindow}
       )
-      OR ${homeCol} = ${sql.raw(String(MOROCCO_TEAM_ID))}
-      OR ${awayCol} = ${sql.raw(String(MOROCCO_TEAM_ID))}
-      OR ${seniorNationalTeam(homeCol)}
-      OR ${seniorNationalTeam(awayCol)}
+      OR (
+        NOT EXISTS (
+          SELECT 1 FROM competitions wc
+          WHERE wc.id = ${schema.fixtures.competitionId} AND COALESCE(wc.is_women, false)
+        )
+        AND NOT ${youthOrWomenTeam(homeCol)}
+        AND NOT ${youthOrWomenTeam(awayCol)}
+        AND (
+          (
+            ${schema.fixtures.competitionId} IN (${idList(TOP_TIER_COMPETITION_IDS)})
+            AND ${inRecencyWindow}
+          )
+          OR ${homeCol} = ${sql.raw(String(MOROCCO_TEAM_ID))}
+          OR ${awayCol} = ${sql.raw(String(MOROCCO_TEAM_ID))}
+          OR ${seniorNationalTeam(homeCol)}
+          OR ${seniorNationalTeam(awayCol)}
+        )
+      )
     )
   )
 )`;
