@@ -554,13 +554,20 @@ export const FIFA_TO_ISO2: Record<string, string> = {
  * and the name from Intl.DisplayNames, falling back to the raw FIFA code when neither resolves.
  */
 function makeCountryResolver(locale: Locale) {
-  const display = new Intl.DisplayNames([locale], { type: 'region' });
+  // Defensive: an invalid locale tag (e.g. a bogus `[locale]` param such as "llms.txt")
+  // makes the constructor throw a RangeError; fall back to raw codes instead of crashing.
+  let display: Intl.DisplayNames | null = null;
+  try {
+    display = new Intl.DisplayNames([locale], { type: 'region' });
+  } catch {
+    display = null;
+  }
   return (code: string): { iso2: string | null; name: string } => {
     const meta = COUNTRY_META[code];
-    if (meta) return { iso2: meta.iso2, name: meta.name[locale] };
+    if (meta) return { iso2: meta.iso2, name: meta.name[locale] ?? code };
     const iso2 = FIFA_TO_ISO2[code] ?? null;
     let name = code;
-    if (iso2 && iso2.length === 2) {
+    if (display && iso2 && iso2.length === 2) {
       try {
         name = display.of(iso2.toUpperCase()) ?? code;
       } catch {

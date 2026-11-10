@@ -7,7 +7,7 @@ import { TodaysMatchLinks } from '@/components/chrome/TodaysMatchLinks';
 import { MobileBottomTabBar } from '@/components/chrome/MobileBottomTabBar';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { VisibilityRefresh } from '@/components/providers/VisibilityRefresh';
-import type { Locale } from '@/lib/i18n/config';
+import { requireLocale } from '@/lib/i18n/require-locale';
 
 export default async function AppLayout({
   children,
@@ -16,8 +16,7 @@ export default async function AppLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale: rawLocale } = await params;
-  const locale = rawLocale as Locale;
+  const locale = requireLocale((await params).locale);
   const t = await getTranslations({ locale, namespace: 'chrome' });
 
   return (
