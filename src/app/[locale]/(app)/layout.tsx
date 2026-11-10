@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { AdaptiveTopStrip } from '@/components/chrome/AdaptiveTopStrip';
 import { Topbar } from '@/components/chrome/Topbar';
 import { Footer } from '@/components/chrome/Footer';
+import { TodaysMatchLinks } from '@/components/chrome/TodaysMatchLinks';
 import { MobileBottomTabBar } from '@/components/chrome/MobileBottomTabBar';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { VisibilityRefresh } from '@/components/providers/VisibilityRefresh';
@@ -41,6 +42,9 @@ export default async function AppLayout({
       <main id="main" className="flex-1 min-w-0">
         {children}
       </main>
+      <Suspense>
+        <TodaysMatchLinks locale={locale} />
+      </Suspense>
       <Suspense>
         <Footer />
       </Suspense>

@@ -17,8 +17,8 @@ import { botolaMatchsPath } from '@/lib/seo/botola-matchs';
 import { CHUNK_SIZE, monthRange, planChunks, type SitemapChunk } from './chunks';
 
 /**
- * Sitemap data layer. Inclusion rules are unchanged from the old single-file sitemap
- * (same SITEMAP_MATCH_FILTER + indexable.ts data-gates) — only the file layout and lastmod change.
+ * Sitemap data layer. Inclusion is exactly the indexable.ts conditions (the same SQL each page's
+ * robots.index runs), so every sitemap URL is indexable and every indexable URL is in the sitemap.
  *
  * lastmod is a real data timestamp, never "now":
  *   - match:   GREATEST(updated_at, details_synced_at), capped at NOW()
@@ -32,11 +32,6 @@ type ChangeFreq = MetadataRoute.Sitemap[number]['changeFrequency'];
 type Entry = MetadataRoute.Sitemap[number];
 
 const baseUrl = BASE_URL;
-
-// Matches kept in the sitemap: last 12 months + all upcoming, plus every featured-tournament
-// match (WC 1, AFCON 6, WAFCON 922, Botola Pro 200, Botola 2 201, Coupe du Trône 822) regardless
-// of age — old non-featured league fixtures are excluded to keep crawl budget off the deep archive.
-export const SITEMAP_MATCH_FILTER = sql`(kickoff_at >= NOW() - INTERVAL '12 months' OR competition_id IN (1, 6, 922, 200, 201, 822))`;
 
 /** Real per-fixture change time, never in the future. Unqualified columns → FROM fixtures. */
 const FIXTURE_LASTMOD = sql`LEAST(GREATEST(updated_at, COALESCE(details_synced_at, updated_at)), NOW())`;
@@ -127,7 +122,7 @@ export async function getSitemapChunks(): Promise<SitemapChunk[]> {
     rows<{ month: string; n: number | string }>(sql`
       SELECT to_char(kickoff_at AT TIME ZONE 'UTC', 'YYYY-MM') AS month, COUNT(*) AS n
       FROM fixtures
-      WHERE ${SITEMAP_MATCH_FILTER} AND ${matchIndexableSitemapCondition}
+      WHERE ${matchIndexableSitemapCondition}
       GROUP BY 1`),
   ]);
   return planChunks({
@@ -144,7 +139,7 @@ export async function getSitemapIndexEntries(): Promise<{ id: string; lastModifi
     rows<{ month: string; lm: string | Date | null }>(sql`
       SELECT to_char(kickoff_at AT TIME ZONE 'UTC', 'YYYY-MM') AS month, MAX(${FIXTURE_LASTMOD}) AS lm
       FROM fixtures
-      WHERE ${SITEMAP_MATCH_FILTER} AND ${matchIndexableSitemapCondition}
+      WHERE ${matchIndexableSitemapCondition}
       GROUP BY 1`),
     rows<{ lm: string | Date | null }>(
       sql`SELECT MAX(${FIXTURE_LASTMOD}) AS lm FROM fixtures WHERE kickoff_at <= NOW()`,
@@ -299,7 +294,7 @@ async function matchEntries(month: string, page: number): Promise<Entry[]> {
     LEFT JOIN teams aw ON aw.id = fixtures.away_team_id
     WHERE fixtures.kickoff_at >= ${start.toISOString()}::timestamptz
       AND fixtures.kickoff_at < ${end.toISOString()}::timestamptz
-      AND ${SITEMAP_MATCH_FILTER} AND ${matchIndexableSitemapCondition}
+      AND ${matchIndexableSitemapCondition}
     ORDER BY fixtures.id
     LIMIT ${CHUNK_SIZE} OFFSET ${page * CHUNK_SIZE}`);
   return list.map((m) => {
