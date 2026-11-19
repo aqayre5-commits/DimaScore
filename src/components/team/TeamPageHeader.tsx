@@ -8,6 +8,7 @@ import { codeToFlag } from '@/lib/flags';
 import { slugify } from '@/lib/ingestion/slug';
 import Image from 'next/image';
 import { getTeamFlagUrl } from '@/lib/team-display';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 
 interface TeamPageHeaderProps {
   team: TeamDetail;
@@ -16,13 +17,8 @@ interface TeamPageHeaderProps {
 }
 
 function resolveTeamName(team: TeamDetail, locale: Locale): string {
-  return (
-    team.name[locale] ??
-    team.name['en'] ??
-    team.shortName[locale] ??
-    team.shortName['en'] ??
-    '\u2014'
-  );
+  const name = getTeamDisplayName(team, locale);
+  return name === 'TBD' ? '\u2014' : name;
 }
 
 export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProps) {
