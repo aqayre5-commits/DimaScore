@@ -344,14 +344,16 @@ function HeroCard({
           <div className="flex min-h-[68px] w-[128px] shrink-0 flex-col items-center justify-center gap-1.5">
             {showScore ? (
               <>
-                {/* Big neutral score, live line in red under it (I light / J dark; J adds the dot). */}
+                {/* Big neutral score, live line in red under it (I light / J dark; J adds the dot).
+                    Height: 48px score + 6px gap + 14px line = 68px = the column's min-h, the same
+                    as before R9 (40 + 6 + 16 = 62, padded to 68), so the centre never grows. */}
                 {/* Flex, not text: in RTL the home score sits on the home (right) side. */}
                 <span className="flex items-center gap-2 text-5xl font-medium leading-none tabular-nums text-text-primary">
                   <span>{match.homeScore}</span>
                   <span className="text-3xl text-text-tertiary">–</span>
                   <span>{match.awayScore}</span>
                 </span>
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-score-live">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold leading-[14px] text-score-live">
                   <span
                     aria-hidden
                     className="size-1.5 animate-pulse rounded-full bg-score-live [[data-theme=light]_&]:hidden"
