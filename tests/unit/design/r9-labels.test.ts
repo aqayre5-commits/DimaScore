@@ -74,12 +74,16 @@ describe('tournament date range', () => {
       '21 décembre 2025 – 18 janvier 2026',
     );
     const ar = formatTournamentDateRange('2025-12-21', '2026-01-18', 'ar');
-    expect(ar).toContain('ديسمبر');
-    expect(ar).toContain('يناير');
+    // Moroccan month names (دجنبر, not the ICU default ديسمبر), same helper as the #34 hub intros.
+    expect(ar).toBe('21 دجنبر 2025 – 18 يناير 2026');
+    expect(ar).not.toContain('ديسمبر');
     expect(ar).not.toMatch(/December|January/);
     // Start date comes first in logical order (rendered right-to-left on /ar).
     expect(ar.indexOf('21')).toBeLessThan(ar.indexOf('18'));
     expect(ar.indexOf('2025')).toBeLessThan(ar.indexOf('2026'));
+    expect(formatTournamentDateRange('2026-06-11', '2026-07-19', 'ar')).toBe(
+      '11 يونيو – 19 يوليوز 2026',
+    );
   });
 });
 
