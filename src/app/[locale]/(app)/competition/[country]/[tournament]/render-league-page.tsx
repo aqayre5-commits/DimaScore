@@ -35,7 +35,7 @@ import {
 } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
-import { competitionDisplayName } from '@/lib/competitions/display-name';
+import { competitionDisplayName, competitionHeading } from '@/lib/competitions/display-name';
 import { getInjuriesForCompetition } from '@/lib/db/queries/injuries';
 import { InjuriesTab } from '@/components/league/InjuriesTab';
 import { LeagueAboutCard } from '@/components/league/LeagueAboutCard';
@@ -157,7 +157,13 @@ export async function renderLeaguePage(
 
   if (!seasonYear) {
     // No season data — show coming soon
-    const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+    // Same translated name as the populated hub (AR/FR coming-soon pages got the English name).
+    const name = competitionDisplayName(
+      competition.name,
+      locale,
+      tMenu.has(entry.labelKey) ? tMenu(entry.labelKey) : null,
+      competition.slug,
+    );
     return (
       <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
         <div className="mt-8 flex flex-col items-center gap-4 text-center">
@@ -298,7 +304,8 @@ export async function renderLeaguePage(
           graph={buildGraph(
             buildWebPage({
               url: `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`,
-              name: competitionName,
+              // Matches the H1 and <title>: "Premier League 2026/27".
+              name: competitionHeading(competitionName, seasonLabel),
               locale,
               baseUrl: BASE_URL,
               type: 'CollectionPage',

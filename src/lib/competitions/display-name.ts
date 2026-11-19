@@ -19,3 +19,8 @@ export function competitionDisplayName(
   if (label) return label;
   return storedName?.en?.trim() || fallback;
 }
+
+/** H1 / CollectionPage name for a league hub: "Premier League 2026/27". */
+export function competitionHeading(displayName: string, seasonLabel: string): string {
+  return seasonLabel ? `${displayName} ${seasonLabel}` : displayName;
+}

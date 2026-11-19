@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { getPathMatch } from 'next/dist/shared/lib/router/utils/path-match';
 import { COMPETITION_TAB_REDIRECT, isSeasonSegment } from '@/lib/seo/competition-tab-redirects';
-import { competitionDisplayName } from '@/lib/competitions/display-name';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { competitionDisplayName, competitionHeading } from '@/lib/competitions/display-name';
 import { buildLeagueMeta } from '@/lib/seo/hub-metadata';
 import ar from '@/lib/i18n/messages/ar.json';
 import en from '@/lib/i18n/messages/en.json';
@@ -95,5 +97,33 @@ describe('league hub titles are standings-first in every locale', () => {
       expect(pack.leaguePage.tableHeading).toContain('{competition}');
       expect(pack.leaguePage.tableHeading).toContain('{season}');
     }
+  });
+});
+
+describe('hub heading and JSON-LD name (SEO Manager notes on #30)', () => {
+  const src = readFileSync(
+    join(
+      process.cwd(),
+      'src/app/[locale]/(app)/competition/[country]/[tournament]/render-league-page.tsx',
+    ),
+    'utf8',
+  );
+
+  it('builds "{competition} {season}" like the H1 and title', () => {
+    expect(competitionHeading('Premier League', '2026/27')).toBe('Premier League 2026/27');
+    expect(competitionHeading('البطولة الاحترافية', '2026/27')).toBe('البطولة الاحترافية 2026/27');
+    expect(competitionHeading('Botola Pro', '')).toBe('Botola Pro');
+  });
+
+  it('uses that heading as the CollectionPage name', () => {
+    expect(src).toContain('name: competitionHeading(competitionName, seasonLabel)');
+  });
+
+  it('gives the no-season (coming soon) page the translated name, not the raw stored one', () => {
+    expect(src).not.toMatch(/competition\.name\[locale\] \?\? competition\.name\['en'\]/);
+    // the translated name comes from the menu label when only English is stored
+    expect(competitionDisplayName({ en: 'Premier League' }, 'ar', 'الدوري الإنجليزي الممتاز')).toBe(
+      'الدوري الإنجليزي الممتاز',
+    );
   });
 });
