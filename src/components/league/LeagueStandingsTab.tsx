@@ -9,6 +9,7 @@ import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 import { translateStandingZoneLabel } from '@/lib/standings/zone-labels';
 import { Flag } from '@/components/shared/Flag';
 import { FormPills } from '@/components/shared/FormPills';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 
 interface LeagueStandingsTabProps {
   standings: StandingRow[];
@@ -83,8 +84,7 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
           <tbody>
             {rows.map((row) => {
               const zoneColor = getZoneColor(row.description);
-              const teamName =
-                row.team?.name[locale] ?? row.team?.name['en'] ?? row.team?.code ?? '—';
+              const teamName = row.team ? getTeamDisplayName(row.team, locale) : '—';
 
               return (
                 <tr
