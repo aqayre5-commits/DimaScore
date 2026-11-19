@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
+import { MOROCCO_TEAM_ID } from '@/lib/constants/morocco-hubs';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { buildTeamMeta } from '@/lib/seo/hub-metadata';
 import { isTeamIndexable } from '@/lib/seo/indexable';
@@ -48,8 +50,6 @@ import {
 } from '@/lib/db/queries/team';
 import { BASE_URL } from '@/lib/constants/site';
 import { cacheLife } from 'next/cache';
-import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
-import { MOROCCO_TEAM_ID } from '@/lib/constants/morocco-hubs';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
