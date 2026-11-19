@@ -39,6 +39,8 @@ interface Props {
     countdownHours: string;
     countdownMins: string;
     live: string;
+    /** "Live now" / "En direct" / "مباشر الآن" — the live line under the score (hero I/J). */
+    liveNow: string;
     noGoals: string;
     tags: Record<FeatureTag, string>;
     half: {
@@ -53,25 +55,37 @@ interface Props {
 
 type HalfLabels = Props['labels']['half'];
 
-/** Live status line for the hero center, e.g. "2nd half · 67'". */
-function heroStatusLabel(statusCode: string, minute: number | null, half: HalfLabels): string {
-  const min = minute != null ? ` · ${minute}'` : '';
+/**
+ * Live line under the hero score, live-score-card style (options I/J): "Live now 67'", or the
+ * break / extra-time / penalties label when the clock isn't the story.
+ */
+export function heroStatusParts(
+  statusCode: string,
+  minute: number | null,
+  half: HalfLabels,
+  liveNow: string,
+): { text: string; minute: number | null } {
   switch (statusCode) {
     case 'HT':
     case 'BT':
-      return half.halftime;
-    case '1H':
-      return `${half.firstHalf}${min}`;
-    case '2H':
-      return `${half.secondHalf}${min}`;
+      return { text: half.halftime, minute: null };
     case 'ET':
-      return `${half.extraTime}${min}`;
+      return { text: half.extraTime, minute };
     case 'P':
     case 'PEN':
-      return half.penalties;
+      return { text: half.penalties, minute: null };
     default:
-      return minute != null ? `${minute}'` : '';
+      return { text: liveNow, minute };
   }
+}
+
+/** The minute as its own LTR island, so "33'" keeps its apostrophe on the right in Arabic. */
+function Minute({ value }: { value: number }) {
+  return (
+    <bdi dir="ltr" className="tabular-nums">
+      {value}&apos;
+    </bdi>
+  );
 }
 
 /** Surname only, to keep hero scorer lines compact ("23' Shaw"). */
@@ -289,6 +303,7 @@ function HeroCard({
   const homeGoals = allGoals.filter((g) => g.teamId === match.homeTeamId).slice(0, 4);
   const awayGoals = allGoals.filter((g) => g.teamId === match.awayTeamId).slice(0, 4);
   const hasGoals = isLive && (homeGoals.length > 0 || awayGoals.length > 0);
+  const liveLine = heroStatusParts(match.statusCode, match.minute, labels.half, labels.liveNow);
 
   return (
     <Link
@@ -297,7 +312,7 @@ function HeroCard({
         homeSlug: match.homeTeam?.slug,
         awaySlug: match.awayTeam?.slug,
       })}
-      className="relative flex min-h-[380px] flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface"
+      className="relative flex min-h-[380px] flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface [[data-theme=light]_&]:shadow-[0_1px_2px_rgb(15_26_36/0.06),0_4px_14px_rgb(15_26_36/0.04)]"
     >
       {/* Left badge — always the featured / match-of-day marker */}
       <div className="absolute start-4 top-4 z-10">
@@ -305,20 +320,13 @@ function HeroCard({
           ★ {isLead ? labels.matchOfDay : labels.featured}
         </span>
       </div>
-      {/* Right badge — LIVE when live, otherwise the why-featured tag */}
+      {/* Right badge — the why-featured tag. Live state is shown under the score (I/J), not as a pill. */}
       <div className="absolute end-4 top-4 z-10">
-        {isLive ? (
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-score-live px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
-            <span className="size-1.5 animate-pulse rounded-full bg-white" />
-            {labels.live}
-          </span>
-        ) : (
-          match.featureTag && <TagChip tag={match.featureTag} labels={labels} />
-        )}
+        {match.featureTag && <TagChip tag={match.featureTag} labels={labels} />}
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center px-4 pb-2 pt-12 text-center sm:px-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+        <p className="text-sm font-medium text-text-secondary">
           {compName}
           {match.contextLabel && (
             <span className="text-text-tertiary"> · {match.contextLabel}</span>
@@ -336,11 +344,20 @@ function HeroCard({
           <div className="flex min-h-[68px] w-[128px] shrink-0 flex-col items-center justify-center gap-1.5">
             {showScore ? (
               <>
-                <span className="text-4xl font-black tabular-nums tracking-tight text-accent-azure">
-                  {match.homeScore} - {match.awayScore}
+                {/* Big neutral score, live line in red under it (I light / J dark; J adds the dot). */}
+                {/* Flex, not text: in RTL the home score sits on the home (right) side. */}
+                <span className="flex items-center gap-2 text-5xl font-medium leading-none tabular-nums text-text-primary">
+                  <span>{match.homeScore}</span>
+                  <span className="text-3xl text-text-tertiary">–</span>
+                  <span>{match.awayScore}</span>
                 </span>
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-text-tertiary">
-                  {heroStatusLabel(match.statusCode, match.minute, labels.half)}
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-score-live">
+                  <span
+                    aria-hidden
+                    className="size-1.5 animate-pulse rounded-full bg-score-live [[data-theme=light]_&]:hidden"
+                  />
+                  {liveLine.text}
+                  {liveLine.minute != null && <Minute value={liveLine.minute} />}
                 </span>
               </>
             ) : (
@@ -385,8 +402,10 @@ function HeroCard({
                 <ul className="min-w-0 flex-1 space-y-1 text-center text-xs text-text-secondary sm:w-[160px] sm:flex-none">
                   {homeGoals.map((g, i) => (
                     <li key={i} className="truncate">
-                      <span className="tabular-nums text-text-tertiary">{g.minute}&apos;</span>{' '}
-                      {surname(g.playerName)}
+                      {surname(g.playerName)}{' '}
+                      <span className="text-text-tertiary">
+                        <Minute value={g.minute} />
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -394,8 +413,10 @@ function HeroCard({
                 <ul className="min-w-0 flex-1 space-y-1 text-center text-xs text-text-secondary sm:w-[160px] sm:flex-none">
                   {awayGoals.map((g, i) => (
                     <li key={i} className="truncate">
-                      <span className="tabular-nums text-text-tertiary">{g.minute}&apos;</span>{' '}
-                      {surname(g.playerName)}
+                      {surname(g.playerName)}{' '}
+                      <span className="text-text-tertiary">
+                        <Minute value={g.minute} />
+                      </span>
                     </li>
                   ))}
                 </ul>

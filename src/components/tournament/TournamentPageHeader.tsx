@@ -6,6 +6,7 @@ import { Users, Trophy, LayoutGrid, Flag } from 'lucide-react';
 import type { Locale } from '@/lib/i18n/config';
 import type { CupMetadata } from '@/lib/constants/tournament-metadata';
 import { codeToFlag } from '@/lib/flags';
+import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
 import { type TournamentPhase } from './StatusDescriptor';
 
 /** Curated hero logos per competition (displayed in header like WC trophy). */
@@ -15,7 +16,7 @@ const CUP_LOGOS: Record<number, string> = {
   922: '/competitions/wafcon-trophy.png',
 };
 
-/** Country code → short English name for host nations display. */
+/** Country code → short English name for host nations display (EN; FR/AR use country-names-i18n). */
 const HOST_NAMES: Record<string, string> = {
   US: 'USA',
   CA: 'Canada',
@@ -33,6 +34,52 @@ const HOST_NAMES: Record<string, string> = {
   GA: 'Gabon',
   GH: 'Ghana',
 };
+
+const HEADER_LABELS: Record<
+  Locale,
+  { edition: string; teams: string; matches: string; groups: string; hostNations: string }
+> = {
+  en: {
+    edition: 'Edition',
+    teams: 'Teams',
+    matches: 'Matches',
+    groups: 'Groups',
+    hostNations: 'Host nations',
+  },
+  fr: {
+    edition: 'Édition',
+    teams: 'Équipes',
+    matches: 'Matchs',
+    groups: 'Groupes',
+    hostNations: 'Pays hôtes',
+  },
+  ar: {
+    edition: 'النسخة',
+    teams: 'المنتخبات',
+    matches: 'المباريات',
+    groups: 'المجموعات',
+    hostNations: 'البلدان المضيفة',
+  },
+};
+
+const DATE_LOCALE: Record<Locale, string> = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-u-nu-latn' };
+
+/**
+ * Tournament date range in the page's language, with both years when it crosses New Year
+ * ("21 December 2025 – 18 January 2026", "21 ديسمبر 2025 – 18 يناير 2026"). Dates are calendar
+ * days (YYYY-MM-DD), so they are formatted in UTC and never shift a day with the viewer's zone.
+ */
+export function formatTournamentDateRange(kickoffDate: string, finalDate: string, locale: Locale) {
+  const fmt = new Intl.DateTimeFormat(DATE_LOCALE[locale] ?? 'en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+  // ICU versions differ on the spaces around the dash (thin vs normal); normalise so the server
+  // and browser render the same text.
+  return fmt.formatRange(new Date(kickoffDate), new Date(finalDate)).replace(/\s+/g, ' ');
+}
 
 interface RivalTeam {
   code: string;
@@ -91,25 +138,26 @@ export function TournamentPageHeader({
   }
 
   // Desktop shows flags + country names; mobile shows just the flags (a bit larger). No org label.
+  const L = HEADER_LABELS[locale] ?? HEADER_LABELS.en;
+  const hostName = (c: string) =>
+    locale === 'en' ? (HOST_NAMES[c] ?? c) : (getLocalizedCountryName(c, locale) ?? c);
   const hostNations = metadata.hostCountryCodes
-    .map((c) => `${codeToFlag(c)} ${HOST_NAMES[c] ?? c}`)
+    .map((c) => `${codeToFlag(c)} ${hostName(c)}`)
     .join(' · ');
   const hostFlags = metadata.hostCountryCodes.map((c) => codeToFlag(c)).join(' ');
 
-  const kickoff = new Date(metadata.kickoffDate);
-  const final = new Date(metadata.finalDate);
-  const dateRange = `${kickoff.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })} – ${final.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+  const dateRange = formatTournamentDateRange(metadata.kickoffDate, metadata.finalDate, locale);
 
   const logoSrc = CUP_LOGOS[metadata.competitionId];
 
   const stats = [
-    { icon: Users, value: metadata.teamsCount, label: 'Teams' },
-    ...(matchesCount ? [{ icon: Trophy, value: matchesCount, label: 'Matches' }] : []),
+    { icon: Users, value: metadata.teamsCount, label: L.teams },
+    ...(matchesCount ? [{ icon: Trophy, value: matchesCount, label: L.matches }] : []),
     ...(metadata.groupsCount
-      ? [{ icon: LayoutGrid, value: metadata.groupsCount, label: 'Groups' }]
+      ? [{ icon: LayoutGrid, value: metadata.groupsCount, label: L.groups }]
       : []),
     ...(metadata.hostCountryCodes.length > 1
-      ? [{ icon: Flag, value: metadata.hostCountryCodes.length, label: 'Host Nations' }]
+      ? [{ icon: Flag, value: metadata.hostCountryCodes.length, label: L.hostNations }]
       : []),
   ];
 
@@ -136,13 +184,13 @@ export function TournamentPageHeader({
       >
         {shownSeasons.map((s) => (
           <option key={s.year} value={s.year}>
-            Edition: {labelYear(s.year)}
+            {L.edition}: {labelYear(s.year)}
           </option>
         ))}
       </select>
     ) : (
       <span className="shrink-0 rounded-md bg-accent-azure/15 px-3 py-1 text-xs font-semibold text-accent-azure">
-        Edition: {labelYear(displayYear)}
+        {L.edition}: {labelYear(displayYear)}
       </span>
     );
 

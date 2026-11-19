@@ -173,6 +173,7 @@ export default async function HomePage({ params }: PageProps) {
     countdownHours: t('countdownHours'),
     countdownMins: t('countdownMins'),
     live: t('live'),
+    liveNow: t('liveNow'),
     noGoals: t('heroNoGoals'),
     tags: {
       atlasLions: t('tagAtlasLions'),
