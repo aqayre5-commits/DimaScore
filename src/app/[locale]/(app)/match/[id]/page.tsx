@@ -591,8 +591,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
               competitionName: compName,
               kickoffAt: match.kickoffAt,
               statusCode: match.statusCode,
-              homeScore: match.homeScore,
-              awayScore: match.awayScore,
               venueName: match.venue?.name,
               venueCity: match.venue?.city,
               homeSameAs: sameAsForTeam(match.homeTeam?.id),

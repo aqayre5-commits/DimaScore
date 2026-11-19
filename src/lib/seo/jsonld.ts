@@ -76,51 +76,17 @@ const bcp47 = (locale: string): string =>
 export const webPageId = (url: string): string => `${url}#webpage`;
 const breadcrumbId = (url: string): string => `${url}#breadcrumb`;
 
-const LIVE_STATUS = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE', 'INT']);
-/** Full time / extra time / penalties — the scoreboard always paints a number (null → 0). */
-const PLAYED_STATUS = new Set(['FT', 'AET', 'PEN']);
-/** Awarded and walkover are official results, but the scoreboard only shows digits when both exist. */
-const AWARDED_STATUS = new Set(['AWD', 'WO']);
-/** Same set LiveScoreDisplay treats as "interrupted" (label, score only when both are stored). */
-const INTERRUPTED_STATUS = new Set(['SUSP', 'PST', 'CANC', 'ABD', 'AWD', 'WO']);
-
 /**
- * schema.org eventStatus aligned with the scoreboard.
- * Played and awarded → EventCompleted (the page shows a result, not "scheduled").
- * Postponed → EventPostponed. Cancelled and abandoned (voided) → EventCancelled.
- * Suspended stays EventScheduled: the page says "Suspended", and schema.org has no suspended value.
- * TBD/NS and live codes are EventScheduled — TBD is an upcoming kickoff, not a postponement.
+ * schema.org EventStatusType only lists EventCancelled, EventMovedOnline, EventPostponed,
+ * EventRescheduled and EventScheduled. A match that was played (FT/AET/PEN), awarded or
+ * a walkover took place as scheduled, so it stays EventScheduled. Postponed is
+ * EventPostponed. Cancelled and abandoned are EventCancelled. Suspended has no enum
+ * value; the page label is "Suspended", so it stays EventScheduled rather than postponed.
  */
 export function sportsEventStatus(statusCode: string): string {
   if (statusCode === 'PST') return 'https://schema.org/EventPostponed';
   if (statusCode === 'CANC' || statusCode === 'ABD') return 'https://schema.org/EventCancelled';
-  if (PLAYED_STATUS.has(statusCode) || AWARDED_STATUS.has(statusCode)) {
-    return 'https://schema.org/EventCompleted';
-  }
   return 'https://schema.org/EventScheduled';
-}
-
-/**
- * The numbers the scoreboard actually paints (LiveScoreDisplay): live and played always show
- * a score (null → 0); interrupted (including awarded/walkover) shows one only when both are
- * stored; upcoming shows a dash.
- */
-export function visibleScoreboard(
-  statusCode: string,
-  homeScore: number | null | undefined,
-  awayScore: number | null | undefined,
-): { home: number; away: number } | null {
-  if (LIVE_STATUS.has(statusCode) || PLAYED_STATUS.has(statusCode)) {
-    return { home: homeScore ?? 0, away: awayScore ?? 0 };
-  }
-  if (
-    INTERRUPTED_STATUS.has(statusCode) &&
-    typeof homeScore === 'number' &&
-    typeof awayScore === 'number'
-  ) {
-    return { home: homeScore, away: awayScore };
-  }
-  return null;
 }
 
 export interface BreadcrumbNodeSegment {
@@ -181,7 +147,10 @@ export function buildWebPage(args: {
   };
 }
 
-/** Per-match SportsEvent — two teams as competitors, venue, competition, status, visible score. */
+/**
+ * Per-match SportsEvent. The score stays on the page: SportsEvent, Event and Thing have no
+ * score property, so none is emitted here.
+ */
 export function buildSportsEventMatch(args: {
   url: string;
   homeName: string;
@@ -193,15 +162,12 @@ export function buildSportsEventMatch(args: {
   competitionName: string;
   kickoffAt: Date;
   statusCode: string;
-  homeScore?: number | null;
-  awayScore?: number | null;
   venueName?: string | null;
   venueCity?: string | null;
   homeSameAs?: string[];
   awaySameAs?: string[];
   competitionSameAs?: string[];
 }): JsonLdNode {
-  const score = visibleScoreboard(args.statusCode, args.homeScore, args.awayScore);
   return {
     '@type': 'SportsEvent',
     '@id': `${args.url}#event`,
@@ -209,7 +175,6 @@ export function buildSportsEventMatch(args: {
     sport: 'https://schema.org/Soccer',
     startDate: args.kickoffAt.toISOString(),
     eventStatus: sportsEventStatus(args.statusCode),
-    ...(score ? { homeScore: score.home, awayScore: score.away } : {}),
     mainEntityOfPage: { '@id': webPageId(args.url) },
     competitor: [
       {
@@ -336,8 +301,6 @@ export interface FixtureListItem {
   /** Stored team slugs (`name-id`) → the compact node's URL matches the per-match page's slug URL. */
   homeSlug: string | null;
   awaySlug: string | null;
-  homeScore?: number | null;
-  awayScore?: number | null;
 }
 
 /**
@@ -362,7 +325,6 @@ export function buildFixtureItemList(args: {
     numberOfItems: args.fixtures.length,
     itemListElement: args.fixtures.map((f, i) => {
       const matchUrl = `${args.baseUrl}/${args.locale}/match/${buildMatchSlug(f.homeSlug, f.awaySlug, f.id)}`;
-      const score = visibleScoreboard(f.statusCode, f.homeScore, f.awayScore);
       return {
         '@type': 'ListItem',
         position: i + 1,
@@ -373,7 +335,6 @@ export function buildFixtureItemList(args: {
           sport: 'https://schema.org/Soccer',
           startDate: f.kickoffAt.toISOString(),
           eventStatus: sportsEventStatus(f.statusCode),
-          ...(score ? { homeScore: score.home, awayScore: score.away } : {}),
           url: matchUrl,
         },
       };
