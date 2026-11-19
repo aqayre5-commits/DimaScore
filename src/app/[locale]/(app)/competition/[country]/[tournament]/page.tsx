@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { findCupContentBySlug } from '@/lib/constants/cup-content';
 import { ALL_ENTRIES, TOP_NAV_COMPETITION_IDS } from '@/lib/constants/competitions-mega-menu';
@@ -9,6 +9,7 @@ import { db } from '@/lib/db/client';
 import { getCompetitionById } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
+import { competitionDisplayName } from '@/lib/competitions/display-name';
 import { BASE_URL } from '@/lib/constants/site';
 import { buildLeagueMeta } from '@/lib/seo/hub-metadata';
 import {
@@ -109,7 +110,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (entry) {
     const competition = await getCompetitionById(db, entry.competitionId);
     if (competition) {
-      displayName = competition.name[typedLocale] ?? competition.name['en'] ?? displayName;
+      const tMenu = await getTranslations({ locale, namespace: 'megaMenu' });
+      const localName = competitionDisplayName(
+        competition.name,
+        typedLocale,
+        tMenu.has(entry.labelKey) ? tMenu(entry.labelKey) : null,
+        displayName,
+      );
+      displayName = localName;
       const { seasonYear } = await resolveCompetitionSeason(competition.id, null);
       const season = seasonYear ? formatSeasonLabel(seasonYear) : '';
       displayName = season ? `${displayName} ${season}` : displayName;
@@ -121,7 +129,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description = botolaProCompetitionMetaDescription(typedLocale, displayName);
       } else {
         const leagueMeta = buildLeagueMeta({
-          competition: competition.name[typedLocale] ?? competition.name['en'] ?? displayName,
+          competition: localName,
           seasonLabel: season,
           locale,
         });

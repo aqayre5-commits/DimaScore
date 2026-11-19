@@ -640,7 +640,19 @@
     "live": "مباشر",
     "upcoming": "القادمة",
     "results": "النتائج",
-    "dateFilter": "التاريخ"
+    "dateFilter": "التاريخ",
+    "tableHeading": "ترتيب {competition} {season}",
+    "tableCaption": "جدول ترتيب {competition} {season}: المركز والمباريات والفوز والتعادل والخسارة وفارق الأهداف والأهداف والنقاط لكل فريق",
+    "fixturesHeading": "المباريات والنتائج حسب الجولة",
+    "roundResultsHeading": "نتائج الجولة {round}",
+    "colPlayedFull": "لعب",
+    "colWonFull": "فوز",
+    "colDrawnFull": "تعادل",
+    "colLostFull": "خسارة",
+    "colGoalDiffFull": "فارق الأهداف",
+    "colGoalsFull": "الأهداف له وعليه",
+    "colPointsFull": "النقاط",
+    "colRankFull": "المركز"
   },
   "shared": {
     "share": "مشاركة",

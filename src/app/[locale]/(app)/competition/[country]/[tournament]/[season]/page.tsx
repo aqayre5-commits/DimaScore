@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { db } from '@/lib/db/client';
 import { getCompetitionById } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { BASE_URL } from '@/lib/constants/site';
+import { buildLeagueMeta } from '@/lib/seo/hub-metadata';
+import { competitionDisplayName } from '@/lib/competitions/display-name';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import {
   BOTOLA_2_COMPETITION_ID,
@@ -18,6 +20,7 @@ import {
   botolaProCompetitionMetaDescription,
   botolaProCompetitionPageTitle,
 } from '@/lib/seo/botola-classement';
+import { isSeasonSegment } from '@/lib/seo/competition-tab-redirects';
 import { CompetitionContent, resolveEntry } from '../competition-content';
 
 interface PageProps {
@@ -34,15 +37,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const typedLocale = locale as Locale;
   const country = decodeURIComponent(rawCountry);
   const tournament = decodeURIComponent(rawTournament);
+  // Only a four-digit season year is a page. Other words (the old /fixtures, /standings, /stats
+  // tab paths are 301'd in next.config.ts) get a real 404 here, in the blocking metadata phase.
+  if (!isSeasonSegment(season)) notFound();
   const seasonYear = Number(season);
 
   const entry = resolveEntry(tournament, typedLocale);
   if (!entry) notFound();
 
   const competition = await getCompetitionById(db, entry.competitionId);
-  let displayName = tournament.replace(/-/g, ' ');
-  if (competition)
-    displayName = competition.name[typedLocale] ?? competition.name['en'] ?? displayName;
+  const tMenu = await getTranslations({ locale, namespace: 'megaMenu' });
+  const displayName = competitionDisplayName(
+    competition?.name,
+    typedLocale,
+    tMenu.has(entry.labelKey) ? tMenu(entry.labelKey) : null,
+    tournament.replace(/-/g, ' '),
+  );
   const seasonLabel = Number.isFinite(seasonYear) ? `${seasonYear}/${(seasonYear + 1) % 100}` : '';
   const fullName = seasonLabel ? `${displayName} ${seasonLabel}` : displayName;
   const botola2Title =
@@ -53,13 +63,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     entry.competitionId === BOTOLA_PRO_COMPETITION_ID
       ? botolaProCompetitionPageTitle(typedLocale, seasonLabel || null)
       : null;
-  const title = botola2Title ?? botolaProTitle ?? fullName;
+  // Same localized, standings-first copy as the hub, for the season shown (was English-only).
+  const leagueMeta =
+    seasonLabel && competition?.type === 'League'
+      ? buildLeagueMeta({ competition: displayName, seasonLabel, locale })
+      : null;
+  const title = botola2Title ?? botolaProTitle ?? leagueMeta?.title ?? fullName;
   const description =
     entry.competitionId === BOTOLA_2_COMPETITION_ID
       ? botola2CompetitionMetaDescription(typedLocale, fullName)
       : entry.competitionId === BOTOLA_PRO_COMPETITION_ID
         ? botolaProCompetitionMetaDescription(typedLocale, fullName)
-        : `${fullName} — standings, results and statistics`;
+        : (leagueMeta?.description ?? fullName);
 
   const seasonUrl = `${BASE_URL}/${locale}/competition/${country}/${tournament}/${season}`;
   const baseUrlNoSeason = `${BASE_URL}/${locale}/competition/${country}/${tournament}`;
