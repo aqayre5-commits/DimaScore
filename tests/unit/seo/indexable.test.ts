@@ -7,9 +7,11 @@ import {
   TOP_WOMEN_COMPETITION_IDS,
   isMatchIndexable,
   isPlayerIndexable,
-  SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS,
+  FINISHED_MATCH_MAX_AGE_MONTHS,
+  MOROCCO_SENIOR_NATIONAL_TEAM_IDS,
+  OLD_MATCH_ALLOWLIST_COMPETITION_IDS,
   matchIndexableSitemapCondition,
-  matchSitemapInclusionCondition,
+  oldMatchAllowList,
   playerIndexableSitemapCondition,
 } from '@/lib/seo/indexable';
 
@@ -26,9 +28,9 @@ function fakeDb(indexable: boolean) {
 describe('match index policy SQL', () => {
   const q = render(matchIndexableSitemapCondition);
 
-  it('keeps featured competitions at any age', () => {
+  it('keeps the featured-competition branch for matches that are not old and finished', () => {
     expect(FEATURED_COMPETITION_IDS).toEqual([1, 6, 922, 200, 201, 822]);
-    expect(q).toMatch(/^\( "fixtures"\."competition_id" IN \(1, 6, 922, 200, 201, 822\) OR \(/);
+    expect(q).toContain('"fixtures"."competition_id" IN (1, 6, 922, 200, 201, 822)');
   });
 
   it('limits top-tier comps to 180 days past / 14 days ahead', () => {
@@ -81,10 +83,11 @@ describe('match index policy SQL', () => {
 });
 
 describe('isMatchIndexable', () => {
-  it('short-circuits featured competitions without a query', async () => {
+  it('runs the shared SQL even for a featured competition', async () => {
     const { db, execute } = fakeDb(false);
-    expect(await isMatchIndexable(db, 1, 200)).toBe(true);
-    expect(execute).not.toHaveBeenCalled();
+    expect(await isMatchIndexable(db, 1, 200)).toBe(false);
+    const sent = render(execute.mock.calls[0][0]);
+    expect(sent).toContain(render(matchIndexableSitemapCondition));
   });
 
   it('runs the exact sitemap condition for other fixtures', async () => {
@@ -118,16 +121,22 @@ describe('player index policy', () => {
   });
 });
 
-describe('sitemap match age cutoff', () => {
-  const robots = render(matchIndexableSitemapCondition);
-  const sitemap = render(matchSitemapInclusionCondition);
+describe('old finished match allow-list', () => {
+  const q = render(matchIndexableSitemapCondition);
+  const allow = render(oldMatchAllowList);
 
-  it('keeps old finished matches indexable and drops only them from the sitemap', () => {
-    expect(SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS).toBe(12);
-    expect(robots).not.toContain(`INTERVAL '1 month'`);
-    expect(sitemap).toContain(`"fixtures"."competition_id" IN (1, 6, 922, 200, 201, 822)`);
-    expect(sitemap).toContain(
-      `"fixtures"."status_code" IN ('FT', 'AET', 'PEN', 'AWD', 'WO') AND "fixtures"."kickoff_at" < NOW() - (12 * INTERVAL '1 month')`,
+  it('uses one cutoff and one allow-list, shared by robots and the sitemap SQL', () => {
+    expect(FINISHED_MATCH_MAX_AGE_MONTHS).toBe(12);
+    expect(MOROCCO_SENIOR_NATIONAL_TEAM_IDS).toEqual([31, 14461]);
+    expect(OLD_MATCH_ALLOWLIST_COMPETITION_IDS).toEqual([1, 8, 6, 922]);
+    expect(allow).toContain('"fixtures"."home_team_id" IN (31, 14461)');
+    expect(allow).toContain('"fixtures"."away_team_id" IN (31, 14461)');
+    expect(allow).toContain('"fixtures"."competition_id" IN (1, 8, 6, 922)');
+    expect(q).toContain(allow);
+    expect(q).toContain(
+      `"fixtures"."kickoff_at" < NOW() - (12 * INTERVAL '1 month')`,
     );
+    expect(q).toContain('EXISTS (SELECT 1 FROM fixture_events fe');
+    expect(q).toContain('EXISTS (SELECT 1 FROM fixture_lineups fl');
   });
 });
