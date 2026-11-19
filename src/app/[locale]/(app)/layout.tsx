@@ -39,7 +39,10 @@ export default async function AppLayout({
       >
         <Topbar />
       </Suspense>
-      <main id="main" className="flex-1 min-w-0">
+      {/* Reserve at least one viewport (minus the 40px strip + 48px topbar) for the page, so the
+          streamed "Today's matches" block and footer start below the fold instead of painting in
+          view and being pushed down when the page body streams in (home CLS was 0.89, footer). */}
+      <main id="main" className="min-h-[calc(100svh-88px)] min-w-0 flex-1">
         {children}
       </main>
       <Suspense>
