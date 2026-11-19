@@ -29,7 +29,7 @@ export function StaticPage({
   children?: ReactNode;
 }) {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6">
+    <div data-fit-content className="mx-auto max-w-3xl px-4 py-6">
       <SeoBreadcrumb
         segments={[{ label: 'DimaScore', href: `/${locale}` }, { label: content.title }]}
         compact
