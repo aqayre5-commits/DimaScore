@@ -48,9 +48,9 @@ export default async function AppLayout({
       <Suspense>
         <TodaysMatchLinks locale={locale} />
       </Suspense>
-      <Suspense>
-        <Footer />
-      </Suspense>
+      {/* Footer has no request-time reads (only its copyright year suspends), so it ships in the
+          static shell instead of as one more streamed boundary competing with the page body. */}
+      <Footer />
       <Suspense>
         <MobileBottomTabBar />
       </Suspense>
