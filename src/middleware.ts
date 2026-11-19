@@ -3,6 +3,7 @@ import createMiddleware from 'next-intl/middleware';
 import { routing } from '@/lib/i18n/routing';
 import { getAdminSession } from '@/lib/auth/admin';
 import { checkRateLimit } from '@/lib/security/rate-limit';
+import { pointXDefaultAtFrench } from '@/lib/i18n/hreflang-header';
 import { resolveBareMatchRedirect } from '@/lib/seo/match-redirect';
 import { lookupMatchSlug } from '@/lib/seo/match-slug-lookup';
 import {
@@ -25,6 +26,13 @@ const RATE_LIMITED_API = /^\/api\/v1\/(match|search|media)(\/|$)/;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // `/` must not 307 based on Accept-Language. One permanent redirect, always French.
+  if (pathname === '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${routing.defaultLocale}`;
+    return NextResponse.redirect(url, 308);
+  }
 
   // Legacy bare-ID match URLs (/fr/match/123, /match/123) → real 308 to the slug URL before render.
   // Unknown ids and DB errors fall through to the existence check below (404 / 503), which also
@@ -79,8 +87,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // All other matched routes: next-intl locale handling
-  return intlMiddleware(request);
+  // All other matched routes: next-intl locale handling.
+  // Rewrite x-default onto the French alternate. next-intl emits the unprefixed path.
+  const response = intlMiddleware(request);
+  const link = response.headers.get('link');
+  if (link) {
+    const fixed = pointXDefaultAtFrench(link);
+    if (fixed !== link) response.headers.set('link', fixed);
+  }
+  return response;
 }
 
 export const config = {
