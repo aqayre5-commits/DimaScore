@@ -162,11 +162,16 @@ export function LeagueStandingsTab({
                     {row.lost ?? 0}
                   </td>
                   <td className="px-1 py-2 text-center tabular-nums font-medium text-text-primary">
-                    {(row.goalDiff ?? 0) > 0 ? '+' : ''}
-                    {row.goalDiff ?? 0}
+                    {/* LTR isolate so "+4" doesn't render as "4+" in Arabic */}
+                    <bdi dir="ltr">
+                      {(row.goalDiff ?? 0) > 0 ? '+' : ''}
+                      {row.goalDiff ?? 0}
+                    </bdi>
                   </td>
                   <td className="hidden px-1 py-2 text-center tabular-nums text-text-secondary sm:table-cell">
-                    {row.goalsFor ?? 0}:{row.goalsAgainst ?? 0}
+                    <bdi dir="ltr">
+                      {row.goalsFor ?? 0}:{row.goalsAgainst ?? 0}
+                    </bdi>
                   </td>
                   <td className="hidden px-1 py-2 text-center sm:table-cell">
                     <FormPills
