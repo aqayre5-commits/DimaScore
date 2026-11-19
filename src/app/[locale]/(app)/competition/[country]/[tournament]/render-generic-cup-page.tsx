@@ -258,8 +258,6 @@ export async function renderGenericCupPage(
                   awayName: f.awayTeam!.name[locale] ?? f.awayTeam!.name['en'] ?? '',
                   homeSlug: f.homeTeam!.slug,
                   awaySlug: f.awayTeam!.slug,
-                  homeScore: f.homeScore,
-                  awayScore: f.awayScore,
                 })),
               locale,
               baseUrl: BASE_URL,
