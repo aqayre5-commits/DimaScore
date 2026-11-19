@@ -7,7 +7,9 @@ import {
   TOP_WOMEN_COMPETITION_IDS,
   isMatchIndexable,
   isPlayerIndexable,
+  SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS,
   matchIndexableSitemapCondition,
+  matchSitemapInclusionCondition,
   playerIndexableSitemapCondition,
 } from '@/lib/seo/indexable';
 
@@ -113,5 +115,19 @@ describe('player index policy', () => {
     expect(execute).not.toHaveBeenCalled();
     expect(await isPlayerIndexable(db, 8, 'achraf-hakimi-8')).toBe(true);
     expect(render(execute.mock.calls[0][0])).toContain(q);
+  });
+});
+
+describe('sitemap match age cutoff', () => {
+  const robots = render(matchIndexableSitemapCondition);
+  const sitemap = render(matchSitemapInclusionCondition);
+
+  it('keeps old finished matches indexable and drops only them from the sitemap', () => {
+    expect(SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS).toBe(12);
+    expect(robots).not.toContain(`INTERVAL '1 month'`);
+    expect(sitemap).toContain(`"fixtures"."competition_id" IN (1, 6, 922, 200, 201, 822)`);
+    expect(sitemap).toContain(
+      `"fixtures"."status_code" IN ('FT', 'AET', 'PEN', 'AWD', 'WO') AND "fixtures"."kickoff_at" < NOW() - (12 * INTERVAL '1 month')`,
+    );
   });
 });

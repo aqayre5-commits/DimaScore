@@ -5,9 +5,9 @@ import { buildMatchSlug } from '@/lib/seo/match-slug';
 import {
   playerIndexableSitemapCondition,
   teamIndexableSitemapCondition,
-  matchIndexableSitemapCondition,
+  matchSitemapInclusionCondition,
 } from '@/lib/seo/indexable';
-import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
+import { locales, type Locale } from '@/lib/i18n/config';
 import { ALL_ENTRIES, buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
 import { BASE_URL } from '@/lib/constants/site';
 import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
@@ -74,13 +74,11 @@ function toDate(v: unknown): Date | undefined {
 
 /**
  * One <url> per locale (fr, en, ar), each with reciprocal hreflang alternates and
- * x-default on the French URL. lastModified is the caller's data timestamp, shared
+ * x-default on the English URL. lastModified is the caller's data timestamp, shared
  * by the three locs — never "now".
  *
- * Which pages are included is unchanged: the same indexable.ts SQL as robots.index.
- * That already drops thin pages. Featured competitions and senior national matches
- * stay at the ages that policy allows (including older World Cup / AFCON / Botola
- * fixtures). This layer does not add a second cutoff.
+ * Match URLs use matchSitemapInclusionCondition: the robots index rule, minus finished
+ * matches older than SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS. Those pages stay up.
  */
 export function entry(
   pathFor: (locale: Locale) => string,
@@ -88,7 +86,7 @@ export function entry(
 ): Entry[] {
   const languages: Record<string, string> = {};
   for (const loc of locales) languages[loc] = `${baseUrl}${pathFor(loc)}`;
-  languages['x-default'] = `${baseUrl}${pathFor(defaultLocale)}`;
+  languages['x-default'] = `${baseUrl}${pathFor('en')}`;
   return locales.map((loc) => {
     const e: Entry = {
       url: `${baseUrl}${pathFor(loc)}`,
@@ -133,7 +131,7 @@ export async function getSitemapChunks(): Promise<SitemapChunk[]> {
     rows<{ month: string; n: number | string }>(sql`
       SELECT to_char(kickoff_at AT TIME ZONE 'UTC', 'YYYY-MM') AS month, COUNT(*) AS n
       FROM fixtures
-      WHERE ${matchIndexableSitemapCondition}
+      WHERE ${matchSitemapInclusionCondition}
       GROUP BY 1`),
   ]);
   return planChunks({
@@ -150,7 +148,7 @@ export async function getSitemapIndexEntries(): Promise<{ id: string; lastModifi
     rows<{ month: string; lm: string | Date | null }>(sql`
       SELECT to_char(kickoff_at AT TIME ZONE 'UTC', 'YYYY-MM') AS month, MAX(${FIXTURE_LASTMOD}) AS lm
       FROM fixtures
-      WHERE ${matchIndexableSitemapCondition}
+      WHERE ${matchSitemapInclusionCondition}
       GROUP BY 1`),
     rows<{ lm: string | Date | null }>(
       sql`SELECT MAX(${FIXTURE_LASTMOD}) AS lm FROM fixtures WHERE kickoff_at <= NOW()`,
@@ -305,7 +303,7 @@ async function matchEntries(month: string, page: number): Promise<Entry[]> {
     LEFT JOIN teams aw ON aw.id = fixtures.away_team_id
     WHERE fixtures.kickoff_at >= ${start.toISOString()}::timestamptz
       AND fixtures.kickoff_at < ${end.toISOString()}::timestamptz
-      AND ${matchIndexableSitemapCondition}
+      AND ${matchSitemapInclusionCondition}
     ORDER BY fixtures.id
     LIMIT ${CHUNK_SIZE} OFFSET ${page * CHUNK_SIZE}`);
   return list.flatMap((m) => {

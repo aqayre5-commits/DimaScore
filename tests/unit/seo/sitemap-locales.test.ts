@@ -24,7 +24,7 @@ describe('sitemap locales', () => {
         fr: `${BASE_URL}/fr${slug}`,
         en: `${BASE_URL}/en${slug}`,
         ar: `${BASE_URL}/ar${slug}`,
-        'x-default': `${BASE_URL}/fr${slug}`,
+        'x-default': `${BASE_URL}/en${slug}`,
       });
     }
   });
@@ -44,7 +44,7 @@ describe('sitemap locales', () => {
     ]);
     expect(rows.every((row) => row.lastModified == null)).toBe(true);
     expect(rows[2].alternates?.languages?.['x-default']).toBe(
-      `${BASE_URL}/fr/competition/maroc/botola-pro`,
+      `${BASE_URL}/en/competition/morocco/botola-pro`,
     );
   });
 
@@ -55,7 +55,7 @@ describe('sitemap locales', () => {
 
   it('still includes only the indexable set, which is what drops thin pages', () => {
     const src = readFileSync('src/lib/seo/sitemap/data.ts', 'utf8');
-    expect(src).toContain('matchIndexableSitemapCondition');
+    expect(src).toContain('matchSitemapInclusionCondition');
     expect(src).toContain('teamIndexableSitemapCondition');
     expect(src).toContain('playerIndexableSitemapCondition');
     expect(src).not.toContain('new Date()');
