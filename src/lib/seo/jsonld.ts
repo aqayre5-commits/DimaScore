@@ -3,7 +3,7 @@
  * emits a single { "@context", "@graph": [...] } linked by stable @ids. Rendered server-side via
  * <JsonLd> (never from generateMetadata, where JSON-LD is silently ignored).
  *
- * Task 15.3 ships the sitewide nodes (Organization + WebSite/SearchAction). Per-page entity nodes
+ * Task 15.3 ships the sitewide nodes (Organization + WebSite). Per-page entity nodes
  * (SportsEvent, SportsTeam, Athlete, BreadcrumbList) are added in 15.4 and reference these @ids.
  *
  * Types are hand-declared (no schema-dts dependency) — the node set is small and the shapes are
@@ -40,7 +40,10 @@ export function buildOrganization(baseUrl: string): JsonLdNode {
   };
 }
 
-/** WebSite + SearchAction (sitelinks search box eligibility). Locale drives url + search target. */
+/**
+ * WebSite node. No SearchAction: site search is the header modal (`/api/v1/search`), and
+ * `/{locale}/recherche` is not a page, so a SearchAction target would 404.
+ */
 export function buildWebSite(baseUrl: string, locale: string): JsonLdNode {
   return {
     '@type': 'WebSite',
@@ -50,14 +53,6 @@ export function buildWebSite(baseUrl: string, locale: string): JsonLdNode {
     alternateName: ['ديماسكور', 'DimaScore'],
     inLanguage: ['fr-MA', 'ar-MA', 'en'],
     publisher: { '@id': organizationId(baseUrl) },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${baseUrl}/${locale}/recherche?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   };
 }
 
@@ -81,13 +76,51 @@ const bcp47 = (locale: string): string =>
 export const webPageId = (url: string): string => `${url}#webpage`;
 const breadcrumbId = (url: string): string => `${url}#breadcrumb`;
 
-/** schema.org eventStatus from our fixture status code (schema has no "in progress"/"completed"). */
-function eventStatus(statusCode: string): string {
-  if (statusCode === 'PST' || statusCode === 'SUSP' || statusCode === 'TBD')
-    return 'https://schema.org/EventPostponed';
-  if (statusCode === 'CANC' || statusCode === 'ABD' || statusCode === 'AWD' || statusCode === 'WO')
-    return 'https://schema.org/EventCancelled';
+const LIVE_STATUS = new Set(['1H', '2H', 'HT', 'ET', 'BT', 'P', 'LIVE', 'INT']);
+/** Full time / extra time / penalties — the scoreboard always paints a number (null → 0). */
+const PLAYED_STATUS = new Set(['FT', 'AET', 'PEN']);
+/** Awarded and walkover are official results, but the scoreboard only shows digits when both exist. */
+const AWARDED_STATUS = new Set(['AWD', 'WO']);
+/** Same set LiveScoreDisplay treats as "interrupted" (label, score only when both are stored). */
+const INTERRUPTED_STATUS = new Set(['SUSP', 'PST', 'CANC', 'ABD', 'AWD', 'WO']);
+
+/**
+ * schema.org eventStatus aligned with the scoreboard.
+ * Played and awarded → EventCompleted (the page shows a result, not "scheduled").
+ * Postponed → EventPostponed. Cancelled and abandoned (voided) → EventCancelled.
+ * Suspended stays EventScheduled: the page says "Suspended", and schema.org has no suspended value.
+ * TBD/NS and live codes are EventScheduled — TBD is an upcoming kickoff, not a postponement.
+ */
+export function sportsEventStatus(statusCode: string): string {
+  if (statusCode === 'PST') return 'https://schema.org/EventPostponed';
+  if (statusCode === 'CANC' || statusCode === 'ABD') return 'https://schema.org/EventCancelled';
+  if (PLAYED_STATUS.has(statusCode) || AWARDED_STATUS.has(statusCode)) {
+    return 'https://schema.org/EventCompleted';
+  }
   return 'https://schema.org/EventScheduled';
+}
+
+/**
+ * The numbers the scoreboard actually paints (LiveScoreDisplay): live and played always show
+ * a score (null → 0); interrupted (including awarded/walkover) shows one only when both are
+ * stored; upcoming shows a dash.
+ */
+export function visibleScoreboard(
+  statusCode: string,
+  homeScore: number | null | undefined,
+  awayScore: number | null | undefined,
+): { home: number; away: number } | null {
+  if (LIVE_STATUS.has(statusCode) || PLAYED_STATUS.has(statusCode)) {
+    return { home: homeScore ?? 0, away: awayScore ?? 0 };
+  }
+  if (
+    INTERRUPTED_STATUS.has(statusCode) &&
+    typeof homeScore === 'number' &&
+    typeof awayScore === 'number'
+  ) {
+    return { home: homeScore, away: awayScore };
+  }
+  return null;
 }
 
 export interface BreadcrumbNodeSegment {
@@ -148,29 +181,35 @@ export function buildWebPage(args: {
   };
 }
 
-/** Per-match SportsEvent — two teams as competitors, venue, competition, status. */
+/** Per-match SportsEvent — two teams as competitors, venue, competition, status, visible score. */
 export function buildSportsEventMatch(args: {
   url: string;
   homeName: string;
   awayName: string;
+  /** Visible heading. Defaults to "Home vs Away" when the caller has no on-page H1. */
+  name?: string;
   homeLogo?: string | null;
   awayLogo?: string | null;
   competitionName: string;
   kickoffAt: Date;
   statusCode: string;
+  homeScore?: number | null;
+  awayScore?: number | null;
   venueName?: string | null;
   venueCity?: string | null;
   homeSameAs?: string[];
   awaySameAs?: string[];
   competitionSameAs?: string[];
 }): JsonLdNode {
+  const score = visibleScoreboard(args.statusCode, args.homeScore, args.awayScore);
   return {
     '@type': 'SportsEvent',
     '@id': `${args.url}#event`,
-    name: `${args.homeName} vs ${args.awayName}`,
+    name: args.name ?? `${args.homeName} vs ${args.awayName}`,
     sport: 'https://schema.org/Soccer',
     startDate: args.kickoffAt.toISOString(),
-    eventStatus: eventStatus(args.statusCode),
+    eventStatus: sportsEventStatus(args.statusCode),
+    ...(score ? { homeScore: score.home, awayScore: score.away } : {}),
     mainEntityOfPage: { '@id': webPageId(args.url) },
     competitor: [
       {
@@ -297,6 +336,8 @@ export interface FixtureListItem {
   /** Stored team slugs (`name-id`) → the compact node's URL matches the per-match page's slug URL. */
   homeSlug: string | null;
   awaySlug: string | null;
+  homeScore?: number | null;
+  awayScore?: number | null;
 }
 
 /**
@@ -321,6 +362,7 @@ export function buildFixtureItemList(args: {
     numberOfItems: args.fixtures.length,
     itemListElement: args.fixtures.map((f, i) => {
       const matchUrl = `${args.baseUrl}/${args.locale}/match/${buildMatchSlug(f.homeSlug, f.awaySlug, f.id)}`;
+      const score = visibleScoreboard(f.statusCode, f.homeScore, f.awayScore);
       return {
         '@type': 'ListItem',
         position: i + 1,
@@ -330,7 +372,8 @@ export function buildFixtureItemList(args: {
           name: `${f.homeName} vs ${f.awayName}`,
           sport: 'https://schema.org/Soccer',
           startDate: f.kickoffAt.toISOString(),
-          eventStatus: eventStatus(f.statusCode),
+          eventStatus: sportsEventStatus(f.statusCode),
+          ...(score ? { homeScore: score.home, awayScore: score.away } : {}),
           url: matchUrl,
         },
       };

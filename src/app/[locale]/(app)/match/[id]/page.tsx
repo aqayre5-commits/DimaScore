@@ -555,21 +555,22 @@ export default async function MatchDetailPage({ params }: PageProps) {
     </>
   );
 
+  const matchH1 = buildMatchH1({
+    home,
+    away,
+    competition: compName,
+    locale: typedLocale,
+    state: matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming',
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
+  });
+
   const pageContent = (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
         <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
         <h1 className="mt-1 px-1 text-base font-semibold text-text-primary sm:text-lg">
-          {buildMatchH1({
-            home,
-            away,
-            competition: compName,
-            locale: typedLocale,
-            state:
-              matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming',
-            homeScore: match.homeScore,
-            awayScore: match.awayScore,
-          })}
+          {matchH1}
         </h1>
         <JsonLd
           graph={buildGraph(
@@ -582,6 +583,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
             }),
             buildSportsEventMatch({
               url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
+              name: matchH1,
               homeName: home,
               awayName: away,
               homeLogo: match.homeTeam?.logoUrl,
@@ -589,6 +591,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
               competitionName: compName,
               kickoffAt: match.kickoffAt,
               statusCode: match.statusCode,
+              homeScore: match.homeScore,
+              awayScore: match.awayScore,
               venueName: match.venue?.name,
               venueCity: match.venue?.city,
               homeSameAs: sameAsForTeam(match.homeTeam?.id),
