@@ -10,6 +10,7 @@ import { buildGraph, buildWebPage, buildFaqPage, buildBreadcrumbList } from '@/l
 import { getLionsAbroadHubData } from '@/lib/db/queries/lions-abroad';
 import { LionsAbroadFixtures } from '@/components/lions-abroad/LionsAbroadFixtures';
 import { HomeLionsAbroad } from '@/components/homepage/HomeLionsAbroad';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
 import {
   findEntryByCompetitionId,
   buildCompetitionHref,
@@ -194,6 +195,7 @@ export default async function LionsAbroadPage({ params }: PageProps) {
           ),
         )}
       />
+      <MoroccoHubLinks locale={locale as Locale} current="lionsAbroad" embedded />
     </div>
   );
 }

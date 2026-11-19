@@ -54,6 +54,8 @@ import {
 import { BOTOLA_PRO_COMPETITION_ID, botolaClassementPath } from '@/lib/seo/botola-classement';
 import { botolaMatchsPath } from '@/lib/seo/botola-matchs';
 import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
+import { MOROCCO_HUB_COMPETITION_IDS, hubKeyForCompetition } from '@/lib/constants/morocco-hubs';
 
 async function getCachedLeagueData(competitionId: number, seasonYear: number, locale: Locale) {
   'use cache';
@@ -401,6 +403,9 @@ export async function renderLeaguePage(
           </>
         }
       />
+      {MOROCCO_HUB_COMPETITION_IDS.has(competition.id) && (
+        <MoroccoHubLinks locale={locale} current={hubKeyForCompetition(competition.id)} />
+      )}
     </>
   );
 }

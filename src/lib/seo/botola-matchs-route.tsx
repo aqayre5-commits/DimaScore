@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { BotolaMatchsPage } from '@/components/seo/BotolaMatchsPage';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
 import {
   BOTOLA_MATCHS_SLUGS,
   botolaMatchsPath,
@@ -51,5 +52,10 @@ export async function renderBotolaMatchsRoute(locale: string, routeSlug: string)
     permanentRedirect(botolaMatchsPath(typed));
   }
   setRequestLocale(locale);
-  return <BotolaMatchsPage locale={typed} />;
+  return (
+    <>
+      <BotolaMatchsPage locale={typed} />
+      <MoroccoHubLinks locale={typed} current={null} />
+    </>
+  );
 }

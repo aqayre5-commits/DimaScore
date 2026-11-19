@@ -24,6 +24,7 @@ import {
   getRightRailTopScorers,
 } from '@/lib/db/queries/right-rail';
 import type { StandingRow } from '@/lib/db/queries';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -263,6 +264,7 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
               }}
             />
           )}
+          <MoroccoHubLinks locale={typedLocale} current="edition" embedded />
         </div>
       }
     />

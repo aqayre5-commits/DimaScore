@@ -48,6 +48,8 @@ import {
 } from '@/lib/db/queries/team';
 import { BASE_URL } from '@/lib/constants/site';
 import { cacheLife } from 'next/cache';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
+import { MOROCCO_TEAM_ID } from '@/lib/constants/morocco-hubs';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -407,6 +409,7 @@ export default async function TeamPage({ params }: PageProps) {
           </>
         }
       />
+      {team.id === MOROCCO_TEAM_ID && <MoroccoHubLinks locale={typedLocale} current="morocco" />}
     </>
   );
 }
