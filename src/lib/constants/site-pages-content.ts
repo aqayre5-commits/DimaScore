@@ -1,8 +1,9 @@
 /**
  * Copy for the static footer pages (legal, privacy, terms, cookiePolicy, about, contact, faq).
  *
- * Legal identity: publisher / data controller is REN Technology Limited (England & Wales, company
- * no. 13694812). Keep the prose here (not in the i18n message bundles) so it stays co-located and
+ * Legal identity (owner's decision, 19 Nov 2026): the data controller and publisher is DimaScore
+ * (the operator), a site run by an individual sole operator, not a company; location Manchester,
+ * United Kingdom. No person, company, company number or address is named. Keep the prose here (not in the i18n message bundles) so it stays co-located and
  * easy to revise. Legal wording is not legal advice — have it reviewed before relying on it.
  *
  * About, privacy and cookie copy (Revamp R7, Nov 2026) states only what the code does:
@@ -18,11 +19,11 @@
 import type { Locale } from '@/lib/i18n/config';
 
 /**
- * Swap this for the real address once it exists. UNVERIFIED: on 19 Nov 2026 dimascore.com had no
- * MX record (dimascore.ma has Zoho MX), so mail to this address may bounce. Confirm before relying
- * on it for privacy requests.
+ * Public contact and privacy-request address. Confirmed by the owner on 19 Nov 2026:
+ * "contact@dimascore.ma works" (dimascore.ma has Zoho MX; dimascore.com has no MX record).
+ * Every static page reads it from here; don't hard-code addresses in the copy.
  */
-export const CONTACT_EMAIL = 'contact@dimascore.com';
+export const CONTACT_EMAIL = 'contact@dimascore.ma';
 
 /**
  * Where the site runs today, as named in the privacy policy ("What is processed when you visit").
@@ -85,6 +86,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'The service',
           body: [
             'DimaScore provides football scores, fixtures, standings and statistics for information purposes only.',
+            'DimaScore (the operator) is a site run by an individual sole operator; it is not run by a company. Location: Manchester, United Kingdom.',
           ],
         },
         {
@@ -170,7 +172,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'Who we are',
           body: [
             'DimaScore is a football scores and statistics site in French, English and Arabic, built around Moroccan football.',
-            'It is operated by REN Technology Limited, a company registered in England and Wales under company number 13694812.',
+            'It is run by an individual sole operator, not a company, based in Manchester, United Kingdom.',
           ],
         },
         {
@@ -205,7 +207,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'Who is responsible',
           body: [
-            'DimaScore is operated by REN Technology Limited, a company registered in England and Wales under company number 13694812. It is the data controller for this site.',
+            'The data controller is DimaScore (the operator), a site run by an individual sole operator; it is not run by a company. Location: Manchester, United Kingdom.',
             `For any privacy question or request, email ${CONTACT_EMAIL}.`,
           ],
         },
@@ -254,7 +256,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'Publisher',
           body: [
-            'DimaScore is published by REN Technology Limited, a company registered in England and Wales under company number 13694812.',
+            'DimaScore is published by an individual sole operator; it is not run by a company. Location: Manchester, United Kingdom.',
             `Contact: ${CONTACT_EMAIL}`,
           ],
         },
@@ -328,6 +330,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'Le service',
           body: [
             'DimaScore fournit des scores, calendriers, classements et statistiques de football à titre informatif uniquement.',
+            'DimaScore (l’opérateur) est un site exploité par une personne physique, opérateur individuel ; il n’est pas exploité par une société. Localisation : Manchester, Royaume-Uni.',
           ],
         },
         {
@@ -417,7 +420,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'Qui sommes-nous',
           body: [
             'DimaScore est un site de résultats et de statistiques de football en français, en anglais et en arabe, centré sur le football marocain.',
-            'Il est édité par REN Technology Limited, société immatriculée en Angleterre et au pays de Galles sous le numéro 13694812.',
+            'Il est exploité depuis Manchester, au Royaume-Uni, par une personne physique, opérateur individuel, et non par une société.',
           ],
         },
         {
@@ -452,7 +455,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'Responsable du traitement',
           body: [
-            'DimaScore est édité par REN Technology Limited, société immatriculée en Angleterre et au pays de Galles sous le numéro 13694812, responsable du traitement des données de ce site.',
+            'Le responsable du traitement est DimaScore (l’opérateur), un site exploité par une personne physique, opérateur individuel ; il n’est pas exploité par une société. Localisation : Manchester, Royaume-Uni.',
             `Pour toute question ou demande relative à vos données, écrivez à ${CONTACT_EMAIL}.`,
           ],
         },
@@ -505,7 +508,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'Éditeur',
           body: [
-            'DimaScore est édité par REN Technology Limited, société immatriculée en Angleterre et au Pays de Galles sous le numéro 13694812.',
+            'DimaScore est édité par une personne physique, opérateur individuel ; il n’est pas exploité par une société. Localisation : Manchester, Royaume-Uni.',
             `Contact : ${CONTACT_EMAIL}`,
           ],
         },
@@ -580,6 +583,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'الخدمة',
           body: [
             'يقدّم ديماسكور نتائج كرة القدم والمباريات والترتيب والإحصاءات لأغراض إعلامية فقط.',
+            'ديماسكور (المشغّل) موقع يديره فرد بصفته مشغّلًا مستقلًا، ولا تديره شركة. الموقع: مانشستر، المملكة المتحدة.',
           ],
         },
         {
@@ -661,7 +665,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'من نحن',
           body: [
             'ديماسكور موقع لنتائج كرة القدم وإحصاءاتها بالعربية والفرنسية والإنجليزية، يضع الكرة المغربية في صلب اهتمامه.',
-            'تديره شركة REN Technology Limited، المسجّلة في إنجلترا وويلز تحت الرقم 13694812.',
+            'يديره فرد بصفته مشغّلًا مستقلًا، وليس شركة، من مانشستر في المملكة المتحدة.',
           ],
         },
         {
@@ -696,7 +700,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'الجهة المسؤولة',
           body: [
-            'يدير ديماسكور شركة REN Technology Limited، المسجّلة في إنجلترا وويلز تحت الرقم 13694812، وهي الجهة المسؤولة عن معالجة بيانات هذا الموقع.',
+            'الجهة المسؤولة عن معالجة البيانات هي ديماسكور (المشغّل)، وهو موقع يديره فرد بصفته مشغّلًا مستقلًا، ولا تديره شركة. الموقع: مانشستر، المملكة المتحدة.',
             `لأي سؤال أو طلب يتعلق بالخصوصية، راسلنا على ${CONTACT_EMAIL}.`,
           ],
         },
@@ -745,7 +749,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'الناشر',
           body: [
-            'ديماسكور تصدره REN Technology Limited، شركة مسجّلة في إنجلترا وويلز تحت رقم 13694812.',
+            'ينشر ديماسكور فرد بصفته مشغّلًا مستقلًا، ولا تديره شركة. الموقع: مانشستر، المملكة المتحدة.',
             `للتواصل: ${CONTACT_EMAIL}`,
           ],
         },

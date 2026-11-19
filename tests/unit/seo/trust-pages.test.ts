@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { HOSTING, SITE_PAGES_CONTENT } from '@/lib/constants/site-pages-content';
-import { buildAboutPageGraph, OPERATOR } from '@/lib/seo/about-jsonld';
+import { CONTACT_EMAIL, HOSTING, SITE_PAGES_CONTENT } from '@/lib/constants/site-pages-content';
+import { buildAboutPageGraph } from '@/lib/seo/about-jsonld';
+import { buildOrganization } from '@/lib/seo/jsonld';
 import { routing } from '@/lib/i18n/routing';
 
 // About, privacy and cookie copy (Revamp R7) states facts about the code. These tests pin each fact
@@ -14,11 +15,32 @@ const text = (locale: (typeof LOCALES)[number], key: 'about' | 'privacy' | 'cook
 };
 
 describe('trust pages copy', () => {
-  it.each(LOCALES)('%s: About and privacy name the operator and company number', (locale) => {
-    for (const key of ['about', 'privacy'] as const) {
-      expect(text(locale, key)).toContain(OPERATOR.legalName);
-      expect(text(locale, key)).toContain(OPERATOR.companyNumber);
-    }
+  it.each(LOCALES)(
+    '%s: privacy, terms and legal name DimaScore as a sole-operator site',
+    (locale) => {
+      const controller = {
+        en: 'The data controller is DimaScore (the operator), a site run by an individual sole operator; it is not run by a company. Location: Manchester, United Kingdom.',
+        fr: 'Le responsable du traitement est DimaScore (l’opérateur), un site exploité par une personne physique, opérateur individuel ; il n’est pas exploité par une société. Localisation : Manchester, Royaume-Uni.',
+        ar: 'الجهة المسؤولة عن معالجة البيانات هي ديماسكور (المشغّل)، وهو موقع يديره فرد بصفته مشغّلًا مستقلًا، ولا تديره شركة. الموقع: مانشستر، المملكة المتحدة.',
+      }[locale];
+      expect(text(locale, 'privacy')).toContain(controller);
+      const where = { en: 'Manchester, United Kingdom', fr: 'Manchester', ar: 'مانشستر' }[locale];
+      for (const key of ['about', 'terms', 'legal'] as const) {
+        const c = SITE_PAGES_CONTENT[locale][key];
+        expect(c.sections.flatMap((x) => x.body).join('\n')).toContain(where);
+      }
+      // GDPR wording and governing law stay.
+      expect(text(locale, 'privacy')).toMatch(/UK GDPR|RGPD britannique|المملكة المتحدة/);
+      expect(JSON.stringify(SITE_PAGES_CONTENT[locale].terms)).toMatch(
+        /England and Wales|Angleterre et du Pays de Galles|إنجلترا وويلز/,
+      );
+    },
+  );
+
+  it.each(LOCALES)('%s: no company, company number, person or address is named', (locale) => {
+    const all = JSON.stringify(SITE_PAGES_CONTENT[locale]);
+    expect(all).not.toMatch(/\bREN\b|REN Technology|13694812|Abdilahi|Qayre/);
+    expect(all).not.toMatch(/Chester Road|Stretford|M32 0PA|Taxassist/);
   });
 
   it.each(LOCALES)('%s: no analytics, pixel or consent claims', (locale) => {
@@ -37,6 +59,17 @@ describe('trust pages copy', () => {
         for (const p of s.body) expect(p.trim()).not.toBe('');
       }
     }
+  });
+
+  it('every static page uses the confirmed contact address, never dimascore.com', () => {
+    expect(CONTACT_EMAIL).toBe('contact@dimascore.ma');
+    for (const locale of LOCALES) {
+      const all = JSON.stringify(SITE_PAGES_CONTENT[locale]);
+      expect(all).not.toContain('@dimascore.com');
+      for (const key of ['about', 'privacy', 'cookiePolicy'] as const)
+        expect(text(locale, key)).toContain('contact@dimascore.ma');
+    }
+    expect(read('src/app/[locale]/(app)/contact/page.tsx')).toContain('mailto:${CONTACT_EMAIL}');
   });
 
   it('every locale has the same section count per page', () => {
@@ -98,28 +131,38 @@ describe('facts the copy relies on', () => {
 });
 
 describe('About JSON-LD', () => {
-  it('links the AboutPage, DimaScore and the operating company', () => {
+  it('is one AboutPage node about the sitewide DimaScore organization', () => {
     const g = buildAboutPageGraph('https://dimascore.ma', 'fr', {
       title: 'À propos de DimaScore',
       description: 'x',
     });
-    const nodes = g['@graph'] as Record<string, unknown>[];
-    expect(nodes[0]).toMatchObject({
-      '@type': 'AboutPage',
-      url: 'https://dimascore.ma/fr/about',
-      inLanguage: 'fr',
-      about: { '@id': 'https://dimascore.ma/#organization' },
-    });
-    expect(nodes[1]).toMatchObject({
-      '@type': 'NewsMediaOrganization',
-      '@id': 'https://dimascore.ma/#organization',
-      name: 'DimaScore',
-      url: 'https://dimascore.ma/',
-      parentOrganization: { '@id': 'https://dimascore.ma/#operator' },
-    });
-    expect(nodes[2]).toMatchObject({
-      legalName: 'REN Technology Limited',
-      identifier: { value: '13694812' },
-    });
+    expect(g['@graph']).toEqual([
+      {
+        '@type': 'AboutPage',
+        '@id': 'https://dimascore.ma/fr/about#page',
+        url: 'https://dimascore.ma/fr/about',
+        name: 'À propos de DimaScore',
+        description: 'x',
+        inLanguage: 'fr',
+        isPartOf: { '@id': 'https://dimascore.ma/#website' },
+        about: { '@id': 'https://dimascore.ma/#organization' },
+      },
+    ]);
+  });
+
+  it('the sitewide organization is name, url, logo and sameAs X only', () => {
+    const org = buildOrganization('https://dimascore.ma');
+    expect(Object.keys(org).sort()).toEqual(['@id', '@type', 'logo', 'name', 'sameAs', 'url']);
+    expect(org.sameAs).toEqual(['https://x.com/DimaScoreMa']);
+  });
+
+  it('no JSON-LD on the trust pages names REN, the company number or a person', () => {
+    for (const locale of LOCALES) {
+      const json =
+        JSON.stringify(
+          buildAboutPageGraph('https://dimascore.ma', locale, SITE_PAGES_CONTENT[locale].about),
+        ) + JSON.stringify(buildOrganization('https://dimascore.ma'));
+      expect(json).not.toMatch(/\bREN\b|13694812|Person|founder|parentOrganization|Abdilahi/);
+    }
   });
 });
