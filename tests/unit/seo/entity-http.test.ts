@@ -36,6 +36,11 @@ describe('parseEntityPath', () => {
       kind: 'match',
       slug: '1528862',
     });
+    expect(parseEntityPath('/en/entraineur/a-conte-2425')).toEqual({
+      locale: 'en',
+      kind: 'coach',
+      slug: 'a-conte-2425',
+    });
   });
 
   it('decodes the slug and ignores everything that is not an entity url', () => {
@@ -67,6 +72,11 @@ describe('entityLookupKey', () => {
     expect(entityLookupKey(ref({ kind: 'match', slug: 'no-id-here' }))).toEqual({
       by: 'impossible',
     });
+    expect(entityLookupKey(ref({ kind: 'coach', slug: 'nobody-999999998' }))).toEqual({
+      by: 'id',
+      id: 999999998,
+    });
+    expect(entityLookupKey(ref({ kind: 'coach', slug: 'no-id' }))).toEqual({ by: 'impossible' });
     expect(entityLookupKey(ref({ kind: 'player', slug: 'nobody-9999999999' }))).toEqual({
       by: 'impossible',
     });

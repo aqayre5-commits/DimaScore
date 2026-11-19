@@ -28,6 +28,16 @@ export async function lookupEntity(ref: EntityRef): Promise<'found' | 'missing'>
     return row ? 'found' : 'missing';
   }
 
+  if (ref.kind === 'coach') {
+    if (key.by !== 'id') return 'missing';
+    const [row] = await db
+      .select({ id: schema.coaches.id })
+      .from(schema.coaches)
+      .where(eq(schema.coaches.id, key.id))
+      .limit(1);
+    return row ? 'found' : 'missing';
+  }
+
   const where = key.by === 'id' ? eq(schema.players.id, key.id) : eq(schema.players.slug, ref.slug);
   const [row] = await db
     .select({ id: schema.players.id })
