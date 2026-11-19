@@ -1,14 +1,27 @@
 /**
  * Copy for the static footer pages (legal, privacy, terms, cookiePolicy, about, contact, faq).
  *
- * Intentionally concise — starter copy to be refined editorially. Legal identity: publisher /
- * data controller is REN Technology Limited (England & Wales, company no. 13694812); framework is
- * GDPR. Keep the prose here (not in the i18n message bundles) so it stays co-located and easy to
- * revise. Legal wording is starter text, not legal advice — have it reviewed before relying on it.
+ * Legal identity: publisher / data controller is REN Technology Limited (England & Wales, company
+ * no. 13694812). Keep the prose here (not in the i18n message bundles) so it stays co-located and
+ * easy to revise. Legal wording is not legal advice — have it reviewed before relying on it.
+ *
+ * About, privacy and cookie copy (Revamp R7, Nov 2026) states only what the code does:
+ * - no cookies on the public site (next-intl localeCookie is off; the admin session cookie is
+ *   /admin only); local storage holds `atlas-theme` and `dimascore:follows` (useFollows);
+ * - no analytics, pixels or ads (GTM/GA/Meta Pixel removed in #23);
+ * - third parties a visitor's browser talks to: Vercel (hosting), the Soketi real-time server on
+ *   Railway (NEXT_PUBLIC_PUSHER_HOST), media.api-sports.io (flag SVGs in Flag.tsx; other images go
+ *   through /_next/image), and YouTube privacy-enhanced embeds only after a video is opened;
+ * - data from API-Football; refresh cadence from workers/live-poller (15 s) and vercel.json crons.
+ * If any of those change, change this copy in the same PR.
  */
 import type { Locale } from '@/lib/i18n/config';
 
-/** Swap this for the real address once it exists. */
+/**
+ * Swap this for the real address once it exists. UNVERIFIED: on 19 Nov 2026 dimascore.com had no
+ * MX record (dimascore.ma has Zoho MX), so mail to this address may bounce. Confirm before relying
+ * on it for privacy requests.
+ */
 export const CONTACT_EMAIL = 'contact@dimascore.com';
 
 export interface PageSection {
@@ -97,73 +110,76 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'Governing law',
           body: ['These terms are governed by the laws of England and Wales.'],
         },
-        { heading: 'Contact', body: ['Questions about these terms: contact@dimascore.com'] },
+        { heading: 'Contact', body: [`Questions about these terms: ${CONTACT_EMAIL}`] },
       ],
     },
     cookiePolicy: {
-      title: 'Cookie Policy',
-      description: 'How DimaScore uses cookies and similar technologies.',
+      title: 'Cookie policy',
+      description:
+        'DimaScore sets no cookies on the public site. What it keeps on your device instead, and how to remove it.',
       sections: [
         {
-          heading: 'What cookies are',
+          heading: 'Cookies',
           body: [
-            'Cookies are small files stored on your device that help the site work and let us measure how it is used.',
+            'The public site sets no cookies: no analytics, advertising or tracking cookies. That is why there is no cookie banner.',
           ],
         },
         {
-          heading: 'Strictly necessary',
+          heading: 'Local storage',
           body: [
-            'These remember your language and theme preference and your cookie-notice choice. They are always active.',
+            "Your browser's local storage keeps two things: your theme (light or dark) and the teams and competitions you follow. Neither is sent to us.",
           ],
         },
         {
-          heading: 'Analytics',
+          heading: 'Third-party content',
           body: [
-            'Google Analytics 4, loaded through Google Tag Manager, helps us understand aggregate traffic.',
+            "Country flags load from API-Football's image server, and videos play through YouTube's privacy-enhanced mode only when you open one. The privacy policy explains what these services receive.",
           ],
         },
         {
-          heading: 'Marketing',
-          body: ['The Meta Pixel helps us measure the reach of DimaScore content.'],
-        },
-        {
-          heading: 'Managing cookies',
+          heading: 'Removing it',
           body: [
-            'You can block or delete cookies in your browser settings. Some features may then not work as intended.',
+            "Clear this site's data in your browser settings to remove your theme and the teams and competitions you follow.",
           ],
         },
         {
-          heading: 'Changes',
-          body: ['This policy may be updated. The most recent version always applies.'],
+          heading: 'Contact',
+          body: [`Questions about this policy: ${CONTACT_EMAIL}`],
         },
-        { heading: 'Contact', body: ['Questions about cookies: contact@dimascore.com'] },
       ],
     },
     about: {
       title: 'About DimaScore',
       description:
-        'Live football scores, fixtures, and stats across the major competitions — with deep coverage of Moroccan football.',
+        'Who runs DimaScore, what it covers, where the football data comes from and how often it is updated.',
       sections: [
         {
-          heading: 'DimaScore — live football, with Morocco at the heart of it',
+          heading: 'Who we are',
           body: [
-            "DimaScore covers the world of football: live scores and fixtures across the major competitions — the World Cup, AFCON, WAFCON, the Champions League, and Europe's top leagues — refreshed in seconds, every match.",
-            'Built in Morocco, DimaScore goes deeper than anyone on Moroccan football. Full Botola Pro and Coupe du Trône coverage, the Atlas Lions across AFCON and World Cup cycles, and a dedicated rail tracking Moroccan players abroad.',
-            'No betting. No ads. Multilingual: French, English, Arabic.',
+            'DimaScore is a football scores and statistics site in French, English and Arabic, built around Moroccan football.',
+            'It is operated by REN Technology Limited, a company registered in England and Wales under company number 13694812.',
           ],
         },
         {
-          heading: 'What you get',
+          heading: 'What we cover',
           body: [
-            'Live scores and match details — refreshed every 15 seconds when a match is in progress.',
-            'Team and player pages, standings, top scorers, tournament squads, and knockout brackets.',
-            "Editorial predictions and analysis — DimaScore's own view, never betting odds.",
+            'Moroccan football: Botola Pro, Botola 2 and the Coupe du Trône, the Morocco national teams, and Lions abroad, which follows Moroccan internationals at their clubs.',
+            "Africa and the world: AFCON, WAFCON, the CAF Champions League, the World Cup, the UEFA Champions League and Europe's top five leagues.",
+            "Match pages with the live score, goals, cards, line-ups and statistics, and before kick-off a probable line-up based on each team's last six matches. Team, player and coach pages, standings, top scorers, squads and knockout brackets.",
           ],
         },
         {
-          heading: 'Our data',
+          heading: 'Where the data comes from',
           body: [
-            'Match, team and player data is aggregated from licensed providers and refreshed continuously. Coverage depth varies by competition.',
+            'Fixtures, scores, match events, line-ups, standings and squads come from API-Football, a commercial football data service.',
+            'While a match is live, the score updates every 15 seconds. Fixture lists and standings refresh every 30 minutes, top scorers once a day and squads once a week.',
+            `Data can be delayed or occasionally wrong. If you spot a mistake, tell us at ${CONTACT_EMAIL}.`,
+          ],
+        },
+        {
+          heading: 'What DimaScore is not',
+          body: [
+            'DimaScore does not offer betting or odds. It shows no advertising and uses no analytics or advertising trackers.',
           ],
         },
       ],
@@ -171,33 +187,50 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
     privacy: {
       title: 'Privacy policy',
       description:
-        'How DimaScore collects, uses and protects your personal data, in line with the GDPR.',
+        'What personal data DimaScore handles, why, who else receives it, and your rights.',
       sections: [
         {
-          heading: 'Overview',
+          heading: 'Who is responsible',
           body: [
-            'This policy explains what data DimaScore collects and how we use it. We process personal data in accordance with the EU General Data Protection Regulation (GDPR).',
+            'DimaScore is operated by REN Technology Limited, a company registered in England and Wales under company number 13694812. It is the data controller for this site.',
+            `For any privacy question or request, email ${CONTACT_EMAIL}.`,
           ],
         },
         {
-          heading: 'Data we collect',
+          heading: 'No account, no tracking',
           body: [
-            'We keep data collection to a minimum and do not require an account to use the site.',
-            'The site uses only strictly necessary cookies, which keep it working. We do not set analytics or advertising cookies.',
+            'You can use DimaScore without an account. We use no analytics tools, advertising pixels or tracking cookies, and we do not sell personal data.',
           ],
         },
         {
-          heading: 'How we use it',
+          heading: 'What is processed when you visit',
           body: [
-            'To operate and improve the site and keep the service secure. We do not sell your personal data.',
+            'Like any website, each page request carries technical data such as your IP address, browser type and the page you asked for. Our hosting provider, Vercel, processes it to deliver the site and protect it from abuse.',
+            'Live scores reach your browser through our real-time server, hosted on Railway, which receives the same kind of technical data.',
+            'Country flags load directly from the image server of our data provider, API-Football (media.api-sports.io), which receives your IP address when it sends them.',
+            "Videos play through YouTube's privacy-enhanced mode (youtube-nocookie.com) and load only when you open one.",
           ],
+        },
+        {
+          heading: 'Stored on your device',
+          body: [
+            "The public site sets no cookies. Your browser's local storage keeps your light or dark theme and the teams and competitions you follow. This stays on your device and is never sent to us; clearing the site's data in your browser removes it.",
+          ],
+        },
+        {
+          heading: 'If you email us',
+          body: ['We use your email address and message only to reply to you.'],
         },
         {
           heading: 'Your rights',
           body: [
-            `Under the GDPR you may request access to, correction or erasure of your personal data, and object to or restrict its processing. Email us at ${CONTACT_EMAIL}.`,
-            'The data controller is REN Technology Limited, a company registered in England and Wales (company number 13694812).',
+            `Under the UK GDPR and, where it applies, the EU GDPR, you can ask for access to, correction or deletion of your personal data, and object to or restrict its processing. Email us at ${CONTACT_EMAIL}.`,
+            "You can also complain to the UK Information Commissioner's Office (ico.org.uk) or to the data protection authority where you live.",
           ],
+        },
+        {
+          heading: 'Changes',
+          body: ['If what we process changes, we will update this page and the date at the top.'],
         },
       ],
     },
@@ -324,75 +357,76 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'Droit applicable',
           body: ["Ces conditions sont régies par le droit de l'Angleterre et du Pays de Galles."],
         },
-        { heading: 'Contact', body: ['Questions sur ces conditions : contact@dimascore.com'] },
+        { heading: 'Contact', body: [`Questions sur ces conditions : ${CONTACT_EMAIL}`] },
       ],
     },
     cookiePolicy: {
       title: 'Politique relative aux cookies',
-      description: 'Comment DimaScore utilise les cookies et technologies similaires.',
+      description:
+        'DimaScore ne dépose aucun cookie sur le site public. Ce qu’il conserve sur votre appareil à la place, et comment le supprimer.',
       sections: [
         {
-          heading: 'Que sont les cookies',
+          heading: 'Cookies',
           body: [
-            "Les cookies sont de petits fichiers stockés sur votre appareil qui font fonctionner le site et nous permettent d'en mesurer l'utilisation.",
+            'Le site public ne dépose aucun cookie : ni cookie de mesure d’audience, ni cookie publicitaire, ni cookie de suivi. C’est pourquoi il n’y a pas de bandeau cookies.',
           ],
         },
         {
-          heading: 'Strictement nécessaires',
+          heading: 'Stockage local',
           body: [
-            "Ils mémorisent votre langue, votre thème et votre choix concernant l'avis sur les cookies. Toujours actifs.",
+            'Le stockage local de votre navigateur conserve deux choses : votre thème (clair ou sombre) et les équipes et compétitions que vous suivez. Aucune ne nous est envoyée.',
           ],
         },
         {
-          heading: "Mesure d'audience",
+          heading: 'Contenus tiers',
           body: [
-            'Google Analytics 4, chargé via Google Tag Manager, nous aide à comprendre le trafic global.',
+            'Les drapeaux des pays sont chargés depuis le serveur d’images d’API-Football, et les vidéos sont lues via le mode de confidentialité renforcée de YouTube, uniquement lorsque vous en ouvrez une. La politique de confidentialité précise ce que ces services reçoivent.',
           ],
         },
         {
-          heading: 'Marketing',
-          body: ['Le pixel Meta nous aide à mesurer la portée des contenus DimaScore.'],
-        },
-        {
-          heading: 'Gérer les cookies',
+          heading: 'Les supprimer',
           body: [
-            'Vous pouvez bloquer ou supprimer les cookies dans les paramètres de votre navigateur. Certaines fonctionnalités pourraient alors ne plus fonctionner.',
+            'Effacez les données de ce site dans les réglages de votre navigateur pour supprimer votre thème et les équipes et compétitions suivies.',
           ],
         },
         {
-          heading: 'Modifications',
-          body: [
-            "Cette politique peut être mise à jour. La version la plus récente s'applique toujours.",
-          ],
+          heading: 'Contact',
+          body: [`Questions sur cette politique : ${CONTACT_EMAIL}`],
         },
-        { heading: 'Contact', body: ['Questions sur les cookies : contact@dimascore.com'] },
       ],
     },
     about: {
       title: 'À propos de DimaScore',
       description:
-        'Scores, calendriers et statistiques de football en direct sur les grandes compétitions — avec une couverture approfondie du football marocain.',
+        'Qui édite DimaScore, ce que le site couvre, d’où viennent les données et à quelle fréquence elles sont mises à jour.',
       sections: [
         {
-          heading: 'DimaScore — le football en direct, avec le Maroc au cœur',
+          heading: 'Qui sommes-nous',
           body: [
-            'DimaScore couvre tout le football : scores et calendriers en direct sur les grandes compétitions — Coupe du Monde, CAN, CAN féminine, Ligue des Champions, et les grands championnats européens — actualisés en quelques secondes, chaque match.',
-            'Construit au Maroc, DimaScore va plus loin que personne sur le football marocain. Couverture complète de la Botola Pro et de la Coupe du Trône, suivi des Lions de l’Atlas sur la CAN et la Coupe du Monde, et un fil dédié aux joueurs marocains à l’étranger.',
-            'Sans paris, sans publicité. Multilingue : français, anglais, arabe.',
+            'DimaScore est un site de résultats et de statistiques de football en français, en anglais et en arabe, centré sur le football marocain.',
+            'Il est édité par REN Technology Limited, société immatriculée en Angleterre et au pays de Galles sous le numéro 13694812.',
           ],
         },
         {
-          heading: 'Ce que vous obtenez',
+          heading: 'Ce que nous couvrons',
           body: [
-            'Scores en direct et détails des matchs — actualisés toutes les 15 secondes pendant qu’un match est en cours.',
-            'Pages d’équipes et de joueurs, classements, meilleurs buteurs, effectifs et tableaux à élimination directe.',
-            'Pronostics et analyses éditoriaux — l’avis de DimaScore, jamais des cotes de paris.',
+            'Le football marocain : la Botola Pro, la Botola 2 et la Coupe du Trône, les sélections marocaines et la page Lions à l’étranger, qui suit les internationaux marocains dans leurs clubs.',
+            'L’Afrique et le monde : la CAN, la CAN féminine, la Ligue des champions de la CAF, la Coupe du monde, la Ligue des champions de l’UEFA et les cinq grands championnats européens.',
+            'Des pages de match avec le score en direct, les buts, les cartons, les compositions et les statistiques, et avant le coup d’envoi une composition probable établie à partir des six derniers matchs de chaque équipe. Des pages équipes, joueurs et entraîneurs, les classements, les meilleurs buteurs, les effectifs et les tableaux à élimination directe.',
           ],
         },
         {
-          heading: 'Nos données',
+          heading: 'D’où viennent les données',
           body: [
-            'Les données des matchs, équipes et joueurs proviennent de fournisseurs sous licence et sont actualisées en continu. La profondeur de la couverture varie selon la compétition.',
+            'Le calendrier, les scores, les événements de match, les compositions, les classements et les effectifs proviennent d’API-Football, un service commercial de données football.',
+            'Pendant un match en direct, le score est mis à jour toutes les 15 secondes. Le calendrier et les classements sont actualisés toutes les 30 minutes, les meilleurs buteurs une fois par jour et les effectifs une fois par semaine.',
+            `Les données peuvent être retardées ou parfois erronées. Si vous repérez une erreur, écrivez-nous à ${CONTACT_EMAIL}.`,
+          ],
+        },
+        {
+          heading: 'Ce que DimaScore n’est pas',
+          body: [
+            'DimaScore ne propose ni paris ni cotes. Le site n’affiche aucune publicité et n’utilise ni outil de mesure d’audience ni traceur publicitaire.',
           ],
         },
       ],
@@ -400,32 +434,53 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
     privacy: {
       title: 'Politique de confidentialité',
       description:
-        'Comment DimaScore collecte, utilise et protège vos données personnelles, conformément au RGPD.',
+        'Les données personnelles que traite DimaScore, pourquoi, qui d’autre les reçoit, et vos droits.',
       sections: [
         {
-          heading: 'Aperçu',
+          heading: 'Responsable du traitement',
           body: [
-            'Cette politique explique quelles données DimaScore collecte et comment nous les utilisons. Nous traitons les données personnelles conformément au Règlement général sur la protection des données (RGPD).',
+            'DimaScore est édité par REN Technology Limited, société immatriculée en Angleterre et au pays de Galles sous le numéro 13694812, responsable du traitement des données de ce site.',
+            `Pour toute question ou demande relative à vos données, écrivez à ${CONTACT_EMAIL}.`,
           ],
         },
         {
-          heading: 'Données collectées',
+          heading: 'Sans compte, sans pistage',
           body: [
-            'Nous réduisons la collecte au minimum et aucun compte n’est requis pour utiliser le site.',
-            'Le site n’utilise que des cookies strictement nécessaires, qui le font fonctionner. Nous ne déposons pas de cookies d’analyse ou de publicité.',
+            'Vous pouvez utiliser DimaScore sans créer de compte. Nous n’utilisons ni outil de mesure d’audience, ni pixel publicitaire, ni cookie de suivi, et nous ne vendons pas de données personnelles.',
           ],
         },
         {
-          heading: 'Utilisation',
+          heading: 'Ce qui est traité lors de votre visite',
           body: [
-            'Pour exploiter et améliorer le site et sécuriser le service. Nous ne vendons pas vos données personnelles.',
+            'Comme pour tout site web, chaque page demandée transmet des données techniques, comme votre adresse IP, le type de navigateur et la page consultée. Notre hébergeur, Vercel, les traite pour afficher le site et le protéger contre les abus.',
+            'Les scores en direct arrivent dans votre navigateur via notre serveur temps réel, hébergé chez Railway, qui reçoit le même type de données techniques.',
+            'Les drapeaux des pays sont chargés directement depuis le serveur d’images de notre fournisseur de données, API-Football (media.api-sports.io), qui reçoit votre adresse IP lorsqu’il les envoie.',
+            'Les vidéos sont lues via le mode de confidentialité renforcée de YouTube (youtube-nocookie.com) et ne se chargent que lorsque vous en ouvrez une.',
+          ],
+        },
+        {
+          heading: 'Ce qui est stocké sur votre appareil',
+          body: [
+            'Le site public ne dépose aucun cookie. Le stockage local de votre navigateur conserve votre thème clair ou sombre et les équipes et compétitions que vous suivez. Ces informations restent sur votre appareil et ne nous sont jamais envoyées ; effacer les données du site dans votre navigateur les supprime.',
+          ],
+        },
+        {
+          heading: 'Si vous nous écrivez',
+          body: [
+            'Nous utilisons votre adresse e-mail et votre message uniquement pour vous répondre.',
           ],
         },
         {
           heading: 'Vos droits',
           body: [
-            `Conformément au RGPD, vous pouvez demander l’accès, la rectification ou la suppression de vos données personnelles, et vous opposer à leur traitement ou en demander la limitation. Écrivez-nous à ${CONTACT_EMAIL}.`,
-            'Le responsable du traitement est REN Technology Limited, société immatriculée en Angleterre et au Pays de Galles (numéro de société 13694812).',
+            `En vertu du RGPD britannique et, lorsqu’il s’applique, du RGPD de l’UE, vous pouvez demander l’accès à vos données personnelles, leur rectification ou leur effacement, et vous opposer à leur traitement ou le limiter. Écrivez-nous à ${CONTACT_EMAIL}.`,
+            'Vous pouvez aussi saisir l’autorité britannique de protection des données (ICO, ico.org.uk) ou l’autorité de protection des données de votre pays.',
+          ],
+        },
+        {
+          heading: 'Modifications',
+          body: [
+            'Si les données que nous traitons changent, nous mettrons à jour cette page et la date indiquée en haut.',
           ],
         },
       ],
@@ -546,71 +601,76 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'القانون المطبّق',
           body: ['تخضع هذه الشروط لقوانين إنجلترا وويلز.'],
         },
-        { heading: 'اتصل بنا', body: ['أسئلة حول هذه الشروط: contact@dimascore.com'] },
+        { heading: 'اتصل بنا', body: [`أسئلة حول هذه الشروط: ${CONTACT_EMAIL}`] },
       ],
     },
     cookiePolicy: {
       title: 'سياسة ملفات تعريف الارتباط',
-      description: 'كيف يستخدم ديماسكور ملفات تعريف الارتباط والتقنيات المشابهة.',
+      description:
+        'لا يضع ديماسكور أي ملفات تعريف ارتباط على الموقع العام. ما يحفظه على جهازك بدلًا منها، وكيف تحذفه.',
       sections: [
         {
-          heading: 'ما هي ملفات تعريف الارتباط',
+          heading: 'ملفات تعريف الارتباط',
           body: [
-            'هي ملفات صغيرة تُخزَّن على جهازك تساعد الموقع على العمل وتتيح لنا قياس استخدامه.',
+            'لا يضع الموقع العام أي ملفات تعريف ارتباط: لا لتحليل الزيارات ولا للإعلانات ولا للتتبع. ولهذا لا توجد نافذة موافقة على ملفات تعريف الارتباط.',
           ],
         },
         {
-          heading: 'ضرورية تمامًا',
-          body: ['تتذكّر لغتك وسمتك واختيارك بشأن إشعار ملفات تعريف الارتباط. تعمل دائمًا.'],
-        },
-        {
-          heading: 'قياس الأداء',
+          heading: 'التخزين المحلي',
           body: [
-            'يساعدنا Google Analytics 4، المُحمّل عبر Google Tag Manager، على فهم إجمالي الزيارات.',
+            'يحتفظ التخزين المحلي في متصفحك بأمرين: المظهر (فاتح أو داكن) والفرق والمسابقات التي تتابعها. ولا يُرسَل أيٌّ منهما إلينا.',
           ],
         },
         {
-          heading: 'التسويق',
-          body: ['يساعدنا Meta Pixel على قياس مدى وصول محتوى ديماسكور.'],
-        },
-        {
-          heading: 'إدارة ملفات تعريف الارتباط',
+          heading: 'محتوى الأطراف الثالثة',
           body: [
-            'يمكنك حظر أو حذف ملفات تعريف الارتباط من إعدادات متصفحك. قد لا تعمل بعض الميزات حينها.',
+            'تُحمَّل أعلام الدول من خادم الصور لدى API-Football، وتُشغَّل مقاطع الفيديو عبر وضع الخصوصية المحسّنة في يوتيوب فقط عندما تفتح أحدها. توضّح سياسة الخصوصية ما تتلقاه هذه الخدمات.',
           ],
         },
         {
-          heading: 'التغييرات',
-          body: ['قد تُحدَّث هذه السياسة. تسري دائمًا النسخة الأحدث.'],
+          heading: 'حذفها',
+          body: [
+            'امسح بيانات هذا الموقع من إعدادات متصفحك لحذف المظهر والفرق والمسابقات التي تتابعها.',
+          ],
         },
-        { heading: 'اتصل بنا', body: ['أسئلة حول ملفات تعريف الارتباط: contact@dimascore.com'] },
+        {
+          heading: 'اتصل بنا',
+          body: [`أسئلة حول هذه السياسة: ${CONTACT_EMAIL}`],
+        },
       ],
     },
     about: {
-      title: 'عن ديماسكور',
+      title: 'حول ديماسكور',
       description:
-        'نتائج وجداول وإحصاءات كروية مباشرة على أبرز المنافسات — مع تغطية معمّقة للكرة المغربية.',
+        'من يدير ديماسكور، وما الذي يغطيه، ومن أين تأتي بيانات كرة القدم، وكم مرة تُحدَّث.',
       sections: [
         {
-          heading: 'ديماسكور — كرة القدم مباشرة، والمغرب في صميمها',
+          heading: 'من نحن',
           body: [
-            'يغطي ديماسكور كرة القدم في العالم: نتائج وجداول مباشرة على أبرز المنافسات — كأس العالم، كأس أمم إفريقيا، كأس أمم إفريقيا للسيدات، دوري أبطال أوروبا، وأبرز الدوريات الأوروبية — محدَّثة في ثوانٍ، مباراة بمباراة.',
-            'صُمم في المغرب، يذهب ديماسكور أعمق من أي منصة أخرى في تغطية الكرة المغربية. تغطية كاملة للبطولة الاحترافية وكأس العرش، متابعة أسود الأطلس في كأس إفريقيا وكأس العالم، وقسم خاص باللاعبين المغاربة في الخارج.',
-            'دون رهانات، دون إعلانات. متعدد اللغات: العربية، الفرنسية، الإنجليزية.',
+            'ديماسكور موقع لنتائج كرة القدم وإحصاءاتها بالعربية والفرنسية والإنجليزية، يضع الكرة المغربية في صلب اهتمامه.',
+            'تديره شركة REN Technology Limited، المسجّلة في إنجلترا وويلز تحت الرقم 13694812.',
           ],
         },
         {
-          heading: 'ما الذي تحصل عليه',
+          heading: 'ما الذي نغطيه',
           body: [
-            'نتائج مباشرة وتفاصيل المباريات — محدَّثة كل 15 ثانية أثناء المباراة.',
-            'صفحات الفرق واللاعبين، الترتيب، الهدّافون، التشكيلات، وجداول الأدوار الإقصائية.',
-            'التوقّعات والتحليلات التحريرية — رأي ديماسكور، وليست حصصًا للرهان.',
+            'الكرة المغربية: البطولة الاحترافية والقسم الثاني وكأس العرش، والمنتخبات المغربية، وصفحة «أسود الأطلس بالخارج» التي تتابع الدوليين المغاربة مع أنديتهم.',
+            'إفريقيا والعالم: كأس أمم إفريقيا، وكأس أمم إفريقيا للسيدات، ودوري أبطال إفريقيا، وكأس العالم، ودوري أبطال أوروبا، والدوريات الأوروبية الخمسة الكبرى.',
+            'صفحات للمباريات تعرض النتيجة المباشرة والأهداف والبطاقات والتشكيلات والإحصاءات، وقبل صافرة البداية تشكيلة متوقعة مبنية على آخر ست مباريات لكل فريق. وصفحات للفرق واللاعبين والمدربين، والترتيب، والهدافين، وقوائم اللاعبين، وأدوار خروج المغلوب.',
           ],
         },
         {
-          heading: 'بياناتنا',
+          heading: 'مصدر البيانات',
           body: [
-            'تُجمع بيانات المباريات والفرق واللاعبين من مزوّدين مرخَّصين وتُحدَّث باستمرار. ويختلف عمق التغطية حسب المنافسة.',
+            'تأتي المواعيد والنتائج وأحداث المباريات والتشكيلات والترتيب وقوائم اللاعبين من API-Football، وهي خدمة تجارية لبيانات كرة القدم.',
+            'أثناء المباراة المباشرة تُحدَّث النتيجة كل 15 ثانية. ويُحدَّث جدول المباريات والترتيب كل 30 دقيقة، والهدافون مرة في اليوم، وقوائم اللاعبين مرة في الأسبوع.',
+            `قد تتأخر البيانات أو تقع فيها أخطاء أحيانًا. إن لاحظت خطأً فراسلنا على ${CONTACT_EMAIL}.`,
+          ],
+        },
+        {
+          heading: 'ما لا يقدّمه ديماسكور',
+          body: [
+            'لا يقدّم ديماسكور رهانات ولا احتمالات مراهنة، ولا يعرض إعلانات، ولا يستخدم أدوات لتحليل الزيارات أو للتتبع الإعلاني.',
           ],
         },
       ],
@@ -618,33 +678,50 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
     privacy: {
       title: 'سياسة الخصوصية',
       description:
-        'كيف يجمع ديماسكور بياناتك الشخصية ويستخدمها ويحميها، بما يتوافق مع اللائحة العامة لحماية البيانات (GDPR).',
+        'ما البيانات الشخصية التي يعالجها ديماسكور، ولماذا، ومن يتلقاها أيضًا، وما حقوقك.',
       sections: [
         {
-          heading: 'لمحة عامة',
+          heading: 'الجهة المسؤولة',
           body: [
-            'توضّح هذه السياسة البيانات التي يجمعها ديماسكور وكيفية استخدامها. نعالج البيانات الشخصية وفقًا للائحة العامة لحماية البيانات في الاتحاد الأوروبي (GDPR).',
+            'يدير ديماسكور شركة REN Technology Limited، المسجّلة في إنجلترا وويلز تحت الرقم 13694812، وهي الجهة المسؤولة عن معالجة بيانات هذا الموقع.',
+            `لأي سؤال أو طلب يتعلق بالخصوصية، راسلنا على ${CONTACT_EMAIL}.`,
           ],
         },
         {
-          heading: 'البيانات التي نجمعها',
+          heading: 'دون حساب ودون تتبّع',
           body: [
-            'نُبقي جمع البيانات في حدّه الأدنى ولا نشترط إنشاء حساب لاستخدام الموقع.',
-            'لا يستخدم الموقع سوى ملفات تعريف الارتباط الضرورية لتشغيله. لا نضع ملفات تحليلات أو إعلانات.',
+            'يمكنك استخدام ديماسكور دون إنشاء حساب. لا نستخدم أدوات لتحليل الزيارات ولا بكسلات إعلانية ولا ملفات تعريف ارتباط للتتبع، ولا نبيع البيانات الشخصية.',
           ],
         },
         {
-          heading: 'كيف نستخدمها',
+          heading: 'ما يُعالَج عند زيارتك',
           body: [
-            'لتشغيل الموقع وتحسينه والحفاظ على أمن الخدمة. لا نبيع بياناتك الشخصية.',
+            'كما في أي موقع، يحمل كل طلب لصفحة بيانات تقنية مثل عنوان IP الخاص بك ونوع المتصفح والصفحة المطلوبة. ويعالجها مزوّد الاستضافة لدينا، Vercel، لعرض الموقع وحمايته من إساءة الاستخدام.',
+            'تصل النتائج المباشرة إلى متصفحك عبر خادمنا للبث الفوري المستضاف لدى Railway، ويتلقى النوع نفسه من البيانات التقنية.',
+            'تُحمَّل أعلام الدول مباشرة من خادم الصور لدى مزوّد بياناتنا API-Football ‏(media.api-sports.io)، الذي يتلقى عنوان IP الخاص بك عند إرسالها.',
+            'تُشغَّل مقاطع الفيديو عبر وضع الخصوصية المحسّنة في يوتيوب (youtube-nocookie.com)، ولا تُحمَّل إلا عندما تفتح أحدها.',
           ],
+        },
+        {
+          heading: 'ما يُحفَظ على جهازك',
+          body: [
+            'لا يضع الموقع العام أي ملفات تعريف ارتباط. يحتفظ التخزين المحلي في متصفحك بالمظهر الذي اخترته (فاتح أو داكن) وبالفرق والمسابقات التي تتابعها. تبقى هذه المعلومات على جهازك ولا تُرسَل إلينا أبدًا، ويحذفها مسح بيانات الموقع من متصفحك.',
+          ],
+        },
+        {
+          heading: 'إذا راسلتنا',
+          body: ['نستخدم بريدك الإلكتروني ورسالتك للرد عليك فقط.'],
         },
         {
           heading: 'حقوقك',
           body: [
-            `وفقًا للائحة العامة لحماية البيانات (GDPR)، يمكنك طلب الاطّلاع على بياناتك الشخصية أو تصحيحها أو حذفها، والاعتراض على معالجتها أو تقييدها. راسلنا على ${CONTACT_EMAIL}.`,
-            'المسؤول عن المعالجة هو REN Technology Limited، شركة مسجّلة في إنجلترا وويلز (رقم الشركة 13694812).',
+            `بموجب اللائحة العامة لحماية البيانات في المملكة المتحدة، واللائحة الأوروبية حيث تنطبق، يمكنك طلب الاطلاع على بياناتك الشخصية أو تصحيحها أو حذفها، والاعتراض على معالجتها أو تقييدها. راسلنا على ${CONTACT_EMAIL}.`,
+            'يمكنك أيضًا تقديم شكوى إلى مكتب مفوض المعلومات في المملكة المتحدة (ico.org.uk) أو إلى هيئة حماية البيانات في بلدك.',
           ],
+        },
+        {
+          heading: 'التعديلات',
+          body: ['إذا تغيّر ما نعالجه من بيانات، سنحدّث هذه الصفحة والتاريخ المذكور في أعلاها.'],
         },
       ],
     },
