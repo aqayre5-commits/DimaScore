@@ -24,6 +24,8 @@ export interface MatchMetaInput {
    * unique when the same pairing recurs (league legs, cups, seasons).
    */
   dateLabel?: string | null;
+  /** Date with year ("20 Nov 2026"), used in finished-match descriptions; falls back to dateLabel. */
+  dateLabelLong?: string | null;
 }
 
 export interface MatchMeta {
@@ -49,7 +51,7 @@ const TEMPLATES: Record<string, Record<MatchMetaState, Template>> = {
   // actually shows (kick-off time, lineups, form, head-to-head).
   fr: {
     upcoming: ({ home, away, comp, d, dIn }) => ({
-      title: `${home} – ${away}${d} : compo probable, heure & stats`,
+      title: `${home} – ${away}${d} : compo probable, heure & face-à-face`,
       description: `${home} – ${away} en ${comp}${dIn} : heure du coup d'envoi (heure marocaine), compo probable, forme récente et historique des confrontations.`,
     }),
     live: ({ home, away, comp, dIn }) => ({
@@ -63,7 +65,7 @@ const TEMPLATES: Record<string, Record<MatchMetaState, Template>> = {
   },
   en: {
     upcoming: ({ home, away, comp, d, dIn }) => ({
-      title: `${home} vs ${away}${d}: preview, lineups & kickoff`,
+      title: `${home} vs ${away}${d}: lineups, kickoff & head-to-head`,
       description: `${home} vs ${away} in the ${comp}${dIn}: kickoff time (Morocco time), probable lineups, recent form and head-to-head history.`,
     }),
     live: ({ home, away, comp, dIn }) => ({
@@ -77,7 +79,7 @@ const TEMPLATES: Record<string, Record<MatchMetaState, Template>> = {
   },
   ar: {
     upcoming: ({ home, away, comp, d, dIn }) => ({
-      title: `${home} ضد ${away}${d}: التشكيلة المتوقعة وموعد المباراة`,
+      title: `${home} ضد ${away}${d}: التشكيلة المتوقعة والموعد والمواجهات المباشرة`,
       description: `مباراة ${home} ضد ${away} في ${comp}${dIn}: موعد الانطلاق بتوقيت المغرب والتشكيلة المتوقعة والفورمة الأخيرة وتاريخ المواجهات.`,
     }),
     live: ({ home, away, comp, dIn }) => ({
@@ -107,12 +109,14 @@ export function buildMatchMeta(input: MatchMetaInput): MatchMeta {
   const byLocale = TEMPLATES[input.locale] ?? TEMPLATES.fr;
   const date = input.dateLabel?.trim();
   const d = date ? ` (${date})` : '';
-  const dIn = date
+  // Finished descriptions carry the year ("le 20 nov. 2026"); titles keep the short date.
+  const descDate = (state === 'finished' ? input.dateLabelLong?.trim() : null) || date;
+  const dIn = descDate
     ? input.locale === 'ar'
-      ? ` يوم ${date}`
+      ? ` يوم ${descDate}`
       : input.locale === 'en'
-        ? ` on ${date}`
-        : ` le ${date}`
+        ? ` on ${descDate}`
+        : ` le ${descDate}`
     : '';
   return byLocale[state]({
     home: input.home,

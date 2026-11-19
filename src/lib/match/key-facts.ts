@@ -50,7 +50,7 @@ const LABELS = {
   },
 } as const;
 
-/** "GMT" or "GMT+1" for Morocco at that instant (Morocco has been on GMT since 20 Sept 2026). */
+/** "GMT" or "GMT+1": Morocco's UTC offset at that instant, read from the runtime's Intl/tz data. */
 export function moroccoOffsetLabel(date: Date): string {
   const part = new Intl.DateTimeFormat('en-GB', {
     timeZone: MOROCCO_TZ,
@@ -79,6 +79,16 @@ export function formatMoroccoKickoff(date: Date, locale: Locale): string {
     timeZone: MOROCCO_TZ,
   }).format(date);
   return `${when} ${LABELS[locale].zone} (${moroccoOffsetLabel(date)})`;
+}
+
+/** Date with year for finished-match descriptions, e.g. "20 Nov 2026" / "20 nov. 2026". */
+export function formatLongMatchDate(date: Date, locale: Locale): string {
+  return new Intl.DateTimeFormat(BCP[locale], {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: MOROCCO_TZ,
+  }).format(date);
 }
 
 /** Short date for titles, e.g. "20 Nov" / "20 nov." / "20 نونبر". */

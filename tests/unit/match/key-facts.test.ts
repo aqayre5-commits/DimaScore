@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildKeyFacts,
+  formatLongMatchDate,
   formatMoroccoKickoff,
   formatShortMatchDate,
   moroccoOffsetLabel,
@@ -9,17 +10,33 @@ import { buildMatchMeta } from '@/lib/seo/match-metadata';
 
 const ko = new Date('2026-11-20T19:45:00Z');
 
+/** What the runtime's own Intl/tz data says Morocco's offset is at that instant. */
+function intlOffset(d: Date): string {
+  return (
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Casablanca', timeZoneName: 'longOffset' })
+      .formatToParts(d)
+      .find((p) => p.type === 'timeZoneName')?.value ?? ''
+  );
+}
+
 describe('Morocco kick-off', () => {
-  it('uses GMT after the 20 Sept 2026 switch and GMT+1 before it', () => {
-    expect(moroccoOffsetLabel(ko)).toBe('GMT');
-    expect(moroccoOffsetLabel(new Date('2026-05-10T18:00:00Z'))).toBe('GMT+1');
+  // Summer kick-off: 12 Jul 2026, under the old GMT+1 rule. Winter kick-off: 13 Dec 2026, after
+  // Morocco's 20 Sept 2026 return to GMT (decree 2.26.530, tzdata 2026 releases).
+  const summer = new Date('2026-07-12T19:00:00Z');
+  const winter = new Date('2026-12-13T19:00:00Z');
+
+  it('derives the label from Intl, not a hard-coded offset', () => {
+    expect(intlOffset(summer)).toBe('GMT+01:00');
+    expect(moroccoOffsetLabel(summer)).toBe('GMT+1');
+    expect(intlOffset(winter)).toMatch(/^GMT(\+00:00)?$/);
+    expect(moroccoOffsetLabel(winter)).toBe('GMT');
   });
 
-  it('formats the time in Morocco with an explicit zone label per locale', () => {
-    expect(formatMoroccoKickoff(ko, 'en')).toContain('19:45');
-    expect(formatMoroccoKickoff(ko, 'en')).toContain('Morocco time (GMT)');
-    expect(formatMoroccoKickoff(ko, 'fr')).toContain('heure marocaine (GMT)');
-    expect(formatMoroccoKickoff(ko, 'ar')).toContain('بتوقيت المغرب (GMT)');
+  it('shows the Morocco wall-clock time with that offset', () => {
+    expect(formatMoroccoKickoff(summer, 'en')).toContain('20:00 Morocco time (GMT+1)');
+    expect(formatMoroccoKickoff(winter, 'en')).toContain('19:00 Morocco time (GMT)');
+    expect(formatMoroccoKickoff(winter, 'fr')).toContain('heure marocaine (GMT)');
+    expect(formatMoroccoKickoff(winter, 'ar')).toContain('بتوقيت المغرب (GMT)');
   });
 });
 
@@ -100,7 +117,32 @@ describe('match titles carry the date', () => {
 
   it('still works without a date', () => {
     expect(buildMatchMeta({ ...m, locale: 'fr' }).title).toBe(
-      'Raja – Wydad : compo probable, heure & stats',
+      'Raja – Wydad : compo probable, heure & face-à-face',
     );
+  });
+
+  it('promises head-to-head (shown in the top facts row), not stats, for upcoming matches', () => {
+    expect(buildMatchMeta({ ...m, locale: 'fr' }).title).not.toContain('stats');
+    expect(buildMatchMeta({ ...m, locale: 'en' }).title).toContain('head-to-head');
+    expect(buildMatchMeta({ ...m, locale: 'ar' }).title).toContain('المواجهات المباشرة');
+  });
+
+  it('puts the year in finished descriptions but keeps titles short', () => {
+    const fin = { ...m, state: 'finished' as const, homeScore: 2, awayScore: 1 };
+    for (const locale of ['en', 'fr', 'ar'] as const) {
+      const meta = buildMatchMeta({
+        ...fin,
+        locale,
+        dateLabel: formatShortMatchDate(ko, locale),
+        dateLabelLong: formatLongMatchDate(ko, locale),
+      });
+      expect(meta.description).toContain(formatLongMatchDate(ko, locale));
+      expect(meta.description).toContain('2026');
+      expect(meta.title).not.toContain('2026');
+    }
+    expect(
+      buildMatchMeta({ ...fin, locale: 'fr', dateLabel: '20 nov.', dateLabelLong: '20 nov. 2026' })
+        .description,
+    ).toContain('le 20 nov. 2026');
   });
 });
