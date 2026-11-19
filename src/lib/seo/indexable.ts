@@ -13,17 +13,30 @@ type DB = NeonHttpDatabase<typeof schema>;
  * that exact fragment (`SELECT <condition> FROM <table> WHERE id = …`), so page and sitemap can't
  * drift.
  *
- * Player rule (Phase 17 index policy): indexable if the slug is real (not "unknown-%") AND either
- *   - Moroccan nationality (`nationality_code = 'MA'`, Lions Abroad), OR
- *   - a current team AND season stats for the current or previous season.
- * Everything else is noindex,follow + de-sitemapped.
+ * Player rule: a real slug, unique career data, AND either Moroccan nationality or a current
+ * team with season stats for the current or previous season. Unique data (the single
+ * threshold) is a season-stat row, a transfer, a trophy, or a match stat line. Without
+ * that the page is noindex and out of the sitemap, including a Moroccan name with no record.
+ * Team rule: a squad row, any fixture, or a standings row. That is the same single threshold.
  */
 
 /** Current football season start year (Jul–Jun): Nov 2026 → 2026, Mar 2027 → 2026. */
 const CURRENT_SEASON_YEAR = sql`(EXTRACT(YEAR FROM NOW() - INTERVAL '6 months')::int)`;
 
+/**
+ * Unique player data: season stats, or a career trace (transfer, trophy, or a match stat line).
+ * Referenced only from `playerIndexableSitemapCondition` so the threshold lives in one place.
+ */
+const playerHasUniqueData = sql`(
+  EXISTS (SELECT 1 FROM player_season_stats pss_u WHERE pss_u.player_id = ${schema.players.id})
+  OR EXISTS (SELECT 1 FROM transfers tr WHERE tr.player_id = ${schema.players.id})
+  OR EXISTS (SELECT 1 FROM player_trophies pt WHERE pt.player_id = ${schema.players.id})
+  OR EXISTS (SELECT 1 FROM fixture_player_stats fps WHERE fps.player_id = ${schema.players.id})
+)`;
+
 export const playerIndexableSitemapCondition = sql`(
   ${schema.players.slug} NOT LIKE 'unknown-%'
+  AND ${playerHasUniqueData}
   AND (
     ${schema.players.nationalityCode} = 'MA'
     OR (

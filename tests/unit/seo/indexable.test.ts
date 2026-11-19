@@ -108,8 +108,10 @@ describe('player index policy', () => {
     expect(q).toContain(
       `pss.season_year >= (EXTRACT(YEAR FROM NOW() - INTERVAL '6 months')::int) - 1`,
     );
-    expect(q).not.toContain('transfers');
-    expect(q).not.toContain('player_trophies');
+    expect(q).toContain('player_season_stats pss_u');
+    expect(q).toContain('transfers tr');
+    expect(q).toContain('player_trophies pt');
+    expect(q).toContain('fixture_player_stats fps');
   });
 
   it('isPlayerIndexable runs the same SQL and rejects placeholder slugs', async () => {
