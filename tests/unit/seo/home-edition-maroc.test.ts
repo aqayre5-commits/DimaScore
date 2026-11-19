@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import ar from '@/lib/i18n/messages/ar.json';
 import en from '@/lib/i18n/messages/en.json';
@@ -80,6 +81,18 @@ describe('AR homepage + Edition Maroc SERP polish (IMP-013)', () => {
     expect(packs.ar.live).toBe('مباشر');
     expect(packs.ar.upcoming).toBe('القادمة');
     expect(packs.ar.resultsTab).toBe('النتائج');
+  });
+
+  it('gives each locale homepage a real h1 from pageHeading', () => {
+    const src = readFileSync('src/app/[locale]/(app)/page.tsx', 'utf8');
+    expect(src).toContain(
+      '<h1 className="px-1 text-xl font-semibold text-text-primary sm:text-2xl">',
+    );
+    expect(src).toContain("{t('pageHeading')}");
+    expect(src).not.toMatch(/<h1[^>]*text-sm/);
+    for (const pack of Object.values(packs)) {
+      expect(pack.pageHeading.trim().length).toBeGreaterThan(8);
+    }
   });
 
   it('does not use kooora/yalla/بث/قنوات as primary keywords or ship odds UI', () => {
