@@ -1,15 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { pointXDefaultAtFrench } from '@/lib/i18n/hreflang-header';
+import { pointXDefaultAtEnglish } from '@/lib/i18n/hreflang-header';
 import { routing } from '@/lib/i18n/routing';
 import { isRtl } from '@/lib/i18n/config';
 
 const PRODUCTION_LINK =
   '<https://dimascore.ma/fr/match/netherlands-germany-1528862>; rel="alternate"; hreflang="fr", <https://dimascore.ma/en/match/netherlands-germany-1528862>; rel="alternate"; hreflang="en", <https://dimascore.ma/ar/match/netherlands-germany-1528862>; rel="alternate"; hreflang="ar", <https://dimascore.ma/match/netherlands-germany-1528862>; rel="alternate"; hreflang="x-default"';
 
-describe('pointXDefaultAtFrench', () => {
-  it('points x-default at the French URL and keeps reciprocal fr/en/ar links', () => {
-    const fixed = pointXDefaultAtFrench(PRODUCTION_LINK);
+describe('pointXDefaultAtEnglish', () => {
+  it('points x-default at the English URL and keeps reciprocal fr/en/ar links', () => {
+    const fixed = pointXDefaultAtEnglish(PRODUCTION_LINK);
     expect(fixed).toContain(
       '<https://dimascore.ma/fr/match/netherlands-germany-1528862>; rel="alternate"; hreflang="fr"',
     );
@@ -20,21 +20,21 @@ describe('pointXDefaultAtFrench', () => {
       '<https://dimascore.ma/ar/match/netherlands-germany-1528862>; rel="alternate"; hreflang="ar"',
     );
     expect(fixed).toContain(
-      '<https://dimascore.ma/fr/match/netherlands-germany-1528862>; rel="alternate"; hreflang="x-default"',
+      '<https://dimascore.ma/en/match/netherlands-germany-1528862>; rel="alternate"; hreflang="x-default"',
     );
     expect(fixed).not.toContain('https://dimascore.ma/match/netherlands-germany-1528862');
   });
 
   it('leaves a header alone when it has no x-default', () => {
     const link = '<https://dimascore.ma/fr>; rel="alternate"; hreflang="fr"';
-    expect(pointXDefaultAtFrench(link)).toBe(link);
+    expect(pointXDefaultAtEnglish(link)).toBe(link);
   });
 });
 
 describe('locale routing', () => {
-  it('does not negotiate the locale from Accept-Language, and French is the default', () => {
+  it('does not negotiate the locale from Accept-Language, and English is the default', () => {
     expect(routing.localeDetection).toBe(false);
-    expect(routing.defaultLocale).toBe('fr');
+    expect(routing.defaultLocale).toBe('en');
     expect(routing.locales).toEqual(['fr', 'en', 'ar']);
   });
 });
@@ -52,10 +52,11 @@ describe('arabic document direction', () => {
 });
 
 describe('root redirect wiring', () => {
-  it('sends / to French with a 308 and rewrites the x-default header', () => {
+  it('sends / to English with a 308 and rewrites the x-default header', () => {
     const middleware = readFileSync('src/middleware.ts', 'utf8');
     expect(middleware).toContain("pathname === '/'");
     expect(middleware).toContain('NextResponse.redirect(url, 308)');
-    expect(middleware).toContain('pointXDefaultAtFrench');
+    expect(middleware).toContain('pointXDefaultAtEnglish');
+    expect(middleware).toContain('routing.defaultLocale');
   });
 });

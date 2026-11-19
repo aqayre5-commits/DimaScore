@@ -3,7 +3,7 @@ import createMiddleware from 'next-intl/middleware';
 import { routing } from '@/lib/i18n/routing';
 import { getAdminSession } from '@/lib/auth/admin';
 import { checkRateLimit } from '@/lib/security/rate-limit';
-import { pointXDefaultAtFrench } from '@/lib/i18n/hreflang-header';
+import { pointXDefaultAtEnglish } from '@/lib/i18n/hreflang-header';
 import { resolveBareMatchRedirect } from '@/lib/seo/match-redirect';
 import { lookupMatchSlug } from '@/lib/seo/match-slug-lookup';
 import {
@@ -27,7 +27,7 @@ const RATE_LIMITED_API = /^\/api\/v1\/(match|search|media)(\/|$)/;
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // `/` must not 307 based on Accept-Language. One permanent redirect, always French.
+  // `/` must not 307 based on Accept-Language. One permanent redirect, always English.
   if (pathname === '/') {
     const url = request.nextUrl.clone();
     url.pathname = `/${routing.defaultLocale}`;
@@ -88,11 +88,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // All other matched routes: next-intl locale handling.
-  // Rewrite x-default onto the French alternate. next-intl emits the unprefixed path.
+  // Rewrite x-default onto the English alternate. next-intl emits the unprefixed path.
   const response = intlMiddleware(request);
   const link = response.headers.get('link');
   if (link) {
-    const fixed = pointXDefaultAtFrench(link);
+    const fixed = pointXDefaultAtEnglish(link);
     if (fixed !== link) response.headers.set('link', fixed);
   }
   return response;

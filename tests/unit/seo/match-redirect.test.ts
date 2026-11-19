@@ -9,7 +9,7 @@ describe('parseBareMatchPath', () => {
   it('matches bare numeric match URLs with or without locale', () => {
     expect(parseBareMatchPath('/en/match/898057')).toEqual({ locale: 'en', fixtureId: 898057 });
     expect(parseBareMatchPath('/ar/match/898057/')).toEqual({ locale: 'ar', fixtureId: 898057 });
-    expect(parseBareMatchPath('/match/1610877')).toEqual({ locale: 'fr', fixtureId: 1610877 });
+    expect(parseBareMatchPath('/match/1610877')).toEqual({ locale: 'en', fixtureId: 1610877 });
   });
 
   it('ignores slug URLs, API routes, other locales and absurd ids', () => {
@@ -33,7 +33,7 @@ describe('resolveBareMatchRedirect', () => {
       '/en/match/senegal-w-tunisia-women-898057',
     );
     expect(await resolveBareMatchRedirect('/match/898057', lookup)).toBe(
-      '/fr/match/senegal-w-tunisia-women-898057',
+      '/en/match/senegal-w-tunisia-women-898057',
     );
   });
 

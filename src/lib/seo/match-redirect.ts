@@ -6,7 +6,7 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
  * the 200 shell is already committed — so it only emitted a meta-refresh.)
  *
  *   /fr|en|ar/match/<digits>  → /<locale>/match/<home>-<away>-<id>
- *   /match/<digits>           → /fr/match/<home>-<away>-<id>   (default locale)
+ *   /match/<digits>           → /en/match/<home>-<away>-<id>   (default locale)
  *
  * Unknown IDs, fixtures without both team slugs, and DB errors fall through to the existing
  * page behaviour (no redirect loops, nothing new can 5xx).

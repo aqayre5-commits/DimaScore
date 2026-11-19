@@ -38,12 +38,12 @@ describe('botola matchs routes (IMP-010)', () => {
     expect(BOTOLA_MATCHS_SLUGS.ar).toMatch(/^[a-z0-9-]+$/);
   });
 
-  it('maps hreflang with x-default to FR', () => {
+  it('maps hreflang with x-default to EN', () => {
     const languages = botolaMatchsHreflang('https://dimascore.ma');
     expect(languages.fr).toBe('https://dimascore.ma/fr/matchs-botola-pro');
     expect(languages.en).toBe('https://dimascore.ma/en/botola-pro-matches');
     expect(languages.ar).toBe('https://dimascore.ma/ar/matchs-botola-pro');
-    expect(languages['x-default']).toBe(languages.fr);
+    expect(languages['x-default']).toBe(languages.en);
   });
 
   it('recognizes the query-shaped 301 aliases', () => {
