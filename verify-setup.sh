@@ -86,13 +86,14 @@ else
   FAIL=$((FAIL + 1))
 fi
 
-# Test enforce-pnpm blocks git push
-RESULT=$(echo '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}' | .claude/hooks/enforce-pnpm.sh 2>&1; echo "EXIT=$?")
-if echo "$RESULT" | grep -q "EXIT=2"; then
-  echo "  ✓ enforce-pnpm.sh blocks 'git push'"
+# Test enforce-pnpm allows git push (owner removed the no-push rule)
+RESULT=$(echo '{"tool_name":"Bash","tool_input":{"command":"git push origin feature"}}' | .claude/hooks/enforce-pnpm.sh 2>&1; echo "EXIT=$?")
+if echo "$RESULT" | grep -q "EXIT=0"; then
+  echo "  ✓ enforce-pnpm.sh allows 'git push'"
   PASS=$((PASS + 1))
 else
-  echo "  ✗ enforce-pnpm.sh failed to block 'git push'"
+  echo "  ✗ enforce-pnpm.sh blocked 'git push'"
+  echo "    Output: $RESULT"
   FAIL=$((FAIL + 1))
 fi
 
