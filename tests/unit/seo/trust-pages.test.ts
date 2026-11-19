@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CONTACT_EMAIL, HOSTING, SITE_PAGES_CONTENT } from '@/lib/constants/site-pages-content';
 import { buildAboutPageGraph } from '@/lib/seo/about-jsonld';
-import { buildFounder, buildOrganization } from '@/lib/seo/jsonld';
+import { execSync } from 'node:child_process';
+import { buildOrganization } from '@/lib/seo/jsonld';
 import { routing } from '@/lib/i18n/routing';
 
 // About, privacy and cookie copy (Revamp R7) states facts about the code. These tests pin each fact
@@ -150,58 +151,77 @@ describe('facts the copy relies on', () => {
 });
 
 describe('About JSON-LD', () => {
-  it('is one AboutPage node about the sitewide DimaScore organization', () => {
-    const g = buildAboutPageGraph('https://dimascore.ma', 'fr', {
-      title: 'À propos de DimaScore',
+  const BASE = 'https://dimascore.ma';
+  const graph = (locale: 'en' | 'fr' | 'ar') =>
+    buildAboutPageGraph(BASE, locale, { title: 'À propos de DimaScore', description: 'x' })[
+      '@graph'
+    ];
+
+  it('has the AboutPage node about the sitewide DimaScore organization', () => {
+    expect(graph('fr')[0]).toEqual({
+      '@type': 'AboutPage',
+      '@id': 'https://dimascore.ma/fr/about#page',
+      url: 'https://dimascore.ma/fr/about',
+      name: 'À propos de DimaScore',
       description: 'x',
+      inLanguage: 'fr',
+      isPartOf: { '@id': 'https://dimascore.ma/#website' },
+      about: { '@id': 'https://dimascore.ma/#organization' },
     });
-    expect(g['@graph']).toEqual([
-      {
-        '@type': 'AboutPage',
-        '@id': 'https://dimascore.ma/fr/about#page',
-        url: 'https://dimascore.ma/fr/about',
-        name: 'À propos de DimaScore',
-        description: 'x',
-        inLanguage: 'fr',
-        isPartOf: { '@id': 'https://dimascore.ma/#website' },
-        about: { '@id': 'https://dimascore.ma/#organization' },
-      },
-    ]);
   });
 
-  it('the sitewide organization is name, url, logo, sameAs X and founder', () => {
-    const org = buildOrganization('https://dimascore.ma');
-    expect(Object.keys(org).sort()).toEqual([
-      '@id',
-      '@type',
-      'founder',
-      'logo',
-      'name',
-      'sameAs',
-      'url',
-    ]);
+  it('the About graph adds the founder Person (name and job title only) and links it from #organization', () => {
+    for (const locale of LOCALES) {
+      const nodes = graph(locale);
+      expect(nodes).toContainEqual({
+        '@type': 'Person',
+        '@id': 'https://dimascore.ma/#founder',
+        name: 'Abdilahi Qayre',
+        jobTitle: 'Founder and Editor',
+      });
+      expect(nodes).toContainEqual({
+        '@type': 'NewsMediaOrganization',
+        '@id': 'https://dimascore.ma/#organization',
+        founder: { '@id': 'https://dimascore.ma/#founder' },
+      });
+    }
+  });
+
+  it('the sitewide organization stays name, url, logo and sameAs X: no founder', () => {
+    const org = buildOrganization(BASE);
+    expect(Object.keys(org).sort()).toEqual(['@id', '@type', 'logo', 'name', 'sameAs', 'url']);
     expect(org.sameAs).toEqual(['https://x.com/DimaScoreMa']);
-    expect(org.founder).toEqual({ '@id': 'https://dimascore.ma/#founder' });
   });
 
-  it('the founder node is a Person with name and job title only', () => {
-    expect(buildFounder('https://dimascore.ma')).toEqual({
-      '@type': 'Person',
-      '@id': 'https://dimascore.ma/#founder',
-      name: 'Abdilahi Qayre',
-      jobTitle: 'Founder and Editor',
-    });
+  it('the founder is emitted on About only: not by the sitewide layout, not by any other page', () => {
+    const root = process.cwd();
+    const offenders = execSync(
+      "grep -rlE 'buildFounder|#founder|founderId' src --include=*.ts --include=*.tsx || true",
+      { cwd: root },
+    )
+      .toString()
+      .split('\n')
+      .filter(Boolean)
+      .sort();
+    expect(offenders).toEqual(['src/lib/seo/about-jsonld.ts', 'src/lib/seo/jsonld.ts']);
   });
 
   it('no JSON-LD names REN, the company number or a parent organization', () => {
     for (const locale of LOCALES) {
-      const json =
-        JSON.stringify(
-          buildAboutPageGraph('https://dimascore.ma', locale, SITE_PAGES_CONTENT[locale].about),
-        ) +
-        JSON.stringify(buildOrganization('https://dimascore.ma')) +
-        JSON.stringify(buildFounder('https://dimascore.ma'));
+      const json = JSON.stringify(graph(locale)) + JSON.stringify(buildOrganization(BASE));
       expect(json).not.toMatch(/\bREN\b|13694812|parentOrganization|linkedin/i);
     }
+  });
+
+  it('no file in the repo names the former company or its number (docs included)', () => {
+    const hits = execSync(
+      "grep -rlE 'REN Technology|13694812' . --include=*.ts --include=*.tsx --include=*.md --include=*.json --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.git || true",
+      { cwd: process.cwd() },
+    )
+      .toString()
+      .split('\n')
+      .filter(Boolean)
+      .filter((f) => !f.endsWith('trust-pages.test.ts'));
+    expect(hits).toEqual([]);
   });
 });

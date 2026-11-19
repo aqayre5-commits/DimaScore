@@ -38,11 +38,13 @@ export function buildOrganization(baseUrl: string): JsonLdNode {
     logo: { '@type': 'ImageObject', url: `${baseUrl}/dimascore-logo.svg` },
     // Only confirmed accounts. Instagram/YouTube/TikTok @dimascore are unconfirmed — omitted.
     sameAs: ['https://x.com/DimaScoreMa'],
-    founder: { '@id': founderId(baseUrl) },
   };
 }
 
-/** Founder and editor — sitewide alongside the organization that links to it. Name and role only. */
+/**
+ * Founder and editor. Emitted on /about only, the one page whose visible text names him (Google:
+ * mark up only what the page shows). Name and role only.
+ */
 export function buildFounder(baseUrl: string): JsonLdNode {
   return {
     '@type': 'Person',
