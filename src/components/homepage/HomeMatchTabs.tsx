@@ -201,15 +201,31 @@ function MatchRow({
   );
 }
 
-// Viewer-local day comparison — matches the viewer-local separators, date pill, and kickoff
-// times (all rendered without a timeZone). Safe against SSR/hydration because the filtered list
-// is gated on `mounted`, so the day-boundary calc only runs client-side.
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+// Day comparison. After mount it is viewer-local, matching the viewer-local separators, date pill
+// and kickoff times. Before mount (SSR and the hydration pass) it uses a fixed zone, Morocco's,
+// so server and client render the same list and the match list is in the initial HTML instead of
+// popping in after mount and shifting everything below it (CLS). For viewers outside Morocco's
+// day the list re-buckets once on mount.
+export const PRE_MOUNT_TZ = 'Africa/Casablanca';
+
+const dayKeyFormatters = new Map<string, Intl.DateTimeFormat>();
+function dayKey(d: Date, timeZone: string | undefined): string {
+  if (!timeZone) return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  let f = dayKeyFormatters.get(timeZone);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    dayKeyFormatters.set(timeZone, f);
+  }
+  return f.format(d);
+}
+
+export function isSameDay(a: Date, b: Date, timeZone?: string) {
+  return dayKey(a, timeZone) === dayKey(b, timeZone);
 }
 
 /** Overlay the 30s live poll onto fixtures, deduped by id (first occurrence wins). */
@@ -297,7 +313,11 @@ function collapseByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
 
 /** Render a fixture list grouped by competition (a separator row per competition/date, then the
  *  match rows). Shared by the "Your matches" group and the main list. */
-function renderGroupedRows(list: HomeFixture[], locale: string): React.ReactNode[] {
+function renderGroupedRows(
+  list: HomeFixture[],
+  locale: string,
+  timeZone?: string,
+): React.ReactNode[] {
   const elements: React.ReactNode[] = [];
   let lastGroupKey = '';
   let matchIdx = 0;
@@ -306,8 +326,9 @@ function renderGroupedRows(list: HomeFixture[], locale: string): React.ReactNode
       weekday: 'short',
       day: 'numeric',
       month: 'short',
+      timeZone,
     });
-    const groupKey = `${f.competition.id}-${f.kickoffAt.toDateString()}`;
+    const groupKey = `${f.competition.id}-${dayKey(f.kickoffAt, timeZone)}`;
     if (groupKey !== lastGroupKey) {
       lastGroupKey = groupKey;
       const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
@@ -376,7 +397,9 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const patchedAll = applyLivePatches([...live, ...upcoming, ...results], livePatches);
   // Global "live now", independent of the selected day — the Live tab always means "live now".
   const globalLive = patchedAll.filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
-  const dayFixtures = patchedAll.filter((f) => isSameDay(f.kickoffAt, selectedDate));
+  // Fixed zone until mount so the server HTML and the hydration pass agree (see isSameDay).
+  const dayTz = mounted ? undefined : PRE_MOUNT_TZ;
+  const dayFixtures = patchedAll.filter((f) => isSameDay(f.kickoffAt, selectedDate, dayTz));
   const dayUpcoming = dayFixtures.filter(
     (f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming',
   );
@@ -494,7 +517,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
                   }`}
                 >
                   <span>{td.label}</span>
-                  {mounted && td.count > 0 && (
+                  {td.count > 0 && (
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[11px] font-bold tabular-nums ${
                         active ? 'bg-white/25 text-white' : 'bg-bg-surface-3 text-text-tertiary'
@@ -550,7 +573,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
 
           {/* Competition filter — compact dropdown on the same line as the day picker (replaces the
               old full-width chip scroller). Trigger shows the active competition (or "All"). */}
-          {mounted && presentComps.length >= 2 && (
+          {presentComps.length >= 2 && (
             <DropdownMenu open={filterOpen} onOpenChange={setFilterOpen}>
               <DropdownMenuTrigger
                 className="flex shrink-0 items-center gap-1.5 rounded-full bg-bg-surface-2 px-3 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-surface-3"
@@ -609,40 +632,37 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
 
       {/* Match list — separate card */}
       <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-        {/* Grouped by competition + date — gated on mounted to avoid server-vs-client
-            day-boundary divergence in the filtered fixture set. */}
+        {/* Grouped by competition + date. Rendered on the server too (in Morocco's day until
+            mount, see isSameDay) so the list doesn't pop in and shift the page. */}
         <div>
-          {mounted ? (
-            <>
-              {yourGrouped.length > 0 && (
-                <>
-                  <div className="flex items-center gap-2 bg-bg-surface-2 px-4 py-2">
-                    <Star className="size-3.5 shrink-0 fill-current text-yellow-400" />
-                    <span className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
-                      {labels.yourMatches}
-                    </span>
+          <>
+            {yourGrouped.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 bg-bg-surface-2 px-4 py-2">
+                  <Star className="size-3.5 shrink-0 fill-current text-yellow-400" />
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
+                    {labels.yourMatches}
+                  </span>
+                </div>
+                {renderGroupedRows(yourGrouped, locale, dayTz)}
+              </>
+            )}
+            {displayed.length > 0
+              ? renderGroupedRows(displayed, locale, dayTz)
+              : yourGrouped.length === 0 && (
+                  <div className="px-4 py-8 text-center text-sm text-text-tertiary">
+                    {patchedAll.length === 0
+                      ? labels.emptyState
+                      : dateOffset === 0
+                        ? labels.noMatchesToday
+                        : labels.noMatches}
                   </div>
-                  {renderGroupedRows(yourGrouped, locale)}
-                </>
-              )}
-              {displayed.length > 0
-                ? renderGroupedRows(displayed, locale)
-                : yourGrouped.length === 0 && (
-                    <div className="px-4 py-8 text-center text-sm text-text-tertiary">
-                      {patchedAll.length === 0
-                        ? labels.emptyState
-                        : dateOffset === 0
-                          ? labels.noMatchesToday
-                          : labels.noMatches}
-                    </div>
-                  )}
-            </>
-          ) : null}
+                )}
+          </>
         </div>
 
-        {/* Show more / Show less — also gated, since hasMore depends on the
-          mount-time filter result. */}
-        {mounted && hasMore && (
+        {/* Show more / Show less — rendered pre-mount too, from the same fixed-zone list. */}
+        {hasMore && (
           <div className="border-t border-border-subtle px-4 py-2.5 text-center">
             <button
               onClick={() => setExpanded((v) => !v)}
