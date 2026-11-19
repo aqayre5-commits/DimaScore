@@ -5,7 +5,8 @@ import { getChunkEntries, getSitemapChunks } from '@/lib/seo/sitemap/data';
 
 /**
  * Chunked sitemap files at /sitemaps/sitemap/<id>.xml (static, teams, players[-N],
- * matches-YYYY-MM[-N]), each capped at CHUNK_SIZE (10k) URLs. The index that lists them is the
+ * matches-YYYY-MM[-N]). Each chunk holds CHUNK_SIZE pages, emitted once per locale
+ * (30k <loc>s at the cap). The index that lists them is the
  * hand-written /sitemap-index.xml route (Next's auto-generated index for generateSitemaps 500s
  * under this setup, so we never rely on it).
  */

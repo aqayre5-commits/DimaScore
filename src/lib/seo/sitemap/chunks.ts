@@ -13,7 +13,10 @@
  *   matches-YYYY-MM[-N]    match pages grouped by UTC kickoff month, CHUNK_SIZE per file
  */
 
-/** Hard cap per chunk file — well under Google's 50k limit (and keeps each file a few MB). */
+/**
+ * Hard cap on pages per chunk file. Each page is written once per locale (fr, en, ar),
+ * so a full chunk is 30,000 <loc>s — under Google's 50,000 limit, and a few MB.
+ */
 export const CHUNK_SIZE = 10_000;
 
 /** Path the chunk files are served under (see src/app/sitemaps/sitemap.ts). */
