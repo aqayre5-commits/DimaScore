@@ -144,8 +144,8 @@ async function getCachedMatchData(fixtureId: number) {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, id: rawId } = await params;
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
-  // Unknown match → noindex (thin/fake entity URLs stay out of the index; body still notFound()s
-  // for the branded 404 UI — a true 404 status isn't reachable under cacheComponents here).
+  // Unknown match → noindex. Middleware returns the real 404 (or 503 if the DB is down) before
+  // this runs; the body still notFound()s so a request that skips middleware gets the 404 UI.
   if (!fixtureId) return { title: 'Match | DimaScore', robots: { index: false, follow: false } };
 
   const data = await getCachedMatchData(fixtureId);
