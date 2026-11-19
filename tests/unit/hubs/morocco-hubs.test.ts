@@ -71,6 +71,46 @@ describe('draft hub intros', () => {
   });
 });
 
+describe('draft hub intros: only sourced claims', () => {
+  const all = (l: 'en' | 'fr' | 'ar') =>
+    Object.values(MOROCCO_HUB_INTROS)
+      .map((i) => i!.text[l])
+      .join('\n');
+
+  it('no longer make the claims cut in review', () => {
+    for (const l of ['en', 'fr', 'ar'] as const) {
+      const t = all(l);
+      expect(t).not.toMatch(/FRMF|Fédération royale|الجامعة الملكية/); // who runs the team
+      expect(t).not.toMatch(/\b48\b|Canada|Canadá|كندا|qualif|تأهل/); // World Cup 2026 facts
+      expect(t).not.toMatch(
+        /Botola 2|Coupe du Trône|CAF competitions|compétitions CAF|كأس العرش|مسابقات الكاف/,
+      );
+      expect(t).not.toMatch(/\b30\b|matchdays|journées|جولة/); // matchday count
+      expect(t).not.toMatch(/\bMany\b|De nombreux|كثير/); // unsourced quantifier
+    }
+  });
+
+  it('keep the sourced facts: 2022 semi-final, 16 clubs, LNFP, AFCON 2025 dates and 24 teams', () => {
+    expect(MOROCCO_HUB_INTROS.morocco!.text.en).toMatch(/first African and Arab side.*semi-final/);
+    expect(MOROCCO_HUB_INTROS.morocco!.text.en).toContain('2022');
+    expect(MOROCCO_HUB_INTROS.botola!.text.en).toMatch(/LNFP.*16 clubs/);
+    expect(MOROCCO_HUB_INTROS.botola!.text.fr).toMatch(/LNFP.*16 clubs/);
+    expect(MOROCCO_HUB_INTROS.botola!.text.ar).toContain('16');
+    expect(MOROCCO_HUB_INTROS.afcon!.text.en).toContain(
+      'from 21 December 2025 to 18 January 2026 with 24 teams',
+    );
+    expect(MOROCCO_HUB_INTROS.afcon!.text.fr).toContain(
+      'du 21 décembre 2025 au 18 janvier 2026 avec 24 sélections',
+    );
+  });
+
+  it('write Arabic dates with Moroccan month names', () => {
+    const ar = MOROCCO_HUB_INTROS.afcon!.text.ar;
+    expect(ar).toContain('من 21 دجنبر 2025 إلى 18 يناير 2026');
+    expect(ar).not.toMatch(/ديسمبر|يوليو(?!ز)|نوفمبر|سبتمبر|أغسطس|مايو/);
+  });
+});
+
 describe('tournament H1', () => {
   it('contains the title once (AFCON / World Cup H1 was doubled)', () => {
     const src = readFileSync(
