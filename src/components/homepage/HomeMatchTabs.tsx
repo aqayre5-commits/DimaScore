@@ -23,6 +23,7 @@ import { useLiveFixtures, type LiveFixturePatch } from '@/hooks/useLiveFixtures'
 import { useFollows } from '@/hooks/useFollows';
 import { FollowStar } from '@/components/shared/FollowStar';
 import { competitionCrestUrl } from '@/lib/utils/crest';
+import { SITE_TZ } from '@/lib/utils/date';
 
 interface Props {
   live: HomeFixture[];
@@ -205,8 +206,7 @@ function MatchRow({
 // and kickoff times. Before mount (SSR and the hydration pass) it uses a fixed zone, Morocco's,
 // so server and client render the same list and the match list is in the initial HTML instead of
 // popping in after mount and shifting everything below it (CLS). For viewers outside Morocco's
-// day the list re-buckets once on mount.
-export const PRE_MOUNT_TZ = 'Africa/Casablanca';
+// day the list re-buckets once on mount. The zone is the site's editorial zone, SITE_TZ.
 
 const dayKeyFormatters = new Map<string, Intl.DateTimeFormat>();
 function dayKey(d: Date, timeZone: string | undefined): string {
@@ -349,7 +349,11 @@ function renderGroupedRows(
             </span>
           )}
           <span className="text-[11px] font-semibold text-text-secondary">{compName}</span>
-          <span className="text-[11px] text-text-tertiary">&middot; {dateStr}</span>
+          {/* Server-rendered now: Node and the browser format the same date with slightly different
+              ICU punctuation/spacing, so the client text may legitimately differ after hydration. */}
+          <span className="text-[11px] text-text-tertiary" suppressHydrationWarning>
+            &middot; {dateStr}
+          </span>
         </div>,
       );
     }
@@ -398,7 +402,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   // Global "live now", independent of the selected day — the Live tab always means "live now".
   const globalLive = patchedAll.filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
   // Fixed zone until mount so the server HTML and the hydration pass agree (see isSameDay).
-  const dayTz = mounted ? undefined : PRE_MOUNT_TZ;
+  const dayTz = mounted ? undefined : SITE_TZ;
   const dayFixtures = patchedAll.filter((f) => isSameDay(f.kickoffAt, selectedDate, dayTz));
   const dayUpcoming = dayFixtures.filter(
     (f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming',
