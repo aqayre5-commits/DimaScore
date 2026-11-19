@@ -26,6 +26,7 @@ export interface JsonLdGraph {
 /** Stable @ids so nodes across the sitewide graph and per-page graphs reconcile to one entity. */
 export const organizationId = (baseUrl: string): string => `${baseUrl}/#organization`;
 export const webSiteId = (baseUrl: string): string => `${baseUrl}/#website`;
+export const founderId = (baseUrl: string): string => `${baseUrl}/#founder`;
 
 /** Publisher / brand entity — sitewide, identical on every page. */
 export function buildOrganization(baseUrl: string): JsonLdNode {
@@ -37,6 +38,17 @@ export function buildOrganization(baseUrl: string): JsonLdNode {
     logo: { '@type': 'ImageObject', url: `${baseUrl}/dimascore-logo.svg` },
     // Only confirmed accounts. Instagram/YouTube/TikTok @dimascore are unconfirmed — omitted.
     sameAs: ['https://x.com/DimaScoreMa'],
+    founder: { '@id': founderId(baseUrl) },
+  };
+}
+
+/** Founder and editor — sitewide alongside the organization that links to it. Name and role only. */
+export function buildFounder(baseUrl: string): JsonLdNode {
+  return {
+    '@type': 'Person',
+    '@id': founderId(baseUrl),
+    name: 'Abdilahi Qayre',
+    jobTitle: 'Founder and Editor',
   };
 }
 

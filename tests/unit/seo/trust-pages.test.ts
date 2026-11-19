@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { CONTACT_EMAIL, HOSTING, SITE_PAGES_CONTENT } from '@/lib/constants/site-pages-content';
 import { buildAboutPageGraph } from '@/lib/seo/about-jsonld';
-import { buildOrganization } from '@/lib/seo/jsonld';
+import { buildFounder, buildOrganization } from '@/lib/seo/jsonld';
 import { routing } from '@/lib/i18n/routing';
 
 // About, privacy and cookie copy (Revamp R7) states facts about the code. These tests pin each fact
@@ -37,11 +37,30 @@ describe('trust pages copy', () => {
     },
   );
 
-  it.each(LOCALES)('%s: no company, company number, person or address is named', (locale) => {
+  it.each(LOCALES)('%s: no company, company number or address is named', (locale) => {
     const all = JSON.stringify(SITE_PAGES_CONTENT[locale]);
-    expect(all).not.toMatch(/\bREN\b|REN Technology|13694812|Abdilahi|Qayre/);
+    expect(all).not.toMatch(/\bREN\b|REN Technology|13694812/);
     expect(all).not.toMatch(/Chester Road|Stretford|M32 0PA|Taxassist/);
   });
+
+  it.each(LOCALES)(
+    '%s: About names the founder and editor; no other page names a person',
+    (locale) => {
+      const line = {
+        en: 'Abdilahi Qayre, founder and editor.',
+        fr: 'Abdilahi Qayre, fondateur et éditeur.',
+        ar: 'Abdilahi Qayre، المؤسس والمحرّر.',
+      }[locale];
+      expect(SITE_PAGES_CONTENT[locale].about.sections[0].body).toContain(line);
+      // Name and role only: no bio, credentials or LinkedIn.
+      expect(text(locale, 'about')).not.toMatch(/linkedin|Abdilahi Qayre (is|est)|diplôm|degree/i);
+      for (const key of Object.keys(SITE_PAGES_CONTENT[locale]).filter((k) => k !== 'about')) {
+        expect(JSON.stringify(SITE_PAGES_CONTENT[locale][key as 'about'])).not.toMatch(
+          /Abdilahi|Qayre/,
+        );
+      }
+    },
+  );
 
   it.each(LOCALES)('%s: no analytics, pixel or consent claims', (locale) => {
     for (const key of ['about', 'privacy', 'cookiePolicy'] as const) {
@@ -150,19 +169,39 @@ describe('About JSON-LD', () => {
     ]);
   });
 
-  it('the sitewide organization is name, url, logo and sameAs X only', () => {
+  it('the sitewide organization is name, url, logo, sameAs X and founder', () => {
     const org = buildOrganization('https://dimascore.ma');
-    expect(Object.keys(org).sort()).toEqual(['@id', '@type', 'logo', 'name', 'sameAs', 'url']);
+    expect(Object.keys(org).sort()).toEqual([
+      '@id',
+      '@type',
+      'founder',
+      'logo',
+      'name',
+      'sameAs',
+      'url',
+    ]);
     expect(org.sameAs).toEqual(['https://x.com/DimaScoreMa']);
+    expect(org.founder).toEqual({ '@id': 'https://dimascore.ma/#founder' });
   });
 
-  it('no JSON-LD on the trust pages names REN, the company number or a person', () => {
+  it('the founder node is a Person with name and job title only', () => {
+    expect(buildFounder('https://dimascore.ma')).toEqual({
+      '@type': 'Person',
+      '@id': 'https://dimascore.ma/#founder',
+      name: 'Abdilahi Qayre',
+      jobTitle: 'Founder and Editor',
+    });
+  });
+
+  it('no JSON-LD names REN, the company number or a parent organization', () => {
     for (const locale of LOCALES) {
       const json =
         JSON.stringify(
           buildAboutPageGraph('https://dimascore.ma', locale, SITE_PAGES_CONTENT[locale].about),
-        ) + JSON.stringify(buildOrganization('https://dimascore.ma'));
-      expect(json).not.toMatch(/\bREN\b|13694812|Person|founder|parentOrganization|Abdilahi/);
+        ) +
+        JSON.stringify(buildOrganization('https://dimascore.ma')) +
+        JSON.stringify(buildFounder('https://dimascore.ma'));
+      expect(json).not.toMatch(/\bREN\b|13694812|parentOrganization|linkedin/i);
     }
   });
 });

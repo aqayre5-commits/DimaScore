@@ -8,7 +8,7 @@ import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
 import type { Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { buildGraph, buildOrganization, buildWebSite } from '@/lib/seo/jsonld';
+import { buildGraph, buildFounder, buildOrganization, buildWebSite } from '@/lib/seo/jsonld';
 import '../globals.css';
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -143,7 +143,13 @@ export default async function LocaleLayout({
       <body
         className={`${fontClass} flex min-h-full flex-col bg-bg-canvas pb-[calc(3.5rem+env(safe-area-inset-bottom))] text-text-primary md:pb-0`}
       >
-        <JsonLd graph={buildGraph(buildOrganization(baseUrl), buildWebSite(baseUrl, locale))} />
+        <JsonLd
+          graph={buildGraph(
+            buildOrganization(baseUrl),
+            buildFounder(baseUrl),
+            buildWebSite(baseUrl, locale),
+          )}
+        />
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
         </NextIntlClientProvider>

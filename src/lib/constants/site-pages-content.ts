@@ -3,7 +3,8 @@
  *
  * Legal identity (owner's decision, 19 Nov 2026): the data controller and publisher is DimaScore
  * (the operator), a site run by an individual sole operator, not a company; location Manchester,
- * United Kingdom. No person, company, company number or address is named. Keep the prose here (not in the i18n message bundles) so it stays co-located and
+ * United Kingdom. No company, company number or address is named. The About page (only) names the
+ * founder and editor, Abdilahi Qayre, by name and role (owner's decision, 19 Nov 2026). Keep the prose here (not in the i18n message bundles) so it stays co-located and
  * easy to revise. Legal wording is not legal advice — have it reviewed before relying on it.
  *
  * About, privacy and cookie copy (Revamp R7, Nov 2026) states only what the code does:
@@ -173,6 +174,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           body: [
             'DimaScore is a football scores and statistics site in French, English and Arabic, built around Moroccan football.',
             'It is run by an individual sole operator, not a company, based in Manchester, United Kingdom.',
+            'Abdilahi Qayre, founder and editor.',
           ],
         },
         {
@@ -421,6 +423,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           body: [
             'DimaScore est un site de résultats et de statistiques de football en français, en anglais et en arabe, centré sur le football marocain.',
             'Il est exploité depuis Manchester, au Royaume-Uni, par une personne physique, opérateur individuel, et non par une société.',
+            'Abdilahi Qayre, fondateur et éditeur.',
           ],
         },
         {
@@ -666,6 +669,7 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           body: [
             'ديماسكور موقع لنتائج كرة القدم وإحصاءاتها بالعربية والفرنسية والإنجليزية، يضع الكرة المغربية في صلب اهتمامه.',
             'يديره فرد بصفته مشغّلًا مستقلًا، وليس شركة، من مانشستر في المملكة المتحدة.',
+            'Abdilahi Qayre، المؤسس والمحرّر.',
           ],
         },
         {

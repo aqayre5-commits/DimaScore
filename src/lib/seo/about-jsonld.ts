@@ -2,8 +2,8 @@ import { buildGraph, organizationId, webSiteId, type JsonLdGraph } from '@/lib/s
 
 /**
  * AboutPage graph for /{locale}/about. The organization it is about is the sitewide DimaScore node
- * (`/#organization`: name, url, logo, sameAs X) already on every page, so no other entity is added
- * here: the operator is an individual sole operator and is deliberately not named.
+ * (`/#organization`: name, url, logo, sameAs X, founder -> `/#founder`), which with the founder
+ * Person node is already on every page, so no other entity is added here.
  */
 export function buildAboutPageGraph(
   baseUrl: string,
