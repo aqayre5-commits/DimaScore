@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server } from './mocks/server';
 
@@ -11,6 +11,11 @@ vi.mock('@upstash/redis', () => ({
 }));
 
 const { GET } = await import('@/app/api/health/route');
+const { setRetryOptions } = await import('@/lib/data/adapters/api-football/client');
+
+// Upstream failures are now retried with backoff; keep the delays tiny here.
+beforeAll(() => setRetryOptions({ baseDelayMs: 1, maxDelayMs: 4 }));
+afterAll(() => setRetryOptions());
 
 describe('/api/health route', () => {
   it('returns ok without leaking account info on success', async () => {

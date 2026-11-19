@@ -31,6 +31,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ ok: true, ...result });
   } catch (err) {
+    // Log the full error so a failing run shows up in Vercel logs instead of a bare 500.
+    console.error('Cron finalize-stale failed:', err);
     return NextResponse.json(
       { ok: false, error: err instanceof Error ? err.message : String(err) },
       { status: 500 },
