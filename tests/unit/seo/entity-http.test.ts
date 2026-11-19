@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { routing } from '@/lib/i18n/routing';
 import {
   NOT_FOUND_COPY,
   createExistenceCache,
@@ -32,7 +33,7 @@ describe('parseEntityPath', () => {
       slug: 'achraf-hakimi-2780',
     });
     expect(parseEntityPath('/match/1528862')).toEqual({
-      locale: 'fr',
+      locale: routing.defaultLocale,
       kind: 'match',
       slug: '1528862',
     });
