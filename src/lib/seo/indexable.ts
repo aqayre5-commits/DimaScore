@@ -74,9 +74,9 @@ export const isTeamIndexable = cache(async function isTeamIndexable(
 });
 
 /**
- * Match rule (Phase 17 index policy). A match page is indexable iff:
+ * Recent-match rule (not the old-finished gate). A match is indexable iff:
  *   1. it is in a featured competition (WC 1, AFCON 6, WAFCON 922, Botola Pro 200, Botola 2 201,
- *      Coupe du Trône 822) — any age, any data; OR
+ *      Coupe du Trône 822), any data; OR
  *   2. it is not a finished game (FT/AET/PEN/AWD/WO) with no events AND no lineups, AND one of:
  *      a. top women's competition (TOP_WOMEN_COMPETITION_IDS) with kickoff in
  *         [now − 180 days, now + 14 days] — exempt from the youth/women rule below;
@@ -86,7 +86,7 @@ export const isTeamIndexable = cache(async function isTeamIndexable(
  *           Serie A 135, Ligue 1 61) with kickoff in [now − 180 days, now + 14 days];
  *         - Morocco (team 31) plays;
  *         - a senior men's national side plays (team.is_national and not youth/women).
- * Everything else is noindex,follow and out of the sitemap.
+ * Finished matches older than FINISHED_MATCH_MAX_AGE_MONTHS are handled separately.
  */
 export const FEATURED_COMPETITION_IDS: number[] = [1, 6, 922, 200, 201, 822];
 export const TOP_TIER_COMPETITION_IDS: number[] = [2, 3, 848, 39, 140, 78, 135, 61];
@@ -98,6 +98,19 @@ export const TOP_TIER_COMPETITION_IDS: number[] = [2, 3, 848, 39, 140, 78, 135, 
  */
 export const TOP_WOMEN_COMPETITION_IDS: number[] = [525, 44, 142, 82, 139, 64, 8];
 export const MOROCCO_TEAM_ID = 31;
+/**
+ * Senior Morocco national teams (men 31, women 14461). Youth sides are not included.
+ * Any of their matches — finals, qualifiers, friendlies — can stay indexed when old.
+ */
+export const MOROCCO_SENIOR_NATIONAL_TEAM_IDS = [31, 14461] as const;
+/**
+ * Final tournaments only. Qualifiers are not listed: an old qualifier stays indexed
+ * only when a senior Morocco side plays.
+ * 1 men's World Cup, 8 women's World Cup, 6 AFCON, 922 WAFCON.
+ */
+export const OLD_MATCH_ALLOWLIST_COMPETITION_IDS = [1, 8, 6, 922] as const;
+/** Finished matches older than this are noindex unless they are on the allow-list and have data. */
+export const FINISHED_MATCH_MAX_AGE_MONTHS = 12;
 export const TOP_TIER_PAST_DAYS = 180;
 export const TOP_TIER_FUTURE_DAYS = 14;
 
@@ -128,7 +141,7 @@ const inRecencyWindow = sql`(
   AND ${schema.fixtures.kickoffAt} <= NOW() + INTERVAL '${sql.raw(String(TOP_TIER_FUTURE_DAYS))} days'
 )`;
 
-export const matchIndexableSitemapCondition = sql`(
+const recentMatchPolicy = sql`(
   ${schema.fixtures.competitionId} IN (${idList(FEATURED_COMPETITION_IDS)})
   OR (
     NOT (
@@ -163,34 +176,52 @@ export const matchIndexableSitemapCondition = sql`(
   )
 )`;
 
-/**
- * Finished matches older than this are omitted from the sitemap only.
- * One constant: the SQL below interpolates it, so the cutoff cannot drift.
- */
-export const SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS = 12;
+const finishedAndOlderThanCutoff = sql`(
+  ${schema.fixtures.statusCode} IN ('FT', 'AET', 'PEN', 'AWD', 'WO')
+  AND ${schema.fixtures.kickoffAt} < NOW() - (${sql.raw(String(FINISHED_MATCH_MAX_AGE_MONTHS))} * INTERVAL '1 month')
+)`;
+
+const hasEventsOrLineups = sql`(
+  EXISTS (SELECT 1 FROM fixture_events fe WHERE fe.fixture_id = ${schema.fixtures.id})
+  OR EXISTS (SELECT 1 FROM fixture_lineups fl WHERE fl.fixture_id = ${schema.fixtures.id})
+)`;
 
 /**
- * Sitemap inclusion for matches. Same indexability rule as robots, plus: a finished
- * match (FT/AET/PEN/AWD/WO) whose kickoff is older than
- * `SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS` is left out. Upcoming, live and recent
- * finished matches stay. robots.index is unchanged, so those old pages still 200
- * and keep their current index flag.
+ * Old-match allow-list, one definition. Senior Morocco (men or women), any competition,
+ * plus every match in a World Cup, AFCON or WAFCON final tournament. Qualifiers are not
+ * listed: they qualify only through the Morocco team ids.
  */
-export const matchSitemapInclusionCondition = sql`(
-  ${matchIndexableSitemapCondition}
-  AND NOT (
-    ${schema.fixtures.statusCode} IN ('FT', 'AET', 'PEN', 'AWD', 'WO')
-    AND ${schema.fixtures.kickoffAt} < NOW() - (${sql.raw(String(SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS))} * INTERVAL '1 month')
+export const oldMatchAllowList = sql`(
+  ${homeCol} IN (${idList([...MOROCCO_SENIOR_NATIONAL_TEAM_IDS])})
+  OR ${awayCol} IN (${idList([...MOROCCO_SENIOR_NATIONAL_TEAM_IDS])})
+  OR ${schema.fixtures.competitionId} IN (${idList([...OLD_MATCH_ALLOWLIST_COMPETITION_IDS])})
+)`;
+
+/**
+ * Shared by robots.index and the sitemap. A finished match older than
+ * FINISHED_MATCH_MAX_AGE_MONTHS is noindex unless it is on `oldMatchAllowList`
+ * and has events or lineups. The page still returns 200 either way.
+ */
+export const matchIndexableSitemapCondition = sql`(
+  (
+    NOT ${finishedAndOlderThanCutoff}
+    AND ${recentMatchPolicy}
+  )
+  OR (
+    ${finishedAndOlderThanCutoff}
+    AND ${oldMatchAllowList}
+    AND ${hasEventsOrLineups}
   )
 )`;
 
-/** Same rule as `matchIndexableSitemapCondition`, for one fixture (runs the identical SQL). */
+/** Same SQL as `matchIndexableSitemapCondition`. No featured-competition shortcut. */
 export const isMatchIndexable = cache(async function isMatchIndexable(
   db: DB,
   fixtureId: number,
   competitionId: number | null | undefined,
 ): Promise<boolean> {
-  if (competitionId != null && FEATURED_COMPETITION_IDS.includes(competitionId)) return true;
+  // Callers still pass the competition id. The SQL decides, including for featured competitions.
+  void competitionId;
   const res = await db.execute(
     sql`SELECT ${matchIndexableSitemapCondition} AS indexable FROM fixtures WHERE ${schema.fixtures.id} = ${fixtureId}`,
   );

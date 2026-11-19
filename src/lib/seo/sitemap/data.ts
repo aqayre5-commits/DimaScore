@@ -5,7 +5,7 @@ import { buildMatchSlug } from '@/lib/seo/match-slug';
 import {
   playerIndexableSitemapCondition,
   teamIndexableSitemapCondition,
-  matchSitemapInclusionCondition,
+  matchIndexableSitemapCondition,
 } from '@/lib/seo/indexable';
 import { locales, type Locale } from '@/lib/i18n/config';
 import { ALL_ENTRIES, buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
@@ -77,8 +77,9 @@ function toDate(v: unknown): Date | undefined {
  * x-default on the English URL. lastModified is the caller's data timestamp, shared
  * by the three locs — never "now".
  *
- * Match URLs use matchSitemapInclusionCondition: the robots index rule, minus finished
- * matches older than SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS. Those pages stay up.
+ * Match URLs use matchIndexableSitemapCondition, the same SQL as robots.index.
+ * A finished match older than FINISHED_MATCH_MAX_AGE_MONTHS is included only when
+ * it is on the allow-list and has events or lineups. The page still returns 200.
  */
 export function entry(
   pathFor: (locale: Locale) => string,
@@ -131,7 +132,7 @@ export async function getSitemapChunks(): Promise<SitemapChunk[]> {
     rows<{ month: string; n: number | string }>(sql`
       SELECT to_char(kickoff_at AT TIME ZONE 'UTC', 'YYYY-MM') AS month, COUNT(*) AS n
       FROM fixtures
-      WHERE ${matchSitemapInclusionCondition}
+      WHERE ${matchIndexableSitemapCondition}
       GROUP BY 1`),
   ]);
   return planChunks({
@@ -148,7 +149,7 @@ export async function getSitemapIndexEntries(): Promise<{ id: string; lastModifi
     rows<{ month: string; lm: string | Date | null }>(sql`
       SELECT to_char(kickoff_at AT TIME ZONE 'UTC', 'YYYY-MM') AS month, MAX(${FIXTURE_LASTMOD}) AS lm
       FROM fixtures
-      WHERE ${matchSitemapInclusionCondition}
+      WHERE ${matchIndexableSitemapCondition}
       GROUP BY 1`),
     rows<{ lm: string | Date | null }>(
       sql`SELECT MAX(${FIXTURE_LASTMOD}) AS lm FROM fixtures WHERE kickoff_at <= NOW()`,
@@ -303,7 +304,7 @@ async function matchEntries(month: string, page: number): Promise<Entry[]> {
     LEFT JOIN teams aw ON aw.id = fixtures.away_team_id
     WHERE fixtures.kickoff_at >= ${start.toISOString()}::timestamptz
       AND fixtures.kickoff_at < ${end.toISOString()}::timestamptz
-      AND ${matchSitemapInclusionCondition}
+      AND ${matchIndexableSitemapCondition}
     ORDER BY fixtures.id
     LIMIT ${CHUNK_SIZE} OFFSET ${page * CHUNK_SIZE}`);
   return list.flatMap((m) => {

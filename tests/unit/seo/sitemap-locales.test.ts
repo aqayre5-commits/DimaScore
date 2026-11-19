@@ -55,7 +55,7 @@ describe('sitemap locales', () => {
 
   it('still includes only the indexable set, which is what drops thin pages', () => {
     const src = readFileSync('src/lib/seo/sitemap/data.ts', 'utf8');
-    expect(src).toContain('matchSitemapInclusionCondition');
+    expect(src).toContain('matchIndexableSitemapCondition');
     expect(src).toContain('teamIndexableSitemapCondition');
     expect(src).toContain('playerIndexableSitemapCondition');
     expect(src).not.toContain('new Date()');
