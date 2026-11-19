@@ -3,12 +3,13 @@ import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { buildFounder } from '@/lib/seo/jsonld';
 import { routing } from '@/lib/i18n/routing';
 import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
 import type { Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { JsonLd } from '@/components/seo/JsonLd';
-import { buildGraph, buildFounder, buildOrganization, buildWebSite } from '@/lib/seo/jsonld';
+import { buildGraph, buildOrganization, buildWebSite } from '@/lib/seo/jsonld';
 import '../globals.css';
 
 const ibmPlexSans = IBM_Plex_Sans({
