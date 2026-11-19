@@ -53,9 +53,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const playerSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
   const player = await getPlayerBySlug(db, playerSlug);
 
-  // Unknown player → noindex so thin/fake entity URLs stay out of the index. (A true 404 status
-  // isn't reachable here: cacheComponents commits the prerendered 200 shell before notFound() runs;
-  // the page body still notFound()s to render the branded 404 UI.)
+  // Unknown player → noindex. Middleware returns the real 404 (or 503 if the DB is down) before
+  // this runs; the body still notFound()s so a request that skips middleware gets the 404 UI.
   if (!player) return { title: 'Player | DimaScore', robots: { index: false, follow: false } };
 
   // Prefer the FULL name (firstname + lastname) for the SEO title where available; fall back to the

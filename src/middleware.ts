@@ -5,10 +5,18 @@ import { getAdminSession } from '@/lib/auth/admin';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { resolveBareMatchRedirect } from '@/lib/seo/match-redirect';
 import { lookupMatchSlug } from '@/lib/seo/match-slug-lookup';
+import {
+  createExistenceCache,
+  entityCacheKey,
+  entityHttpResponse,
+  parseEntityPath,
+} from '@/lib/seo/entity-http';
+import { lookupEntity } from '@/lib/seo/entity-lookup';
 
 export const runtime = 'nodejs';
 
 const intlMiddleware = createMiddleware(routing);
+const resolveExistence = createExistenceCache();
 
 // Enumeration-prone JSON endpoints worth rate-limiting. `/api/v1/live` is intentionally excluded:
 // it's polled every 30s by our own clients (limiting it would hit real users) and holds little
@@ -19,7 +27,9 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Legacy bare-ID match URLs (/fr/match/123, /match/123) → real 308 to the slug URL before render.
-  // Fails open (unknown id / DB error → normal handling below).
+  // Unknown ids and DB errors fall through to the existence check below (404 / 503), which also
+  // covers slug URLs. A locale-less /match/<id> that *does* exist but has no slug to redirect to
+  // still skips next-intl (it would prefix the path into a soft-404).
   if (/\/match\/\d+\/?$/.test(pathname)) {
     const target = await resolveBareMatchRedirect(pathname, lookupMatchSlug);
     if (target) {
@@ -27,8 +37,15 @@ export async function middleware(request: NextRequest) {
       url.pathname = target;
       return NextResponse.redirect(url, 308);
     }
-    // Locale-less /match/<id> that didn't resolve: keep the previous plain 404 (don't let
-    // next-intl prefix it into a soft-404 page).
+  }
+
+  const entity = parseEntityPath(pathname);
+  if (entity) {
+    const existence = await resolveExistence(entityCacheKey(entity), () => lookupEntity(entity));
+    const http = entityHttpResponse(entity, existence);
+    if (http) {
+      return new NextResponse(http.body, { status: http.status, headers: http.headers });
+    }
     if (pathname.startsWith('/match/')) return NextResponse.next();
   }
 
