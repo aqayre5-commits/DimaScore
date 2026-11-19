@@ -24,6 +24,19 @@ import type { Locale } from '@/lib/i18n/config';
  */
 export const CONTACT_EMAIL = 'contact@dimascore.com';
 
+/**
+ * Where the site runs today, as named in the privacy policy ("What is processed when you visit").
+ * - site: the Next.js app is deployed on Vercel (vercel.json: crons; responses carry
+ *   `server: Vercel` and `x-vercel-id`, checked 19 Nov 2026).
+ * - realtime: the Soketi live-score server runs on Railway (NEXT_PUBLIC_PUSHER_HOST; next.config.ts
+ *   CSP connect-src, live value soketi-production-4823.up.railway.app).
+ * If either host changes (for example a move to Cloudflare), update these values AND re-read the
+ * privacy hosting sentences in all three languages (en, fr, ar) in the same PR;
+ * tests/unit/seo/trust-pages.test.ts fails if vercel.json or the Railway note disappears while the
+ * copy still names them. The cookie policy names no host.
+ */
+export const HOSTING = { site: 'Vercel', realtime: 'Railway' } as const;
+
 export interface PageSection {
   heading: string;
   body: string[];
@@ -205,8 +218,8 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'What is processed when you visit',
           body: [
-            'Like any website, each page request carries technical data such as your IP address, browser type and the page you asked for. Our hosting provider, Vercel, processes it to deliver the site and protect it from abuse.',
-            'Live scores reach your browser through our real-time server, hosted on Railway, which receives the same kind of technical data.',
+            `Like any website, each page request carries technical data such as your IP address, browser type and the page you asked for. Our hosting provider, ${HOSTING.site}, processes it to deliver the site and protect it from abuse.`,
+            `Live scores reach your browser through our real-time server, hosted on ${HOSTING.realtime}, which receives the same kind of technical data.`,
             'Country flags load directly from the image server of our data provider, API-Football (media.api-sports.io), which receives your IP address when it sends them.',
             "Videos play through YouTube's privacy-enhanced mode (youtube-nocookie.com) and load only when you open one.",
           ],
@@ -452,8 +465,8 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'Ce qui est traité lors de votre visite',
           body: [
-            'Comme pour tout site web, chaque page demandée transmet des données techniques, comme votre adresse IP, le type de navigateur et la page consultée. Notre hébergeur, Vercel, les traite pour afficher le site et le protéger contre les abus.',
-            'Les scores en direct arrivent dans votre navigateur via notre serveur temps réel, hébergé chez Railway, qui reçoit le même type de données techniques.',
+            `Comme pour tout site web, chaque page demandée transmet des données techniques, comme votre adresse IP, le type de navigateur et la page consultée. Notre hébergeur, ${HOSTING.site}, les traite pour afficher le site et le protéger contre les abus.`,
+            `Les scores en direct arrivent dans votre navigateur via notre serveur temps réel, hébergé chez ${HOSTING.realtime}, qui reçoit le même type de données techniques.`,
             'Les drapeaux des pays sont chargés directement depuis le serveur d’images de notre fournisseur de données, API-Football (media.api-sports.io), qui reçoit votre adresse IP lorsqu’il les envoie.',
             'Les vidéos sont lues via le mode de confidentialité renforcée de YouTube (youtube-nocookie.com) et ne se chargent que lorsque vous en ouvrez une.',
           ],
@@ -696,8 +709,8 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
         {
           heading: 'ما يُعالَج عند زيارتك',
           body: [
-            'كما في أي موقع، يحمل كل طلب لصفحة بيانات تقنية مثل عنوان IP الخاص بك ونوع المتصفح والصفحة المطلوبة. ويعالجها مزوّد الاستضافة لدينا، Vercel، لعرض الموقع وحمايته من إساءة الاستخدام.',
-            'تصل النتائج المباشرة إلى متصفحك عبر خادمنا للبث الفوري المستضاف لدى Railway، ويتلقى النوع نفسه من البيانات التقنية.',
+            `كما في أي موقع، يحمل كل طلب لصفحة بيانات تقنية مثل عنوان IP الخاص بك ونوع المتصفح والصفحة المطلوبة. ويعالجها مزوّد الاستضافة لدينا، ${HOSTING.site}، لعرض الموقع وحمايته من إساءة الاستخدام.`,
+            `تصل النتائج المباشرة إلى متصفحك عبر خادمنا للبث الفوري المستضاف لدى ${HOSTING.realtime}، ويتلقى النوع نفسه من البيانات التقنية.`,
             'تُحمَّل أعلام الدول مباشرة من خادم الصور لدى مزوّد بياناتنا API-Football ‏(media.api-sports.io)، الذي يتلقى عنوان IP الخاص بك عند إرسالها.',
             'تُشغَّل مقاطع الفيديو عبر وضع الخصوصية المحسّنة في يوتيوب (youtube-nocookie.com)، ولا تُحمَّل إلا عندما تفتح أحدها.',
           ],

@@ -31,6 +31,8 @@ export function buildAboutPageGraph(
     {
       '@type': 'NewsMediaOrganization',
       '@id': organizationId(baseUrl),
+      name: 'DimaScore',
+      url: `${baseUrl}/`,
       parentOrganization: { '@id': operatorId(baseUrl) },
     },
     {

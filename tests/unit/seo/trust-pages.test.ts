@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { SITE_PAGES_CONTENT } from '@/lib/constants/site-pages-content';
+import { HOSTING, SITE_PAGES_CONTENT } from '@/lib/constants/site-pages-content';
 import { buildAboutPageGraph, OPERATOR } from '@/lib/seo/about-jsonld';
 import { routing } from '@/lib/i18n/routing';
 
@@ -62,6 +62,18 @@ describe('facts the copy relies on', () => {
     expect(read('src/hooks/useFollows.ts')).toContain("'dimascore:follows'");
   });
 
+  it('hosting lines match the current hosts (update all 3 languages if the site moves)', () => {
+    // Vercel: the app ships with a vercel.json (crons). Railway: the Soketi realtime server.
+    expect(read('vercel.json')).toContain('"crons"');
+    expect(read('next.config.ts')).toMatch(/Soketi \(Railway\)[\s\S]*NEXT_PUBLIC_PUSHER_HOST/);
+    expect(HOSTING).toEqual({ site: 'Vercel', realtime: 'Railway' });
+    for (const locale of LOCALES) {
+      expect(text(locale, 'privacy')).toContain(HOSTING.site);
+      expect(text(locale, 'privacy')).toContain(HOSTING.realtime);
+      expect(text(locale, 'cookiePolicy')).not.toMatch(/Vercel|Railway|Cloudflare/);
+    }
+  });
+
   it('"videos use privacy-enhanced mode, on open": lite embed with cookie={false}', () => {
     expect(read('src/components/media/VideoPlayerModal.tsx')).toMatch(
       /LiteYouTubeEmbed[^>]*cookie=\{false\}/,
@@ -99,7 +111,10 @@ describe('About JSON-LD', () => {
       about: { '@id': 'https://dimascore.ma/#organization' },
     });
     expect(nodes[1]).toMatchObject({
+      '@type': 'NewsMediaOrganization',
       '@id': 'https://dimascore.ma/#organization',
+      name: 'DimaScore',
+      url: 'https://dimascore.ma/',
       parentOrganization: { '@id': 'https://dimascore.ma/#operator' },
     });
     expect(nodes[2]).toMatchObject({
