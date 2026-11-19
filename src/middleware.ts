@@ -6,6 +6,7 @@ import { lookupCanonicalSlug } from '@/lib/seo/slug-redirect-lookup';
 import { parseSlugRedirect, slugRedirectPath } from '@/lib/seo/slug-redirect';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { pointXDefaultAtEnglish } from '@/lib/i18n/hreflang-header';
+import { canonicalCompetitionRedirect } from '@/lib/seo/competition-canonical';
 import { resolveBareMatchRedirect } from '@/lib/seo/match-redirect';
 import { lookupMatchSlug } from '@/lib/seo/match-slug-lookup';
 import {
@@ -74,6 +75,14 @@ export async function middleware(request: NextRequest) {
     } catch {
       // fail open
     }
+  }
+
+  // Off-locale competition slugs (/en/competition/maroc/botola-pro) → 301 to this locale's canonical.
+  const competitionTarget = canonicalCompetitionRedirect(pathname);
+  if (competitionTarget) {
+    const url = request.nextUrl.clone();
+    url.pathname = competitionTarget;
+    return NextResponse.redirect(url, 301);
   }
 
   // Public JSON API: per-IP rate limit on enumeration-prone routes (429 + Retry-After, fail-open).
