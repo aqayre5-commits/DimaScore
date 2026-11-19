@@ -4,41 +4,46 @@
  * - National teams: the localized country name from country-names-i18n, plus a translated
  *   age/women suffix ("Morocco U23" → "Maroc U23" / "المغرب تحت 23 سنة").
  * - Moroccan clubs (Botola Pro 2026/27 and the best-known Botola 2 sides), by API-Football team
- *   ID: the names Moroccan media use. Only IDs checked against live data are listed; anything
- *   else falls back to the stored English name (never an empty label).
+ *   ID: the names Moroccan media use. Every ID is checked against the stored English name (see
+ *   `en` below); anything not listed falls back to the stored English name (never an empty label).
  *
  * Arabic and French names are standard press usage — review before shipping.
  */
 import { getCountryNames } from './country-names-i18n';
 
-type L10n = { fr?: string; ar?: string };
+/**
+ * `en` is the provider's stored English name for that ID (teams.name.en). It isn't rendered;
+ * it pins each ID to its club so a wrong ID fails tests/unit/utils-club-name-ids.test.ts and
+ * scripts/check-club-names.ts instead of putting another club's name on a page.
+ */
+type L10n = { en: string; fr?: string; ar?: string };
 
 export const CLUB_NAMES: Record<number, L10n> = {
   // Botola Pro 2026/27
-  962: { fr: 'RS Berkane', ar: 'نهضة بركان' },
-  964: { fr: 'Difaâ El Jadida', ar: 'الدفاع الحسني الجديدي' },
-  965: { fr: 'Moghreb Tétouan', ar: 'المغرب التطواني' },
-  968: { ar: 'الوداد الرياضي' },
-  969: { fr: 'AS FAR', ar: 'الجيش الملكي' },
-  971: { ar: 'الكوكب المراكشي' },
-  973: { ar: 'حسنية أكادير' },
-  974: { ar: 'اتحاد طنجة' },
-  976: { ar: 'الرجاء الرياضي' },
-  977: { ar: 'الفتح الرباطي' },
-  3449: { ar: 'نهضة الزمامرة' },
-  3453: { fr: 'Maghreb de Fès', ar: 'المغرب الفاسي' },
-  3458: { ar: 'وداد تمارة' },
-  14806: { ar: 'اتحاد تواركة' },
-  18753: { ar: 'أمل تيزنيت' },
-  22218: { ar: 'النادي المكناسي' },
+  962: { en: 'Renaissance Berkane', fr: 'RS Berkane', ar: 'نهضة بركان' },
+  964: { en: 'Difaa EL Jadida', fr: 'Difaâ El Jadida', ar: 'الدفاع الحسني الجديدي' },
+  965: { en: 'Moghreb Tetouan', fr: 'Moghreb Tétouan', ar: 'المغرب التطواني' },
+  968: { en: 'Wydad AC', ar: 'الوداد الرياضي' },
+  969: { en: 'FAR Rabat', fr: 'AS FAR', ar: 'الجيش الملكي' },
+  971: { en: 'Kawkab Marrakech', ar: 'الكوكب المراكشي' },
+  973: { en: 'Hassania Agadir', ar: 'حسنية أكادير' },
+  974: { en: 'Ittihad Tanger', ar: 'اتحاد طنجة' },
+  976: { en: 'Raja Casablanca', ar: 'الرجاء الرياضي' },
+  977: { en: 'FUS Rabat', ar: 'الفتح الرباطي' },
+  3449: { en: 'CR Khemis Zemamra', ar: 'نهضة الزمامرة' },
+  3453: { en: 'Maghreb Fès', fr: 'Maghreb de Fès', ar: 'المغرب الفاسي' },
+  3458: { en: 'Widad Témara', ar: 'وداد تمارة' },
+  14806: { en: 'UTS Rabat', ar: 'اتحاد تواركة' },
+  18753: { en: 'Amal Tiznit', ar: 'أمل تيزنيت' },
+  22218: { en: 'CODM Meknès', ar: 'النادي المكناسي' },
   // Botola 2 (linked from the Botola 2 hub)
-  975: { fr: 'Olympique de Safi', ar: 'أولمبيك آسفي' },
-  3452: { fr: 'Ittihad Khémisset', ar: 'اتحاد الخميسات' },
-  3454: { ar: 'أولمبيك الدشيرة' },
-  3459: { fr: 'Wydad de Fès', ar: 'وداد فاس' },
-  15549: { ar: 'الملعب المغربي' },
-  17716: { ar: 'الاتحاد الإسلامي الوجدي' },
-  25058: { ar: 'يعقوب المنصور' },
+  975: { en: 'Olympique Safi', fr: 'Olympique de Safi', ar: 'أولمبيك آسفي' },
+  3452: { en: 'Ittihad Khemisset', fr: 'Ittihad Khémisset', ar: 'اتحاد الخميسات' },
+  3454: { en: 'Olympique Dcheïra', ar: 'أولمبيك الدشيرة' },
+  3459: { en: 'Wydad Fès', fr: 'Wydad de Fès', ar: 'وداد فاس' },
+  15549: { en: 'Stade Marocain', ar: 'الملعب المغربي' },
+  17716: { en: 'USM Oujda', ar: 'الاتحاد الإسلامي الوجدي' },
+  25058: { en: 'Yacoub El Mansour', ar: 'يعقوب المنصور' },
 };
 
 const SUFFIX = /\s+(W|U\d{2})(?:\s+(W))?$/;
