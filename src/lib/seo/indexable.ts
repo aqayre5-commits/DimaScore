@@ -163,6 +163,27 @@ export const matchIndexableSitemapCondition = sql`(
   )
 )`;
 
+/**
+ * Finished matches older than this are omitted from the sitemap only.
+ * One constant: the SQL below interpolates it, so the cutoff cannot drift.
+ */
+export const SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS = 12;
+
+/**
+ * Sitemap inclusion for matches. Same indexability rule as robots, plus: a finished
+ * match (FT/AET/PEN/AWD/WO) whose kickoff is older than
+ * `SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS` is left out. Upcoming, live and recent
+ * finished matches stay. robots.index is unchanged, so those old pages still 200
+ * and keep their current index flag.
+ */
+export const matchSitemapInclusionCondition = sql`(
+  ${matchIndexableSitemapCondition}
+  AND NOT (
+    ${schema.fixtures.statusCode} IN ('FT', 'AET', 'PEN', 'AWD', 'WO')
+    AND ${schema.fixtures.kickoffAt} < NOW() - (${sql.raw(String(SITEMAP_FINISHED_MATCH_MAX_AGE_MONTHS))} * INTERVAL '1 month')
+  )
+)`;
+
 /** Same rule as `matchIndexableSitemapCondition`, for one fixture (runs the identical SQL). */
 export const isMatchIndexable = cache(async function isMatchIndexable(
   db: DB,
