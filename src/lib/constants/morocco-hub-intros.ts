@@ -4,6 +4,9 @@
  * Rules: factual, specific to each hub, no invented stats, no results that the data could
  * contradict, no boilerplate shared between hubs. To publish one, review all three languages and
  * flip its `approved` to true (MoroccoHubLinks renders it above the links).
+ *
+ * Sources and data checks for each factual claim are listed in PR #34 (intro claims) and must be
+ * re-checked before any intro is approved.
  */
 import type { Locale } from '@/lib/i18n/config';
 import type { MoroccoHubKey } from './morocco-hubs';
@@ -25,9 +28,9 @@ export const MOROCCO_HUB_INTROS: Partial<Record<MoroccoHubKey, HubIntro>> = {
   lionsAbroad: {
     approved: false,
     text: {
-      en: 'Most of Morocco’s internationals play their club football outside the Botola, in Europe and the Gulf. Lions abroad lists those players with their clubs and their latest matches, so you can follow them between international windows.',
-      fr: "La plupart des internationaux marocains jouent en club hors de la Botola, en Europe et dans le Golfe. Lions à l'étranger les répertorie avec leur club et leurs derniers matchs, pour les suivre entre deux rassemblements.",
-      ar: 'يلعب أغلب الدوليين المغاربة لأندية خارج البطولة الاحترافية، في أوروبا والخليج. تجمع صفحة أسود الأطلس في الخارج هؤلاء اللاعبين مع أنديتهم وآخر مبارياتهم، لمتابعتهم بين فترات التوقف الدولي.',
+      en: 'Many of Morocco’s internationals play their club football outside the Botola. Lions abroad lists those players with their clubs and their latest matches, so you can follow them between international windows.',
+      fr: "De nombreux internationaux marocains jouent en club hors de la Botola. Lions à l'étranger les répertorie avec leur club et leurs derniers matchs, pour les suivre entre deux rassemblements.",
+      ar: 'يلعب كثير من الدوليين المغاربة لأندية خارج البطولة الاحترافية. تجمع صفحة أسود الأطلس في الخارج هؤلاء اللاعبين مع أنديتهم وآخر مبارياتهم، لمتابعتهم بين فترات التوقف الدولي.',
     },
   },
   edition: {

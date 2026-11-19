@@ -1,13 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it, vi } from 'vitest';
-
-// buildCompetitionHref require()s country-slugs at runtime, which vitest can't load; the real
-// competition URLs are checked against the built HTML in the PR evidence.
-vi.mock('@/lib/constants/competitions-mega-menu', () => ({
-  buildCompetitionHrefById: (id: number, locale: string) =>
-    ({ 200: `/${locale}/competition/maroc/botola-pro` })[id] ?? `/${locale}/competition/x/${id}`,
-}));
+import { describe, expect, it } from 'vitest';
 import {
   hubKeyForCompetition,
   moroccoHubHref,
@@ -30,6 +23,21 @@ describe('Morocco hub cross-links', () => {
     expect(moroccoHubHref('botolaStandings', 'en')).toBe('/en/botola-pro-standings');
     for (const l of moroccoHubLinks('ar')) expect(l.href.startsWith('/ar/')).toBe(true);
     expect(moroccoHubLinks('en')).toHaveLength(8);
+  });
+
+  it('uses the real localized competition URLs the site links to', () => {
+    const href = (locale: 'en' | 'fr' | 'ar', key: string) =>
+      moroccoHubLinks(locale).find((l) => l.key === key)?.href;
+    expect(href('en', 'botola')).toBe('/en/competition/morocco/botola-pro');
+    expect(href('fr', 'botola')).toBe('/fr/competition/maroc/botola-pro');
+    expect(href('ar', 'botola')).toBe('/ar/competition/المغرب/البطولة-الاحترافية');
+    expect(href('en', 'afcon')).toBe('/en/competition/caf/afcon-2025');
+    expect(href('fr', 'afcon')).toBe('/fr/competition/caf/can-2025');
+    expect(href('ar', 'afcon')).toBe('/ar/competition/كاف/كأس-أمم-إفريقيا-2025');
+    expect(href('en', 'worldCup')).toBe('/en/competition/fifa/world-cup-2026');
+    expect(href('ar', 'worldCup')).toBe('/ar/competition/فيفا/كأس-العالم-2026');
+    for (const locale of ['en', 'fr', 'ar'] as const)
+      for (const l of moroccoHubLinks(locale)) expect(l.href).not.toMatch(/\/x\/|undefined|null/);
   });
 
   it('maps competition pages to their hub key', () => {
