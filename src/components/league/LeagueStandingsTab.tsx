@@ -87,7 +87,11 @@ export function LeagueStandingsTab({
               <HeadCell short={t('colDrawn')} full={t('colDrawnFull')} className="w-8" />
               <HeadCell short={t('colLost')} full={t('colLostFull')} className="w-8" />
               <HeadCell short={t('colGoalDiff')} full={t('colGoalDiffFull')} className="w-10" />
-              <HeadCell short={t('colGoals')} full={t('colGoalsFull')} className="w-16" />
+              <HeadCell
+                short={t('colGoals')}
+                full={t('colGoalsFull')}
+                className="hidden w-16 sm:table-cell"
+              />
               <th scope="col" className="hidden w-16 px-1 py-2 text-center sm:table-cell">
                 {t('colForm')}
               </th>
@@ -161,7 +165,7 @@ export function LeagueStandingsTab({
                     {(row.goalDiff ?? 0) > 0 ? '+' : ''}
                     {row.goalDiff ?? 0}
                   </td>
-                  <td className="px-1 py-2 text-center tabular-nums text-text-secondary">
+                  <td className="hidden px-1 py-2 text-center tabular-nums text-text-secondary sm:table-cell">
                     {row.goalsFor ?? 0}:{row.goalsAgainst ?? 0}
                   </td>
                   <td className="hidden px-1 py-2 text-center sm:table-cell">
