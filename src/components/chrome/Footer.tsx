@@ -9,7 +9,7 @@ import {
   findEntryByCompetitionId,
   type MegaMenuEntry,
 } from '@/lib/constants/competitions-mega-menu';
-import { SOCIAL_LINKS } from '@/lib/constants/social-links';
+import { SOCIAL_LINKS, socialLabel } from '@/lib/constants/social-links';
 
 // Inline SVG social icons (16x16, stroke style matching Lucide conventions)
 
@@ -23,14 +23,32 @@ function XIcon({ className }: { className?: string }) {
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
+      aria-hidden="true"
     >
       <path d="M2 2l5.5 6L2 14M14 2l-5.5 6L14 14" />
     </svg>
   );
 }
 
+function FacebookIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M10.5 2.5H9a2.5 2.5 0 0 0-2.5 2.5v9M4.5 8h5" />
+    </svg>
+  );
+}
+
 // Only the owner's verified accounts (src/lib/constants/social-links.ts); each one needs an icon here.
-const SOCIAL_ICONS = { x: XIcon } as const;
+const SOCIAL_ICONS = { x: XIcon, facebook: FacebookIcon } as const;
 const socialLinks = SOCIAL_LINKS.map((l) => ({ ...l, Icon: SOCIAL_ICONS[l.network] }));
 
 // Coverage columns — titleKey is a `megaMenu` i18n key; ids resolve to canonical localized
@@ -75,13 +93,13 @@ export function Footer() {
             <span className="text-xl font-bold text-text-primary">{tApp('name')}</span>
             <p className="text-sm leading-relaxed text-text-secondary">{t('description')}</p>
             <div className="flex items-center gap-3">
-              {socialLinks.map(({ Icon, href, label }) => (
+              {socialLinks.map(({ Icon, href, label, network }) => (
                 <a
-                  key={label}
+                  key={network}
                   href={href}
                   target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
+                  rel="me noopener"
+                  aria-label={socialLabel(label, locale)}
                   className="text-text-tertiary transition-colors hover:text-accent-green"
                 >
                   <Icon className="size-5" />
