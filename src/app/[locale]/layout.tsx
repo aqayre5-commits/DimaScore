@@ -6,10 +6,6 @@ import { requireLocale } from '@/lib/i18n/require-locale';
 import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
 import type { Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
-import { Suspense } from 'react';
-import { MetaPixel } from '@/components/analytics/MetaPixel';
-import { GoogleTagManager } from '@/components/analytics/GoogleTagManager';
-import { CookieNotice } from '@/components/analytics/CookieNotice';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { buildGraph, buildOrganization, buildWebSite } from '@/lib/seo/jsonld';
 import '../globals.css';
@@ -143,14 +139,9 @@ export default async function LocaleLayout({
         className={`${fontClass} flex min-h-full flex-col bg-bg-canvas pb-[calc(3.5rem+env(safe-area-inset-bottom))] text-text-primary md:pb-0`}
       >
         <JsonLd graph={buildGraph(buildOrganization(baseUrl), buildWebSite(baseUrl, locale))} />
-        <GoogleTagManager />
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
-          <CookieNotice />
         </NextIntlClientProvider>
-        <Suspense fallback={null}>
-          <MetaPixel />
-        </Suspense>
       </body>
     </html>
   );
