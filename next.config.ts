@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { COMPETITION_TAB_REDIRECT } from './src/lib/seo/competition-tab-redirects';
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
 
@@ -13,11 +14,13 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://www.googletagmanager.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' https://media.api-sports.io https://media-4.api-sports.io https://i.ytimg.com https://img.youtube.com https://res.cloudinary.com https://www.facebook.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com data:",
-      'frame-src https://www.youtube.com https://www.googletagmanager.com',
-      `connect-src 'self'${realtimeSrc} https://connect.facebook.net https://www.facebook.com https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com`,
+      "img-src 'self' https://media.api-sports.io https://media-4.api-sports.io https://i.ytimg.com https://img.youtube.com https://res.cloudinary.com data:",
+      // The only embed is react-lite-youtube-embed in VideoPlayerModal with cookie={false}, which
+      // frames youtube-nocookie.com. Nothing frames www.youtube.com (tests/unit/security).
+      'frame-src https://www.youtube-nocookie.com',
+      `connect-src 'self'${realtimeSrc}`,
       "font-src 'self' https://fonts.gstatic.com",
     ].join('; '),
   },
@@ -166,6 +169,8 @@ const nextConfig: NextConfig = {
         destination: '/ar/matchs-botola-pro',
         permanent: true,
       },
+      // Accidental /fixtures, /standings, /stats competition paths → hub (one 301 hop).
+      COMPETITION_TAB_REDIRECT,
       // BUG-016: /competition/uefa/ucl → canonical champions-league slug
       {
         source: '/:locale/competition/:country/ucl',

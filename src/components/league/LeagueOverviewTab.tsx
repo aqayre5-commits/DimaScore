@@ -12,6 +12,8 @@ import type {
 } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
+import { FixtureRow } from '@/components/shared/FixtureRow';
+import { isFinished } from '@/lib/match-status';
 import { LeagueFixturesCard } from './LeagueFixturesCard';
 import { LeagueStandingsTab } from './LeagueStandingsTab';
 
@@ -25,6 +27,9 @@ interface LeagueOverviewTabProps {
   topCards: TopCardRow[];
   coverage: LeagueCoverageRecord | null;
   locale: Locale;
+  /** Localized competition name + season label, for the table heading and caption. */
+  competitionName: string;
+  seasonLabel: string;
 }
 
 export function LeagueOverviewTab({
@@ -36,36 +41,89 @@ export function LeagueOverviewTab({
   topAssists,
   topCards,
   locale,
+  competitionName,
+  seasonLabel,
 }: LeagueOverviewTabProps) {
   const t = useTranslations('leaguePage');
 
-  const compactStandings = dedupeStandingsByTeam(standings).slice(0, 7);
-  const compactScorers = topScorers.slice(0, 5);
+  // Standings first, and the whole table: league-table searches are what this page answers.
+  const tableRows = dedupeStandingsByTeam(standings);
+  const tableVars = { competition: competitionName, season: seasonLabel };
+  // Latest completed results: the newest round before the current one with finished matches.
+  const previousRound = rounds
+    .map((r) => r.roundNumber)
+    .filter((n) => n < defaultRound)
+    .sort((a, b) => b - a)
+    .find((n) => fixtures.some((f) => f.roundNumber === n && isFinished(f.statusCode)));
+  const previousResults =
+    previousRound != null
+      ? fixtures.filter((f) => f.roundNumber === previousRound && isFinished(f.statusCode))
+      : [];
+  const compactScorers = topScorers.slice(0, 10);
   const compactAssists = topAssists.slice(0, 5);
   const compactCards = topCards.slice(0, 5);
 
   return (
     <div className="space-y-6">
-      {/* Matchweek fixtures */}
+      {/* Full league table */}
+      {tableRows.length > 0 && (
+        <section aria-labelledby="league-table-heading">
+          <h2 id="league-table-heading" className="mb-2 text-base font-semibold text-text-primary">
+            {t('tableHeading', tableVars)}
+          </h2>
+          <LeagueStandingsTab
+            standings={tableRows}
+            locale={locale}
+            caption={t('tableCaption', tableVars)}
+          />
+        </section>
+      )}
+
+      {/* Matchweek fixtures (current round, with a round picker) */}
       {rounds.length > 0 && (
-        <div>
+        <section aria-labelledby="league-fixtures-heading">
+          <h2
+            id="league-fixtures-heading"
+            className="mb-2 text-base font-semibold text-text-primary"
+          >
+            {t('fixturesHeading')}
+          </h2>
           <LeagueFixturesCard
             fixtures={fixtures}
             rounds={rounds}
             defaultRound={defaultRound}
             locale={locale}
           />
-        </div>
+        </section>
       )}
 
-      {/* Compact standings (top 7) */}
-      {compactStandings.length > 0 && (
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-text-primary">{t('standings')}</h2>
+      {/* Latest round results, server-rendered */}
+      {previousRound != null && previousResults.length > 0 && (
+        <section aria-labelledby="league-results-heading">
+          <h2
+            id="league-results-heading"
+            className="mb-2 text-base font-semibold text-text-primary"
+          >
+            {t('roundResultsHeading', { round: previousRound })}
+          </h2>
+          <div className="divide-y divide-border-subtle rounded-lg border border-border-subtle bg-bg-surface px-4">
+            {previousResults.map((f) => (
+              <FixtureRow
+                key={f.id}
+                fixtureId={f.id}
+                kickoffAt={f.kickoffAt}
+                statusCode={f.statusCode}
+                homeTeam={f.homeTeam}
+                awayTeam={f.awayTeam}
+                homeScore={f.homeScore}
+                awayScore={f.awayScore}
+                homeScorePen={f.homeScorePen}
+                awayScorePen={f.awayScorePen}
+                locale={locale}
+              />
+            ))}
           </div>
-          <LeagueStandingsTab standings={compactStandings} locale={locale} compact />
-        </div>
+        </section>
       )}
 
       {/* Top scorers (top 5) */}

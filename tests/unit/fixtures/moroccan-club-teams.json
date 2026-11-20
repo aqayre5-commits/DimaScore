@@ -1,0 +1,97 @@
+{
+  "_source": "teams rows (id, slug, name.en) from the local PGlite DB seeded from public dimascore.ma pages on 2026-11-19 (team, match and standings pages). Regenerate with scripts/check-club-names.ts --snapshot.",
+  "teams": {
+    "962": {
+      "slug": "renaissance-berkane-962",
+      "en": "Renaissance Berkane"
+    },
+    "964": {
+      "slug": "difaa-el-jadida-964",
+      "en": "Difaa EL Jadida"
+    },
+    "965": {
+      "slug": "moghreb-tetouan-965",
+      "en": "Moghreb Tetouan"
+    },
+    "968": {
+      "slug": "wydad-ac-968",
+      "en": "Wydad AC"
+    },
+    "969": {
+      "slug": "far-rabat-969",
+      "en": "FAR Rabat"
+    },
+    "971": {
+      "slug": "kawkab-marrakech-971",
+      "en": "Kawkab Marrakech"
+    },
+    "973": {
+      "slug": "hassania-agadir-973",
+      "en": "Hassania Agadir"
+    },
+    "974": {
+      "slug": "ittihad-tanger-974",
+      "en": "Ittihad Tanger"
+    },
+    "975": {
+      "slug": "olympique-safi-975",
+      "en": "Olympique Safi"
+    },
+    "976": {
+      "slug": "raja-casablanca-976",
+      "en": "Raja Casablanca"
+    },
+    "977": {
+      "slug": "fus-rabat-977",
+      "en": "FUS Rabat"
+    },
+    "3449": {
+      "slug": "cr-khemis-zemamra-3449",
+      "en": "CR Khemis Zemamra"
+    },
+    "3452": {
+      "slug": "ittihad-khemisset-3452",
+      "en": "Ittihad Khemisset"
+    },
+    "3453": {
+      "slug": "maghreb-fes-3453",
+      "en": "Maghreb Fès"
+    },
+    "3454": {
+      "slug": "olympique-dcheira-3454",
+      "en": "Olympique Dcheïra"
+    },
+    "3458": {
+      "slug": "widad-temara-3458",
+      "en": "Widad Témara"
+    },
+    "3459": {
+      "slug": "wydad-fes-3459",
+      "en": "Wydad Fès"
+    },
+    "14806": {
+      "slug": "uts-rabat-14806",
+      "en": "UTS Rabat"
+    },
+    "15549": {
+      "slug": "stade-marocain-15549",
+      "en": "Stade Marocain"
+    },
+    "17716": {
+      "slug": "usm-oujda-17716",
+      "en": "USM Oujda"
+    },
+    "18753": {
+      "slug": "amal-tiznit-18753",
+      "en": "Amal Tiznit"
+    },
+    "22218": {
+      "slug": "codm-meknes-22218",
+      "en": "CODM Meknès"
+    },
+    "25058": {
+      "slug": "yacoub-el-mansour-25058",
+      "en": "Yacoub El Mansour"
+    }
+  }
+}

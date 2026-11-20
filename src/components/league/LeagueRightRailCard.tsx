@@ -1,3 +1,4 @@
+import { getScoreCardLabel } from '@/lib/utils/team-name';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MatchLink } from '@/components/shared/MatchLink';
@@ -25,13 +26,8 @@ interface LeagueRightRailCardProps {
 }
 
 function resolveTeamCode(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
-  if (!team) return '\u2014';
-  return stripWomenSuffix(
-    team.code ??
-      team.shortName[locale] ??
-      team.shortName['en'] ??
-      (team.name[locale] ?? team.name['en'] ?? '\u2014').slice(0, 3).toUpperCase(),
-  );
+  // Arabic pages get an Arabic label (stored or curated) instead of a Latin code (R9).
+  return stripWomenSuffix(getScoreCardLabel(team, locale));
 }
 
 export async function LeagueRightRailCard({

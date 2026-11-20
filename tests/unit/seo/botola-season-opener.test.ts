@@ -32,12 +32,12 @@ describe('botola season opener routes', () => {
     expect(BOTOLA_SEASON_OPENER_SLUGS.ar).toMatch(/^[a-z0-9-]+$/);
   });
 
-  it('maps hreflang with x-default to FR', () => {
+  it('maps hreflang with x-default to EN', () => {
     const languages = botolaSeasonOpenerHreflang('https://dimascore.ma');
     expect(languages.fr).toBe('https://dimascore.ma/fr/calendrier-botola-pro-2026-2027');
     expect(languages.en).toBe('https://dimascore.ma/en/botola-pro-2026-27-calendar');
     expect(languages.ar).toBe('https://dimascore.ma/ar/calendrier-botola-pro-2026-2027');
-    expect(languages['x-default']).toBe(languages.fr);
+    expect(languages['x-default']).toBe(languages.en);
   });
 
   it('recognizes the optional FR 301 alias', () => {

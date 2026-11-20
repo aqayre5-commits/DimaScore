@@ -38,46 +38,12 @@ interface Props {
     countdownDays: string;
     countdownHours: string;
     countdownMins: string;
-    live: string;
-    noGoals: string;
     tags: Record<FeatureTag, string>;
-    half: {
-      firstHalf: string;
-      secondHalf: string;
-      halftime: string;
-      extraTime: string;
-      penalties: string;
-    };
+    /** Screen-reader heading (H2) for the hero block. */
+    heading: string;
+    /** Shown instead of the card when no upcoming match is scheduled. */
+    empty: { title: string; cta: string };
   };
-}
-
-type HalfLabels = Props['labels']['half'];
-
-/** Live status line for the hero center, e.g. "2nd half · 67'". */
-function heroStatusLabel(statusCode: string, minute: number | null, half: HalfLabels): string {
-  const min = minute != null ? ` · ${minute}'` : '';
-  switch (statusCode) {
-    case 'HT':
-    case 'BT':
-      return half.halftime;
-    case '1H':
-      return `${half.firstHalf}${min}`;
-    case '2H':
-      return `${half.secondHalf}${min}`;
-    case 'ET':
-      return `${half.extraTime}${min}`;
-    case 'P':
-    case 'PEN':
-      return half.penalties;
-    default:
-      return minute != null ? `${minute}'` : '';
-  }
-}
-
-/** Surname only, to keep hero scorer lines compact ("23' Shaw"). */
-function surname(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  return parts.length > 1 ? parts[parts.length - 1] : name;
 }
 
 function applyPatch(m: HomeFixture, patch: ReturnType<ReturnType<typeof useLiveFixtures>['get']>) {
@@ -104,9 +70,11 @@ function computeCountdown(kickoffAt: Date) {
 }
 
 /**
- * Reimagined landing hero: a single rotating hero across the top ranked matches (Morocco-first +
- * imminence-first + diversity cap from getFeaturedMatches). Live matches are pulled to the front,
- * finished slides are dropped, and rotation pauses on hover/focus. The server's #1 keeps the
+ * Landing hero: one rotating card across the top ranked UPCOMING matches (Morocco-first +
+ * imminence-first + diversity cap from getFeaturedMatches). Live matches are not shown here: they
+ * have their own card (HomeNextMatch, live only), the Live tab and the ticker. A slide that kicks
+ * off, goes live or finishes drops out; when none is left the card becomes an empty state of the
+ * same size, so nothing below it moves. Rotation pauses on hover/focus. The server's #1 keeps the
  * "Match of the day" badge; other slides read "Featured".
  */
 export function HomeFeatured({ matches, locale, labels }: Props) {
@@ -117,17 +85,12 @@ export function HomeFeatured({ matches, locale, labels }: Props) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const patched = matches.map((m) => applyPatch(m, livePatches.get(m.id)));
-  // Reshape by match state. Before mount use the code-only state so the server shell and the
-  // client's first render agree; after mount the time-aware getMatchState drops finished slides
-  // and pulls live to the front. Deferring the clock-dependent reshape avoids a #418 mismatch.
+  // Before mount use the code-only state so the server shell and the client's first render agree;
+  // after mount the time-aware getMatchState drops a slide whose kickoff has passed. Deferring the
+  // clock-dependent reshape avoids a #418 mismatch.
   const stateOf = (m: HomeFixture) =>
     mounted ? getMatchState(m.statusCode, m.kickoffAt) : codeMatchState(m.statusCode);
-  const notFinished = patched.filter((m) => stateOf(m) !== 'finished');
-  const base = notFinished.length > 0 ? notFinished : patched;
-  // Live-first: a match in progress always leads; the rest keep the server ranking.
-  const live = base.filter((m) => stateOf(m) === 'live');
-  const upcoming = base.filter((m) => stateOf(m) !== 'live');
-  const view = [...live, ...upcoming].slice(0, 8);
+  const view = patched.filter((m) => stateOf(m) === 'upcoming').slice(0, 8);
   const matchOfDayId = matches[0]?.id ?? null;
 
   const safeIdx = idx < view.length ? idx : 0;
@@ -150,8 +113,26 @@ export function HomeFeatured({ matches, locale, labels }: Props) {
     }
   }, []);
 
-  if (view.length === 0) return null;
   const match = view[safeIdx];
+
+  if (!match) {
+    return (
+      <div>
+        <h2 className="sr-only">{labels.heading}</h2>
+        <div className="flex min-h-[380px] flex-col items-center justify-center gap-3 rounded-xl border border-border-subtle bg-bg-surface px-6 text-center">
+          <p className="text-base font-semibold text-text-primary">{labels.empty.title}</p>
+          <a
+            href="#matches"
+            className="text-sm font-medium text-accent-azure underline-offset-2 hover:underline"
+          >
+            {labels.empty.cta}
+          </a>
+        </div>
+        {/* Same height as the pager row below the card, so the block never changes size. */}
+        <div className="mt-2 h-2" aria-hidden />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -160,6 +141,7 @@ export function HomeFeatured({ matches, locale, labels }: Props) {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
+      <h2 className="sr-only">{labels.heading}</h2>
       <div className="relative">
         <HeroCard
           match={match}
@@ -190,7 +172,11 @@ export function HomeFeatured({ matches, locale, labels }: Props) {
         )}
       </div>
 
-      {view.length > 1 && (
+      {/* The pager row keeps its height with a single slide, so a slide dropping out after mount
+          (kickoff passed) can't shift what's below. */}
+      {view.length <= 1 ? (
+        <div className="mt-2 h-2" aria-hidden />
+      ) : (
         <div className="mt-2 flex items-center justify-center gap-1.5">
           {view.map((m, i) => (
             <button
@@ -262,7 +248,6 @@ function HeroCard({
   labels: Props['labels'];
   isLead: boolean;
 }) {
-  const mounted = useMounted();
   const [remaining, setRemaining] = useState(() => computeCountdown(match.kickoffAt));
   const [prevKo, setPrevKo] = useState(match.kickoffAt.getTime());
   if (prevKo !== match.kickoffAt.getTime()) {
@@ -277,18 +262,6 @@ function HeroCard({
   const homeName = stripWomenSuffix(getTeamDisplayName(match.homeTeam, locale));
   const awayName = stripWomenSuffix(getTeamDisplayName(match.awayTeam, locale));
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
-  // Code-only state until mount so the prerendered shell and the first client render agree
-  // (see codeMatchState); the time-aware state takes over after hydration, flipping the slide
-  // to live/finished without a #418 structural mismatch.
-  const state = mounted
-    ? getMatchState(match.statusCode, match.kickoffAt)
-    : codeMatchState(match.statusCode);
-  const isLive = state === 'live';
-  const showScore = isLive && match.homeScore != null && match.awayScore != null;
-  const allGoals = match.goals ?? [];
-  const homeGoals = allGoals.filter((g) => g.teamId === match.homeTeamId).slice(0, 4);
-  const awayGoals = allGoals.filter((g) => g.teamId === match.awayTeamId).slice(0, 4);
-  const hasGoals = isLive && (homeGoals.length > 0 || awayGoals.length > 0);
 
   return (
     <Link
@@ -297,7 +270,7 @@ function HeroCard({
         homeSlug: match.homeTeam?.slug,
         awaySlug: match.awayTeam?.slug,
       })}
-      className="relative flex min-h-[380px] flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface"
+      className="relative flex min-h-[380px] flex-col overflow-hidden rounded-xl border border-border-subtle bg-bg-surface [[data-theme=light]_&]:shadow-[0_1px_2px_rgb(15_26_36/0.06),0_4px_14px_rgb(15_26_36/0.04)]"
     >
       {/* Left badge — always the featured / match-of-day marker */}
       <div className="absolute start-4 top-4 z-10">
@@ -305,28 +278,21 @@ function HeroCard({
           ★ {isLead ? labels.matchOfDay : labels.featured}
         </span>
       </div>
-      {/* Right badge — LIVE when live, otherwise the why-featured tag */}
+      {/* Right badge — the why-featured tag. Live state is shown under the score (I/J), not as a pill. */}
       <div className="absolute end-4 top-4 z-10">
-        {isLive ? (
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-score-live px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
-            <span className="size-1.5 animate-pulse rounded-full bg-white" />
-            {labels.live}
-          </span>
-        ) : (
-          match.featureTag && <TagChip tag={match.featureTag} labels={labels} />
-        )}
+        {match.featureTag && <TagChip tag={match.featureTag} labels={labels} />}
       </div>
 
       <div className="flex flex-1 flex-col items-center justify-center px-4 pb-2 pt-12 text-center sm:px-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+        <p className="text-sm font-medium text-text-secondary">
           {compName}
           {match.contextLabel && (
             <span className="text-text-tertiary"> · {match.contextLabel}</span>
           )}
         </p>
 
-        {/* Match row — crest + name stay put; the center is a FIXED width and height so the flags
-            never shift or re-center between the VS/time and score/status states. */}
+        {/* Match row — the centre column has a fixed width and min-height so the crests never shift
+            as the time text changes. */}
         <div className="mt-6 flex w-full items-center justify-center gap-3">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:w-[160px] sm:flex-none">
             <TeamCrest team={match.homeTeam} />
@@ -334,26 +300,13 @@ function HeroCard({
           </div>
 
           <div className="flex min-h-[68px] w-[128px] shrink-0 flex-col items-center justify-center gap-1.5">
-            {showScore ? (
-              <>
-                <span className="text-4xl font-black tabular-nums tracking-tight text-accent-azure">
-                  {match.homeScore} - {match.awayScore}
-                </span>
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-text-tertiary">
-                  {heroStatusLabel(match.statusCode, match.minute, labels.half)}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="text-3xl font-black tracking-tight text-accent-azure">VS</span>
-                <p
-                  className="text-xs font-medium tracking-wide text-text-tertiary"
-                  suppressHydrationWarning
-                >
-                  <LocalTime date={match.kickoffAt} locale={locale} format="featured" />
-                </p>
-              </>
-            )}
+            <span className="text-3xl font-black tracking-tight text-accent-azure">VS</span>
+            <p
+              className="text-xs font-medium tracking-wide text-text-tertiary"
+              suppressHydrationWarning
+            >
+              <LocalTime date={match.kickoffAt} locale={locale} format="featured" />
+            </p>
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:w-[160px] sm:flex-none">
@@ -362,48 +315,20 @@ function HeroCard({
           </div>
         </div>
 
-        {/* Status band — constant min-height across states so the card height never changes.
-            Upcoming: countdown. Live: goal scorers under each team, top-anchored so they grow
-            DOWNWARD and never push the crests/names above them. 0-0 live shows "no goals yet". */}
+        {/* Countdown band — constant min-height so the card height never changes. */}
         <div className="mt-4 flex min-h-[104px] w-full items-start justify-center">
-          {state === 'upcoming' ? (
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
-                {labels.kicksOffIn}
-              </span>
-              <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
-                <CountdownUnit value={remaining.days} label={labels.countdownDays} />
-                <div className="h-12 w-px bg-border-subtle" />
-                <CountdownUnit value={remaining.hours} label={labels.countdownHours} />
-                <div className="h-12 w-px bg-border-subtle" />
-                <CountdownUnit value={remaining.minutes} label={labels.countdownMins} />
-              </div>
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
+              {labels.kicksOffIn}
+            </span>
+            <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
+              <CountdownUnit value={remaining.days} label={labels.countdownDays} />
+              <div className="h-12 w-px bg-border-subtle" />
+              <CountdownUnit value={remaining.hours} label={labels.countdownHours} />
+              <div className="h-12 w-px bg-border-subtle" />
+              <CountdownUnit value={remaining.minutes} label={labels.countdownMins} />
             </div>
-          ) : isLive ? (
-            hasGoals ? (
-              <div className="flex w-full items-start justify-center gap-3">
-                <ul className="min-w-0 flex-1 space-y-1 text-center text-xs text-text-secondary sm:w-[160px] sm:flex-none">
-                  {homeGoals.map((g, i) => (
-                    <li key={i} className="truncate">
-                      <span className="tabular-nums text-text-tertiary">{g.minute}&apos;</span>{' '}
-                      {surname(g.playerName)}
-                    </li>
-                  ))}
-                </ul>
-                <div className="w-[128px] shrink-0" />
-                <ul className="min-w-0 flex-1 space-y-1 text-center text-xs text-text-secondary sm:w-[160px] sm:flex-none">
-                  {awayGoals.map((g, i) => (
-                    <li key={i} className="truncate">
-                      <span className="tabular-nums text-text-tertiary">{g.minute}&apos;</span>{' '}
-                      {surname(g.playerName)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <span className="pt-2 text-xs font-medium text-text-tertiary">{labels.noGoals}</span>
-            )
-          ) : null}
+          </div>
         </div>
       </div>
 

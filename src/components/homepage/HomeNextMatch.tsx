@@ -17,6 +17,12 @@ interface Props {
   /** Server-ranked candidate list. Client picks first whose patched status isn't finished. */
   candidates: Array<{ match: RightRailFixture; goals: GoalEvent[] }>;
   locale: Locale;
+  /**
+   * Home page: show the card only while a match is live. The hero already shows the next
+   * upcoming match, so repeating it as "Next match" right beside or below it is noise. Other
+   * pages (e.g. the Morocco edition) keep the live-or-next behaviour.
+   */
+  liveOnly?: boolean;
   labels: {
     nextMatch: string;
     liveNow: string;
@@ -27,7 +33,7 @@ interface Props {
 const LIVE_CODES: string[] = [...LIVE_CODES_ARRAY];
 const FINISHED_CODES = new Set<string>(FINISHED_CODES_ARRAY);
 
-export function HomeNextMatch({ candidates, locale, labels }: Props) {
+export function HomeNextMatch({ candidates, locale, liveOnly = false, labels }: Props) {
   const livePatches = useLiveFixtures();
   const feedReady = useLiveFeedReady();
 
@@ -44,7 +50,10 @@ export function HomeNextMatch({ candidates, locale, labels }: Props) {
 
   // First candidate whose effective status is not finished (i.e. live or still-NS). When a
   // displayed match ends, the live patch flips it to FT and we auto-advance to the next.
-  const selected = candidates.find(({ match: m }) => !FINISHED_CODES.has(effectiveStatus(m)));
+  const selected = candidates.find(({ match: m }) => {
+    const status = effectiveStatus(m);
+    return liveOnly ? LIVE_CODES.includes(status) : !FINISHED_CODES.has(status);
+  });
   if (!selected) return null;
   const { match, goals } = selected;
 

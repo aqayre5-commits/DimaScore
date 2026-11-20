@@ -19,6 +19,13 @@ export interface MatchMetaInput {
   state: MatchMetaState;
   homeScore?: number | null;
   awayScore?: number | null;
+  /**
+   * Short kick-off date in Morocco time ("20 Nov"). Makes upcoming titles and every description
+   * unique when the same pairing recurs (league legs, cups, seasons).
+   */
+  dateLabel?: string | null;
+  /** Date with year ("20 Nov 2026"), used in finished-match descriptions; falls back to dateLabel. */
+  dateLabelLong?: string | null;
 }
 
 export interface MatchMeta {
@@ -32,55 +39,59 @@ interface TemplateVars {
   comp: string;
   /** "2–1" for a finished match; null otherwise (upcoming/live never read it). */
   score: string | null;
+  /** " (20 Nov)"-style suffix pieces; empty strings when no date is known. */
+  d: string;
+  dIn: string;
 }
 
 type Template = (v: TemplateVars) => MatchMeta;
 
 const TEMPLATES: Record<string, Record<MatchMetaState, Template>> = {
+  // No "TV channel" promises: DimaScore has no broadcaster data, so titles promise what the page
+  // actually shows (kick-off time, lineups, form, head-to-head).
   fr: {
-    upcoming: ({ home, away, comp }) => ({
-      title: `${home} – ${away} : compo probable, heure & chaîne`,
-      description: `Compo probable, heure du coup d'envoi et chaîne TV de ${home} – ${away} en ${comp}. Aperçu, forme récente et historique des confrontations.`,
+    upcoming: ({ home, away, comp, d, dIn }) => ({
+      title: `${home} – ${away}${d} : compo probable, heure & face-à-face`,
+      description: `${home} – ${away} en ${comp}${dIn} : heure du coup d'envoi (heure marocaine), compo probable, forme récente et historique des confrontations.`,
     }),
-    live: ({ home, away, comp }) => ({
+    live: ({ home, away, comp, dIn }) => ({
       title: `${home} – ${away} en direct : score live & stats`,
-      description: `Score en direct de ${home} – ${away} : buts minute par minute, compositions et statistiques live en ${comp}.`,
+      description: `Score en direct de ${home} – ${away}${dIn} : buts minute par minute, compositions et statistiques live en ${comp}.`,
     }),
-    finished: ({ home, away, comp, score }) => ({
+    finished: ({ home, away, comp, score, dIn }) => ({
       title: `${home} ${score} ${away} : résumé, buts & stats`,
-      description: `Revivez ${home} ${score} ${away} en ${comp} : buts, temps forts, compositions et statistiques complètes.`,
+      description: `Revivez ${home} ${score} ${away} en ${comp}${dIn} : buts, temps forts, compositions et statistiques complètes.`,
     }),
   },
   en: {
-    upcoming: ({ home, away, comp }) => ({
-      title: `${home} vs ${away}: preview, lineups & kickoff`,
-      description: `Probable lineups, kickoff time and TV channel for ${home} vs ${away} in the ${comp}. Preview, recent form and head-to-head history.`,
+    upcoming: ({ home, away, comp, d, dIn }) => ({
+      title: `${home} vs ${away}${d}: lineups, kickoff & head-to-head`,
+      description: `${home} vs ${away} in the ${comp}${dIn}: kickoff time (Morocco time), probable lineups, recent form and head-to-head history.`,
     }),
-    live: ({ home, away, comp }) => ({
+    live: ({ home, away, comp, dIn }) => ({
       title: `${home} vs ${away} live score & stats`,
-      description: `Live score of ${home} vs ${away}: goals minute by minute, lineups and live match statistics in the ${comp}.`,
+      description: `Live score of ${home} vs ${away}${dIn}: goals minute by minute, lineups and live match statistics in the ${comp}.`,
     }),
-    finished: ({ home, away, comp, score }) => ({
+    finished: ({ home, away, comp, score, dIn }) => ({
       title: `${home} ${score} ${away}: recap, goals & stats`,
-      description: `Relive ${home} ${score} ${away} in the ${comp}: goals, key moments, lineups and full match statistics.`,
+      description: `Relive ${home} ${score} ${away} in the ${comp}${dIn}: goals, key moments, lineups and full match statistics.`,
     }),
   },
   ar: {
-    upcoming: ({ home, away, comp }) => ({
-      title: `${home} ضد ${away}: التشكيلة المتوقعة والقناة الناقلة`,
-      description: `التشكيلة المتوقعة وموعد انطلاق المباراة والقناة الناقلة لمباراة ${home} ضد ${away} في ${comp}. معاينة والفورمة الأخيرة وتاريخ المواجهات.`,
+    upcoming: ({ home, away, comp, d, dIn }) => ({
+      title: `${home} ضد ${away}${d}: التشكيلة المتوقعة والموعد والمواجهات المباشرة`,
+      description: `مباراة ${home} ضد ${away} في ${comp}${dIn}: موعد الانطلاق بتوقيت المغرب والتشكيلة المتوقعة والفورمة الأخيرة وتاريخ المواجهات.`,
     }),
-    live: ({ home, away, comp }) => ({
+    live: ({ home, away, comp, dIn }) => ({
       title: `${home} ضد ${away} بث مباشر: النتيجة لحظة بلحظة`,
-      description: `النتيجة المباشرة لمباراة ${home} ضد ${away}: الأهداف لحظة بلحظة والتشكيلات والإحصائيات المباشرة في ${comp}.`,
+      description: `النتيجة المباشرة لمباراة ${home} ضد ${away}${dIn}: الأهداف لحظة بلحظة والتشكيلات والإحصائيات المباشرة في ${comp}.`,
     }),
-    finished: ({ home, away, comp, score }) => ({
+    finished: ({ home, away, comp, score, dIn }) => ({
       title: `${home} ${score} ${away}: ملخص المباراة والأهداف`,
-      description: `ملخص مباراة ${home} و${away} (${score}) في ${comp}: الأهداف وأبرز اللقطات والتشكيلات والإحصائيات الكاملة.`,
+      description: `ملخص مباراة ${home} و${away} (${score}) في ${comp}${dIn}: الأهداف وأبرز اللقطات والتشكيلات والإحصائيات الكاملة.`,
     }),
   },
 };
-
 function hasScore(a?: number | null, b?: number | null): boolean {
   return typeof a === 'number' && typeof b === 'number';
 }
@@ -96,7 +107,25 @@ export function buildMatchMeta(input: MatchMetaInput): MatchMeta {
     : null;
   const state: MatchMetaState = input.state === 'finished' && !score ? 'upcoming' : input.state;
   const byLocale = TEMPLATES[input.locale] ?? TEMPLATES.fr;
-  return byLocale[state]({ home: input.home, away: input.away, comp: input.competition, score });
+  const date = input.dateLabel?.trim();
+  const d = date ? ` (${date})` : '';
+  // Finished descriptions carry the year ("le 20 nov. 2026"); titles keep the short date.
+  const descDate = (state === 'finished' ? input.dateLabelLong?.trim() : null) || date;
+  const dIn = descDate
+    ? input.locale === 'ar'
+      ? ` يوم ${descDate}`
+      : input.locale === 'en'
+        ? ` on ${descDate}`
+        : ` le ${descDate}`
+    : '';
+  return byLocale[state]({
+    home: input.home,
+    away: input.away,
+    comp: input.competition,
+    score,
+    d,
+    dIn,
+  });
 }
 
 /**

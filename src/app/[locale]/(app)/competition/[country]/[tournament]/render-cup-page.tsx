@@ -60,6 +60,8 @@ import {
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
+import { MOROCCO_HUB_COMPETITION_IDS, hubKeyForCompetition } from '@/lib/constants/morocco-hubs';
 
 // Knockout bracket size by entry round — used to derive how many best-third teams advance.
 const KNOCKOUT_SLOTS: Record<CupMetadata['knockoutStartsRound'], number> = {
@@ -596,6 +598,9 @@ export async function renderCupPage(
           </>
         }
       />
+      {MOROCCO_HUB_COMPETITION_IDS.has(competitionId) && (
+        <MoroccoHubLinks locale={locale} current={hubKeyForCompetition(competitionId)} />
+      )}
     </>
   );
 }

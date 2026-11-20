@@ -1,18 +1,14 @@
 import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Sans, IBM_Plex_Sans_Arabic } from 'next/font/google';
-import { NextIntlClientProvider, hasLocale } from 'next-intl';
+import { NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-import { routing } from '@/lib/i18n/routing';
+import { requireLocale } from '@/lib/i18n/require-locale';
 import { locales, defaultLocale, isRtl } from '@/lib/i18n/config';
 import type { Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
-import { Suspense } from 'react';
-import { MetaPixel } from '@/components/analytics/MetaPixel';
-import { GoogleTagManager } from '@/components/analytics/GoogleTagManager';
-import { CookieNotice } from '@/components/analytics/CookieNotice';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { buildGraph, buildOrganization, buildWebSite } from '@/lib/seo/jsonld';
+import { pickClientMessages } from '@/lib/i18n/client-messages';
 import '../globals.css';
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -52,7 +48,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const locale = requireLocale((await params).locale);
 
   const languages: Record<string, string> = {};
   for (const loc of locales) {
@@ -115,22 +111,19 @@ export default async function LocaleLayout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
-
-  if (!hasLocale(routing.locales, locale)) {
-    notFound();
-  }
+  const locale = requireLocale((await params).locale);
 
   setRequestLocale(locale);
 
-  const typedLocale = locale as Locale;
+  const typedLocale: Locale = locale;
   const dir = isRtl(typedLocale) ? 'rtl' : 'ltr';
   const fontClass =
     typedLocale === 'ar'
       ? `${ibmPlexSansArabic.variable} font-[family-name:var(--font-ibm-plex-arabic)]`
       : `${ibmPlexSans.variable} font-[family-name:var(--font-ibm-plex-sans)]`;
 
-  const messages = (await import(`@/lib/i18n/messages/${locale}.json`)).default;
+  // Only the namespaces client components read (see client-messages.ts) go into the payload.
+  const messages = pickClientMessages((await import(`@/lib/i18n/messages/${locale}.json`)).default);
 
   return (
     <html
@@ -148,14 +141,9 @@ export default async function LocaleLayout({
         className={`${fontClass} flex min-h-full flex-col bg-bg-canvas pb-[calc(3.5rem+env(safe-area-inset-bottom))] text-text-primary md:pb-0`}
       >
         <JsonLd graph={buildGraph(buildOrganization(baseUrl), buildWebSite(baseUrl, locale))} />
-        <GoogleTagManager />
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
-          <CookieNotice />
         </NextIntlClientProvider>
-        <Suspense fallback={null}>
-          <MetaPixel />
-        </Suspense>
       </body>
     </html>
   );

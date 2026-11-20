@@ -45,6 +45,8 @@ function countryFlag(code: string | null): string | null {
 
 interface LeaguePageHeaderProps {
   competition: CompetitionRecord;
+  /** Localized display name (H1). Falls back to the stored provider name. */
+  displayName?: string;
   seasonYear: number;
   locale: Locale;
   countryName: string | null;
@@ -60,6 +62,7 @@ interface LeaguePageHeaderProps {
 
 export function LeaguePageHeader({
   competition,
+  displayName,
   seasonYear,
   locale,
   countryName,
@@ -74,7 +77,8 @@ export function LeaguePageHeader({
   const router = useRouter();
   const pathname = usePathname();
   const t = useTranslations('leaguePage');
-  const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+  const name =
+    displayName ?? competition.name[locale] ?? competition.name['en'] ?? competition.slug;
   const logoSrc = CURATED_LOGOS[competition.id] ?? competition.logoUrl;
   const needsInvert = DARK_LOGOS.has(competition.id);
 
@@ -170,7 +174,7 @@ export function LeaguePageHeader({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h1 className="font-display text-lg font-semibold text-text-primary md:text-3xl">
-                  {name}
+                  {name} <span className="text-text-secondary">{formatSeason(seasonYear)}</span>
                 </h1>
                 <div className="mt-1.5 flex items-center gap-2">
                   {countryName && (

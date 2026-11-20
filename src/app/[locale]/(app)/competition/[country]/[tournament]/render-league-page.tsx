@@ -34,6 +34,8 @@ import {
   getCompetitionTeams,
 } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
+import { formatSeasonLabel } from '@/lib/competitions/league-season';
+import { competitionDisplayName, competitionHeading } from '@/lib/competitions/display-name';
 import { getInjuriesForCompetition } from '@/lib/db/queries/injuries';
 import { InjuriesTab } from '@/components/league/InjuriesTab';
 import { LeagueAboutCard } from '@/components/league/LeagueAboutCard';
@@ -54,6 +56,8 @@ import {
 import { BOTOLA_PRO_COMPETITION_ID, botolaClassementPath } from '@/lib/seo/botola-classement';
 import { botolaMatchsPath } from '@/lib/seo/botola-matchs';
 import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
+import { MOROCCO_HUB_COMPETITION_IDS, hubKeyForCompetition } from '@/lib/constants/morocco-hubs';
 
 async function getCachedLeagueData(competitionId: number, seasonYear: number, locale: Locale) {
   'use cache';
@@ -137,6 +141,7 @@ export async function renderLeaguePage(
 ) {
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
+  const tMenu = await getTranslations({ locale: rawLocale, namespace: 'megaMenu' });
   const tLandings =
     competition.id === BOTOLA_PRO_COMPETITION_ID
       ? await getTranslations({ locale: rawLocale, namespace: 'botolaMatchs' })
@@ -154,7 +159,13 @@ export async function renderLeaguePage(
 
   if (!seasonYear) {
     // No season data — show coming soon
-    const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+    // Same translated name as the populated hub (AR/FR coming-soon pages got the English name).
+    const name = competitionDisplayName(
+      competition.name,
+      locale,
+      tMenu.has(entry.labelKey) ? tMenu(entry.labelKey) : null,
+      competition.slug,
+    );
     return (
       <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
         <div className="mt-8 flex flex-col items-center gap-4 text-center">
@@ -180,7 +191,14 @@ export async function renderLeaguePage(
     competitionTeams,
   } = await getCachedLeagueData(competition.id, seasonYear, locale);
 
-  const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+  // Translated name (e.g. "الدوري الإنجليزي الممتاز") when the provider only stored English.
+  const competitionName = competitionDisplayName(
+    competition.name,
+    locale,
+    tMenu.has(entry.labelKey) ? tMenu(entry.labelKey) : null,
+    competition.slug,
+  );
+  const seasonLabel = formatSeasonLabel(seasonYear);
   const countryName = getLeagueCountryName(competition.countryCode, locale);
   const introText = getLeagueIntro(competition.id, locale);
 
@@ -218,6 +236,8 @@ export async function renderLeaguePage(
           topCards={topCards}
           coverage={coverage}
           locale={locale}
+          competitionName={competitionName}
+          seasonLabel={seasonLabel}
         />
       ),
     },
@@ -243,7 +263,11 @@ export async function renderLeaguePage(
       icon: 'table',
       content:
         standings.length > 0 ? (
-          <LeagueStandingsTab standings={standings} locale={locale} />
+          <LeagueStandingsTab
+            standings={standings}
+            locale={locale}
+            caption={tL('tableCaption', { competition: competitionName, season: seasonLabel })}
+          />
         ) : (
           <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-8 text-center">
             <p className="text-sm text-text-tertiary">{tL('comingSoon')}</p>
@@ -282,7 +306,8 @@ export async function renderLeaguePage(
           graph={buildGraph(
             buildWebPage({
               url: `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`,
-              name: competitionName,
+              // Matches the H1 and <title>: "Premier League 2026/27".
+              name: competitionHeading(competitionName, seasonLabel),
               locale,
               baseUrl: BASE_URL,
               type: 'CollectionPage',
@@ -334,6 +359,7 @@ export async function renderLeaguePage(
         pageHeader={
           <LeaguePageHeader
             competition={competition}
+            displayName={competitionName}
             seasonYear={seasonYear}
             locale={locale}
             countryName={countryName}
@@ -401,6 +427,9 @@ export async function renderLeaguePage(
           </>
         }
       />
+      {MOROCCO_HUB_COMPETITION_IDS.has(competition.id) && (
+        <MoroccoHubLinks locale={locale} current={hubKeyForCompetition(competition.id)} />
+      )}
     </>
   );
 }

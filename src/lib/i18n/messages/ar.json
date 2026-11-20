@@ -203,12 +203,10 @@
     "countdownDays": "أيام",
     "countdownHours": "ساعات",
     "countdownMins": "دقائق",
-    "heroFirstHalf": "الشوط الأول",
-    "heroSecondHalf": "الشوط الثاني",
-    "heroHalftime": "استراحة",
-    "heroExtraTime": "وقت إضافي",
-    "heroPenalties": "ركلات الترجيح",
-    "heroNoGoals": "لا أهداف بعد",
+    "heroNoUpcoming": "لا توجد مباريات قادمة حاليًا",
+    "heroEmptyCta": "عرض مباريات اليوم",
+    "heroHeading": "المباريات القادمة",
+    "matchesHeading": "المباريات والنتائج",
     "stadium": "الملعب",
     "expectedAttendance": "الحضور المتوقع",
     "all": "الكل",
@@ -640,7 +638,19 @@
     "live": "مباشر",
     "upcoming": "القادمة",
     "results": "النتائج",
-    "dateFilter": "التاريخ"
+    "dateFilter": "التاريخ",
+    "tableHeading": "ترتيب {competition} {season}",
+    "tableCaption": "جدول ترتيب {competition} {season}: المركز والمباريات والفوز والتعادل والخسارة وفارق الأهداف والأهداف والنقاط لكل فريق",
+    "fixturesHeading": "المباريات والنتائج حسب الجولة",
+    "roundResultsHeading": "نتائج الجولة {round}",
+    "colPlayedFull": "لعب",
+    "colWonFull": "فوز",
+    "colDrawnFull": "تعادل",
+    "colLostFull": "خسارة",
+    "colGoalDiffFull": "فارق الأهداف",
+    "colGoalsFull": "الأهداف له وعليه",
+    "colPointsFull": "النقاط",
+    "colRankFull": "المركز"
   },
   "shared": {
     "share": "مشاركة",
@@ -942,11 +952,6 @@
     "faq3a": "تُعرض الركلات وفق المنطقة الزمنية لجهازك. ما دام الموعد غير مؤكد في بيانات الموقع نكتب «التوقيت غير مؤكد». لا يخترع ديماسكور الساعات.",
     "faq4q": "أين أرى الترتيب؟",
     "faq4a": "على صفحة ترتيب البطولة الاحترافية، وفي تبويب الترتيب بصفحة المسابقة."
-  },
-  "cookieNotice": {
-    "message": "نستخدم ملفات تعريف الارتباط لقياس الزيارات وتحسين ديماسكور.",
-    "dismiss": "حسناً",
-    "learnMore": "معرفة المزيد"
   },
   "notFound": {
     "heading": "الصفحة غير موجودة",

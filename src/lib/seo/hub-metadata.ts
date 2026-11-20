@@ -27,18 +27,20 @@ interface LeagueVars {
   seasonLabel: string;
 }
 
+// Standings-first: league tables are what people search for ("classement Ligue 1",
+// "ترتيب الدوري الإنجليزي"), so the table leads the title in every locale.
 const LEAGUE: ByLocale<LeagueVars> = {
   fr: ({ competition, seasonLabel }) => ({
-    title: `${competition} ${seasonLabel} : classement, résultats & calendrier`,
-    description: `Suivez la ${competition} ${seasonLabel} : classement en direct, résultats, calendrier des journées, buteurs et statistiques des clubs.`,
+    title: `Classement ${competition} ${seasonLabel} : résultats, calendrier & buteurs`,
+    description: `Classement ${competition} ${seasonLabel} à jour, résultats et calendrier journée par journée, meilleurs buteurs et statistiques des clubs.`,
   }),
   en: ({ competition, seasonLabel }) => ({
-    title: `${competition} ${seasonLabel}: table, results & fixtures`,
-    description: `Follow the ${competition} ${seasonLabel}: live table, results, fixture calendar, top scorers and club statistics.`,
+    title: `${competition} ${seasonLabel} table: results, fixtures & top scorers`,
+    description: `The ${competition} ${seasonLabel} table, results and fixtures round by round, top scorers and club statistics.`,
   }),
   ar: ({ competition, seasonLabel }) => ({
-    title: `${competition} ${seasonLabel}: الترتيب والنتائج والمباريات`,
-    description: `تابع ${competition} ${seasonLabel}: الترتيب المباشر والنتائج وجدول المباريات والهدّافين وإحصائيات الأندية.`,
+    title: `ترتيب ${competition} ${seasonLabel}: النتائج والمباريات والهدافون`,
+    description: `جدول ترتيب ${competition} ${seasonLabel}، النتائج والمباريات جولة بجولة، الهدافون وإحصائيات الأندية.`,
   }),
 };
 

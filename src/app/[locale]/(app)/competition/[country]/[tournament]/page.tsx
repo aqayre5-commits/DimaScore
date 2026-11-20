@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { findCupContentBySlug } from '@/lib/constants/cup-content';
 import { ALL_ENTRIES, TOP_NAV_COMPETITION_IDS } from '@/lib/constants/competitions-mega-menu';
@@ -9,6 +9,7 @@ import { db } from '@/lib/db/client';
 import { getCompetitionById } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
+import { competitionDisplayName } from '@/lib/competitions/display-name';
 import { BASE_URL } from '@/lib/constants/site';
 import { buildLeagueMeta } from '@/lib/seo/hub-metadata';
 import {
@@ -18,10 +19,10 @@ import {
 } from '@/lib/seo/botola-2-classement';
 import {
   BOTOLA_PRO_COMPETITION_ID,
-  botolaProCompetitionHreflang,
   botolaProCompetitionMetaDescription,
   botolaProCompetitionPageTitle,
 } from '@/lib/seo/botola-classement';
+import { canonicalCompetitionPath } from '@/lib/seo/competition-canonical';
 import { CompetitionContent, resolveEntry } from './competition-content';
 
 interface PageProps {
@@ -109,7 +110,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (entry) {
     const competition = await getCompetitionById(db, entry.competitionId);
     if (competition) {
-      displayName = competition.name[typedLocale] ?? competition.name['en'] ?? displayName;
+      const tMenu = await getTranslations({ locale, namespace: 'megaMenu' });
+      const localName = competitionDisplayName(
+        competition.name,
+        typedLocale,
+        tMenu.has(entry.labelKey) ? tMenu(entry.labelKey) : null,
+        displayName,
+      );
+      displayName = localName;
       const { seasonYear } = await resolveCompetitionSeason(competition.id, null);
       const season = seasonYear ? formatSeasonLabel(seasonYear) : '';
       displayName = season ? `${displayName} ${season}` : displayName;
@@ -121,7 +129,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description = botolaProCompetitionMetaDescription(typedLocale, displayName);
       } else {
         const leagueMeta = buildLeagueMeta({
-          competition: competition.name[typedLocale] ?? competition.name['en'] ?? displayName,
+          competition: localName,
           seasonLabel: season,
           locale,
         });
@@ -133,23 +141,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const languages: Record<string, string> = {};
   for (const loc of locales) {
-    const locEntry = resolveEntry(tournament, loc as Locale) ?? entry;
-    const locSlug = locEntry?.slugs[loc as Locale] ?? tournament;
-    const locCountry = locEntry?.countryKey
-      ? getCountrySlug(locEntry.countryKey, loc as Locale)
-      : country;
-    languages[loc] = `${baseUrl}/${loc}/competition/${locCountry}/${locSlug}`;
+    languages[loc] = `${baseUrl}${canonicalCompetitionPath(entry, loc as Locale)}`;
   }
   languages['x-default'] = languages[defaultLocale];
-
-  const isBotolaPro = entry.competitionId === BOTOLA_PRO_COMPETITION_ID;
-  const hubLanguages = isBotolaPro ? botolaProCompetitionHreflang(baseUrl) : languages;
-  const canonical = hubLanguages[typedLocale] ?? languages[typedLocale];
+  const canonical = languages[typedLocale];
 
   return {
     title: title ?? displayName,
     description,
-    alternates: { canonical, languages: hubLanguages },
+    alternates: { canonical, languages },
     robots: { index: true, follow: true },
   };
 }

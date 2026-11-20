@@ -7,6 +7,7 @@ import type { LeagueCoverageRecord, TopPlayerRow, TopCardRow } from '@/lib/db/qu
 import type { Locale } from '@/lib/i18n/config';
 import { Flag } from '@/components/shared/Flag';
 import { PlayerPhotoCircle } from '@/components/shared/PlayerPhotoCircle';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 
 interface LeagueRightRailProps {
   competitionName: string;
@@ -151,10 +152,7 @@ function MiniStandingsWidget({
             {top5.map((row) => {
               const teamName =
                 row.team?.shortName[locale] ??
-                row.team?.name[locale] ??
-                row.team?.name['en'] ??
-                row.team?.code ??
-                '—';
+                (row.team ? getTeamDisplayName(row.team, locale) : '—');
 
               return (
                 <tr

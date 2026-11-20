@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { hubOgImage } from '@/lib/seo/hub-og-image';
 import { getTranslations } from 'next-intl/server';
-import { locales, type Locale } from '@/lib/i18n/config';
+import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { HomeMatchTabs } from '@/components/homepage/HomeMatchTabs';
@@ -24,6 +24,7 @@ import {
   getRightRailTopScorers,
 } from '@/lib/db/queries/right-rail';
 import type { StandingRow } from '@/lib/db/queries';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -85,7 +86,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   for (const loc of locales) {
     languages[loc] = `${BASE_URL}/${loc}/edition/maroc`;
   }
-  languages['x-default'] = `${BASE_URL}/fr/edition/maroc`;
+  languages['x-default'] = `${BASE_URL}/${defaultLocale}/edition/maroc`;
 
   const ogImage = hubOgImage('edition-maroc', locale, title);
 
@@ -263,6 +264,7 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
               }}
             />
           )}
+          <MoroccoHubLinks locale={typedLocale} current="edition" embedded />
         </div>
       }
     />

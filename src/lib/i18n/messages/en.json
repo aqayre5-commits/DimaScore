@@ -203,12 +203,10 @@
     "countdownDays": "Days",
     "countdownHours": "Hours",
     "countdownMins": "Mins",
-    "heroFirstHalf": "1st half",
-    "heroSecondHalf": "2nd half",
-    "heroHalftime": "Half-time",
-    "heroExtraTime": "Extra time",
-    "heroPenalties": "Penalties",
-    "heroNoGoals": "No goals yet",
+    "heroNoUpcoming": "No upcoming matches right now",
+    "heroEmptyCta": "See today's matches",
+    "heroHeading": "Upcoming matches",
+    "matchesHeading": "Matches and results",
     "stadium": "Stadium",
     "expectedAttendance": "Expected Attendance",
     "all": "All",
@@ -640,7 +638,19 @@
     "live": "Live",
     "upcoming": "Upcoming",
     "results": "Results",
-    "dateFilter": "Date"
+    "dateFilter": "Date",
+    "tableHeading": "{competition} {season} table",
+    "tableCaption": "{competition} {season} standings: position, played, won, drawn, lost, goal difference, goals and points for each team",
+    "fixturesHeading": "Fixtures and results by round",
+    "roundResultsHeading": "Round {round} results",
+    "colPlayedFull": "Played",
+    "colWonFull": "Won",
+    "colDrawnFull": "Drawn",
+    "colLostFull": "Lost",
+    "colGoalDiffFull": "Goal difference",
+    "colGoalsFull": "Goals for and against",
+    "colPointsFull": "Points",
+    "colRankFull": "Position"
   },
   "shared": {
     "share": "Share",
@@ -942,11 +952,6 @@
     "faq3a": "Kickoffs display in your device timezone. Until a time is confirmed in site data, we show “kickoff to confirm”. DimaScore does not invent kickoff times.",
     "faq4q": "Where can I see the table?",
     "faq4a": "On the Botola Pro standings landing, and on the Standings tab of the competition page."
-  },
-  "cookieNotice": {
-    "message": "We use cookies to measure traffic and improve DimaScore.",
-    "dismiss": "Got it",
-    "learnMore": "Learn more"
   },
   "notFound": {
     "heading": "Page not found",

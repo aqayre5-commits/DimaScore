@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
+import { MOROCCO_TEAM_ID } from '@/lib/constants/morocco-hubs';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { buildTeamMeta } from '@/lib/seo/hub-metadata';
 import { isTeamIndexable } from '@/lib/seo/indexable';
@@ -48,6 +50,7 @@ import {
 } from '@/lib/db/queries/team';
 import { BASE_URL } from '@/lib/constants/site';
 import { cacheLife } from 'next/cache';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -125,12 +128,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getCachedTeamData(teamSlug, locale);
   const team = data?.team;
 
-  // Unknown team → noindex so thin/fake entity URLs stay out of the index. (A true 404 status
-  // isn't reachable here: cacheComponents commits the prerendered 200 shell before notFound() runs;
-  // the page body still notFound()s to render the branded 404 UI.)
+  // Unknown team → noindex. Middleware returns the real 404 (or 503 if the DB is down) before
+  // this runs; the body still notFound()s so a request that skips middleware gets the 404 UI.
   if (!team) return { title: 'Team | DimaScore', robots: { index: false, follow: false } };
 
-  const name = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
+  const name = getTeamDisplayName(team, typedLocale);
   // Data-gate: only index teams with real data (fixtures / squad / standings). Mirrors
   // teamIndexableSitemapCondition so the page and sitemap agree.
   const indexable = await isTeamIndexable(db, team.id);
@@ -194,7 +196,7 @@ export default async function TeamPage({ params }: PageProps) {
     permanentRedirect(`/${locale}/equipe/${team.slug}`);
   }
   const nationalTeamAbout = getNationalTeamContent(team.id, typedLocale);
-  const teamName = team.name[typedLocale] ?? team.name['en'] ?? teamSlug;
+  const teamName = getTeamDisplayName(team, typedLocale);
 
   // Featured match priority: live > next upcoming > most recent completed
   const liveMatch = fixtures.find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
@@ -407,6 +409,7 @@ export default async function TeamPage({ params }: PageProps) {
           </>
         }
       />
+      {team.id === MOROCCO_TEAM_ID && <MoroccoHubLinks locale={typedLocale} current="morocco" />}
     </>
   );
 }

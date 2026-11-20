@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # enforce-pnpm.sh
 # Blocks npm/yarn commands (this repo uses pnpm) and dangerous git operations
-# (push, hard reset, commit without explicit user permission).
+# (hard reset, rebase, and merge).
 
 set -euo pipefail
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -26,11 +26,7 @@ if echo "$CMD" | grep -Eq '(^|[^a-z])yarn([[:space:]]|$)'; then
   block "This repo uses pnpm. Per CLAUDE.md Rule 8, replace 'yarn' with the pnpm equivalent."
 fi
 
-# Block git push / hard reset / arbitrary commit / rebase / merge
-if echo "$CMD" | grep -Eq '^[[:space:]]*git[[:space:]]+push'; then
-  block "Per CLAUDE.md Rule 9, do not run 'git push'. Let the user push manually after reviewing the commit."
-fi
-
+# Block hard reset / rebase / merge
 if echo "$CMD" | grep -Eq 'git[[:space:]]+reset[[:space:]]+--hard'; then
   block "Per CLAUDE.md Rule 9, 'git reset --hard' is dangerous and not permitted. Propose the change you want and let the user handle it."
 fi

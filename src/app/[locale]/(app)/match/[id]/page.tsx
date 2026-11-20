@@ -52,6 +52,7 @@ import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-link
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
 import { MatchAnswerBlock } from '@/components/match/MatchAnswerBlock';
+import { buildKeyFacts, formatLongMatchDate, formatShortMatchDate } from '@/lib/match/key-facts';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 import { MatchClientCenter } from '@/components/match/MatchClientCenter';
 import { PreMatchForm } from '@/components/match/PreMatchForm';
@@ -144,8 +145,8 @@ async function getCachedMatchData(fixtureId: number) {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, id: rawId } = await params;
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
-  // Unknown match → noindex (thin/fake entity URLs stay out of the index; body still notFound()s
-  // for the branded 404 UI — a true 404 status isn't reachable under cacheComponents here).
+  // Unknown match → noindex. Middleware returns the real 404 (or 503 if the DB is down) before
+  // this runs; the body still notFound()s so a request that skips middleware gets the 404 UI.
   if (!fixtureId) return { title: 'Match | DimaScore', robots: { index: false, follow: false } };
 
   const data = await getCachedMatchData(fixtureId);
@@ -168,12 +169,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     state: matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming',
     homeScore: match.homeScore,
     awayScore: match.awayScore,
+    dateLabel: formatShortMatchDate(match.kickoffAt, locale as Locale),
+    dateLabelLong: formatLongMatchDate(match.kickoffAt, locale as Locale),
   });
   // Slug+ID canonical (Latin, identical across locales); the bare-id request 301s to this.
   const matchSlug = buildMatchSlug(match.homeTeam?.slug, match.awayTeam?.slug, fixtureId);
   const canonical = `${BASE_URL}/${locale}/match/${matchSlug}`;
-  // Index policy (src/lib/seo/indexable.ts): featured comps any age; else senior non-youth games
-  // with data that are top-tier & recent, Morocco, or national A sides. Same SQL as the sitemap.
+  // Index policy (src/lib/seo/indexable.ts): same SQL as the sitemap. A finished match older
+  // than FINISHED_MATCH_MAX_AGE_MONTHS is noindex, follow unless it is allow-listed and has data.
   const indexable = await isMatchIndexable(db, fixtureId, match.competition.id);
 
   return {
@@ -307,7 +310,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
                 {r.rank}
               </span>
               <span className="min-w-0 flex-1 truncate text-text-primary">
-                {r.team?.name[typedLocale] ?? r.team?.name['en'] ?? '—'}
+                {r.team ? getTeamDisplayName(r.team, typedLocale) : '—'}
               </span>
               <span className="text-xs font-semibold tabular-nums text-text-secondary">
                 {r.points}
@@ -555,21 +558,22 @@ export default async function MatchDetailPage({ params }: PageProps) {
     </>
   );
 
+  const matchH1 = buildMatchH1({
+    home,
+    away,
+    competition: compName,
+    locale: typedLocale,
+    state: matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming',
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
+  });
+
   const pageContent = (
     <>
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
         <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
         <h1 className="mt-1 px-1 text-base font-semibold text-text-primary sm:text-lg">
-          {buildMatchH1({
-            home,
-            away,
-            competition: compName,
-            locale: typedLocale,
-            state:
-              matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming',
-            homeScore: match.homeScore,
-            awayScore: match.awayScore,
-          })}
+          {matchH1}
         </h1>
         <JsonLd
           graph={buildGraph(
@@ -582,6 +586,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
             }),
             buildSportsEventMatch({
               url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
+              name: matchH1,
               homeName: home,
               awayName: away,
               homeLogo: match.homeTeam?.logoUrl,
@@ -654,7 +659,17 @@ export default async function MatchDetailPage({ params }: PageProps) {
               answer={answerText}
               recap={stageRecap}
               byline={answerByline}
-              facts={[]}
+              facts={buildKeyFacts({
+                locale: typedLocale,
+                kickoffAt: match.kickoffAt,
+                venue: match.venue?.name,
+                homeId: match.homeTeam?.id,
+                awayId: match.awayTeam?.id,
+                homeName: home,
+                awayName: away,
+                teamStats: isUpcoming ? null : prefetch.teamStats,
+                h2h: h2hSummary,
+              })}
               locale={typedLocale}
             />
             <ScoreHeader
