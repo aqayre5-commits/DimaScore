@@ -10,7 +10,7 @@
 import { defaultLocale, isRtl, locales, type Locale } from '@/lib/i18n/config';
 import { parseTrailingId } from '@/lib/seo/entity-slug';
 
-export type EntityKind = 'match' | 'team' | 'player';
+export type EntityKind = 'match' | 'team' | 'player' | 'coach';
 export type Existence = 'found' | 'missing' | 'unavailable';
 
 export interface EntityRef {
@@ -26,10 +26,15 @@ export interface EntityHttpResponse {
   headers: Record<string, string>;
 }
 
-const SEGMENT_TO_KIND = { match: 'match', equipe: 'team', joueur: 'player' } as const;
+const SEGMENT_TO_KIND = {
+  match: 'match',
+  equipe: 'team',
+  joueur: 'player',
+  entraineur: 'coach',
+} as const;
 
-/** `/fr/match/…`, `/en/equipe/…`, `/ar/joueur/…`, and locale-less `/match/…` (default locale). */
-const ENTITY_PATH_RE = /^\/(?:(fr|en|ar)\/)?(match|equipe|joueur)\/([^/]+)\/?$/;
+/** Entity URLs, including coaches and a locale-less `/match/…` (default locale). */
+const ENTITY_PATH_RE = /^\/(?:(fr|en|ar)\/)?(match|equipe|joueur|entraineur)\/([^/]+)\/?$/;
 
 /** API-Football ids fit in a Postgres integer. Anything else cannot be a real row. */
 const MAX_ENTITY_ID = 2_000_000_000;
@@ -103,7 +108,7 @@ export function entityLookupKey(
     if (!Number.isSafeInteger(id) || id <= 0 || id >= MAX_ENTITY_ID) return { by: 'impossible' };
     return { by: 'id', id };
   }
-  if (ref.kind === 'match') return { by: 'impossible' };
+  if (ref.kind === 'match' || ref.kind === 'coach') return { by: 'impossible' };
   return { by: 'slug' };
 }
 
