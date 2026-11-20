@@ -2,6 +2,7 @@ import { cache } from 'react';
 import { sql, type SQL } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '@/lib/db/schema';
+import { FINISHED_CODES_ARRAY } from '@/lib/match-status';
 
 type DB = NeonHttpDatabase<typeof schema>;
 
@@ -120,8 +121,14 @@ export const MOROCCO_SENIOR_NATIONAL_TEAM_IDS = [31, 14461] as const;
  * Final tournaments only. Qualifiers are not listed: an old qualifier stays indexed
  * only when a senior Morocco side plays.
  * 1 men's World Cup, 8 women's World Cup, 6 AFCON, 922 WAFCON.
+ *
+ * Ids alone are not enough. API-Football names the qualifiers "World Cup - Qualification …"
+ * and "Africa Cup of Nations - Qualification", and a row filed under 1 or 6 with that
+ * name is still a qualifier. `isOldMatchExempt` and `oldMatchAllowList` both reject it.
  */
 export const OLD_MATCH_ALLOWLIST_COMPETITION_IDS = [1, 8, 6, 922] as const;
+/** English competition name of a qualifier. "Qualification" and "Qualifiers" both match. */
+export const QUALIFIER_COMPETITION_NAME_RE = /qualif/i;
 /** Finished matches older than this are noindex unless they are on the allow-list and have data. */
 export const FINISHED_MATCH_MAX_AGE_MONTHS = 12;
 export const TOP_TIER_PAST_DAYS = 180;
@@ -189,8 +196,16 @@ const recentMatchPolicy = sql`(
   )
 )`;
 
+const statusList = (codes: readonly string[]) =>
+  sql.raw(codes.map((code) => `'${code}'`).join(', '));
+
+/**
+ * Same set as `FINISHED_CODES_ARRAY`: played results plus cancelled and abandoned.
+ * A cancelled qualifier is not "upcoming". Leaving CANC/ABD out of this list sent
+ * Libya–Nigeria and Eritrea–Tanzania through the senior-national recent rule.
+ */
 const finishedAndOlderThanCutoff = sql`(
-  ${schema.fixtures.statusCode} IN ('FT', 'AET', 'PEN', 'AWD', 'WO')
+  ${schema.fixtures.statusCode} IN (${statusList(FINISHED_CODES_ARRAY)})
   AND ${schema.fixtures.kickoffAt} < NOW() - (${sql.raw(String(FINISHED_MATCH_MAX_AGE_MONTHS))} * INTERVAL '1 month')
 )`;
 
@@ -200,14 +215,43 @@ const hasEventsOrLineups = sql`(
 )`;
 
 /**
- * Old-match allow-list, one definition. Senior Morocco (men or women), any competition,
- * plus every match in a World Cup, AFCON or WAFCON final tournament. Qualifiers are not
- * listed: they qualify only through the Morocco team ids.
+ * Same rule as `oldMatchAllowList`. Senior Morocco (men or women) in any competition,
+ * including a qualifier. A final tournament (ids 1, 8, 6, 922) only when its English
+ * name is not a qualification — "World Cup - Qualification Africa" and
+ * "Africa Cup of Nations - Qualification" are not finals, even under id 1 or 6.
+ */
+export function isOldMatchExempt(match: {
+  homeTeamId: number | null;
+  awayTeamId: number | null;
+  competitionId: number | null;
+  competitionName: string | null;
+}): boolean {
+  const morocco = MOROCCO_SENIOR_NATIONAL_TEAM_IDS as readonly number[];
+  if (
+    (match.homeTeamId != null && morocco.includes(match.homeTeamId)) ||
+    (match.awayTeamId != null && morocco.includes(match.awayTeamId))
+  ) {
+    return true;
+  }
+  const finals = OLD_MATCH_ALLOWLIST_COMPETITION_IDS as readonly number[];
+  if (match.competitionId == null || !finals.includes(match.competitionId)) return false;
+  return !QUALIFIER_COMPETITION_NAME_RE.test(match.competitionName ?? '');
+}
+
+/**
+ * Old-match allow-list, one definition, shared by robots.index and the sitemap.
+ * Mirrors `isOldMatchExempt`: Morocco senior ids, or a final-tournament id whose
+ * English name does not contain "qualif".
  */
 export const oldMatchAllowList = sql`(
   ${homeCol} IN (${idList([...MOROCCO_SENIOR_NATIONAL_TEAM_IDS])})
   OR ${awayCol} IN (${idList([...MOROCCO_SENIOR_NATIONAL_TEAM_IDS])})
-  OR ${schema.fixtures.competitionId} IN (${idList([...OLD_MATCH_ALLOWLIST_COMPETITION_IDS])})
+  OR EXISTS (
+    SELECT 1 FROM competitions oc
+    WHERE oc.id = ${schema.fixtures.competitionId}
+      AND oc.id IN (${idList([...OLD_MATCH_ALLOWLIST_COMPETITION_IDS])})
+      AND COALESCE(oc.name->>'en', '') !~* 'qualif'
+  )
 )`;
 
 /**
