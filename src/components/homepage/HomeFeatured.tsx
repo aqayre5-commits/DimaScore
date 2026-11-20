@@ -9,6 +9,7 @@ import { stripWomenSuffix, getNationalFlagUrl } from '@/lib/team-display';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { getMatchState } from '@/lib/match-status';
 import { useMounted } from '@/hooks/useMounted';
+import { useRenderNow } from '@/hooks/useRenderNow';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
@@ -23,14 +24,19 @@ type FeatureTag = NonNullable<HomeFixture['featureTag']>;
 // yields the code-only state (live/finished/interrupted by code, everything else upcoming).
 // Without this, a PPR/ISR shell prerendered before a kickoff/live boundary hydrates against a
 // client past that boundary → the hero slide structure flips → hydration mismatch (#418).
+// `now` is passed explicitly: getMatchState's default `new Date()` would read the clock during the
+// prerender, which pulls the whole home page out of the static HTML (see useRenderNow).
 const FAR_FUTURE = new Date('2999-01-01T00:00:00Z');
+const EPOCH = new Date(0);
 function codeMatchState(statusCode: string) {
-  return getMatchState(statusCode, FAR_FUTURE);
+  return getMatchState(statusCode, FAR_FUTURE, EPOCH);
 }
 
 interface Props {
   matches: HomeFixture[];
   locale: Locale;
+  /** Server time (epoch ms, from getCachedNow) for the countdown until mount; see useRenderNow. */
+  now: number;
   labels: {
     matchOfDay: string;
     featured: string;
@@ -59,8 +65,8 @@ function applyPatch(m: HomeFixture, patch: ReturnType<ReturnType<typeof useLiveF
   };
 }
 
-function computeCountdown(kickoffAt: Date) {
-  const ms = Math.max(0, new Date(kickoffAt).getTime() - Date.now());
+function computeCountdown(kickoffAt: Date, nowMs: number) {
+  const ms = Math.max(0, new Date(kickoffAt).getTime() - nowMs);
   const totalMin = Math.floor(ms / 60_000);
   return {
     days: Math.floor(totalMin / 1440),
@@ -77,7 +83,7 @@ function computeCountdown(kickoffAt: Date) {
  * same size, so nothing below it moves. Rotation pauses on hover/focus. The server's #1 keeps the
  * "Match of the day" badge; other slides read "Featured".
  */
-export function HomeFeatured({ matches, locale, labels }: Props) {
+export function HomeFeatured({ matches, locale, now, labels }: Props) {
   const mounted = useMounted();
   const livePatches = useLiveFixtures();
   const [idx, setIdx] = useState(0);
@@ -147,6 +153,7 @@ export function HomeFeatured({ matches, locale, labels }: Props) {
           match={match}
           locale={locale}
           labels={labels}
+          now={now}
           isLead={match.id === matchOfDayId}
         />
 
@@ -241,23 +248,18 @@ function HeroCard({
   match,
   locale,
   labels,
+  now,
   isLead,
 }: {
   match: HomeFixture;
   locale: Locale;
   labels: Props['labels'];
+  now: number;
   isLead: boolean;
 }) {
-  const [remaining, setRemaining] = useState(() => computeCountdown(match.kickoffAt));
-  const [prevKo, setPrevKo] = useState(match.kickoffAt.getTime());
-  if (prevKo !== match.kickoffAt.getTime()) {
-    setPrevKo(match.kickoffAt.getTime());
-    setRemaining(computeCountdown(match.kickoffAt));
-  }
-  useEffect(() => {
-    const id = setInterval(() => setRemaining(computeCountdown(match.kickoffAt)), 60_000);
-    return () => clearInterval(id);
-  }, [match.kickoffAt]);
+  // Server time until hydration (keeps the card in the prerendered HTML; see useRenderNow), then
+  // the viewer's clock, which ticks every 30 s.
+  const remaining = computeCountdown(match.kickoffAt, useRenderNow(now));
 
   const homeName = stripWomenSuffix(getTeamDisplayName(match.homeTeam, locale));
   const awayName = stripWomenSuffix(getTeamDisplayName(match.awayTeam, locale));

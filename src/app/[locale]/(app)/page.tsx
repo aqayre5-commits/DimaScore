@@ -104,7 +104,9 @@ async function getCachedHomepagePrimary() {
     getHomeMatchesByCategory(db),
     getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
   ]);
-  return { featured, matchesByCategory, leftRailComps };
+  // The snapshot's own time, for the client components' pre-mount render: they must not read the
+  // clock while the page is prerendered, or the whole body drops out of the static HTML.
+  return { featured, matchesByCategory, leftRailComps, now: Date.now() };
 }
 
 // ── Page ──
@@ -113,7 +115,7 @@ export default async function HomePage({ params }: PageProps) {
   const locale = requireLocale((await params).locale);
   setRequestLocale(locale);
   const typedLocale: Locale = locale;
-  const [{ featured, matchesByCategory, leftRailComps }, railPrimary, t] = await Promise.all([
+  const [{ featured, matchesByCategory, leftRailComps, now }, railPrimary, t] = await Promise.all([
     getCachedHomepagePrimary(),
     getHomeRailPrimary(typedLocale),
     getTranslations({ locale, namespace: 'homepage' }),
@@ -191,7 +193,12 @@ export default async function HomePage({ params }: PageProps) {
               <h1 className="px-1 text-xl font-semibold text-text-primary sm:text-2xl">
                 {t('pageHeading')}
               </h1>
-              <HomeFeatured matches={featuredSlim} locale={typedLocale} labels={featuredLabels} />
+              <HomeFeatured
+                matches={featuredSlim}
+                locale={typedLocale}
+                now={now}
+                labels={featuredLabels}
+              />
 
               {railPrimary.nextFeaturedCandidates.length > 0 && (
                 <div className="lg:hidden">
@@ -217,11 +224,12 @@ export default async function HomePage({ params }: PageProps) {
                       upcoming={primary.upcoming}
                       results={primary.results}
                       locale={typedLocale}
+                      now={now}
                       labels={matchTabLabels}
                     />
                   }
                 >
-                  <HomeSecondaryMatchTabs locale={typedLocale} primary={primary} />
+                  <HomeSecondaryMatchTabs locale={typedLocale} primary={primary} now={now} />
                 </Suspense>
               </div>
 
