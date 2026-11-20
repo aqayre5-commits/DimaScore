@@ -201,7 +201,9 @@ export default async function HomePage({ params }: PageProps) {
 
           <div className="order-1 min-w-0 lg:order-none lg:col-start-1 lg:row-start-1 xl:col-start-2 xl:row-start-1">
             <div className="space-y-2.5">
-              <h1 className="px-1 text-sm font-medium text-text-secondary">{t('pageHeading')}</h1>
+              <h1 className="px-1 text-xl font-semibold text-text-primary sm:text-2xl">
+                {t('pageHeading')}
+              </h1>
               <HomeFeatured matches={featuredSlim} locale={typedLocale} labels={featuredLabels} />
 
               {railPrimary.nextFeaturedCandidates.length > 0 && (
