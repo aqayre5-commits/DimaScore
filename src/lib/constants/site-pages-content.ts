@@ -183,14 +183,13 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'Data we collect',
           body: [
             'We keep data collection to a minimum and do not require an account to use the site.',
-            'Anonymous, aggregated analytics (pages viewed, approximate region, device type) help us understand and improve usage.',
-            'Strictly necessary cookies keep the site working; non-essential cookies are only set with your consent.',
+            'The site uses only strictly necessary cookies, which keep it working. We do not set analytics or advertising cookies.',
           ],
         },
         {
           heading: 'How we use it',
           body: [
-            'To operate and improve the site, measure audience and keep the service secure. We do not sell your personal data.',
+            'To operate and improve the site and keep the service secure. We do not sell your personal data.',
           ],
         },
         {
@@ -413,14 +412,13 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'Données collectées',
           body: [
             'Nous réduisons la collecte au minimum et aucun compte n’est requis pour utiliser le site.',
-            'Des statistiques anonymes et agrégées (pages vues, région approximative, type d’appareil) nous aident à comprendre et à améliorer l’usage.',
-            'Les cookies strictement nécessaires assurent le fonctionnement du site ; les cookies non essentiels ne sont déposés qu’avec votre consentement.',
+            'Le site n’utilise que des cookies strictement nécessaires, qui le font fonctionner. Nous ne déposons pas de cookies d’analyse ou de publicité.',
           ],
         },
         {
           heading: 'Utilisation',
           body: [
-            'Pour exploiter et améliorer le site, mesurer l’audience et sécuriser le service. Nous ne vendons pas vos données personnelles.',
+            'Pour exploiter et améliorer le site et sécuriser le service. Nous ne vendons pas vos données personnelles.',
           ],
         },
         {
@@ -632,14 +630,13 @@ export const SITE_PAGES_CONTENT: Record<Locale, SitePagesContent> = {
           heading: 'البيانات التي نجمعها',
           body: [
             'نُبقي جمع البيانات في حدّه الأدنى ولا نشترط إنشاء حساب لاستخدام الموقع.',
-            'إحصاءات مجهولة ومجمَّعة (الصفحات المُشاهَدة، المنطقة التقريبية، نوع الجهاز) تساعدنا على فهم الاستخدام وتحسينه.',
-            'ملفّات تعريف الارتباط الضرورية تُبقي الموقع يعمل؛ أمّا غير الضرورية فلا تُفعَّل إلّا بموافقتك.',
+            'لا يستخدم الموقع سوى ملفات تعريف الارتباط الضرورية لتشغيله. لا نضع ملفات تحليلات أو إعلانات.',
           ],
         },
         {
           heading: 'كيف نستخدمها',
           body: [
-            'لتشغيل الموقع وتحسينه، وقياس الجمهور، والحفاظ على أمن الخدمة. لا نبيع بياناتك الشخصية.',
+            'لتشغيل الموقع وتحسينه والحفاظ على أمن الخدمة. لا نبيع بياناتك الشخصية.',
           ],
         },
         {
