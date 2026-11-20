@@ -48,12 +48,12 @@ describe('botola 2 classement routes', () => {
     expect(BOTOLA_2_COMPETITION_ID).toBe(201);
   });
 
-  it('maps hreflang with x-default to FR', () => {
+  it('maps hreflang with x-default to EN', () => {
     const languages = botola2ClassementHreflang('https://dimascore.ma');
     expect(languages.fr).toBe('https://dimascore.ma/fr/classement-botola-2');
     expect(languages.en).toBe('https://dimascore.ma/en/botola-2-standings');
     expect(languages.ar).toBe('https://dimascore.ma/ar/classement-botola-2');
-    expect(languages['x-default']).toBe(languages.fr);
+    expect(languages['x-default']).toBe(languages.en);
   });
 
   it('rewrites language-switcher paths to the locale canonical', () => {

@@ -34,12 +34,12 @@ describe('botola classement routes (IMP-008)', () => {
     expect(BOTOLA_CLASSEMENT_SLUGS.ar).toMatch(/^[a-z0-9-]+$/);
   });
 
-  it('maps hreflang with x-default to FR', () => {
+  it('maps hreflang with x-default to EN', () => {
     const languages = botolaClassementHreflang('https://dimascore.ma');
     expect(languages.fr).toBe('https://dimascore.ma/fr/classement-botola-pro');
     expect(languages.en).toBe('https://dimascore.ma/en/botola-pro-standings');
     expect(languages.ar).toBe('https://dimascore.ma/ar/classement-botola-pro');
-    expect(languages['x-default']).toBe(languages.fr);
+    expect(languages['x-default']).toBe(languages.en);
   });
 
   it('rewrites language-switcher paths to the locale canonical', () => {
@@ -181,7 +181,7 @@ describe('botola pro competition hub meta', () => {
     expect(languages.fr).toBe('https://dimascore.ma/fr/competition/maroc/botola-pro');
     expect(languages.en).toBe('https://dimascore.ma/en/competition/morocco/botola-pro');
     expect(languages.ar).toBe('https://dimascore.ma/ar/competition/maroc/botola-pro');
-    expect(languages['x-default']).toBe(languages.fr);
+    expect(languages['x-default']).toBe(languages.en);
     expect(languages.ar).not.toMatch(/%|البطولة/);
   });
 });
