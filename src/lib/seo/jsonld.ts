@@ -3,7 +3,7 @@
  * emits a single { "@context", "@graph": [...] } linked by stable @ids. Rendered server-side via
  * <JsonLd> (never from generateMetadata, where JSON-LD is silently ignored).
  *
- * Task 15.3 ships the sitewide nodes (Organization + WebSite/SearchAction). Per-page entity nodes
+ * Task 15.3 ships the sitewide nodes (Organization + WebSite). Per-page entity nodes
  * (SportsEvent, SportsTeam, Athlete, BreadcrumbList) are added in 15.4 and reference these @ids.
  *
  * Types are hand-declared (no schema-dts dependency) — the node set is small and the shapes are
@@ -40,7 +40,10 @@ export function buildOrganization(baseUrl: string): JsonLdNode {
   };
 }
 
-/** WebSite + SearchAction (sitelinks search box eligibility). Locale drives url + search target. */
+/**
+ * WebSite node. No SearchAction: site search is the header modal (`/api/v1/search`), and
+ * `/{locale}/recherche` is not a page, so a SearchAction target would 404.
+ */
 export function buildWebSite(baseUrl: string, locale: string): JsonLdNode {
   return {
     '@type': 'WebSite',
@@ -50,14 +53,6 @@ export function buildWebSite(baseUrl: string, locale: string): JsonLdNode {
     alternateName: ['ديماسكور', 'DimaScore'],
     inLanguage: ['fr-MA', 'ar-MA', 'en'],
     publisher: { '@id': organizationId(baseUrl) },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${baseUrl}/${locale}/recherche?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   };
 }
 
@@ -81,12 +76,16 @@ const bcp47 = (locale: string): string =>
 export const webPageId = (url: string): string => `${url}#webpage`;
 const breadcrumbId = (url: string): string => `${url}#breadcrumb`;
 
-/** schema.org eventStatus from our fixture status code (schema has no "in progress"/"completed"). */
-function eventStatus(statusCode: string): string {
-  if (statusCode === 'PST' || statusCode === 'SUSP' || statusCode === 'TBD')
-    return 'https://schema.org/EventPostponed';
-  if (statusCode === 'CANC' || statusCode === 'ABD' || statusCode === 'AWD' || statusCode === 'WO')
-    return 'https://schema.org/EventCancelled';
+/**
+ * schema.org EventStatusType only lists EventCancelled, EventMovedOnline, EventPostponed,
+ * EventRescheduled and EventScheduled. A match that was played (FT/AET/PEN), awarded or
+ * a walkover took place as scheduled, so it stays EventScheduled. Postponed is
+ * EventPostponed. Cancelled and abandoned are EventCancelled. Suspended has no enum
+ * value; the page label is "Suspended", so it stays EventScheduled rather than postponed.
+ */
+export function sportsEventStatus(statusCode: string): string {
+  if (statusCode === 'PST') return 'https://schema.org/EventPostponed';
+  if (statusCode === 'CANC' || statusCode === 'ABD') return 'https://schema.org/EventCancelled';
   return 'https://schema.org/EventScheduled';
 }
 
@@ -148,11 +147,16 @@ export function buildWebPage(args: {
   };
 }
 
-/** Per-match SportsEvent — two teams as competitors, venue, competition, status. */
+/**
+ * Per-match SportsEvent. The score stays on the page: SportsEvent, Event and Thing have no
+ * score property, so none is emitted here.
+ */
 export function buildSportsEventMatch(args: {
   url: string;
   homeName: string;
   awayName: string;
+  /** Visible heading. Defaults to "Home vs Away" when the caller has no on-page H1. */
+  name?: string;
   homeLogo?: string | null;
   awayLogo?: string | null;
   competitionName: string;
@@ -167,10 +171,10 @@ export function buildSportsEventMatch(args: {
   return {
     '@type': 'SportsEvent',
     '@id': `${args.url}#event`,
-    name: `${args.homeName} vs ${args.awayName}`,
+    name: args.name ?? `${args.homeName} vs ${args.awayName}`,
     sport: 'https://schema.org/Soccer',
     startDate: args.kickoffAt.toISOString(),
-    eventStatus: eventStatus(args.statusCode),
+    eventStatus: sportsEventStatus(args.statusCode),
     mainEntityOfPage: { '@id': webPageId(args.url) },
     competitor: [
       {
@@ -330,7 +334,7 @@ export function buildFixtureItemList(args: {
           name: `${f.homeName} vs ${f.awayName}`,
           sport: 'https://schema.org/Soccer',
           startDate: f.kickoffAt.toISOString(),
-          eventStatus: eventStatus(f.statusCode),
+          eventStatus: sportsEventStatus(f.statusCode),
           url: matchUrl,
         },
       };
