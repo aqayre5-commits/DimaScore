@@ -46,6 +46,12 @@ const nextConfig: NextConfig = {
     // Shared league-season lookup — short so AR/EN/FR static routes cannot pin a finished year.
     season: { stale: 0, revalidate: 60, expire: 300 },
   },
+  // Cloudflare build only: workerd's node:zlib caps inflate maxOutputLength at 128 MiB, but Next allows
+  // 5x maxPostponedStateSize (default 100mb -> 500 MB), so every PPR resume throws a RangeError and the
+  // dynamic HTML (metadata, match data) is dropped. 25mb -> 125 MiB fits. Vercel config is unchanged.
+  ...(process.env.DIMASCORE_TARGET === 'cloudflare'
+    ? { experimental: { maxPostponedStateSize: '25mb' as const } }
+    : {}),
   images: {
     // Cloudflare build only (DIMASCORE_TARGET=cloudflare): no Vercel image optimizer, browsers load
     // the remote originals directly. Vercel builds keep next/image optimisation unchanged.
