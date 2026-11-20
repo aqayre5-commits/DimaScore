@@ -18,10 +18,10 @@ import {
 } from '@/lib/seo/botola-2-classement';
 import {
   BOTOLA_PRO_COMPETITION_ID,
-  botolaProCompetitionHreflang,
   botolaProCompetitionMetaDescription,
   botolaProCompetitionPageTitle,
 } from '@/lib/seo/botola-classement';
+import { canonicalCompetitionPath } from '@/lib/seo/competition-canonical';
 import { CompetitionContent, resolveEntry } from './competition-content';
 
 interface PageProps {
@@ -133,23 +133,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const languages: Record<string, string> = {};
   for (const loc of locales) {
-    const locEntry = resolveEntry(tournament, loc as Locale) ?? entry;
-    const locSlug = locEntry?.slugs[loc as Locale] ?? tournament;
-    const locCountry = locEntry?.countryKey
-      ? getCountrySlug(locEntry.countryKey, loc as Locale)
-      : country;
-    languages[loc] = `${baseUrl}/${loc}/competition/${locCountry}/${locSlug}`;
+    languages[loc] = `${baseUrl}${canonicalCompetitionPath(entry, loc as Locale)}`;
   }
   languages['x-default'] = languages[defaultLocale];
-
-  const isBotolaPro = entry.competitionId === BOTOLA_PRO_COMPETITION_ID;
-  const hubLanguages = isBotolaPro ? botolaProCompetitionHreflang(baseUrl) : languages;
-  const canonical = hubLanguages[typedLocale] ?? languages[typedLocale];
+  const canonical = languages[typedLocale];
 
   return {
     title: title ?? displayName,
     description,
-    alternates: { canonical, languages: hubLanguages },
+    alternates: { canonical, languages },
     robots: { index: true, follow: true },
   };
 }
