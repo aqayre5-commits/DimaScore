@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getCompactTeamLabel, getScoreCardLabel, getTickerCode } from '@/lib/utils/team-name';
 import { formatTournamentDateRange } from '@/components/tournament/TournamentPageHeader';
-import { heroStatusParts } from '@/components/homepage/HomeFeatured';
 
 const team = (over: Partial<Parameters<typeof getScoreCardLabel>[0] & object>) => ({
   id: null,
@@ -84,30 +83,5 @@ describe('tournament date range', () => {
     expect(formatTournamentDateRange('2026-06-11', '2026-07-19', 'ar')).toBe(
       '11 يونيو – 19 يوليوز 2026',
     );
-  });
-});
-
-describe('hero live line (I/J)', () => {
-  const half = {
-    firstHalf: '1st half',
-    secondHalf: '2nd half',
-    halftime: 'Half-time',
-    extraTime: 'Extra time',
-    penalties: 'Penalties',
-  };
-  it('is "Live now" + minute in play, and names the break otherwise', () => {
-    expect(heroStatusParts('1H', 27, half, 'Live now')).toEqual({ text: 'Live now', minute: 27 });
-    expect(heroStatusParts('2H', 67, half, 'مباشر الآن')).toEqual({
-      text: 'مباشر الآن',
-      minute: 67,
-    });
-    expect(heroStatusParts('HT', 45, half, 'Live now')).toEqual({
-      text: 'Half-time',
-      minute: null,
-    });
-    expect(heroStatusParts('P', 120, half, 'Live now')).toEqual({
-      text: 'Penalties',
-      minute: null,
-    });
   });
 });

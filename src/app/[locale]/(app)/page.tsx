@@ -15,10 +15,8 @@ import {
   getFeaturedMatches,
   getHomeMatchesByCategory,
   getCompetitionsByIds,
-  getFeaturedLiveGoals,
 } from '@/lib/db/queries/homepage';
 import { getWcVenueByTeamCodes } from '@/lib/constants/wc2026-venues';
-import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { cacheLife } from 'next/cache';
 import { partitionHomeMatches, slimHomeFixture } from '@/lib/homepage/slim-payload';
 import {
@@ -105,14 +103,6 @@ async function getCachedHomepagePrimary() {
     getHomeMatchesByCategory(db),
     getCompetitionsByIds(db, ALL_LEFT_RAIL_IDS),
   ]);
-  // Attach goal scorers to live featured fixtures so the hero can list them under each team.
-  const liveSet = new Set<string>(LIVE_CODES_ARRAY);
-  const liveIds = featured.filter((f) => liveSet.has(f.statusCode)).map((f) => f.id);
-  const goalsByFixture = await getFeaturedLiveGoals(db, liveIds);
-  for (const f of featured) {
-    const goals = goalsByFixture.get(f.id);
-    if (goals) f.goals = goals;
-  }
   return { featured, matchesByCategory, leftRailComps };
 }
 
@@ -172,9 +162,6 @@ export default async function HomePage({ params }: PageProps) {
     countdownDays: t('countdownDays'),
     countdownHours: t('countdownHours'),
     countdownMins: t('countdownMins'),
-    live: t('live'),
-    liveNow: t('liveNow'),
-    noGoals: t('heroNoGoals'),
     tags: {
       atlasLions: t('tagAtlasLions'),
       atlasClub: t('tagAtlasClub'),
@@ -182,13 +169,8 @@ export default async function HomePage({ params }: PageProps) {
       knockout: t('tagKnockout'),
       opener: t('tagOpener'),
     },
-    half: {
-      firstHalf: t('heroFirstHalf'),
-      secondHalf: t('heroSecondHalf'),
-      halftime: t('heroHalftime'),
-      extraTime: t('heroExtraTime'),
-      penalties: t('heroPenalties'),
-    },
+    heading: t('heroHeading'),
+    empty: { title: t('heroNoUpcoming'), cta: t('heroEmptyCta') },
   };
 
   return (
@@ -196,10 +178,14 @@ export default async function HomePage({ params }: PageProps) {
       <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
         <div className="mx-auto flex max-w-4xl flex-col gap-2.5 lg:grid lg:max-w-[930px] lg:grid-cols-[minmax(0,1fr)_320px] lg:grid-rows-[auto] lg:items-start xl:mx-0 xl:grid xl:max-w-none xl:grid-cols-[256px_minmax(0,1fr)_320px] xl:grid-rows-[auto] xl:items-start xl:gap-2.5">
           <aside className="hidden xl:col-start-1 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto">
-            <LeagueLeftRail locale={typedLocale} competitionLogos={competitionLogos} />
+            <LeagueLeftRail
+              locale={typedLocale}
+              competitionLogos={competitionLogos}
+              groupHeading="p"
+            />
           </aside>
 
-          <div className="order-1 min-w-0 lg:order-none lg:col-start-1 lg:row-start-1 xl:col-start-2 xl:row-start-1">
+          <div className="min-w-0 lg:col-start-1 lg:row-start-1 xl:col-start-2 xl:row-start-1">
             <div className="space-y-2.5">
               <h1 className="px-1 text-sm font-medium text-text-secondary">{t('pageHeading')}</h1>
               <HomeFeatured matches={featuredSlim} locale={typedLocale} labels={featuredLabels} />
@@ -209,6 +195,7 @@ export default async function HomePage({ params }: PageProps) {
                   <HomeNextMatch
                     candidates={railPrimary.nextFeaturedCandidates}
                     locale={typedLocale}
+                    liveOnly
                     labels={{
                       nextMatch: t('nextMatch'),
                       liveNow: t('liveNow'),
@@ -219,6 +206,7 @@ export default async function HomePage({ params }: PageProps) {
               )}
 
               <div id="matches" className="scroll-mt-24">
+                <h2 className="sr-only">{t('matchesHeading')}</h2>
                 <Suspense
                   fallback={
                     <HomeMatchTabs
@@ -234,16 +222,16 @@ export default async function HomePage({ params }: PageProps) {
                 </Suspense>
               </div>
 
-              <Suspense fallback={null}>
-                <HomeDeferredVideos locale={typedLocale} />
-              </Suspense>
-
               <div className="lg:hidden">
                 <HomeRailWidgets data={railPrimary} locale={typedLocale} variant="mobile" />
                 <Suspense fallback={null}>
                   <HomeDeferredRail locale={typedLocale} variant="mobile" />
                 </Suspense>
               </div>
+
+              <Suspense fallback={null}>
+                <HomeDeferredVideos locale={typedLocale} />
+              </Suspense>
             </div>
           </div>
 
