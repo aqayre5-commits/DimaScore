@@ -48,3 +48,7 @@ docs/fifa-source-data/*.pdf
 .env*.save
 .env*.swp
 .env*.swo
+
+.open-next/
+.wrangler/
+.dev.vars

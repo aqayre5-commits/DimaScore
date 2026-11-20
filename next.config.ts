@@ -37,7 +37,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Build id baked into the bundle (server + client) for the update-banner version check.
   env: {
-    NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA || 'dev',
+    NEXT_PUBLIC_BUILD_ID:
+      process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_BUILD_ID_SHA || 'dev',
   },
   cacheComponents: true,
   cacheLife: {
@@ -46,6 +47,9 @@ const nextConfig: NextConfig = {
     season: { stale: 0, revalidate: 60, expire: 300 },
   },
   images: {
+    // Cloudflare build only (DIMASCORE_TARGET=cloudflare): no Vercel image optimizer, browsers load
+    // the remote originals directly. Vercel builds keep next/image optimisation unchanged.
+    unoptimized: process.env.DIMASCORE_TARGET === 'cloudflare',
     remotePatterns: [
       { hostname: 'media.api-sports.io' },
       { hostname: 'media-*.api-sports.io' },
