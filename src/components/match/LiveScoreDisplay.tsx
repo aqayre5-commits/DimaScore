@@ -5,6 +5,7 @@ import { useLiveMatch } from '@/components/match/MatchLiveUpdater';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { Locale } from '@/lib/i18n/config';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
+import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
 
 const LIVE_CODES = new Set<string>(LIVE_CODES_ARRAY);
 const FINISHED_CODES = new Set(['FT', 'AET', 'PEN']);
@@ -116,7 +117,7 @@ export function LiveScoreDisplay({
                 ? t('halfTime')
                 : minute != null
                   ? `${minute}'${extraMinute ? `+${extraMinute}` : ''}`
-                  : statusCode}
+                  : localizeMatchStatus(statusCode, locale)}
             </span>
           </span>
         </>

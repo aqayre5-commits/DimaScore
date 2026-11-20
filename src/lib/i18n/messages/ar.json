@@ -1,7 +1,9 @@
 {
   "app": {
     "name": "ديماسكور",
-    "tagline": "كرة القدم مباشرة — النتائج والترتيب والإحصائيات حول العالم"
+    "tagline": "كرة القدم مباشرة — النتائج والترتيب والإحصائيات حول العالم",
+    "errorTitle": "حدث خطأ ما",
+    "errorBody": "وقع خطأ غير متوقع. يرجى المحاولة مرة أخرى."
   },
   "nav": {
     "home": "الرئيسية",
@@ -18,7 +20,8 @@
     "live": "مباشر",
     "football": "كرة القدم",
     "updateAvailable": "يتوفر إصدار جديد",
-    "refresh": "تحديث"
+    "refresh": "تحديث",
+    "dismiss": "إخفاء"
   },
   "topbar": {
     "home": "الرئيسية",
@@ -26,7 +29,9 @@
     "competitions": "المسابقات",
     "allCompetitions": "جميع المسابقات",
     "more": "المزيد",
-    "following": "المتابَعة"
+    "following": "المتابَعة",
+    "menu": "القائمة",
+    "mainNav": "التنقل الرئيسي"
   },
   "topStrip": {
     "live": "مباشر",
@@ -40,7 +45,7 @@
   "megaMenu": {
     "morocco": "المغرب",
     "international": "دولي",
-    "africa": "أفريقيا",
+    "africa": "إفريقيا",
     "europe": "أوروبا",
     "wcQualifiers": "تصفيات كأس العالم",
     "arabTurkish": "العربي والتركي",
@@ -49,7 +54,7 @@
     "botola2": "القسم الثاني",
     "coupeDuTrone": "كأس العرش",
     "worldCup2026": "كأس العالم",
-    "wcQualAfrica": "تصفيات كأس العالم أفريقيا",
+    "wcQualAfrica": "تصفيات كأس العالم إفريقيا",
     "wcQualEurope": "تصفيات كأس العالم أوروبا",
     "wcQualConcacaf": "تصفيات كأس العالم كونكاكاف",
     "wcQualSouthAmerica": "تصفيات كأس العالم أمريكا الجنوبية",
@@ -62,8 +67,8 @@
     "afconQualifiers": "تصفيات كأس أمم إفريقيا",
     "wafcon2024": "كأس أمم إفريقيا للسيدات",
     "wafcon2026": "كأس أمم إفريقيا للسيدات",
-    "cafChampionsLeague": "دوري أبطال أفريقيا",
-    "cafConfederationCup": "كأس الكونفدرالية الأفريقية",
+    "cafChampionsLeague": "دوري أبطال إفريقيا",
+    "cafConfederationCup": "كأس الكونفدرالية الإفريقية",
     "premierLeague": "الدوري الإنجليزي الممتاز",
     "laLiga": "الدوري الإسباني",
     "bundesliga": "الدوري الألماني",
@@ -94,10 +99,10 @@
     "afcon": "أمم إفريقيا",
     "championsLeague": "دوري الأبطال",
     "premierLeague": "الدوري الإنجليزي",
-    "laLiga": "LaLiga",
-    "ligue1": "Ligue 1",
-    "bundesliga": "Bundesliga",
-    "serieA": "Serie A",
+    "laLiga": "الليغا",
+    "ligue1": "الدوري الفرنسي",
+    "bundesliga": "البوندسليغا",
+    "serieA": "الدوري الإيطالي",
     "wafcon2026": "أمم إفريقيا سيدات",
     "cafChampionsLeague": "دوري أبطال إفريقيا"
   },
@@ -108,7 +113,8 @@
     "search": "بحث",
     "favorites": "المفضلة",
     "settings": "الإعدادات",
-    "theme": "المظهر"
+    "theme": "المظهر",
+    "navLabel": "التنقل على الهاتف"
   },
   "breadcrumb": {
     "football": "كرة القدم",
@@ -125,7 +131,7 @@
   "footer": {
     "todaysMatches": "مباريات اليوم",
     "live": "مباشر",
-    "description": "يقدّم لك ديماسكور نتائج كرة القدم المباشرة والترتيب من مئات الدوريات والكؤوس والبطولات حول العالم. تابع أحداث المباريات المباشرة والتشكيلات والإحصائيات وتقييمات اللاعبين — من أوروبا وأفريقيا والأمريكتين وآسيا، ومن الدوريات المحلية إلى دوري أبطال أوروبا والكؤوس القارية وكأس العالم. تابع فرقك ولاعبيك المفضّلين واحصل على كل نتيجة لحظة حدوثها.",
+    "description": "يقدّم لك ديماسكور نتائج كرة القدم المباشرة والترتيب من مئات الدوريات والكؤوس والبطولات حول العالم. تابع أحداث المباريات المباشرة والتشكيلات والإحصائيات وتقييمات اللاعبين — من أوروبا وإفريقيا والأمريكتين وآسيا، ومن الدوريات المحلية إلى دوري أبطال أوروبا والكؤوس القارية وكأس العالم. تابع فرقك ولاعبيك المفضّلين واحصل على كل نتيجة لحظة حدوثها.",
     "legalNotice": "إشعار قانوني",
     "privacyPolicy": "سياسة الخصوصية",
     "terms": "شروط الاستخدام",
@@ -159,7 +165,9 @@
     "noResults": "لا توجد نتائج",
     "teams": "الفرق",
     "players": "اللاعبون",
-    "competitions": "المسابقات"
+    "competitions": "المسابقات",
+    "close": "إغلاق البحث",
+    "unavailable": "البحث غير متاح. يرجى المحاولة مرة أخرى."
   },
   "dateStrip": {
     "today": "اليوم",
@@ -238,11 +246,11 @@
     "standings": "الترتيب",
     "viewFullStandings": "عرض الترتيب الكامل",
     "team": "الفريق",
-    "played": "ل",
+    "played": "لعب",
     "won": "ف",
     "drawn": "ت",
     "lost": "خ",
-    "goalDiff": "فا",
+    "goalDiff": "فارق",
     "points": "نقاط",
     "trendingPlayers": "لاعبون بارزون",
     "goals": "أهداف",
@@ -266,7 +274,10 @@
     "assist": "تمريرة",
     "cleanSheet": "شباك نظيفة",
     "topScorers": "الهدافون",
-    "thisWeek": "هذا الأسبوع"
+    "thisWeek": "هذا الأسبوع",
+    "datePrevDay": "اليوم السابق",
+    "dateJumpToday": "الانتقال إلى اليوم",
+    "dateNextDay": "اليوم التالي"
   },
   "fixtureList": {
     "matches": "\u0627\u0644\u0645\u0628\u0627\u0631\u064a\u0627\u062a",
@@ -307,7 +318,7 @@
     "comingSoon": "\u0642\u0631\u064a\u0628\u064b\u0627",
     "rank": "#",
     "team": "\u0627\u0644\u0641\u0631\u064a\u0642",
-    "played": "\u0644",
+    "played": "لعب",
     "points": "\u0646\u0642\u0627\u0637"
   },
   "tournament": {
@@ -352,13 +363,13 @@
     "groupLabel": "المجموعة {label}",
     "live": "مباشر",
     "team": "الفريق",
-    "colPlayed": "ل",
+    "colPlayed": "لعب",
     "colWon": "ف",
     "colDrawn": "ت",
     "colLost": "خ",
     "colGoalsFor": "له",
     "colGoalsAgainst": "ع",
-    "colGoalDiff": "+/\u2212",
+    "colGoalDiff": "فارق",
     "colPoints": "نقاط",
     "colForm": "نتائج",
     "formWin": "فوز",
@@ -477,7 +488,7 @@
     "goalsAgainst": "أهداف مستقبلة",
     "cleanSheets": "شباك نظيفة",
     "possession": "متوسط الاستحواذ",
-    "xG": "xG",
+    "xG": "الأهداف المتوقعة",
     "totalShots": "إجمالي التسديدات",
     "shotsOnTarget": "تسديدات على المرمى",
     "corners": "ركنيات",
@@ -576,11 +587,11 @@
     "nextRound": "الجولة التالية",
     "noFixtures": "لا مباريات مبرمجة لهذه الجولة",
     "team": "الفريق",
-    "colPlayed": "ل",
+    "colPlayed": "لعب",
     "colWon": "ف",
     "colDrawn": "ت",
     "colLost": "خ",
-    "colGoalDiff": "فا",
+    "colGoalDiff": "فارق",
     "colGoals": "له:عليه",
     "colForm": "الشكل",
     "colPoints": "نقاط",
@@ -618,7 +629,7 @@
     "promotion": "الصعود",
     "relegation": "الهبوط",
     "miniTeam": "الفريق",
-    "miniPlayed": "م",
+    "miniPlayed": "لعب",
     "miniPoints": "نقاط",
     "formWin": "ف",
     "formDraw": "ت",
@@ -654,7 +665,11 @@
   },
   "shared": {
     "share": "مشاركة",
-    "match": "مباراة"
+    "match": "مباراة",
+    "noVideos": "لا توجد فيديوهات في هذه الفئة.",
+    "close": "إغلاق",
+    "versusUpper": "ضد",
+    "breadcrumb": "مسار التنقل"
   },
   "competition": {
     "top10": "أفضل 10 مسابقات",
@@ -663,7 +678,7 @@
     "botola2": "القسم الثاني",
     "coupeDuTrone": "كأس العرش",
     "worldCup2026": "كأس العالم",
-    "wcQualAfrica": "تصفيات كأس العالم أفريقيا",
+    "wcQualAfrica": "تصفيات كأس العالم إفريقيا",
     "wcQualEurope": "تصفيات كأس العالم أوروبا",
     "wcQualConcacaf": "تصفيات كأس العالم كونكاكاف",
     "wcQualSouthAmerica": "تصفيات كأس العالم أمريكا الجنوبية",
@@ -674,8 +689,8 @@
     "afconQualifiers": "تصفيات كأس أمم إفريقيا",
     "wafcon2024": "كأس أمم إفريقيا للسيدات",
     "wafcon2026": "كأس أمم إفريقيا للسيدات",
-    "cafChampionsLeague": "دوري أبطال أفريقيا",
-    "cafConfederationCup": "كأس الكونفدرالية الأفريقية",
+    "cafChampionsLeague": "دوري أبطال إفريقيا",
+    "cafConfederationCup": "كأس الكونفدرالية الإفريقية",
     "premierLeague": "الدوري الإنجليزي الممتاز",
     "laLiga": "الدوري الإسباني",
     "bundesliga": "الدوري الألماني",
@@ -727,7 +742,7 @@
     "ownGoal": "هـ.ذ",
     "penaltyGoal": "ج.ت",
     "penaltyMissed": "ج.ت ضائعة",
-    "varDecision": "VAR",
+    "varDecision": "قرار تقنية الفيديو",
     "playerIn": "دخل",
     "playerOut": "خرج",
     "formation": "التشكيلة",
@@ -756,7 +771,8 @@
     "nextMatch": "المباراة القادمة",
     "matchEvents": "أحداث المباراة",
     "seeAllEvents": "عرض جميع الأحداث",
-    "viewFullMatch": "عرض المباراة كاملة"
+    "viewFullMatch": "عرض المباراة كاملة",
+    "sectionsNav": "أقسام المباراة"
   },
   "editorialHero": {
     "label": "\u0627\u0644\u0645\u0642\u062a\u0637\u0641 \u0627\u0644\u062a\u062d\u0631\u064a\u0631\u064a",

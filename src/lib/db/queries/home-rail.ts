@@ -7,6 +7,7 @@ import { getResolvedTopScorers, type TopPlayerRow } from '@/lib/db/queries/leagu
 import { getFifaRankingTop, type ResolvedFifaRankingRow } from '@/lib/constants/fifa-ranking';
 import { timedQuery } from '@/lib/db/timing';
 import type { Locale } from '@/lib/i18n/config';
+import { arabicTeamName } from '@/lib/i18n/localized-names';
 
 /**
  * Leagues whose standings appear in the homepage rail (Botola first).
@@ -85,6 +86,8 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
            COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
            p.photo_url,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
+           t.id AS team_id, t.name AS team_name_json, t.country_code AS team_country,
+           t.is_national AS team_is_national,
            COALESCE(t.logo_url, tp.logo_url) AS team_logo,
            fps.position, fps.rating
     FROM fixture_player_stats fps
@@ -105,6 +108,10 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
     player_name: string | null;
     photo_url: string | null;
     team_name: string | null;
+    team_id: number | string | null;
+    team_name_json: Record<string, string> | null;
+    team_country: string | null;
+    team_is_national: boolean | null;
     team_logo: string | null;
     position: string | null;
     rating: string | null;
@@ -121,7 +128,18 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
       playerSlug: r.player_slug,
       playerName: r.player_name ?? '',
       playerPhoto: r.photo_url,
-      teamName: r.team_name ?? '',
+      teamName:
+        arabicTeamName(
+          {
+            id: r.team_id,
+            name: r.team_name_json,
+            countryCode: r.team_country,
+            isNational: r.team_is_national,
+          },
+          locale,
+        ) ??
+        r.team_name ??
+        '',
       teamLogo: r.team_logo,
       position: r.position,
       rating: Number(r.rating),

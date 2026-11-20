@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import type { TeamSeasonStatsResult } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 interface TeamStatisticsProps {
   data: TeamSeasonStatsResult;
@@ -240,7 +241,8 @@ export function TeamStatistics({ data, locale }: TeamStatisticsProps) {
             className={`min-w-[140px] flex-1 ${selectCls}`}
           >
             {competitions.map((c) => {
-              const name = c.name[locale] ?? c.name['en'] ?? `ID ${c.id}`;
+              const name =
+                arabicCompetitionName(c, locale) ?? c.name[locale] ?? c.name['en'] ?? `ID ${c.id}`;
               return (
                 <option key={c.id} value={c.id}>
                   {name}

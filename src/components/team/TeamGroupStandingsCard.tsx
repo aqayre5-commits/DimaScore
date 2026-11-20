@@ -9,6 +9,7 @@ import type {
   TeamDetail,
 } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 interface TeamGroupStandingsCardProps {
   team: TeamDetail;
@@ -57,7 +58,8 @@ export function TeamGroupStandingsCard({
   const groupRows = teamGroup ? rows.filter((r) => r.groupLabel === teamGroup) : rows;
   if (groupRows.length === 0) return null;
 
-  const compName = comp.name[locale] ?? comp.name['en'] ?? '';
+  const compName =
+    arabicCompetitionName(comp, locale) ?? comp.name[locale] ?? comp.name['en'] ?? '';
 
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">

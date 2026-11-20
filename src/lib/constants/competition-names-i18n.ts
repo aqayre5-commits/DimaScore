@@ -10,13 +10,13 @@
 const COMP_NAMES: Record<number, { en?: string; fr: string; ar: string }> = {
   // ── World Cup & qualifiers ──
   1: { fr: 'Coupe du Monde', ar: 'كأس العالم' },
-  29: { fr: 'Qualif. CM Afrique', ar: 'تصفيات كأس العالم أفريقيا' },
+  29: { fr: 'Qualif. CM Afrique', ar: 'تصفيات كأس العالم إفريقيا' },
   32: { fr: 'Qualif. CM Europe', ar: 'تصفيات كأس العالم أوروبا' },
   31: { fr: 'Qualif. CM CONCACAF', ar: 'تصفيات كأس العالم كونكاكاف' },
   34: { fr: 'Qualif. CM Am. du Sud', ar: 'تصفيات كأس العالم أمريكا الجنوبية' },
   30: { fr: 'Qualif. CM Asie', ar: 'تصفيات كأس العالم آسيا' },
   33: { fr: 'Qualif. CM Océanie', ar: 'تصفيات كأس العالم أوقيانوسيا' },
-  37: { fr: 'Qualif. CM Intercontinental', ar: 'تصفيات كأس العالم بين القارات' },
+  37: { fr: 'Qualif. CM Intercontinental', ar: 'الملحق العالمي لتصفيات كأس العالم' },
 
   // ── Morocco ──
   200: { fr: 'Botola Pro', ar: 'البطولة الاحترافية' },
@@ -27,8 +27,8 @@ const COMP_NAMES: Record<number, { en?: string; fr: string; ar: string }> = {
   6: { fr: 'CAN', ar: 'كأس أمم إفريقيا' },
   36: { fr: 'Qualif. CAN', ar: 'تصفيات كأس أمم إفريقيا' },
   922: { fr: 'CAN Féminine', ar: 'كأس أمم إفريقيا للسيدات' },
-  12: { fr: 'Ligue des Champions CAF', ar: 'دوري أبطال أفريقيا' },
-  20: { fr: 'Coupe de la Confédération CAF', ar: 'كأس الكونفدرالية الأفريقية' },
+  12: { fr: 'Ligue des Champions CAF', ar: 'دوري أبطال إفريقيا' },
+  20: { fr: 'Coupe de la Confédération CAF', ar: 'كأس الكونفدرالية الإفريقية' },
 
   // ── Europe — men ──
   39: { fr: 'Premier League', ar: 'الدوري الإنجليزي الممتاز' },
@@ -46,14 +46,17 @@ const COMP_NAMES: Record<number, { en?: string; fr: string; ar: string }> = {
   139: { fr: 'Serie A Femminile', ar: 'الدوري الإيطالي للسيدات' },
   82: { fr: 'Frauen-Bundesliga', ar: 'الدوري الألماني للسيدات' },
   525: { fr: 'Ligue des Champions Féminine', ar: 'دوري أبطال أوروبا للسيدات' },
-  1191: { fr: "Coupe d'Europe Féminine", ar: 'كأس أوروبا للسيدات' },
+  1191: { fr: "Coupe d'Europe Féminine", ar: 'الدوري الأوروبي للسيدات' },
 
   // ── MENA & others ──
   186: { fr: 'Ligue 1 Algérie', ar: 'الدوري الجزائري' },
   202: { fr: 'Ligue 1 Tunisie', ar: 'الدوري التونسي' },
   233: { fr: 'Premier League Égypte', ar: 'الدوري المصري الممتاز' },
   203: { fr: 'Süper Lig', ar: 'الدوري التركي الممتاز' },
-  301: { fr: 'UAE Pro League', ar: 'دوري الخليج العربي' },
+  // ── Added Nov 2026 ──
+  5: { fr: 'Ligue des Nations UEFA', ar: 'دوري الأمم الأوروبية' },
+  10: { fr: 'Matchs amicaux', ar: 'مباريات ودية' },
+  301: { fr: 'UAE Pro League', ar: 'دوري المحترفين الإماراتي' },
   307: { fr: 'Saudi Pro League', ar: 'دوري روشن السعودي' },
 };
 

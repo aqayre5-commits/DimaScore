@@ -12,6 +12,7 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { Flag } from '@/components/shared/Flag';
 import { applyResult } from '@/lib/standings/apply-result';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 interface Labels {
   liveGroupStandings: string;
@@ -138,7 +139,11 @@ function GroupCard({
     () => computeProvisional(group, live),
     [group, live],
   );
-  const compName = group.competitionName[locale] ?? group.competitionName['en'] ?? '';
+  const compName =
+    arabicCompetitionName({ id: group.competitionId, name: group.competitionName }, locale) ??
+    group.competitionName[locale] ??
+    group.competitionName['en'] ??
+    '';
   const href = buildCompetitionHrefById(group.competitionId, locale);
 
   return (

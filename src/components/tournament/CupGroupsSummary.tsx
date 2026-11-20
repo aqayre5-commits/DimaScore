@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { Flag } from '@/components/shared/Flag';
+import { arabicTeamName } from '@/lib/i18n/localized-names';
 
 interface CupGroupsSummaryProps {
   standings: StandingRow[];
@@ -43,6 +44,7 @@ export function CupGroupsSummary({ standings, locale }: CupGroupsSummaryProps) {
               </p>
               {top2.map((row) => {
                 const name =
+                  arabicTeamName(row.team, locale) ??
                   row.team?.shortName[locale] ??
                   row.team?.name[locale] ??
                   row.team?.name['en'] ??

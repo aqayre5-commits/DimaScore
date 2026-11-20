@@ -25,6 +25,8 @@ import { useFollows } from '@/hooks/useFollows';
 import { FollowStar } from '@/components/shared/FollowStar';
 import { competitionCrestUrl } from '@/lib/utils/crest';
 import { SITE_TZ } from '@/lib/utils/date';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
 
 interface Props {
   live: HomeFixture[];
@@ -111,20 +113,22 @@ function MatchRow({
   const statusNode = isLive ? (
     <span className="text-sm font-bold tabular-nums text-score-live">
       {fixture.statusCode === 'HT'
-        ? 'HT'
+        ? localizeMatchStatus('HT', locale)
         : fixture.minute != null
           ? `${fixture.minute}'`
           : fixture.statusCode === 'P'
-            ? 'PEN'
-            : fixture.statusCode}
+            ? localizeMatchStatus('PEN', locale)
+            : localizeMatchStatus(fixture.statusCode, locale)}
     </span>
   ) : isFinished ? (
     <span className="flex flex-col items-center leading-tight">
       <span className="text-xs font-medium text-text-tertiary">
-        {fixture.statusCode === 'AET' ? 'AET' : 'FT'}
+        {localizeMatchStatus(fixture.statusCode === 'AET' ? 'AET' : 'FT', locale)}
       </span>
       {showPens && (
-        <span className="mt-0.5 text-[9px] font-semibold tabular-nums text-text-tertiary">PEN</span>
+        <span className="mt-0.5 text-[9px] font-semibold tabular-nums text-text-tertiary">
+          {localizeMatchStatus('PEN', locale)}
+        </span>
       )}
     </span>
   ) : isInterrupted ? (
@@ -341,7 +345,11 @@ function renderGroupedRows(
     const groupKey = `${f.competition.id}-${dayKey(f.kickoffAt, timeZone)}`;
     if (groupKey !== lastGroupKey) {
       lastGroupKey = groupKey;
-      const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
+      const compName =
+        arabicCompetitionName(f.competition, locale) ??
+        f.competition.name[locale] ??
+        f.competition.name['en'] ??
+        '';
       elements.push(
         <div
           key={`sep-${matchIdx}-${groupKey}`}
@@ -474,7 +482,10 @@ export function HomeMatchTabs({ live, upcoming, results, locale, now: serverNow,
     selectedComp != null && presentComps.some((c) => c.id === selectedComp) ? selectedComp : null;
   const selectedCompMeta = presentComps.find((c) => c.id === effectiveComp);
   const filterLabel = selectedCompMeta
-    ? (selectedCompMeta.name[locale] ?? selectedCompMeta.name['en'] ?? labels.all)
+    ? (arabicCompetitionName(selectedCompMeta, locale) ??
+      selectedCompMeta.name[locale] ??
+      selectedCompMeta.name['en'] ??
+      labels.all)
     : labels.all;
 
   // "Your matches" — followed teams'/competitions' fixtures for the selected day, pinned above the
@@ -564,7 +575,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, now: serverNow,
               setExpanded(false);
             }}
             className="flex size-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-text-secondary transition-colors hover:bg-bg-surface-3 hover:text-text-primary"
-            aria-label="Previous day"
+            aria-label={tHome('datePrevDay')}
           >
             <ChevronLeft className="size-4" />
           </button>
@@ -574,7 +585,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, now: serverNow,
               setExpanded(false);
             }}
             className="flex flex-1 items-center justify-center gap-2 rounded-full bg-bg-surface-2 px-4 py-2 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-surface-3"
-            aria-label="Jump to today"
+            aria-label={tHome('dateJumpToday')}
           >
             <Calendar className="size-4 shrink-0 text-accent-azure" />
             <span className="whitespace-nowrap" suppressHydrationWarning>
@@ -587,7 +598,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, now: serverNow,
               setExpanded(false);
             }}
             className="flex size-9 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-text-secondary transition-colors hover:bg-bg-surface-3 hover:text-text-primary"
-            aria-label="Next day"
+            aria-label={tHome('dateNextDay')}
           >
             <ChevronRight className="size-4" />
           </button>
@@ -615,7 +626,8 @@ export function HomeMatchTabs({ live, upcoming, results, locale, now: serverNow,
                   {labels.all}
                 </button>
                 {presentComps.map((c) => {
-                  const name = c.name[locale] ?? c.name['en'] ?? '';
+                  const name =
+                    arabicCompetitionName(c, locale) ?? c.name[locale] ?? c.name['en'] ?? '';
                   const followed = followedComps.has(c.id);
                   return (
                     <div key={c.id} className="flex items-center gap-1">

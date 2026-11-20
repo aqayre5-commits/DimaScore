@@ -6,6 +6,7 @@ import { FormPills } from '@/components/shared/FormPills';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
+import { arabicTeamName } from '@/lib/i18n/localized-names';
 
 interface QualificationZone {
   positions: number[];
@@ -114,7 +115,8 @@ export function GroupTable({
           <tbody>
             {rows.map((row) => {
               const teamName = stripWomenSuffix(
-                row.team?.name[locale] ??
+                arabicTeamName(row.team, locale) ??
+                  row.team?.name[locale] ??
                   row.team?.name['en'] ??
                   row.team?.shortName[locale] ??
                   row.team?.code ??

@@ -36,7 +36,7 @@ export function MobileBottomTabBar() {
 
   return (
     <nav
-      aria-label="Mobile navigation"
+      aria-label={t('navLabel')}
       className="fixed inset-x-0 bottom-0 z-40 flex min-h-14 items-center border-t border-border-subtle bg-bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
       <div className="mx-auto flex w-full max-w-md items-center justify-around">

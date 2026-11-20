@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export default function LocaleError({
   error,
@@ -10,6 +11,7 @@ export default function LocaleError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('app');
   useEffect(() => {
     console.error('Locale error boundary caught:', error);
   }, [error]);
@@ -17,8 +19,8 @@ export default function LocaleError({
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-4 text-center">
       <div className="flex flex-col items-center gap-2">
-        <h1 className="text-display text-2xl font-semibold">Something went wrong</h1>
-        <p className="text-secondary text-sm">An unexpected error occurred. Please try again.</p>
+        <h1 className="text-display text-2xl font-semibold">{t('errorTitle')}</h1>
+        <p className="text-secondary text-sm">{t('errorBody')}</p>
       </div>
       <div className="flex gap-3">
         <button

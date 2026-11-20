@@ -439,6 +439,7 @@ export interface H2HFixture {
   awayTeamId: number | null;
   homeScore: number | null;
   awayScore: number | null;
+  competitionId: number | null;
   competitionName: Record<string, string>;
   competitionSlug: string;
 }
@@ -458,6 +459,7 @@ export async function getHeadToHead(
       awayTeamId: schema.fixtures.awayTeamId,
       homeScore: schema.fixtures.homeScore,
       awayScore: schema.fixtures.awayScore,
+      compId: schema.competitions.id,
       compName: schema.competitions.name,
       compSlug: schema.competitions.slug,
     })
@@ -485,6 +487,7 @@ export async function getHeadToHead(
     awayTeamId: r.awayTeamId,
     homeScore: r.homeScore,
     awayScore: r.awayScore,
+    competitionId: r.compId,
     competitionName: r.compName,
     competitionSlug: r.compSlug,
   }));
@@ -570,7 +573,12 @@ export interface NextFixture {
   homeSlug: string | null;
   awaySlug: string | null;
   opponentName: Record<string, string>;
+  /** Opponent identity, so the card can resolve a localized (curated Arabic) name. */
+  opponentId: number | null;
+  opponentCountryCode: string | null;
+  opponentIsNational: boolean | null;
   opponentLogoUrl: string | null;
+  competitionId: number | null;
   competitionName: Record<string, string>;
   competitionLogoUrl: string | null;
   isHome: boolean;
@@ -586,7 +594,7 @@ export async function getNextFixtures(
   const nextForTeam = (teamId: number) =>
     db.execute(sql`
       SELECT f.id, f.kickoff_at, f.home_team_id, f.away_team_id,
-             c.name AS comp_name, c.logo_url AS comp_logo
+             c.id AS comp_id, c.name AS comp_name, c.logo_url AS comp_logo
       FROM fixtures f
       INNER JOIN competitions c ON c.id = f.competition_id
       WHERE f.status_code = 'NS'
@@ -609,6 +617,7 @@ export async function getNextFixtures(
     kickoff_at: string;
     home_team_id: number;
     away_team_id: number;
+    comp_id: number | string | null;
     comp_name: Record<string, string>;
     comp_logo: string | null;
   };
@@ -628,7 +637,13 @@ export async function getNextFixtures(
 
   const teamsMap = new Map<
     number,
-    { name: Record<string, string>; logoUrl: string | null; slug: string }
+    {
+      name: Record<string, string>;
+      logoUrl: string | null;
+      slug: string;
+      countryCode: string | null;
+      isNational: boolean | null;
+    }
   >();
   if (teamIds.size > 0) {
     const oppParent = alias(schema.teams, 'opp_parent');
@@ -639,11 +654,20 @@ export async function getNextFixtures(
         // own logo ?? parent club's logo (Phase 16 · Task G).
         logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${oppParent.logoUrl})`,
         slug: schema.teams.slug,
+        countryCode: schema.teams.countryCode,
+        isNational: schema.teams.isNational,
       })
       .from(schema.teams)
       .leftJoin(oppParent, eq(schema.teams.parentTeamId, oppParent.id))
       .where(inArray(schema.teams.id, [...teamIds]));
-    for (const t of teams) teamsMap.set(t.id, { name: t.name, logoUrl: t.logoUrl, slug: t.slug });
+    for (const t of teams)
+      teamsMap.set(t.id, {
+        name: t.name,
+        logoUrl: t.logoUrl,
+        slug: t.slug,
+        countryCode: t.countryCode,
+        isNational: t.isNational,
+      });
   }
 
   return raw.map(({ row: r, ourTeamId }) => {
@@ -659,7 +683,11 @@ export async function getNextFixtures(
       homeSlug: teamsMap.get(homeId)?.slug ?? null,
       awaySlug: teamsMap.get(awayId)?.slug ?? null,
       opponentName: opponent?.name ?? { en: 'TBD' },
+      opponentId: opponent ? opponentId : null,
+      opponentCountryCode: opponent?.countryCode ?? null,
+      opponentIsNational: opponent?.isNational ?? null,
       opponentLogoUrl: opponent?.logoUrl ?? null,
+      competitionId: r.comp_id == null ? null : Number(r.comp_id),
       competitionName: r.comp_name,
       competitionLogoUrl: r.comp_logo,
       isHome: isOurTeamHome,

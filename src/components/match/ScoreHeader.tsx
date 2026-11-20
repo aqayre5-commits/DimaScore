@@ -5,6 +5,7 @@ import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i
 import { LiveScoreDisplay } from '@/components/match/LiveScoreDisplay';
 import type { MatchDetail } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
+import { localizeRound } from '@/lib/i18n/feed-labels';
 
 export interface GoalScorer {
   playerName: string;
@@ -57,7 +58,10 @@ export function ScoreHeader({
             compName
           )}
           {(match.groupLabel ?? match.round) && (
-            <span className="text-text-tertiary"> &middot; {match.groupLabel ?? match.round}</span>
+            <span className="text-text-tertiary">
+              {' '}
+              &middot; {localizeRound(match.groupLabel ?? match.round, locale)}
+            </span>
           )}
         </p>
       </div>

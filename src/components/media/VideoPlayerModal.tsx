@@ -4,6 +4,7 @@ import { Dialog } from '@base-ui/react/dialog';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 import { XIcon } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface VideoPlayerModalProps {
   youtubeId: string | null;
@@ -13,6 +14,7 @@ interface VideoPlayerModalProps {
 }
 
 export function VideoPlayerModal({ youtubeId, title, open, onClose }: VideoPlayerModalProps) {
+  const tShared = useTranslations('shared');
   return (
     <Dialog.Root open={open} onOpenChange={(val) => !val && onClose()}>
       <Dialog.Portal>
@@ -23,7 +25,7 @@ export function VideoPlayerModal({ youtubeId, title, open, onClose }: VideoPlaye
               type="button"
               onClick={onClose}
               className="absolute -top-10 right-0 flex size-8 items-center justify-center rounded-full text-white/80 transition-colors hover:text-white"
-              aria-label="Close"
+              aria-label={tShared('close')}
             >
               <XIcon className="size-5" />
             </button>

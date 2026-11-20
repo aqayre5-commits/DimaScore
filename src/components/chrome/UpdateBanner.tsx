@@ -35,7 +35,7 @@ export function UpdateBanner() {
         <button
           type="button"
           onClick={() => setDismissed(true)}
-          aria-label="Dismiss"
+          aria-label={t('dismiss')}
           className="text-text-tertiary transition-colors hover:text-text-secondary"
         >
           <X className="size-4" />

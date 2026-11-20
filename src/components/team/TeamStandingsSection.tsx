@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import type { StandingRow } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { Flag } from '@/components/shared/Flag';
+import { arabicTeamName } from '@/lib/i18n/localized-names';
+import { localizeGroupLabel } from '@/lib/i18n/feed-labels';
 
 interface TeamStandingsSectionProps {
   standings: StandingRow[];
@@ -13,6 +15,7 @@ interface TeamStandingsSectionProps {
 function resolveTeamName(team: StandingRow['team'], locale: Locale): string {
   if (!team) return '\u2014';
   return (
+    arabicTeamName(team, locale) ??
     team.shortName[locale] ??
     team.shortName['en'] ??
     team.name[locale] ??
@@ -40,7 +43,7 @@ export function TeamStandingsSection({
   // Group by groupLabel (for cup competitions with multiple groups)
   const groups = new Map<string, StandingRow[]>();
   for (const row of standings) {
-    const label = row.groupLabel || t('league');
+    const label = localizeGroupLabel(row.groupLabel, locale) || t('league');
     if (!groups.has(label)) groups.set(label, []);
     groups.get(label)!.push(row);
   }

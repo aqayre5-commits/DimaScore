@@ -10,6 +10,7 @@
  */
 
 const COUNTRY_NAMES: Record<string, { en: string; fr: string; ar: string }> = {
+  MO: { en: 'Macau', fr: 'Macao', ar: 'ماكاو' },
   // Market-priority (pre-existing)
   'GB-ENG': { en: 'England', fr: 'Angleterre', ar: 'إنجلترا' },
   ES: { en: 'Spain', fr: 'Espagne', ar: 'إسبانيا' },
@@ -113,7 +114,7 @@ const COUNTRY_NAMES: Record<string, { en: string; fr: string; ar: string }> = {
   HT: { en: 'Haiti', fr: 'Haïti', ar: 'هايتي' },
   HU: { en: 'Hungary', fr: 'Hongrie', ar: 'المجر' },
   ID: { en: 'Indonesia', fr: 'Indonésie', ar: 'إندونيسيا' },
-  IE: { en: 'Ireland', fr: 'Irlande', ar: 'أيرلندا' },
+  IE: { en: 'Ireland', fr: 'Irlande', ar: 'جمهورية أيرلندا' },
   IL: { en: 'Israel', fr: 'Israël', ar: 'إسرائيل' },
   IN: { en: 'India', fr: 'Inde', ar: 'الهند' },
   IQ: { en: 'Iraq', fr: 'Irak', ar: 'العراق' },
@@ -154,7 +155,7 @@ const COUNTRY_NAMES: Record<string, { en: string; fr: string; ar: string }> = {
   MR: { en: 'Mauritania', fr: 'Mauritanie', ar: 'موريتانيا' },
   MT: { en: 'Malta', fr: 'Malte', ar: 'مالطا' },
   MU: { en: 'Mauritius', fr: 'Maurice', ar: 'موريشيوس' },
-  MV: { en: 'Maldives', fr: 'Maldives', ar: 'جزر المالديف' },
+  MV: { en: 'Maldives', fr: 'Maldives', ar: 'المالديف' },
   MW: { en: 'Malawi', fr: 'Malawi', ar: 'مالاوي' },
   MX: { en: 'Mexico', fr: 'Mexique', ar: 'المكسيك' },
   MY: { en: 'Malaysia', fr: 'Malaisie', ar: 'ماليزيا' },
@@ -200,7 +201,7 @@ const COUNTRY_NAMES: Record<string, { en: string; fr: string; ar: string }> = {
   SV: { en: 'El Salvador', fr: 'Salvador', ar: 'السلفادور' },
   SY: { en: 'Syria', fr: 'Syrie', ar: 'سوريا' },
   SZ: { en: 'Eswatini', fr: 'Eswatini', ar: 'إسواتيني' },
-  TC: { en: 'Turks and Caicos Islands', fr: 'Îles Turques-et-Caïques', ar: 'جزر توركس وكايكوس' },
+  TC: { en: 'Turks and Caicos Islands', fr: 'Îles Turques-et-Caïques', ar: 'جزر تركس وكايكوس' },
   TD: { en: 'Chad', fr: 'Tchad', ar: 'تشاد' },
   TG: { en: 'Togo', fr: 'Togo', ar: 'توغو' },
   TH: { en: 'Thailand', fr: 'Thaïlande', ar: 'تايلاند' },
@@ -233,7 +234,7 @@ const COUNTRY_NAMES: Record<string, { en: string; fr: string; ar: string }> = {
   WS: { en: 'Samoa', fr: 'Samoa', ar: 'ساموا' },
   XK: { en: 'Kosovo', fr: 'Kosovo', ar: 'كوسوفو' },
   YE: { en: 'Yemen', fr: 'Yémen', ar: 'اليمن' },
-  ZA: { en: 'South Africa', fr: 'Afrique du Sud', ar: 'جنوب أفريقيا' },
+  ZA: { en: 'South Africa', fr: 'Afrique du Sud', ar: 'جنوب إفريقيا' },
   ZM: { en: 'Zambia', fr: 'Zambie', ar: 'زامبيا' },
   ZW: { en: 'Zimbabwe', fr: 'Zimbabwe', ar: 'زيمبابوي' },
 

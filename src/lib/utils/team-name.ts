@@ -15,11 +15,27 @@ type TeamLike = {
  * Fallback chain: name[locale] → curated fr/ar name (team-names-i18n: national teams via the
  * country name, Moroccan clubs by ID) → name.en → shortName[locale] → shortName.en → code → 'TBD'
  *
+ * Arabic: curated name first (team-names-ar by ID, then team-names-i18n), then a stored name.ar
+ * only when it contains Arabic letters, then name.en.
+ *
  * This matches the pattern already used by tournament components (GroupTable,
  * FeaturedMatchCard, etc.) and prefers full names over short codes.
  */
 export function getTeamDisplayName(team: TeamLike | null, locale: string): string {
   if (!team) return 'TBD';
+  if (locale === 'ar') {
+    // A stored name.ar is only trusted when it is actually Arabic: the DB holds Latin copies of
+    // the English name for some teams (e.g. {ar: "Morocco"}), which used to beat the curated name.
+    return (
+      arabicOnly(team.name['ar']) ??
+      localizedTeamName(team, 'ar') ??
+      team.name['en'] ??
+      arabicOnly(team.shortName['ar']) ??
+      team.shortName['en'] ??
+      team.code ??
+      'TBD'
+    );
+  }
   return (
     team.name[locale] ??
     localizedTeamName(team, locale) ??
@@ -51,17 +67,19 @@ export function getCompactTeamLabel(team: TeamLike | null, locale: string, maxLe
 
   if (locale === 'ar') {
     const curated = arabicCompactName(team);
+    const shortAr = arabicOnly(team.shortName['ar']);
+    const nameAr = arabicOnly(team.name['ar']);
     return isNational
-      ? (team.shortName['ar'] ??
-          truncate(team.name['ar'], maxLen) ??
+      ? (shortAr ??
           curated ??
+          truncate(nameAr, maxLen) ??
           team.code ??
           team.shortName['en'] ??
           truncate(team.name['en'], maxLen) ??
           'TBD')
-      : (team.shortName['ar'] ??
-          truncate(team.name['ar'], maxLen) ??
+      : (shortAr ??
           curated ??
+          truncate(nameAr, maxLen) ??
           team.shortName['en'] ??
           truncate(team.name['en'], maxLen) ??
           team.code ??
@@ -110,7 +128,8 @@ function arabicCompactName(team: TeamLike): string | null {
 export function getScoreCardLabel(team: TeamLike | null, locale: string): string {
   if (!team) return '—';
   if (locale === 'ar') {
-    const ar = team.shortName['ar'] ?? team.name['ar'] ?? arabicCompactName(team);
+    const ar =
+      arabicOnly(team.shortName['ar']) ?? arabicCompactName(team) ?? arabicOnly(team.name['ar']);
     if (ar) return ar;
   }
   return (
@@ -119,6 +138,11 @@ export function getScoreCardLabel(team: TeamLike | null, locale: string): string
     team.shortName['en'] ??
     (team.name[locale] ?? team.name['en'] ?? '—').slice(0, 3).toUpperCase()
   );
+}
+
+/** The value when it contains Arabic letters, else undefined (Latin copies don't count). */
+export function arabicOnly(value: string | null | undefined): string | undefined {
+  return value && /[\u0600-\u06FF]/.test(value) ? value : undefined;
 }
 
 function truncate(value: string | undefined, maxLen: number): string | null {

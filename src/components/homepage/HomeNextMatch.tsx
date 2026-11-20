@@ -12,6 +12,8 @@ import { matchHref } from '@/lib/seo/match-slug';
 import Image from 'next/image';
 import { Flag } from '@/components/shared/Flag';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { localizeContextLabel, localizeMatchStatus, versusUpper } from '@/lib/i18n/feed-labels';
 
 interface Props {
   /** Server-ranked candidate list. Client picks first whose patched status isn't finished. */
@@ -59,7 +61,11 @@ export function HomeNextMatch({ candidates, locale, liveOnly = false, labels }: 
 
   const homeName = getTeamDisplayName(match.homeTeam, locale);
   const awayName = getTeamDisplayName(match.awayTeam, locale);
-  const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
+  const compName =
+    arabicCompetitionName(match.competition, locale) ??
+    match.competition.name[locale] ??
+    match.competition.name['en'] ??
+    '';
   const patch = livePatches.get(match.id);
   const statusCode = effectiveStatus(match);
   // Patch presence is authoritative: its minute is taken even when null (BT/HT/P phases),
@@ -91,12 +97,12 @@ export function HomeNextMatch({ candidates, locale, liveOnly = false, labels }: 
           <span className="flex items-center gap-1 rounded-full bg-score-live/10 px-2 py-0.5 text-[11px] font-bold text-score-live">
             <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
             {statusCode === 'HT'
-              ? 'HT'
+              ? localizeMatchStatus('HT', locale)
               : minute != null
                 ? `${minute}'`
                 : statusCode === 'P'
-                  ? 'PEN'
-                  : statusCode}
+                  ? localizeMatchStatus('PEN', locale)
+                  : localizeMatchStatus(statusCode, locale)}
           </span>
         )}
       </div>
@@ -114,7 +120,7 @@ export function HomeNextMatch({ candidates, locale, liveOnly = false, labels }: 
             />
           )}
           <span className="truncate">{compName}</span>
-          {match.contextLabel && <span> · {match.contextLabel}</span>}
+          {match.contextLabel && <span> · {localizeContextLabel(match.contextLabel, locale)}</span>}
         </div>
 
         {/* Kickoff time for upcoming */}
@@ -148,7 +154,7 @@ export function HomeNextMatch({ candidates, locale, liveOnly = false, labels }: 
                 {homeScore ?? 0} - {awayScore ?? 0}
               </p>
             ) : (
-              <p className="text-lg font-semibold text-text-tertiary">VS</p>
+              <p className="text-lg font-semibold text-text-tertiary">{versusUpper(locale)}</p>
             )}
           </div>
 

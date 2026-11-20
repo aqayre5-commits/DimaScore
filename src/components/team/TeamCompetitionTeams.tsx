@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { CompetitionTeamTile } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 import { Flag } from '@/components/shared/Flag';
+import { arabicTeamName } from '@/lib/i18n/localized-names';
 
 interface TeamCompetitionTeamsProps {
   teams: CompetitionTeamTile[];
@@ -38,6 +39,7 @@ export function TeamCompetitionTeams({
         {teams.map((team) => {
           const isHighlighted = team.id === highlightTeamId;
           const name =
+            arabicTeamName(team, locale) ??
             team.shortName[locale] ??
             team.shortName['en'] ??
             team.name[locale] ??

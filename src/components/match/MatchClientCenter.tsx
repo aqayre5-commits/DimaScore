@@ -138,7 +138,7 @@ export function MatchClientCenter({
             className="scroll-mt-[calc(var(--app-sticky-offset)_+_3.5rem)]"
           >
             <SectionHeader label={t('stats')} />
-            <StatsBars homeStats={homeStatData} awayStats={awayStatData} />
+            <StatsBars homeStats={homeStatData} awayStats={awayStatData} locale={locale} />
           </section>
         )}
 

@@ -4,6 +4,7 @@ import type { BestThirdRow } from '@/lib/standings/best-third';
 import type { Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
 import { FormPills } from '@/components/shared/FormPills';
+import { arabicTeamName } from '@/lib/i18n/localized-names';
 
 interface BestThirdTableProps {
   rows: BestThirdRow[];
@@ -67,7 +68,8 @@ export function BestThirdTable({ rows, locale, qualifiedCount }: BestThirdTableP
           {rows.map((row) => {
             const teamName = preTournament
               ? '\u2014'
-              : (row.team?.name[locale] ??
+              : (arabicTeamName(row.team, locale) ??
+                row.team?.name[locale] ??
                 row.team?.name['en'] ??
                 row.team?.shortName[locale] ??
                 row.team?.code ??

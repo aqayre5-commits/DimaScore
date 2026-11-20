@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedCountry, NormalizedLeague } from '@/lib/data/types';
@@ -90,7 +91,7 @@ export async function syncCountries(
         .values(row)
         .onConflictDoUpdate({
           target: schema.countries.code,
-          set: { name: row.name, flagUrl: row.flagUrl },
+          set: { name: sql`${schema.countries.name} || excluded.name`, flagUrl: row.flagUrl },
         });
       // neon-http returns NeonQueryResultHKT; count rows affected
       const affected = (result as unknown as { rowCount: number }).rowCount ?? 1;
@@ -130,7 +131,8 @@ export async function syncCompetitionsWithSeasons(
           target: schema.competitions.id,
           set: {
             slug: compRow.slug,
-            name: compRow.name,
+            // Merge so the seeded name.ar/fr survives the feed's en-only name.
+            name: sql`${schema.competitions.name} || excluded.name`,
             countryCode: compRow.countryCode,
             type: compRow.type,
             tier: compRow.tier,

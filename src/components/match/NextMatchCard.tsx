@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { arabicCompetitionName, arabicTeamName } from '@/lib/i18n/localized-names';
 import { LocalTime } from '@/components/shared/LocalTime';
 import type { NextFixture } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
@@ -112,8 +113,24 @@ function TeamNextCard({
   locale: Locale;
 }) {
   const teamName = getTeamDisplayName(team, locale);
-  const opponentName = fixture.opponentName[locale] ?? fixture.opponentName['en'] ?? 'TBD';
-  const compName = fixture.competitionName[locale] ?? fixture.competitionName['en'] ?? '';
+  const opponentName =
+    arabicTeamName(
+      {
+        id: fixture.opponentId,
+        name: fixture.opponentName,
+        countryCode: fixture.opponentCountryCode,
+        isNational: fixture.opponentIsNational,
+      },
+      locale,
+    ) ??
+    fixture.opponentName[locale] ??
+    fixture.opponentName['en'] ??
+    'TBD';
+  const compName =
+    arabicCompetitionName({ id: fixture.competitionId, name: fixture.competitionName }, locale) ??
+    fixture.competitionName[locale] ??
+    fixture.competitionName['en'] ??
+    '';
 
   // Home team on the left (standard order). The subject team is home iff fixture.isHome.
   const subject = { name: teamName, logo: team.logoUrl, side: 'home' as const };
@@ -144,7 +161,9 @@ function TeamNextCard({
       >
         <div className="flex items-center gap-3 text-sm">
           <TeamSide name={left.name} logo={left.logo} side="home" />
-          <span className="shrink-0 text-xs font-medium text-text-tertiary">vs</span>
+          <span className="shrink-0 text-xs font-medium text-text-tertiary">
+            {locale === 'ar' ? 'ضد' : 'vs'}
+          </span>
           <TeamSide name={right.name} logo={right.logo} side="away" />
         </div>
         <p className="mt-2 text-center text-xs tabular-nums text-text-tertiary">

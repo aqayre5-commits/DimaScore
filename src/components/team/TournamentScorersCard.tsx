@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import type { TournamentScorers, TournamentScorerRow } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 interface TournamentScorersCardProps {
   data: TournamentScorers | null;
@@ -58,7 +59,11 @@ function ScorerSection({ title, rows }: { title: string; rows: TournamentScorerR
 export async function TournamentScorersCard({ data, locale }: TournamentScorersCardProps) {
   if (!data) return null;
   const t = await getTranslations({ locale, namespace: 'teamPage' });
-  const compName = data.competitionName[locale] ?? data.competitionName['en'] ?? '';
+  const compName =
+    arabicCompetitionName({ name: data.competitionName }, locale) ??
+    data.competitionName[locale] ??
+    data.competitionName['en'] ??
+    '';
   const empty = data.scorers.length === 0 && data.assisters.length === 0;
 
   return (

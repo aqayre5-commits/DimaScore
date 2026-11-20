@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedTeam, NormalizedVenue } from '@/lib/data/types';
@@ -81,8 +82,10 @@ export async function syncTeams(
           target: schema.teams.id,
           set: {
             slug: teamRow.slug,
-            name: teamRow.name,
-            shortName: teamRow.shortName,
+            // Merge, don't replace: the feed only sends `en`, so a plain overwrite would wipe the
+            // fr/ar names seeded in the DB (scripts/seed-ar-names-2026-11.sql) on every sync.
+            name: sql`${schema.teams.name} || excluded.name`,
+            shortName: sql`${schema.teams.shortName} || excluded.short_name`,
             code: teamRow.code,
             countryCode: teamRow.countryCode,
             founded: teamRow.founded,

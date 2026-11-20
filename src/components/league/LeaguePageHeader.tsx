@@ -7,6 +7,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { formatSeason } from '@/lib/utils/date';
 import type { CompetitionRecord } from '@/lib/db/queries/league';
 import Image from 'next/image';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 /** Curated high-res logos override the low-res API-Football PNGs. */
 const CURATED_LOGOS: Record<number, string> = {
@@ -78,7 +79,11 @@ export function LeaguePageHeader({
   const pathname = usePathname();
   const t = useTranslations('leaguePage');
   const name =
-    displayName ?? competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+    displayName ??
+    arabicCompetitionName(competition, locale) ??
+    competition.name[locale] ??
+    competition.name['en'] ??
+    competition.slug;
   const logoSrc = CURATED_LOGOS[competition.id] ?? competition.logoUrl;
   const needsInvert = DARK_LOGOS.has(competition.id);
 

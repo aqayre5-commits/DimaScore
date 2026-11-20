@@ -11,6 +11,8 @@ import { matchHref } from '@/lib/seo/match-slug';
 import { Flag } from '@/components/shared/Flag';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { localizeMatchStatus, localizeRound } from '@/lib/i18n/feed-labels';
 
 interface Props {
   groups: TopMatchDateGroup[];
@@ -68,7 +70,11 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
               const showPens = statusCode === 'PEN' && homeScorePen != null && awayScorePen != null;
               const homeName = getTeamDisplayName(f.homeTeam, locale);
               const awayName = getTeamDisplayName(f.awayTeam, locale);
-              const compName = f.competition.name[locale] ?? f.competition.name['en'] ?? '';
+              const compName =
+                arabicCompetitionName(f.competition, locale) ??
+                f.competition.name[locale] ??
+                f.competition.name['en'] ??
+                '';
               const preview = previewFromFixtureRow({
                 homeTeam: f.homeTeam,
                 awayTeam: f.awayTeam,
@@ -99,20 +105,22 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                       <span className="flex items-center gap-1 font-bold text-score-live">
                         <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
                         {statusCode === 'HT'
-                          ? 'HT'
+                          ? localizeMatchStatus('HT', locale)
                           : minute != null
                             ? `${minute}'`
                             : statusCode === 'P'
-                              ? 'PEN'
-                              : statusCode}
+                              ? localizeMatchStatus('PEN', locale)
+                              : localizeMatchStatus(statusCode, locale)}
                       </span>
                     ) : isFinished ? (
                       <span className="flex flex-col leading-tight">
                         <span className="font-medium text-text-tertiary">
-                          {statusCode === 'AET' ? 'AET' : 'FT'}
+                          {localizeMatchStatus(statusCode === 'AET' ? 'AET' : 'FT', locale)}
                         </span>
                         {showPens && (
-                          <span className="text-[9px] font-semibold text-text-tertiary">PEN</span>
+                          <span className="text-[9px] font-semibold text-text-tertiary">
+                            {localizeMatchStatus('PEN', locale)}
+                          </span>
                         )}
                       </span>
                     ) : (
@@ -155,7 +163,7 @@ export function HomeTopMatches({ groups, locale, labels }: Props) {
                     </span>
                     {(f.groupLabel ?? f.round) && (
                       <span className="truncate text-[10px] text-text-tertiary max-w-[80px]">
-                        {f.groupLabel ?? f.round}
+                        {localizeRound(f.groupLabel ?? f.round, locale)}
                       </span>
                     )}
                   </div>

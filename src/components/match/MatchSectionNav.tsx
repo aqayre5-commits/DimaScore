@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface Section {
   id: string;
@@ -19,6 +20,7 @@ function getChromeOffset(): number {
 }
 
 export function MatchSectionNav({ sections }: MatchSectionNavProps) {
+  const tMatch = useTranslations('matchDetail');
   const [activeId, setActiveId] = useState(sections[0]?.id ?? '');
   const navRef = useRef<HTMLElement>(null);
 
@@ -60,7 +62,7 @@ export function MatchSectionNav({ sections }: MatchSectionNavProps) {
   return (
     <nav
       ref={navRef}
-      aria-label="Match sections"
+      aria-label={tMatch('sectionsNav')}
       className="sticky top-[var(--app-sticky-offset)] z-30 overflow-hidden rounded-xl border border-border-subtle bg-bg-surface/95 backdrop-blur-sm"
     >
       <div className="flex">

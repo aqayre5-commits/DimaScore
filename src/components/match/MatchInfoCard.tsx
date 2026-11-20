@@ -6,6 +6,7 @@ import type { MatchDetail } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { LocalTime } from '@/components/shared/LocalTime';
+import { localizeRound } from '@/lib/i18n/feed-labels';
 
 interface MatchInfoCardProps {
   match: MatchDetail;
@@ -106,7 +107,7 @@ export function MatchInfoCard({ match, locale, competitionHref }: MatchInfoCardP
     rows.push({
       icon: Shield,
       label: t('round'),
-      value: match.groupLabel ?? match.round,
+      value: localizeRound(match.groupLabel ?? match.round, locale),
     });
   }
 
