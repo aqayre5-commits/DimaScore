@@ -95,7 +95,7 @@ The harness rejects, at the tool-call layer:
 - Any write to `.env*`, `.git/`, `.claude/`, `CURRENT_PHASE.md`, `CLAUDE.md`, or the master plan
 - Any write without a fresh user approval token (< 30 minutes old)
 - Any second write within 5 seconds of the previous one (parallel writes)
-- `npm`, `yarn`, `git push`, `git reset --hard`, `git commit`, `sudo`, `chmod 777`
+- `npm`, `yarn`, `git reset --hard`, `git commit`, `sudo`, `chmod 777`
 - Any write that doesn't reference the active phase
 
 These are enforced by `.claude/hooks/*.sh`, not just by instructions. The model cannot work around them.
