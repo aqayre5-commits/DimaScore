@@ -9,6 +9,7 @@ import {
   findEntryByCompetitionId,
   type MegaMenuEntry,
 } from '@/lib/constants/competitions-mega-menu';
+import { SOCIAL_LINKS } from '@/lib/constants/social-links';
 
 // Inline SVG social icons (16x16, stroke style matching Lucide conventions)
 
@@ -28,72 +29,9 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
-function InstagramIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect x="2" y="2" width="12" height="12" rx="3" />
-      <circle cx="8" cy="8" r="3" />
-      <circle cx="11.5" cy="4.5" r="0.5" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function YoutubeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect x="1" y="3" width="14" height="10" rx="3" />
-      <path d="M6.5 6v4l3.5-2z" />
-    </svg>
-  );
-}
-
-function TiktokIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M10 2v8a4 4 0 1 1-3-3.87" />
-      <path d="M10 2a4 4 0 0 0 4 4" />
-    </svg>
-  );
-}
-
-// Confirmed official DimaScore account.
-const CONFIRMED_SOCIAL_LINKS = [
-  { Icon: XIcon, href: 'https://x.com/DimaScoreMa', label: 'X' },
-] as const;
-
-// UNCONFIRMED: these @dimascore handles have not been confirmed as DimaScore's own accounts,
-// so they are intentionally NOT rendered. Move an entry into CONFIRMED_SOCIAL_LINKS once confirmed.
-export const UNCONFIRMED_SOCIAL_LINKS = [
-  { Icon: InstagramIcon, href: 'https://instagram.com/dimascore', label: 'Instagram' },
-  { Icon: YoutubeIcon, href: 'https://youtube.com/@dimascore', label: 'YouTube' },
-  { Icon: TiktokIcon, href: 'https://tiktok.com/@dimascore', label: 'TikTok' },
-] as const;
-
-const socialLinks = CONFIRMED_SOCIAL_LINKS;
+// Only the owner's verified accounts (src/lib/constants/social-links.ts); each one needs an icon here.
+const SOCIAL_ICONS = { x: XIcon } as const;
+const socialLinks = SOCIAL_LINKS.map((l) => ({ ...l, Icon: SOCIAL_ICONS[l.network] }));
 
 // Coverage columns — titleKey is a `megaMenu` i18n key; ids resolve to canonical localized
 // competition entries via the mega-menu (single source of truth for slugs), so links never drift.
