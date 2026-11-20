@@ -7,7 +7,7 @@ import {
   teamIndexableSitemapCondition,
   matchIndexableSitemapCondition,
 } from '@/lib/seo/indexable';
-import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
+import { locales, type Locale } from '@/lib/i18n/config';
 import { ALL_ENTRIES, buildCompetitionHref } from '@/lib/constants/competitions-mega-menu';
 import { BASE_URL } from '@/lib/constants/site';
 import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
@@ -72,22 +72,32 @@ function toDate(v: unknown): Date | undefined {
   return Number.isNaN(d.getTime()) ? undefined : d;
 }
 
-/** One <url> per page (default-locale loc) with every locale + x-default as hreflang alternates. */
+/**
+ * One <url> per locale (fr, en, ar), each with reciprocal hreflang alternates and
+ * x-default on the English URL. lastModified is the caller's data timestamp, shared
+ * by the three locs — never "now".
+ *
+ * Match URLs use matchIndexableSitemapCondition, the same SQL as robots.index.
+ * A finished match older than FINISHED_MATCH_MAX_AGE_MONTHS is included only when
+ * it is on the allow-list and has events or lineups. The page still returns 200.
+ */
 export function entry(
   pathFor: (locale: Locale) => string,
   opts: { priority: number; changeFrequency: ChangeFreq; lastModified?: Date },
-): Entry {
+): Entry[] {
   const languages: Record<string, string> = {};
   for (const loc of locales) languages[loc] = `${baseUrl}${pathFor(loc)}`;
-  languages['x-default'] = `${baseUrl}${pathFor(defaultLocale)}`;
-  const e: Entry = {
-    url: `${baseUrl}${pathFor(defaultLocale)}`,
-    changeFrequency: opts.changeFrequency,
-    priority: opts.priority,
-    alternates: { languages },
-  };
-  if (opts.lastModified) e.lastModified = opts.lastModified;
-  return e;
+  languages['x-default'] = `${baseUrl}${pathFor('en')}`;
+  return locales.map((loc) => {
+    const e: Entry = {
+      url: `${baseUrl}${pathFor(loc)}`,
+      changeFrequency: opts.changeFrequency,
+      priority: opts.priority,
+      alternates: { languages },
+    };
+    if (opts.lastModified) e.lastModified = opts.lastModified;
+    return e;
+  });
 }
 
 async function rows<T>(query: SQL): Promise<T[]> {
@@ -176,7 +186,7 @@ async function staticEntries(): Promise<Entry[]> {
 
   const out: Entry[] = [];
   out.push(
-    entry((l) => `/${l}`, { priority: 1.0, changeFrequency: 'daily', lastModified: global }),
+    ...entry((l) => `/${l}`, { priority: 1.0, changeFrequency: 'daily', lastModified: global }),
   );
 
   const tierMap = new Map<number, number>();
@@ -192,7 +202,7 @@ async function staticEntries(): Promise<Entry[]> {
     const e = ALL_ENTRIES.find((x) => x.competitionId === id);
     if (!e) continue;
     out.push(
-      entry((l) => encodePath(buildCompetitionHref(e, l)), {
+      ...entry((l) => encodePath(buildCompetitionHref(e, l)), {
         priority: tierMap.get(id) ?? 0.8,
         changeFrequency: 'daily',
         lastModified: comp.get(id),
@@ -201,7 +211,7 @@ async function staticEntries(): Promise<Entry[]> {
   }
 
   out.push(
-    entry((l) => `/${l}/equipe/${FEATURED_TEAM_SLUG}`, {
+    ...entry((l) => `/${l}/equipe/${FEATURED_TEAM_SLUG}`, {
       priority: 0.95,
       changeFrequency: 'weekly',
       lastModified: toDate(moroccoLm[0]?.lm),
@@ -210,7 +220,7 @@ async function staticEntries(): Promise<Entry[]> {
   for (const r of STATIC_ROUTES) {
     const live = r.path === 'lions-abroad' || r.path === 'edition/maroc';
     out.push(
-      entry((l) => `/${l}/${r.path}`, {
+      ...entry((l) => `/${l}/${r.path}`, {
         priority: r.priority,
         changeFrequency: r.changeFrequency,
         lastModified: live ? global : undefined,
@@ -218,22 +228,22 @@ async function staticEntries(): Promise<Entry[]> {
     );
   }
   out.push(
-    entry((l) => botolaSeasonOpenerPath(l), {
+    ...entry((l) => botolaSeasonOpenerPath(l), {
       priority: 0.9,
       changeFrequency: 'daily',
       lastModified: botolaPro,
     }),
-    entry((l) => botolaClassementPath(l), {
+    ...entry((l) => botolaClassementPath(l), {
       priority: 0.9,
       changeFrequency: 'hourly',
       lastModified: botolaPro,
     }),
-    entry((l) => botola2ClassementPath(l), {
+    ...entry((l) => botola2ClassementPath(l), {
       priority: 0.9,
       changeFrequency: 'hourly',
       lastModified: botola2,
     }),
-    entry((l) => botolaMatchsPath(l), {
+    ...entry((l) => botolaMatchsPath(l), {
       priority: 0.9,
       changeFrequency: 'hourly',
       lastModified: botolaPro,
@@ -252,7 +262,7 @@ async function teamEntries(page: number): Promise<Entry[]> {
       LIMIT ${CHUNK_SIZE} OFFSET ${page * CHUNK_SIZE}`),
     getTeamLastmodMap(),
   ]);
-  return list.map((t) =>
+  return list.flatMap((t) =>
     entry((l) => `/${l}/equipe/${encodeURIComponent(t.slug)}`, {
       priority: 0.7,
       changeFrequency: 'weekly',
@@ -271,7 +281,7 @@ async function playerEntries(page: number): Promise<Entry[]> {
       LIMIT ${CHUNK_SIZE} OFFSET ${page * CHUNK_SIZE}`),
     getTeamLastmodMap(),
   ]);
-  return list.map((p) =>
+  return list.flatMap((p) =>
     entry((l) => `/${l}/joueur/${encodeURIComponent(p.slug)}`, {
       priority: 0.6,
       changeFrequency: 'weekly',
@@ -297,7 +307,7 @@ async function matchEntries(month: string, page: number): Promise<Entry[]> {
       AND ${matchIndexableSitemapCondition}
     ORDER BY fixtures.id
     LIMIT ${CHUNK_SIZE} OFFSET ${page * CHUNK_SIZE}`);
-  return list.map((m) => {
+  return list.flatMap((m) => {
     const slug = buildMatchSlug(m.home_slug, m.away_slug, Number(m.id));
     return entry((l) => `/${l}/match/${slug}`, {
       priority: 0.5,

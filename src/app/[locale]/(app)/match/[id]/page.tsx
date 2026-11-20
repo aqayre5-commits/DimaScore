@@ -172,8 +172,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   // Slug+ID canonical (Latin, identical across locales); the bare-id request 301s to this.
   const matchSlug = buildMatchSlug(match.homeTeam?.slug, match.awayTeam?.slug, fixtureId);
   const canonical = `${BASE_URL}/${locale}/match/${matchSlug}`;
-  // Index policy (src/lib/seo/indexable.ts): featured comps any age; else senior non-youth games
-  // with data that are top-tier & recent, Morocco, or national A sides. Same SQL as the sitemap.
+  // Index policy (src/lib/seo/indexable.ts): same SQL as the sitemap. A finished match older
+  // than FINISHED_MATCH_MAX_AGE_MONTHS is noindex, follow unless it is allow-listed and has data.
   const indexable = await isMatchIndexable(db, fixtureId, match.competition.id);
 
   return {
