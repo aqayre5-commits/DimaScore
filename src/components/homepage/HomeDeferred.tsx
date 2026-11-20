@@ -26,9 +26,11 @@ async function getCachedSecondaryHomepage(locale: Locale) {
 interface SecondaryTabsProps {
   locale: Locale;
   primary: { live: HomeFixture[]; upcoming: HomeFixture[]; results: HomeFixture[] };
+  /** Snapshot time from the page's cached data (see useRenderNow). */
+  now: number;
 }
 
-export async function HomeSecondaryMatchTabs({ locale, primary }: SecondaryTabsProps) {
+export async function HomeSecondaryMatchTabs({ locale, primary, now }: SecondaryTabsProps) {
   const t = await getTranslations({ locale, namespace: 'homepage' });
   const { secondary } = await getCachedSecondaryHomepage(locale);
   const labels = {
@@ -52,6 +54,7 @@ export async function HomeSecondaryMatchTabs({ locale, primary }: SecondaryTabsP
       upcoming={[...primary.upcoming, ...secondary.upcoming]}
       results={[...primary.results, ...secondary.results]}
       locale={locale}
+      now={now}
       labels={labels}
     />
   );

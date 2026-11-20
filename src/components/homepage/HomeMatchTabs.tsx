@@ -19,6 +19,7 @@ import { matchHref } from '@/lib/seo/match-slug';
 import { CompetitionLogo } from '@/components/shared/Logo';
 import { Flag } from '@/components/shared/Flag';
 import { useMounted } from '@/hooks/useMounted';
+import { useRenderNow } from '@/hooks/useRenderNow';
 import { useLiveFixtures, type LiveFixturePatch } from '@/hooks/useLiveFixtures';
 import { useFollows } from '@/hooks/useFollows';
 import { FollowStar } from '@/components/shared/FollowStar';
@@ -30,6 +31,8 @@ interface Props {
   upcoming: HomeFixture[];
   results: HomeFixture[];
   locale: Locale;
+  /** Server time (epoch ms, from getCachedNow) used until mount; see useRenderNow. */
+  now: number;
   labels: {
     all: string;
     live: string;
@@ -50,13 +53,15 @@ interface Props {
 function MatchRow({
   fixture,
   locale,
+  now,
   enablePrefetch,
 }: {
   fixture: HomeFixture;
   locale: string;
+  now: Date;
   enablePrefetch?: boolean;
 }) {
-  const state = getMatchState(fixture.statusCode, fixture.kickoffAt);
+  const state = getMatchState(fixture.statusCode, fixture.kickoffAt, now);
   const isLive = state === 'live';
   const isFinished = state === 'finished';
   const isInterrupted = state === 'interrupted';
@@ -260,9 +265,13 @@ function applyLivePatches(
  *  displayPriority (lower = more important, so World Cup / Botola / top leagues lead and
  *  friendlies sink), then earliest kickoff; within a group: live, then upcoming (soonest),
  *  then results (newest first). */
-function groupByCompetition(fixtures: HomeFixture[], followedComps?: Set<number>): HomeFixture[] {
+function groupByCompetition(
+  fixtures: HomeFixture[],
+  now: Date,
+  followedComps?: Set<number>,
+): HomeFixture[] {
   const rank = (f: HomeFixture) => {
-    const s = getMatchState(f.statusCode, f.kickoffAt);
+    const s = getMatchState(f.statusCode, f.kickoffAt, now);
     return s === 'live' ? 0 : s === 'upcoming' ? 1 : 2;
   };
   const sortWithin = (a: HomeFixture, b: HomeFixture) => {
@@ -316,6 +325,7 @@ function collapseByCompetition(fixtures: HomeFixture[]): HomeFixture[] {
 function renderGroupedRows(
   list: HomeFixture[],
   locale: string,
+  now: Date,
   timeZone?: string,
 ): React.ReactNode[] {
   const elements: React.ReactNode[] = [];
@@ -359,7 +369,7 @@ function renderGroupedRows(
     }
     elements.push(
       <div key={f.id} className="border-b border-border-subtle last:border-b-0">
-        <MatchRow fixture={f} locale={locale} enablePrefetch={matchIdx < 3} />
+        <MatchRow fixture={f} locale={locale} now={now} enablePrefetch={matchIdx < 3} />
       </div>,
     );
     matchIdx++;
@@ -367,7 +377,7 @@ function renderGroupedRows(
   return elements;
 }
 
-export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props) {
+export function HomeMatchTabs({ live, upcoming, results, locale, now: serverNow, labels }: Props) {
   type Tab = 'all' | 'live' | 'upcoming' | 'results';
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [dateOffset, setDateOffset] = useState(0);
@@ -376,7 +386,11 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const tHome = useTranslations('homepage');
 
   // Selected date in the viewer's local zone (matches the viewer-local labels/separators).
-  const today = new Date();
+  // Server time until mount, then the viewer's clock (reading the clock while the server renders
+  // would pull the whole home page out of the prerendered HTML; see useRenderNow).
+  const nowMs = useRenderNow(serverNow);
+  const now = new Date(nowMs);
+  const today = new Date(nowMs);
   const selectedDate = new Date(today);
   selectedDate.setDate(today.getDate() + dateOffset);
 
@@ -400,15 +414,17 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
   const livePatches = useLiveFixtures();
   const patchedAll = applyLivePatches([...live, ...upcoming, ...results], livePatches);
   // Global "live now", independent of the selected day — the Live tab always means "live now".
-  const globalLive = patchedAll.filter((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
+  const globalLive = patchedAll.filter(
+    (f) => getMatchState(f.statusCode, f.kickoffAt, now) === 'live',
+  );
   // Fixed zone until mount so the server HTML and the hydration pass agree (see isSameDay).
   const dayTz = mounted ? undefined : SITE_TZ;
   const dayFixtures = patchedAll.filter((f) => isSameDay(f.kickoffAt, selectedDate, dayTz));
   const dayUpcoming = dayFixtures.filter(
-    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming',
+    (f) => getMatchState(f.statusCode, f.kickoffAt, now) === 'upcoming',
   );
   const dayResults = dayFixtures.filter((f) => {
-    const s = getMatchState(f.statusCode, f.kickoffAt);
+    const s = getMatchState(f.statusCode, f.kickoffAt, now);
     // Interrupted (postponed/abandoned/…) count under Results so All = Live + Upcoming + Results.
     return s === 'finished' || s === 'interrupted';
   });
@@ -422,10 +438,10 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
 
   // Each tab grouped by competition — one divider per competition, no recurring headers.
   const matchesByTab: Record<Tab, HomeFixture[]> = {
-    all: groupByCompetition(dayFixtures, followedComps),
-    live: groupByCompetition(globalLive, followedComps),
-    upcoming: groupByCompetition(dayUpcoming, followedComps),
-    results: groupByCompetition(dayResults, followedComps),
+    all: groupByCompetition(dayFixtures, now, followedComps),
+    live: groupByCompetition(globalLive, now, followedComps),
+    upcoming: groupByCompetition(dayUpcoming, now, followedComps),
+    results: groupByCompetition(dayResults, now, followedComps),
   };
   const fixtures = matchesByTab[activeTab];
 
@@ -469,13 +485,14 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
     followedComps.has(f.competition.id);
   const showYourGroup = mounted && activeTab === 'all' && effectiveComp === null;
   const yourGrouped = showYourGroup
-    ? groupByCompetition(dayFixtures.filter(isYours), followedComps)
+    ? groupByCompetition(dayFixtures.filter(isYours), now, followedComps)
     : [];
 
   const baseFixtures =
     yourGrouped.length > 0
       ? groupByCompetition(
           dayFixtures.filter((f) => !isYours(f)),
+          now,
           followedComps,
         )
       : fixtures;
@@ -648,11 +665,11 @@ export function HomeMatchTabs({ live, upcoming, results, locale, labels }: Props
                     {labels.yourMatches}
                   </span>
                 </div>
-                {renderGroupedRows(yourGrouped, locale, dayTz)}
+                {renderGroupedRows(yourGrouped, locale, now, dayTz)}
               </>
             )}
             {displayed.length > 0
-              ? renderGroupedRows(displayed, locale, dayTz)
+              ? renderGroupedRows(displayed, locale, now, dayTz)
               : yourGrouped.length === 0 && (
                   <div className="px-4 py-8 text-center text-sm text-text-tertiary">
                     {patchedAll.length === 0

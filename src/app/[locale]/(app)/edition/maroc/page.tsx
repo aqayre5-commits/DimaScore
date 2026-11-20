@@ -12,6 +12,7 @@ import { HomeLionsAbroad } from '@/components/homepage/HomeLionsAbroad';
 import { HomeStandingsMini } from '@/components/homepage/HomeStandingsMini';
 import { HomeTopScorers } from '@/components/homepage/HomeTopScorers';
 import { db } from '@/lib/db/client';
+import { getCachedNow } from '@/lib/cached-now';
 import { getStandings, getCurrentSeasons } from '@/lib/db/queries';
 import {
   getHomeMatchesByCategory,
@@ -121,6 +122,7 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
   const t = await getTranslations({ locale, namespace: 'homepage' });
 
   const currentSeasons = await getCurrentSeasons(db);
+  const now = await getCachedNow();
   const seasonMap = new Map(currentSeasons.map((s) => [s.competitionId, s.year]));
 
   const [
@@ -201,6 +203,7 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
             upcoming={matchesByCategory.upcoming}
             results={matchesByCategory.results}
             locale={typedLocale}
+            now={now}
             labels={matchTabLabels}
           />
           <HomeTrendingPlayers

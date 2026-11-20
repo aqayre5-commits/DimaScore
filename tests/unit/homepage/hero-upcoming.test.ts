@@ -71,7 +71,9 @@ const labels = {
 
 async function render(matches: HomeFixture[]) {
   const { HomeFeatured } = await import('@/components/homepage/HomeFeatured');
-  return renderToStaticMarkup(createElement(HomeFeatured, { matches, locale: 'en', labels }));
+  return renderToStaticMarkup(
+    createElement(HomeFeatured, { matches, locale: 'en', now: Date.now(), labels }),
+  );
 }
 
 describe('home hero card: upcoming only', () => {
