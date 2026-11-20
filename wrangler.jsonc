@@ -24,6 +24,6 @@
     "DB_READ_ONLY": "1"
   },
   // Vercel crons (vercel.json, UTC) are mapped in cf/worker.ts CRONS. OFF until the cron handover step;
-  // then: ["0 3 * * *","15 3 * * *","0,30 * * * *","15,45 * * * *","0 5 * * *","*/15 * * * *","0 4 * * SUN"]
+  // then: ["0 3 * * *","15 3 * * *","0,30 * * * *","15,45 * * * *","0 5 * * *","*/15 * * * *","5,20,35,50 * * * *","0 4 * * SUN"]
   "triggers": { "crons": [] }
 }

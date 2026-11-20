@@ -6,6 +6,48 @@ import { runWrites } from '@/lib/db/client';
 import type { SyncStats } from './types';
 import { parseRoundNumber } from './round';
 import { slugify } from './slug';
+import { getTableColumns, sql, type SQL } from 'drizzle-orm';
+import type { PgTable } from 'drizzle-orm/pg-core';
+
+/** Rows per multi-row INSERT (keeps each statement well under Postgres' 65,535 bind-parameter limit). */
+const WRITE_CHUNK = 200;
+
+/** Columns refreshed on conflict — the same set the per-row upsert used. */
+const FIXTURE_UPDATE_COLUMNS = [
+  'competitionId',
+  'seasonYear',
+  'round',
+  'roundNumber',
+  'kickoffAt',
+  'statusCode',
+  'minute',
+  'homeTeamId',
+  'awayTeamId',
+  'homeScore',
+  'awayScore',
+  'homeScoreHt',
+  'awayScoreHt',
+  'homeScoreFt',
+  'awayScoreFt',
+  'homeScoreEt',
+  'awayScoreEt',
+  'homeScorePen',
+  'awayScorePen',
+  'venueId',
+  'referee',
+] as const;
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
+
+/** `SET col = excluded.col` for a multi-row upsert. */
+function excluded<T extends PgTable>(table: T, keys: readonly string[]): Record<string, SQL> {
+  const cols = getTableColumns(table) as Record<string, { name: string }>;
+  return Object.fromEntries(keys.map((k) => [k, sql.raw(`excluded."${cols[k].name}"`)]));
+}
 
 // ─── Mapper (exported for testing) ───
 
@@ -82,72 +124,56 @@ export async function syncFixtures(
   const inserted = 0;
   let updated = 0;
 
+  // One multi-row upsert per table per chunk instead of 3–4 single-row statements per fixture.
+  // neon-http sends every statement as its own HTTPS round trip; serially that was ~800 round trips per
+  // league; on Workers (≈0.13 s per round trip, estimated from the 20 Nov 15:00 run) that ran past
+  // the 15-minute cron wall limit.
+  // Rows are de-duplicated by id because one INSERT … ON CONFLICT DO UPDATE cannot touch a row twice.
+  const teamRows = new Map<number, typeof schema.teams.$inferInsert>();
+  const venueRows = new Map<number, typeof schema.venues.$inferInsert>();
+  const fixtureRows = new Map<number, ReturnType<typeof mapFixtureToInsert>>();
+  for (const f of fixtures) {
+    // Stub team rows before the fixture (see syncTeams); onConflictDoNothing so richer data is kept.
+    for (const t of [f.homeTeam, f.awayTeam]) {
+      if (!teamRows.has(t.id)) {
+        teamRows.set(t.id, {
+          id: t.id,
+          slug: `${slugify(t.name)}-${t.id}`,
+          name: { en: t.name } as Record<string, string>,
+          shortName: { en: t.name } as Record<string, string>,
+          logoUrl: t.logo,
+          isWomen: params.isWomen ?? false,
+        });
+      }
+    }
+    if (f.venue.id) {
+      venueRows.set(f.venue.id, { id: f.venue.id, name: f.venue.name, city: f.venue.city });
+    }
+    fixtureRows.set(f.id, mapFixtureToInsert(f));
+  }
+
   await runWrites(async (tx) => {
-    for (const f of fixtures) {
-      // Upsert stub team rows before the fixture. The fixture payload carries id/name/logo, which
-      // covers every NOT NULL column on `teams`. Without this, a club that has never been through
-      // `syncTeams` (e.g. a promoted side at season rollover) has no `teams` row and the UI renders
-      // the opponent as "—". onConflictDoNothing so the richer `syncTeams` data is never clobbered.
-      for (const t of [f.homeTeam, f.awayTeam]) {
-        await tx
-          .insert(schema.teams)
-          .values({
-            id: t.id,
-            slug: `${slugify(t.name)}-${t.id}`,
-            name: { en: t.name } as Record<string, string>,
-            shortName: { en: t.name } as Record<string, string>,
-            logoUrl: t.logo,
-            isWomen: params.isWomen ?? false,
-          })
-          .onConflictDoNothing({ target: schema.teams.id });
-      }
-
-      // Upsert venue as side-effect (match venue)
-      if (f.venue.id) {
-        await tx
-          .insert(schema.venues)
-          .values({
-            id: f.venue.id,
-            name: f.venue.name,
-            city: f.venue.city,
-          })
-          .onConflictDoUpdate({
-            target: schema.venues.id,
-            set: { name: f.venue.name, city: f.venue.city },
-          });
-      }
-
-      const row = mapFixtureToInsert(f);
+    for (const rows of chunk([...teamRows.values()], WRITE_CHUNK)) {
+      await tx.insert(schema.teams).values(rows).onConflictDoNothing({ target: schema.teams.id });
+    }
+    for (const rows of chunk([...venueRows.values()], WRITE_CHUNK)) {
+      await tx
+        .insert(schema.venues)
+        .values(rows)
+        .onConflictDoUpdate({
+          target: schema.venues.id,
+          set: excluded(schema.venues, ['name', 'city']),
+        });
+    }
+    for (const rows of chunk([...fixtureRows.values()], WRITE_CHUNK)) {
       await tx
         .insert(schema.fixtures)
-        .values(row)
+        .values(rows)
         .onConflictDoUpdate({
           target: schema.fixtures.id,
-          set: {
-            competitionId: row.competitionId,
-            seasonYear: row.seasonYear,
-            round: row.round,
-            roundNumber: row.roundNumber,
-            kickoffAt: row.kickoffAt,
-            statusCode: row.statusCode,
-            minute: row.minute,
-            homeTeamId: row.homeTeamId,
-            awayTeamId: row.awayTeamId,
-            homeScore: row.homeScore,
-            awayScore: row.awayScore,
-            homeScoreHt: row.homeScoreHt,
-            awayScoreHt: row.awayScoreHt,
-            homeScoreFt: row.homeScoreFt,
-            awayScoreFt: row.awayScoreFt,
-            homeScoreEt: row.homeScoreEt,
-            awayScoreEt: row.awayScoreEt,
-            homeScorePen: row.homeScorePen,
-            awayScorePen: row.awayScorePen,
-            venueId: row.venueId,
-            referee: row.referee,
-          },
+          set: excluded(schema.fixtures, FIXTURE_UPDATE_COLUMNS),
         });
-      updated++;
+      updated += rows.length;
     }
   });
 
