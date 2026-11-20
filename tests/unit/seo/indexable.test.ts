@@ -10,6 +10,7 @@ import {
   FINISHED_MATCH_MAX_AGE_MONTHS,
   MOROCCO_SENIOR_NATIONAL_TEAM_IDS,
   OLD_MATCH_ALLOWLIST_COMPETITION_IDS,
+  isOldMatchExempt,
   matchIndexableSitemapCondition,
   oldMatchAllowList,
   playerIndexableSitemapCondition,
@@ -133,12 +134,100 @@ describe('old finished match allow-list', () => {
     expect(OLD_MATCH_ALLOWLIST_COMPETITION_IDS).toEqual([1, 8, 6, 922]);
     expect(allow).toContain('"fixtures"."home_team_id" IN (31, 14461)');
     expect(allow).toContain('"fixtures"."away_team_id" IN (31, 14461)');
-    expect(allow).toContain('"fixtures"."competition_id" IN (1, 8, 6, 922)');
+    expect(allow).toContain('oc.id IN (1, 8, 6, 922)');
+    expect(allow).toContain(`COALESCE(oc.name->>'en', '') !~* 'qualif'`);
     expect(q).toContain(allow);
+    // Cancelled and abandoned count as finished, so an old qualifier cannot
+    // skip the allow-list via the senior-national recent rule.
+    expect(q).toContain(
+      `"fixtures"."status_code" IN ('FT', 'AET', 'PEN', 'WO', 'AWD', 'CANC', 'ABD')`,
+    );
     expect(q).toContain(
       `"fixtures"."kickoff_at" < NOW() - (12 * INTERVAL '1 month')`,
     );
     expect(q).toContain('EXISTS (SELECT 1 FROM fixture_events fe');
     expect(q).toContain('EXISTS (SELECT 1 FROM fixture_lineups fl');
+  });
+
+  it('does not exempt a qualifier, including one filed under a final-tournament id', () => {
+    // Libya v Nigeria, AFCON Qualification, 15 Oct 2024. Id 36, and the same
+    // name under id 6 (the finals id) is still a qualifier.
+    expect(
+      isOldMatchExempt({
+        homeTeamId: 1526,
+        awayTeamId: 19,
+        competitionId: 36,
+        competitionName: 'Africa Cup of Nations - Qualification',
+      }),
+    ).toBe(false);
+    expect(
+      isOldMatchExempt({
+        homeTeamId: 1526,
+        awayTeamId: 19,
+        competitionId: 6,
+        competitionName: 'Africa Cup of Nations - Qualification',
+      }),
+    ).toBe(false);
+    // Eritrea v Tanzania, WC Qualification Africa, 11 Oct 2025.
+    expect(
+      isOldMatchExempt({
+        homeTeamId: 1498,
+        awayTeamId: 1489,
+        competitionId: 29,
+        competitionName: 'World Cup - Qualification Africa',
+      }),
+    ).toBe(false);
+    expect(
+      isOldMatchExempt({
+        homeTeamId: 1498,
+        awayTeamId: 1489,
+        competitionId: 1,
+        competitionName: 'World Cup - Qualification Africa',
+      }),
+    ).toBe(false);
+  });
+
+  it('exempts a Morocco senior qualifier and the AFCON, WAFCON and World Cup finals', () => {
+    expect(
+      isOldMatchExempt({
+        homeTeamId: 31,
+        awayTeamId: 1489,
+        competitionId: 29,
+        competitionName: 'World Cup - Qualification Africa',
+      }),
+    ).toBe(true);
+    expect(
+      isOldMatchExempt({
+        homeTeamId: 1498,
+        awayTeamId: 14461,
+        competitionId: 36,
+        competitionName: 'Africa Cup of Nations - Qualification',
+      }),
+    ).toBe(true);
+    // AFCON 2025, WAFCON 2022, World Cup 2010.
+    expect(
+      isOldMatchExempt({
+        homeTeamId: 1526,
+        awayTeamId: 19,
+        competitionId: 6,
+        competitionName: 'Africa Cup of Nations',
+      }),
+    ).toBe(true);
+    expect(
+      isOldMatchExempt({
+        homeTeamId: 1526,
+        awayTeamId: 19,
+        competitionId: 922,
+        competitionName: 'Africa Cup of Nations - Women',
+      }),
+    ).toBe(true);
+    expect(
+      isOldMatchExempt({
+        homeTeamId: 1526,
+        awayTeamId: 19,
+        competitionId: 1,
+        competitionName: 'World Cup',
+      }),
+    ).toBe(true);
   });
 });
