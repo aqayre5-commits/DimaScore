@@ -17,7 +17,9 @@ const securityHeaders = [
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' https://media.api-sports.io https://media-4.api-sports.io https://i.ytimg.com https://img.youtube.com https://res.cloudinary.com data:",
-      'frame-src https://www.youtube.com',
+      // The only embed is react-lite-youtube-embed in VideoPlayerModal with cookie={false}, which
+      // frames youtube-nocookie.com. Nothing frames www.youtube.com (tests/unit/security).
+      'frame-src https://www.youtube-nocookie.com',
       `connect-src 'self'${realtimeSrc}`,
       "font-src 'self' https://fonts.gstatic.com",
     ].join('; '),
