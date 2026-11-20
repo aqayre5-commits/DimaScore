@@ -1,0 +1,24 @@
+// Shadow copy of the Railway live poller (workers/live-poller) as a Durable Object alarm loop.
+// RAILWAY-MOVE-PLAN.md step 1: workers.dev only — no routes, no custom domains.
+// Secrets (set from the Mac, piped from Railway, never printed): DATABASE_URL, API_FOOTBALL_KEY.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "dimascore-poller",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "tsconfig": "tsconfig.json",
+  "observability": { "enabled": true },
+  "vars": {
+    // shadow = read API-Football + Neon, log what it WOULD write/push; off = stop ticking.
+    "POLLER_MODE": "shadow",
+    // Every Neon query runs in a READ ONLY transaction (src/lib/db/neon-ro.ts): Postgres rejects writes.
+    "DB_READ_ONLY": "1"
+  },
+  "durable_objects": { "bindings": [{ "name": "POLLER", "class_name": "LivePoller" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LivePoller"] }],
+  // Watchdog only: re-arms the poller alarm if it is missing; never runs a tick itself.
+  "triggers": { "crons": ["* * * * *"] }
+}
