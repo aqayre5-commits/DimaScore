@@ -85,11 +85,10 @@ const CRONS: Record<string, string[]> = {
   '0,30 * * * *': ['/api/cron/fixtures-schedule'],
   '15,45 * * * *': ['/api/cron/standings'],
   '0 5 * * *': ['/api/cron/top-scorers'],
-  '*/15 * * * *': [
-    '/api/cron/fixture-details',
-    '/api/cron/live-details',
-    '/api/cron/finalize-stale',
-  ],
+  '*/15 * * * *': ['/api/cron/fixture-details', '/api/cron/live-details'],
+  // Five minutes after fixture-details/live-details, whose back-to-back burst of API-Football calls
+  // pushed finalize-stale into the per-minute 429 (seen 14:15, 14:30, 14:45 on 20 Nov).
+  '5,20,35,50 * * * *': ['/api/cron/finalize-stale'],
   // Cloudflare cron syntax: day-of-week 0 is rejected (1-7 or names), so Sunday is SUN.
   '0 4 * * SUN': ['/api/cron/squads-refresh'],
 };
