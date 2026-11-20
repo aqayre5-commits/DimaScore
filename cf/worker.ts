@@ -90,7 +90,8 @@ const CRONS: Record<string, string[]> = {
     '/api/cron/live-details',
     '/api/cron/finalize-stale',
   ],
-  '0 4 * * 0': ['/api/cron/squads-refresh'],
+  // Cloudflare cron syntax: day-of-week 0 is rejected (1-7 or names), so Sunday is SUN.
+  '0 4 * * SUN': ['/api/cron/squads-refresh'],
 };
 
 const worker = {
