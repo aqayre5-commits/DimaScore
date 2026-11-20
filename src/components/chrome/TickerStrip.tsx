@@ -18,6 +18,7 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { useMounted } from '@/hooks/useMounted';
 import type { Locale } from '@/lib/i18n/config';
 import type { FixtureStatus } from '@/lib/data/types';
+import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
 
 // Scored results the strip keeps as result cells (final score + FT/AET/PEN badge).
 const RESULT_CODES = new Set(['FT', 'AET', 'PEN']);
@@ -118,7 +119,7 @@ function MatchState({ fixture, locale }: { fixture: TickerFixture; locale: Local
           {fixture.homeScore ?? 0}&ndash;{fixture.awayScore ?? 0}
         </span>
         <span className="text-[10px] font-medium uppercase tracking-wide text-text-tertiary">
-          {fixture.statusCode === 'FT' ? 'FT' : fixture.statusCode}
+          {localizeMatchStatus(fixture.statusCode, locale)}
         </span>
       </span>
     );

@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import { KnockoutMatchCard } from './KnockoutMatchCard';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
+import { localizeRound } from '@/lib/i18n/feed-labels';
 
 interface KnockoutCardListProps {
   fixtures: FixtureWithTeams[];
@@ -71,7 +72,8 @@ export function KnockoutCardList({ fixtures, locale }: KnockoutCardListProps) {
   return (
     <div className="space-y-6">
       {orderedKeys.map((key) => {
-        const label = ROUND_LABELS[key]?.[locale] ?? byRound.get(key)![0].round ?? '';
+        const label =
+          ROUND_LABELS[key]?.[locale] ?? localizeRound(byRound.get(key)![0].round, locale);
         return (
           <section key={key}>
             <h2 className="mb-2.5 px-1 text-sm font-bold uppercase tracking-wide text-text-tertiary">

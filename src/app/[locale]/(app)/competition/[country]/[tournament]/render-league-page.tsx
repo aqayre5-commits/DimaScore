@@ -58,6 +58,7 @@ import { botolaMatchsPath } from '@/lib/seo/botola-matchs';
 import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
 import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
 import { MOROCCO_HUB_COMPETITION_IDS, hubKeyForCompetition } from '@/lib/constants/morocco-hubs';
+import { teamLabel } from '@/lib/i18n/localized-names';
 
 async function getCachedLeagueData(competitionId: number, seasonYear: number, locale: Locale) {
   'use cache';
@@ -83,8 +84,8 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number, lo
     getLeagueFixtures(db, competitionId, seasonYear),
     getResolvedTopScorers(db, competitionId, seasonYear, locale),
     getResolvedTopAssists(db, competitionId, seasonYear, locale),
-    getTopCardsForLeague(db, competitionId, seasonYear),
-    getInjuriesForCompetition(db, competitionId, seasonYear),
+    getTopCardsForLeague(db, competitionId, seasonYear, 10, locale),
+    getInjuriesForCompetition(db, competitionId, seasonYear, 30, locale),
     getCompetitionTeams(db, competitionId, seasonYear),
   ]);
   return {
@@ -326,8 +327,8 @@ export async function renderLeaguePage(
                   id: f.id,
                   kickoffAt: f.kickoffAt,
                   statusCode: f.statusCode,
-                  homeName: f.homeTeam!.name[locale] ?? f.homeTeam!.name['en'] ?? '',
-                  awayName: f.awayTeam!.name[locale] ?? f.awayTeam!.name['en'] ?? '',
+                  homeName: teamLabel(f.homeTeam, locale),
+                  awayName: teamLabel(f.awayTeam, locale),
                   homeSlug: f.homeTeam!.slug,
                   awaySlug: f.awayTeam!.slug,
                 })),

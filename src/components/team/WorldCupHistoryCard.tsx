@@ -4,6 +4,8 @@ import type { Locale } from '@/lib/i18n/config';
 import { formatMatchDate } from '@/lib/utils/date';
 import type { WorldCupResult } from '@/lib/db/queries/team-world-cup';
 import { matchHref } from '@/lib/seo/match-slug';
+import { penaltySuffix, resultLetter } from '@/lib/i18n/feed-labels';
+import { arabicOnly } from '@/lib/utils/team-name';
 
 // Self-contained content labels (same inline-locale pattern as the about/league content).
 const HEADING: Record<Locale, string> = {
@@ -49,7 +51,8 @@ export function WorldCupHistoryCard({
   results: WorldCupResult[];
   locale: Locale;
 }) {
-  const name = (n: Record<string, string>) => n[locale] ?? n['en'] ?? Object.values(n)[0] ?? '';
+  const name = (n: Record<string, string>) =>
+    (locale === 'ar' ? arabicOnly(n['ar']) : n[locale]) ?? n['en'] ?? Object.values(n)[0] ?? '';
 
   return (
     <section className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
@@ -74,7 +77,7 @@ export function WorldCupHistoryCard({
                 <span
                   className={`flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${RESULT_STYLE[r.result]}`}
                 >
-                  {r.result}
+                  {resultLetter(r.result, locale)}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 text-sm">
@@ -103,7 +106,7 @@ export function WorldCupHistoryCard({
                     )}
                     {isPen && (
                       <span className="shrink-0 text-[11px] text-text-tertiary">
-                        ({r.home.pen}-{r.away.pen} pen)
+                        {penaltySuffix(r.home.pen!, r.away.pen!, locale)}
                       </span>
                     )}
                   </div>

@@ -23,7 +23,7 @@ import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
 import { arabicTeamName } from '@/lib/i18n/localized-names';
-import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
+import { localizeMatchStatus, localizeRound } from '@/lib/i18n/feed-labels';
 
 type StatusFilter = CupStatusFilter;
 
@@ -184,7 +184,7 @@ export function CupFixturesTab({ fixtures, locale, compact }: CupFixturesTabProp
             >
               {rounds.map((r) => (
                 <option key={r.key} value={r.key}>
-                  {r.label}
+                  {localizeRound(r.label, locale)}
                 </option>
               ))}
             </select>
@@ -246,7 +246,7 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
   const showPens = statusCode === 'PEN' && homeScorePen != null && awayScorePen != null;
   // Shootout rows read "FT" with "PEN x-y" stacked beneath — the official 120' result stays
   // the headline, the shootout is the annotation.
-  const finishedLabel = statusCode === 'AET' ? 'AET' : 'FT';
+  const finishedLabel = localizeMatchStatus(statusCode === 'AET' ? 'AET' : 'FT', locale);
   const time = <LocalTime date={kickoff} locale={locale} format="time" />;
 
   const homeName = resolveFullName(homeTeam, locale);
@@ -338,7 +338,7 @@ function CupMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: L
         <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight">
           {isLive ? (
             <span className="text-sm font-bold tabular-nums text-score-live">
-              {statusCode === 'HT' ? 'HT' : statusCode === 'P' ? 'PEN' : statusCode}
+              {localizeMatchStatus(statusCode === 'P' ? 'PEN' : statusCode, locale)}
             </span>
           ) : interruptedKey ? (
             <span className="text-[10px] font-medium leading-tight text-text-tertiary">

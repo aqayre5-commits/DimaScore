@@ -773,6 +773,7 @@ export async function getMoroccanPlayerPerformances(
   db: NeonHttpDatabase<typeof schema>,
   daysBack = 7,
   limit = 6,
+  locale = 'en',
 ): Promise<MoroccanPerformance[]> {
   const cutoff = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
 
@@ -780,7 +781,7 @@ export async function getMoroccanPlayerPerformances(
     sql`WITH moroccan_matches AS (
           SELECT DISTINCT
             p.id AS player_id,
-            COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
+            COALESCE(p.name->>${locale}, p.name->>'en', p.name->>'fr') AS player_name,
             p.slug AS player_slug,
             p.photo_url,
             p.position,
@@ -803,8 +804,8 @@ export async function getMoroccanPlayerPerformances(
         )
         SELECT
           mm.*,
-          COALESCE(ht.name->>'en', 'Unknown') AS home_team_name,
-          COALESCE(at.name->>'en', 'Unknown') AS away_team_name,
+          COALESCE(ht.name->>${locale}, ht.name->>'en', 'Unknown') AS home_team_name,
+          COALESCE(at.name->>${locale}, at.name->>'en', 'Unknown') AS away_team_name,
           CASE
             WHEN mm.player_team_id = mm.home_team_id AND mm.away_score = 0 AND mm.position IN ('Goalkeeper', 'G') THEN true
             WHEN mm.player_team_id = mm.away_team_id AND mm.home_score = 0 AND mm.position IN ('Goalkeeper', 'G') THEN true
@@ -859,6 +860,7 @@ export async function getMoroccanPlayerPerformances(
 export async function getRightRailTopScorers(
   db: NeonHttpDatabase<typeof schema>,
   limit = 5,
+  locale = 'en',
 ): Promise<{ competitionName: Record<string, string>; scorers: TopScorerEntry[] }> {
   // Priority order: Botola Pro (200) > WC (1) > AFCON (6) > UCL (2) > PL (39)
   const priorityComps = [200, 1, 6, 2, 39];
@@ -877,10 +879,10 @@ export async function getRightRailTopScorers(
           SELECT 'pss'::text AS source,
                  pss.competition_id,
                  pss.player_id,
-                 COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
+                 COALESCE(p.name->>${locale}, p.name->>'en', p.name->>'fr') AS player_name,
                  p.slug AS player_slug,
                  p.photo_url,
-                 COALESCE(t.name->>'en', 'Unknown') AS team_name,
+                 COALESCE(t.name->>${locale}, t.name->>'en', 'Unknown') AS team_name,
                  COALESCE(t.logo_url, tp.logo_url) AS team_logo_url,
                  (pss.stats->>'goals')::int AS goals,
                  c.name AS comp_name,
@@ -903,10 +905,10 @@ export async function getRightRailTopScorers(
           SELECT 'events'::text AS source,
                  f.competition_id,
                  e.player_id,
-                 COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
+                 COALESCE(p.name->>${locale}, p.name->>'en', p.name->>'fr') AS player_name,
                  p.slug AS player_slug,
                  p.photo_url,
-                 COALESCE(t.name->>'en', 'Unknown') AS team_name,
+                 COALESCE(t.name->>${locale}, t.name->>'en', 'Unknown') AS team_name,
                  COALESCE(t.logo_url, tp.logo_url) AS team_logo_url,
                  COUNT(*)::int AS goals,
                  c.name AS comp_name,

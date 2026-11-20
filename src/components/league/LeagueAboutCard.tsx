@@ -6,6 +6,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { formatSeason } from '@/lib/utils/date';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
 import { getLeagueAbout } from '@/lib/constants/league-about-content';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 const FACT_LABEL_MAP: Record<string, string> = {
   founded: 'founded',
@@ -24,7 +25,11 @@ interface LeagueAboutCardProps {
 
 export function LeagueAboutCard({ competition, seasonYear, locale }: LeagueAboutCardProps) {
   const t = useTranslations('leaguePage');
-  const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+  const name =
+    arabicCompetitionName(competition, locale) ??
+    competition.name[locale] ??
+    competition.name['en'] ??
+    competition.slug;
   const countryName = getLeagueCountryName(competition.countryCode, locale);
   const about = getLeagueAbout(competition.id);
 

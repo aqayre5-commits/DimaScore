@@ -7,6 +7,7 @@ import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
 import { isUnderage } from '@/lib/utils/age';
 import Image from 'next/image';
+import { teamLabel } from '@/lib/i18n/localized-names';
 
 interface PlayerPageHeaderProps {
   player: PlayerDetail;
@@ -83,10 +84,7 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
     ? (getLeagueCountryName(player.nationalityCode, locale) ?? player.nationalityCode)
     : null;
   const clubName = player.currentTeam
-    ? (player.currentTeam.name[locale] ??
-      player.currentTeam.name['en'] ??
-      player.currentTeam.code ??
-      '—')
+    ? teamLabel(player.currentTeam, locale, player.currentTeam.code ?? '—')
     : null;
   const posBadgeColor =
     POSITION_COLORS[player.position ?? ''] ?? 'bg-bg-surface-2 text-text-secondary';

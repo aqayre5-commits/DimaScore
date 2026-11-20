@@ -3,6 +3,19 @@ import { db } from '@/lib/db/client';
 import { getMatchDetail } from '@/lib/db/queries/match-detail';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
+import { localizeRound, versusUpper } from '@/lib/i18n/feed-labels';
+
+const OG_FINISHED: Record<string, Record<'AET' | 'PEN' | 'FT', string>> = {
+  en: { AET: 'After Extra Time', PEN: 'Penalties', FT: 'Full Time' },
+  fr: { AET: 'Après prolongation', PEN: 'Tirs au but', FT: 'Terminé' },
+  ar: { AET: 'بعد الأشواط الإضافية', PEN: 'ركلات الترجيح', FT: 'نهاية المباراة' },
+};
+const OG_LIVE: Record<string, string> = { en: 'LIVE', fr: 'EN DIRECT', ar: 'مباشر' };
+
+function ogFinishedLabel(statusCode: string, locale: string): string {
+  const labels = OG_FINISHED[locale] ?? OG_FINISHED.en;
+  return statusCode === 'AET' ? labels.AET : statusCode === 'PEN' ? labels.PEN : labels.FT;
+}
 
 export const alt = 'Match — DimaScore';
 export const size = { width: 1200, height: 630 };
@@ -71,7 +84,9 @@ export default async function OGImage({
         }}
       >
         {compName}
-        {(match.groupLabel ?? match.round) ? ` — ${match.groupLabel ?? match.round}` : ''}
+        {(match.groupLabel ?? match.round)
+          ? ` — ${localizeRound(match.groupLabel ?? match.round, locale)}`
+          : ''}
       </p>
 
       {/* Teams row */}
@@ -124,20 +139,18 @@ export default async function OGImage({
               {match.homeScore} - {match.awayScore}
             </span>
           ) : (
-            <span style={{ fontSize: 56, fontWeight: 800, color: '#3a56d4' }}>VS</span>
+            <span style={{ fontSize: 56, fontWeight: 800, color: '#3a56d4' }}>
+              {versusUpper(locale)}
+            </span>
           )}
           {isFinished && (
             <span style={{ fontSize: 18, color: '#627080', fontWeight: 600, marginTop: 4 }}>
-              {match.statusCode === 'AET'
-                ? 'After Extra Time'
-                : match.statusCode === 'PEN'
-                  ? 'Penalties'
-                  : 'Full Time'}
+              {ogFinishedLabel(match.statusCode, locale)}
             </span>
           )}
           {!isFinished && hasScore && (
             <span style={{ fontSize: 18, color: '#e11d48', fontWeight: 700, marginTop: 4 }}>
-              LIVE
+              {OG_LIVE[locale] ?? 'LIVE'}
             </span>
           )}
         </div>

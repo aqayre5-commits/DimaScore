@@ -62,6 +62,9 @@ import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
 import { MOROCCO_HUB_COMPETITION_IDS, hubKeyForCompetition } from '@/lib/constants/morocco-hubs';
+import { formatMatchDate } from '@/lib/utils/date';
+import { teamLabel } from '@/lib/i18n/localized-names';
+import { localizeRound } from '@/lib/i18n/feed-labels';
 
 // Knockout bracket size by entry round — used to derive how many best-third teams advance.
 const KNOCKOUT_SLOTS: Record<CupMetadata['knockoutStartsRound'], number> = {
@@ -125,7 +128,7 @@ async function getCachedCupData(
   ]);
   // Computed inside the cache boundary: computeTournamentPhase reads new Date(),
   // which is forbidden in a static prerender unless TTL-bounded by 'use cache'.
-  const tournamentPhase = computeTournamentPhase(metadata, allCupFixtures);
+  const tournamentPhase = computeTournamentPhase(metadata, allCupFixtures, locale);
   return {
     standings,
     knockoutFixtures,
@@ -158,6 +161,7 @@ function phaseFromRound(round: string | null): TournamentPhase['phase'] {
 export function computeTournamentPhase(
   metadata: CupMetadata,
   fixtures: FixtureWithTeams[],
+  locale: Locale = 'fr',
 ): TournamentPhase {
   const now = new Date();
   const kickoff = new Date(metadata.kickoffDate);
@@ -165,7 +169,7 @@ export function computeTournamentPhase(
 
   // 1. No fixtures or tournament hasn't started
   if (fixtures.length === 0 || daysUntil > 0) {
-    const kickoffFormatted = kickoff.toLocaleDateString('fr', {
+    const kickoffFormatted = formatMatchDate(kickoff, locale, {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
@@ -186,7 +190,7 @@ export function computeTournamentPhase(
     if (finalMatch) {
       const homeWon = (finalMatch.homeScore ?? 0) > (finalMatch.awayScore ?? 0);
       const winner = homeWon ? finalMatch.homeTeam : finalMatch.awayTeam;
-      winnerName = winner?.name?.en ?? '';
+      winnerName = winner ? teamLabel(winner, locale) : '';
     }
     return { phase: 'post-tournament', winnerName, titleNumber };
   }
@@ -209,9 +213,17 @@ export function computeTournamentPhase(
       };
     }
     if (p === 'final') {
-      return { phase: 'final', matchLabel: liveFixture.round ?? 'Final', kickoffFormatted: '' };
+      return {
+        phase: 'final',
+        matchLabel: localizeRound(liveFixture.round ?? 'Final', locale),
+        kickoffFormatted: '',
+      };
     }
-    return { phase: 'knockout', roundLabel: liveFixture.round ?? '', isLive: true };
+    return {
+      phase: 'knockout',
+      roundLabel: localizeRound(liveFixture.round, locale),
+      isLive: true,
+    };
   }
 
   // 4. Next upcoming fixture → phase from that fixture's round
@@ -242,14 +254,22 @@ export function computeTournamentPhase(
       };
     }
     if (p === 'final') {
-      const kickoffFormatted = nextFixture.kickoffAt.toLocaleDateString('fr', {
+      const kickoffFormatted = formatMatchDate(nextFixture.kickoffAt, locale, {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       });
-      return { phase: 'final', matchLabel: nextFixture.round ?? 'Final', kickoffFormatted };
+      return {
+        phase: 'final',
+        matchLabel: localizeRound(nextFixture.round ?? 'Final', locale),
+        kickoffFormatted,
+      };
     }
-    return { phase: 'knockout', roundLabel: nextFixture.round ?? '', isLive: false };
+    return {
+      phase: 'knockout',
+      roundLabel: localizeRound(nextFixture.round, locale),
+      isLive: false,
+    };
   }
 
   // 5. Fallback: latest completed fixture
@@ -262,7 +282,7 @@ export function computeTournamentPhase(
     if (p === 'group-stage') {
       return { phase: 'group-stage', currentRound: 3, totalRounds: 3, matchesToday: 0 };
     }
-    return { phase: 'knockout', roundLabel: latest.round ?? '', isLive: false };
+    return { phase: 'knockout', roundLabel: localizeRound(latest.round, locale), isLive: false };
   }
 
   // Should not reach here, but safe fallback

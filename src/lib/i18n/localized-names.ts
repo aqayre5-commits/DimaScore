@@ -59,3 +59,17 @@ export function arabicCompetitionName(comp: CompetitionNameSource, locale: strin
   }
   return arabic(name['ar']) ?? AR_COMPETITIONS_BY_EN[name['en'] ?? ''] ?? null;
 }
+
+/**
+ * Display name for a team row joined in a query (id + name jsonb), for any locale:
+ * Arabic via {@link arabicTeamName}, otherwise name[locale] → name.en → `fallback`
+ * (e.g. the English team name copied into a stats feed).
+ */
+export function teamLabel(team: TeamNameSource, locale: string, fallback = ''): string {
+  return (
+    arabicTeamName(team, locale) ??
+    (locale === 'ar' ? null : (team?.name?.[locale] ?? null)) ??
+    team?.name?.['en'] ??
+    fallback
+  );
+}

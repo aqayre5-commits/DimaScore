@@ -1,6 +1,7 @@
 import { eq, and, asc, desc, sql, inArray } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
+import { teamLabel } from '@/lib/i18n/localized-names';
 import type { FixtureWithTeams } from '../queries';
 import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
@@ -348,15 +349,21 @@ export async function getTopScorersForLeague(
   competitionId: number,
   seasonYear: number,
   limit = 10,
+  locale = 'en',
 ): Promise<TopPlayerRow[]> {
   const rows = await db
     .select({
       playerId: schema.playerSeasonStats.playerId,
       playerSlug: schema.players.slug,
       stats: schema.playerSeasonStats.stats,
+      teamId: schema.teams.id,
+      teamNameI18n: schema.teams.name,
+      teamCountryCode: schema.teams.countryCode,
+      teamIsNational: schema.teams.isNational,
     })
     .from(schema.playerSeasonStats)
     .innerJoin(schema.players, eq(schema.playerSeasonStats.playerId, schema.players.id))
+    .leftJoin(schema.teams, eq(schema.playerSeasonStats.teamId, schema.teams.id))
     .where(
       and(
         eq(schema.playerSeasonStats.competitionId, competitionId),
@@ -373,7 +380,19 @@ export async function getTopScorersForLeague(
       playerSlug: r.playerSlug,
       playerName: (s.playerName as string) ?? '',
       playerPhoto: (s.playerPhoto as string) ?? null,
-      teamName: (s.teamName as string) ?? '',
+      // The stats JSON carries the feed's English team name; prefer the localised teams row.
+      teamName: teamLabel(
+        r.teamId == null
+          ? null
+          : {
+              id: r.teamId,
+              name: r.teamNameI18n as Record<string, string>,
+              countryCode: r.teamCountryCode,
+              isNational: r.teamIsNational,
+            },
+        locale,
+        (s.teamName as string) ?? '',
+      ),
       teamLogo: (s.teamLogo as string) ?? null,
       goals: Number(s.goals) || 0,
       assists: Number(s.assists) || 0,
@@ -386,15 +405,21 @@ export async function getTopAssistsForLeague(
   competitionId: number,
   seasonYear: number,
   limit = 10,
+  locale = 'en',
 ): Promise<TopPlayerRow[]> {
   const rows = await db
     .select({
       playerId: schema.playerSeasonStats.playerId,
       playerSlug: schema.players.slug,
       stats: schema.playerSeasonStats.stats,
+      teamId: schema.teams.id,
+      teamNameI18n: schema.teams.name,
+      teamCountryCode: schema.teams.countryCode,
+      teamIsNational: schema.teams.isNational,
     })
     .from(schema.playerSeasonStats)
     .innerJoin(schema.players, eq(schema.playerSeasonStats.playerId, schema.players.id))
+    .leftJoin(schema.teams, eq(schema.playerSeasonStats.teamId, schema.teams.id))
     .where(
       and(
         eq(schema.playerSeasonStats.competitionId, competitionId),
@@ -411,7 +436,19 @@ export async function getTopAssistsForLeague(
       playerSlug: r.playerSlug,
       playerName: (s.playerName as string) ?? '',
       playerPhoto: (s.playerPhoto as string) ?? null,
-      teamName: (s.teamName as string) ?? '',
+      // The stats JSON carries the feed's English team name; prefer the localised teams row.
+      teamName: teamLabel(
+        r.teamId == null
+          ? null
+          : {
+              id: r.teamId,
+              name: r.teamNameI18n as Record<string, string>,
+              countryCode: r.teamCountryCode,
+              isNational: r.teamIsNational,
+            },
+        locale,
+        (s.teamName as string) ?? '',
+      ),
       teamLogo: (s.teamLogo as string) ?? null,
       goals: Number(s.goals) || 0,
       assists: Number(s.assists) || 0,
@@ -523,7 +560,7 @@ export async function getResolvedTopScorers(
   limit = 10,
 ): Promise<TopPlayerRow[]> {
   const [official, events] = await Promise.all([
-    getTopScorersForLeague(db, competitionId, seasonYear, limit),
+    getTopScorersForLeague(db, competitionId, seasonYear, limit, locale),
     getEditionTopScorers(db, competitionId, seasonYear, locale, limit),
   ]);
   const chosen = (official[0]?.goals ?? 0) >= (events[0]?.goals ?? 0) ? official : events;
@@ -539,7 +576,7 @@ export async function getResolvedTopAssists(
   limit = 10,
 ): Promise<TopPlayerRow[]> {
   const [official, events] = await Promise.all([
-    getTopAssistsForLeague(db, competitionId, seasonYear, limit),
+    getTopAssistsForLeague(db, competitionId, seasonYear, limit, locale),
     getEditionTopAssists(db, competitionId, seasonYear, locale, limit),
   ]);
   const chosen = (official[0]?.assists ?? 0) >= (events[0]?.assists ?? 0) ? official : events;
@@ -564,15 +601,21 @@ export async function getTopCardsForLeague(
   competitionId: number,
   seasonYear: number,
   limit = 10,
+  locale = 'en',
 ): Promise<TopCardRow[]> {
   const rows = await db
     .select({
       playerId: schema.playerSeasonStats.playerId,
       playerSlug: schema.players.slug,
       stats: schema.playerSeasonStats.stats,
+      teamId: schema.teams.id,
+      teamNameI18n: schema.teams.name,
+      teamCountryCode: schema.teams.countryCode,
+      teamIsNational: schema.teams.isNational,
     })
     .from(schema.playerSeasonStats)
     .innerJoin(schema.players, eq(schema.playerSeasonStats.playerId, schema.players.id))
+    .leftJoin(schema.teams, eq(schema.playerSeasonStats.teamId, schema.teams.id))
     .where(
       and(
         eq(schema.playerSeasonStats.competitionId, competitionId),
@@ -589,7 +632,19 @@ export async function getTopCardsForLeague(
       playerSlug: r.playerSlug,
       playerName: (s.playerName as string) ?? '',
       playerPhoto: (s.playerPhoto as string) ?? null,
-      teamName: (s.teamName as string) ?? '',
+      // The stats JSON carries the feed's English team name; prefer the localised teams row.
+      teamName: teamLabel(
+        r.teamId == null
+          ? null
+          : {
+              id: r.teamId,
+              name: r.teamNameI18n as Record<string, string>,
+              countryCode: r.teamCountryCode,
+              isNational: r.teamIsNational,
+            },
+        locale,
+        (s.teamName as string) ?? '',
+      ),
       teamLogo: (s.teamLogo as string) ?? null,
       yellowCards: Number(s.yellowCards) || 0,
       redCards: Number(s.redCards) || 0,

@@ -1,6 +1,8 @@
 import { eq, and, desc, sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
+import { teamLabel } from '@/lib/i18n/localized-names';
+import { localizeInjuryType } from '@/lib/i18n/feed-labels';
 
 export interface InjuryRow {
   id: number;
@@ -23,6 +25,7 @@ export async function getInjuriesForCompetition(
   competitionId: number,
   seasonYear: number,
   limit = 30,
+  locale = 'en',
 ): Promise<InjuryRow[]> {
   const rows = await db
     .select({
@@ -33,6 +36,9 @@ export async function getInjuriesForCompetition(
       playerName: schema.players.name,
       playerPhoto: schema.players.photoUrl,
       teamName: schema.teams.name,
+      teamId: schema.teams.id,
+      teamCountryCode: schema.teams.countryCode,
+      teamIsNational: schema.teams.isNational,
       teamLogo: schema.teams.logoUrl,
     })
     .from(schema.injuries)
@@ -52,9 +58,21 @@ export async function getInjuriesForCompetition(
     id: r.id,
     playerName: (r.playerName as Record<string, string> | null)?.en ?? '—',
     playerPhoto: r.playerPhoto,
-    teamName: (r.teamName as Record<string, string> | null)?.en ?? '—',
+    teamName:
+      r.teamId == null
+        ? '—'
+        : teamLabel(
+            {
+              id: r.teamId,
+              name: r.teamName as Record<string, string> | null,
+              countryCode: r.teamCountryCode,
+              isNational: r.teamIsNational,
+            },
+            locale,
+            '—',
+          ),
     teamLogo: r.teamLogo,
-    type: r.type,
+    type: r.type ? localizeInjuryType(r.type, locale) : r.type,
     reason: r.reason,
     date: r.date,
   }));

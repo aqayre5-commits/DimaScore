@@ -4,6 +4,7 @@ import { Flag } from '@/components/shared/Flag';
 import type { CoachDetail } from '@/lib/db/queries/coach';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
+import { teamLabel } from '@/lib/i18n/localized-names';
 
 interface CoachPageHeaderProps {
   coach: CoachDetail;
@@ -24,7 +25,7 @@ function computeAge(birthDate: string | null): number | null {
 
 function resolveTeamName(team: CoachDetail['currentTeam'], locale: Locale): string {
   if (!team) return '—';
-  return team.name[locale] ?? team.name['en'] ?? '—';
+  return teamLabel(team, locale, '—');
 }
 
 export function CoachPageHeader({ coach, locale }: CoachPageHeaderProps) {

@@ -30,6 +30,7 @@ import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
 import { BASE_URL } from '@/lib/constants/site';
 import { buildPlayerMeta } from '@/lib/seo/hub-metadata';
 import { isPlayerIndexable } from '@/lib/seo/indexable';
+import { teamLabel } from '@/lib/i18n/localized-names';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -192,9 +193,7 @@ export default async function PlayerPage({ params }: PageProps) {
               name: playerName,
               nationality,
               image: player.photoUrl,
-              affiliation: player.currentTeam
-                ? (player.currentTeam.name[typedLocale] ?? player.currentTeam.name['en'])
-                : null,
+              affiliation: player.currentTeam ? teamLabel(player.currentTeam, typedLocale) : null,
             }),
             buildBreadcrumbList(
               breadcrumbs,

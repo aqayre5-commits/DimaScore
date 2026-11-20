@@ -17,6 +17,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
 
 interface TeamMatchesListProps {
   fixtures: FixtureWithCompetition[];
@@ -248,7 +249,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
           <div className="flex w-12 shrink-0 flex-col items-center justify-center text-center leading-tight">
             {isLive ? (
               <span className="text-sm font-bold tabular-nums text-score-live">
-                {isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE'}
+                {localizeMatchStatus(isLiveStatus(f.statusCode) ? f.statusCode : 'LIVE', locale)}
               </span>
             ) : interruptedKey ? (
               <span className="text-[10px] font-medium leading-tight text-text-tertiary">
@@ -256,7 +257,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
               </span>
             ) : isDone ? (
               <span className="text-xs font-medium text-text-tertiary">
-                {f.statusCode === 'AET' ? 'AET' : 'FT'}
+                {localizeMatchStatus(f.statusCode === 'AET' ? 'AET' : 'FT', locale)}
               </span>
             ) : (
               <span className="text-sm tabular-nums text-text-secondary" suppressHydrationWarning>
@@ -265,7 +266,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
             )}
             {isDone && showPens && (
               <span className="mt-0.5 text-[9px] font-semibold uppercase text-text-tertiary">
-                PEN
+                {localizeMatchStatus('PEN', locale)}
               </span>
             )}
           </div>

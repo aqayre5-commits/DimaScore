@@ -7,6 +7,7 @@ import {
 } from '@/lib/db/queries/right-rail';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { TEAM_IDS } from '@/lib/constants/canonical-ids';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 export interface LionsAbroadFixture {
   id: number;
@@ -37,16 +38,16 @@ export interface LionsAbroadHubData {
   performances: MoroccanPerformance[];
 }
 
-async function loadLionsAbroadFixtures(): Promise<LionsAbroadFixture[]> {
+async function loadLionsAbroadFixtures(locale: string): Promise<LionsAbroadFixture[]> {
   const result = await db.execute(sql`
     WITH lions AS (
       SELECT
         p.id AS player_id,
-        COALESCE(p.name->>'en', p.name->>'fr') AS player_name,
+        COALESCE(p.name->>${locale}, p.name->>'en', p.name->>'fr') AS player_name,
         p.slug AS player_slug,
         p.photo_url,
         p.current_team_id AS club_id,
-        COALESCE(club.name->>'en', 'Unknown') AS club_name
+        COALESCE(club.name->>${locale}, club.name->>'en', 'Unknown') AS club_name
       FROM players p
       JOIN teams club ON club.id = p.current_team_id
       WHERE p.nationality_code = 'MA'
@@ -65,9 +66,9 @@ async function loadLionsAbroadFixtures(): Promise<LionsAbroadFixture[]> {
       f.home_score,
       f.away_score,
       f.competition_id,
-      COALESCE(c.name->>'en', '') AS competition_name,
-      COALESCE(ht.name->>'en', 'TBD') AS home_team_name,
-      COALESCE(at.name->>'en', 'TBD') AS away_team_name,
+      COALESCE(c.name->>${locale}, c.name->>'en', '') AS competition_name,
+      COALESCE(ht.name->>${locale}, ht.name->>'en', 'TBD') AS home_team_name,
+      COALESCE(at.name->>${locale}, at.name->>'en', 'TBD') AS away_team_name,
       ht.slug AS home_team_slug,
       at.slug AS away_team_slug,
       l.player_id,
@@ -105,7 +106,13 @@ async function loadLionsAbroadFixtures(): Promise<LionsAbroadFixture[]> {
         homeTeamSlug: (row.home_team_slug as string | null) ?? null,
         awayTeamSlug: (row.away_team_slug as string | null) ?? null,
         competitionId: row.competition_id == null ? null : Number(row.competition_id),
-        competitionName: String(row.competition_name),
+        competitionName:
+          arabicCompetitionName(
+            row.competition_id == null
+              ? null
+              : { id: Number(row.competition_id), name: { en: String(row.competition_name) } },
+            locale,
+          ) ?? String(row.competition_name),
         players: [],
       };
       byId.set(id, fixture);
@@ -121,12 +128,12 @@ async function loadLionsAbroadFixtures(): Promise<LionsAbroadFixture[]> {
   return [...byId.values()];
 }
 
-export async function getLionsAbroadHubData(): Promise<LionsAbroadHubData> {
+export async function getLionsAbroadHubData(locale = 'en'): Promise<LionsAbroadHubData> {
   'use cache';
   cacheLife('minutes');
   const [fixtures, performances] = await Promise.all([
-    loadLionsAbroadFixtures(),
-    getMoroccanPlayerPerformances(db, 7, 24),
+    loadLionsAbroadFixtures(locale),
+    getMoroccanPlayerPerformances(db, 7, 24, locale),
   ]);
   return { fixtures, performances };
 }
