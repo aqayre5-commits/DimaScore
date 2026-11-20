@@ -310,7 +310,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
                 {r.rank}
               </span>
               <span className="min-w-0 flex-1 truncate text-text-primary">
-                {r.team?.name[typedLocale] ?? r.team?.name['en'] ?? '—'}
+                {r.team ? getTeamDisplayName(r.team, typedLocale) : '—'}
               </span>
               <span className="text-xs font-semibold tabular-nums text-text-secondary">
                 {r.points}

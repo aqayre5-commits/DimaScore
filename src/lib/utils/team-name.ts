@@ -1,14 +1,19 @@
+import { localizedTeamName } from '@/lib/constants/team-names-i18n';
+
 type TeamLike = {
+  id?: number | null;
   name: Record<string, string>;
   shortName: Record<string, string>;
   code: string | null;
+  countryCode?: string | null;
   isNational?: boolean | null;
 };
 
 /**
  * Shared team display-name resolver.
  *
- * Fallback chain: name[locale] → name.en → shortName[locale] → shortName.en → code → 'TBD'
+ * Fallback chain: name[locale] → curated fr/ar name (team-names-i18n: national teams via the
+ * country name, Moroccan clubs by ID) → name.en → shortName[locale] → shortName.en → code → 'TBD'
  *
  * This matches the pattern already used by tournament components (GroupTable,
  * FeaturedMatchCard, etc.) and prefers full names over short codes.
@@ -17,6 +22,7 @@ export function getTeamDisplayName(team: TeamLike | null, locale: string): strin
   if (!team) return 'TBD';
   return (
     team.name[locale] ??
+    localizedTeamName(team, locale) ??
     team.name['en'] ??
     team.shortName[locale] ??
     team.shortName['en'] ??

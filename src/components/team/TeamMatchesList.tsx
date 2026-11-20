@@ -15,6 +15,7 @@ import { LocalTime } from '@/components/shared/LocalTime';
 import type { FixtureWithCompetition } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 
 interface TeamMatchesListProps {
   fixtures: FixtureWithCompetition[];
@@ -27,14 +28,8 @@ const INITIAL_VISIBLE = 5;
 
 function teamName(team: FixtureWithCompetition['homeTeam'], locale: Locale): string {
   if (!team) return '—';
-  return (
-    team.name[locale] ??
-    team.name['en'] ??
-    team.shortName[locale] ??
-    team.shortName['en'] ??
-    team.code ??
-    '—'
-  );
+  const name = getTeamDisplayName(team, locale);
+  return name === 'TBD' ? '—' : name;
 }
 
 export function TeamMatchesList({ fixtures, locale }: TeamMatchesListProps) {

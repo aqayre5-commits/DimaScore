@@ -4,6 +4,7 @@ import type { StandingRow } from '@/lib/db/queries';
 import type { TeamSnapshot } from '@/lib/db/queries-hydrate';
 import type { Locale } from '@/lib/i18n/config';
 import { Flag } from '@/components/shared/Flag';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 
 interface LeagueTeamsTabProps {
   /** Participants for the season — derived from fixtures, so this is populated pre-season too. */
@@ -14,7 +15,7 @@ interface LeagueTeamsTabProps {
 }
 
 function resolveTeamName(team: TeamSnapshot, locale: Locale): string {
-  return team.name[locale] ?? team.name['en'] ?? team.shortName[locale] ?? team.code ?? '—';
+  return getTeamDisplayName(team, locale);
 }
 
 export function LeagueTeamsTab({ teams, standings, locale }: LeagueTeamsTabProps) {
