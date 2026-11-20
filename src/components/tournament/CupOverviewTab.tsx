@@ -56,8 +56,8 @@ export function CupOverviewTab({
                   <th className="py-2 text-center font-medium">W</th>
                   <th className="py-2 text-center font-medium">D</th>
                   <th className="py-2 text-center font-medium">L</th>
-                  <th className="py-2 text-center font-medium">GD</th>
-                  <th className="py-2 pr-4 text-center font-medium">Pts</th>
+                  <th className="py-2 text-center font-medium">{t('colGoalDiff')}</th>
+                  <th className="py-2 pr-4 text-center font-medium">{t('colPoints')}</th>
                 </tr>
               </thead>
               <tbody>

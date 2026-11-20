@@ -1,4 +1,5 @@
 import type { Locale } from '@/lib/i18n/config';
+import { localizeStandingZone } from '@/lib/i18n/feed-labels';
 
 /**
  * API-Football stores standings zone `description` in English. Map known
@@ -32,5 +33,8 @@ export function translateStandingZoneLabel(
   locale: Locale,
 ): string | null {
   if (!description) return null;
-  return ZONE_LABELS[description]?.[locale] ?? description;
+  // Curated, tested wording (LANG-020/023) first; the Nov 2026 translation pack fills the rest.
+  return (
+    ZONE_LABELS[description]?.[locale] ?? localizeStandingZone(description, locale) ?? description
+  );
 }

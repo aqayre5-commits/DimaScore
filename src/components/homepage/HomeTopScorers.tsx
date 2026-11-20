@@ -3,6 +3,7 @@ import type { TopScorerEntry } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
 import { TeamLogo } from '@/components/shared/Logo';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 interface Props {
   competitionName: Record<string, string>;
@@ -16,7 +17,11 @@ interface Props {
 export function HomeTopScorers({ competitionName, scorers, locale, labels }: Props) {
   if (scorers.length === 0) return null;
 
-  const compLabel = competitionName[locale] ?? competitionName['en'] ?? '';
+  const compLabel =
+    arabicCompetitionName({ name: competitionName }, locale) ??
+    competitionName[locale] ??
+    competitionName['en'] ??
+    '';
 
   return (
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">

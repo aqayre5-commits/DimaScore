@@ -16,6 +16,7 @@ import type { FixtureWithCompetition } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 interface TeamMatchesListProps {
   fixtures: FixtureWithCompetition[];
@@ -148,7 +149,10 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
   const awayWon = isDone && showScore && (f.awayScore ?? 0) > (f.homeScore ?? 0);
 
   const compName = f.competition
-    ? (f.competition.name[locale] ?? f.competition.name['en'] ?? '')
+    ? (arabicCompetitionName(f.competition, locale) ??
+      f.competition.name[locale] ??
+      f.competition.name['en'] ??
+      '')
     : '';
 
   return (

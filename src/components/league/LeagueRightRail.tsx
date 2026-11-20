@@ -8,6 +8,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { Flag } from '@/components/shared/Flag';
 import { PlayerPhotoCircle } from '@/components/shared/PlayerPhotoCircle';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { arabicTeamName } from '@/lib/i18n/localized-names';
 
 interface LeagueRightRailProps {
   competitionName: string;
@@ -151,6 +152,7 @@ function MiniStandingsWidget({
           <tbody>
             {top5.map((row) => {
               const teamName =
+                arabicTeamName(row.team, locale) ??
                 row.team?.shortName[locale] ??
                 (row.team ? getTeamDisplayName(row.team, locale) : '—');
 

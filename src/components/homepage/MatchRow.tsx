@@ -11,6 +11,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
 import { Flag } from '@/components/shared/Flag';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
+import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
 
 interface MatchRowProps {
   fixture: DayFixture;
@@ -70,16 +71,16 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
           <span className="flex items-center justify-center gap-1 text-xs font-bold text-score-live">
             <span className="live-pulse size-1.5 rounded-full bg-score-live" />
             {fixture.statusCode === 'HT'
-              ? 'HT'
+              ? localizeMatchStatus('HT', locale)
               : fixture.minute != null
                 ? `${fixture.minute}'`
                 : fixture.statusCode === 'P'
-                  ? 'PEN'
-                  : fixture.statusCode}
+                  ? localizeMatchStatus('PEN', locale)
+                  : localizeMatchStatus(fixture.statusCode, locale)}
           </span>
         ) : isFinished ? (
           <span className="text-xs text-text-tertiary">
-            {fixture.statusCode === 'AET' ? 'AET' : 'FT'}
+            {localizeMatchStatus(fixture.statusCode === 'AET' ? 'AET' : 'FT', locale)}
           </span>
         ) : (
           <span className="text-xs tabular-nums text-text-secondary">
@@ -113,10 +114,10 @@ export function MatchRow({ fixture: f, locale, enablePrefetch, competition }: Ma
           </span>
         ) : isInterrupted ? (
           <span className="text-[10px] font-medium leading-tight text-text-tertiary">
-            {interruptedKey ? t(interruptedKey) : 'vs'}
+            {interruptedKey ? t(interruptedKey) : t('vs')}
           </span>
         ) : (
-          <span className="text-xs text-text-tertiary">{isFinished ? '–' : 'vs'}</span>
+          <span className="text-xs text-text-tertiary">{isFinished ? '–' : t('vs')}</span>
         )}
         {showPenScore && (
           <span className="whitespace-nowrap text-[10px] font-semibold uppercase text-text-tertiary">

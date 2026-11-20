@@ -16,6 +16,8 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
+import { arabicTeamName } from '@/lib/i18n/localized-names';
+import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
 
 type StatusFilter = 'all' | 'live' | 'upcoming' | 'results';
 
@@ -394,7 +396,9 @@ function WCMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Lo
             <>
               <span className="text-xs font-medium text-text-tertiary">{finishedLabel}</span>
               {showPens && (
-                <span className="mt-0.5 text-[9px] font-semibold text-text-tertiary">PEN</span>
+                <span className="mt-0.5 text-[9px] font-semibold text-text-tertiary">
+                  {localizeMatchStatus('PEN', locale)}
+                </span>
               )}
             </>
           ) : (
@@ -424,7 +428,8 @@ function TeamBadge({ team, big = false }: { team: FixtureWithTeams['homeTeam']; 
 function resolveFullName(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
   if (!team) return '\u2014';
   return stripWomenSuffix(
-    team.name[locale] ??
+    arabicTeamName(team, locale) ??
+      team.name[locale] ??
       team.name['en'] ??
       team.shortName[locale] ??
       team.shortName['en'] ??

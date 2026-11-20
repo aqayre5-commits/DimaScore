@@ -31,8 +31,9 @@ const morocco = team({
   countryCode: 'MA',
   isNational: true,
 });
+// An id with no entry in team-names-ar.ts (Manchester City, id 50, is mapped since Nov 2026).
 const unmapped = team({
-  id: 50,
+  id: 999901,
   name: { en: 'Manchester City' },
   shortName: { en: 'Man City' },
   code: 'MCI',

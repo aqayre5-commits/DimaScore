@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import type { NormalizedSquadPlayer } from '@/lib/data/types';
@@ -45,7 +45,8 @@ export async function syncSquad(
         target: schema.players.id,
         set: {
           slug: row.slug,
-          name: row.name,
+          // Merge so a seeded name.ar/fr survives the feed's en-only rows.
+          name: sql`${schema.players.name} || excluded.name`,
           photoUrl: row.photoUrl,
           currentTeamId: row.currentTeamId,
           position: row.position,

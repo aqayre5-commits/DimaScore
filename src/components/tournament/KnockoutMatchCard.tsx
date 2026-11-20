@@ -10,6 +10,7 @@ import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { TeamSnapshot } from '@/lib/db/queries-hydrate';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
+import { arabicTeamName } from '@/lib/i18n/localized-names';
 
 interface KnockoutMatchCardProps {
   fixture: FixtureWithTeams;
@@ -124,7 +125,8 @@ function TeamRow({
   isLive: boolean;
   locale: Locale;
 }) {
-  const name = team?.name[locale] ?? team?.name['en'] ?? team?.code ?? '—';
+  const name =
+    arabicTeamName(team, locale) ?? team?.name[locale] ?? team?.name['en'] ?? team?.code ?? '—';
   const code = team?.code ?? name.slice(0, 3).toUpperCase();
 
   return (

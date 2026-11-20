@@ -5,6 +5,7 @@ import type { MediaVideo } from '@/lib/db/queries/media';
 import { VideoCard } from '@/components/media/VideoCard';
 import { VideoPlayerModal } from '@/components/media/VideoPlayerModal';
 import { CategoryFilter } from '@/components/media/CategoryFilter';
+import { useTranslations } from 'next-intl';
 
 interface MediaGridProps {
   videos: MediaVideo[];
@@ -12,6 +13,7 @@ interface MediaGridProps {
 }
 
 export function MediaGrid({ videos, emptyMessage = 'No videos yet.' }: MediaGridProps) {
+  const tShared = useTranslations('shared');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeVideo, setActiveVideo] = useState<MediaVideo | null>(null);
 
@@ -37,7 +39,7 @@ export function MediaGrid({ videos, emptyMessage = 'No videos yet.' }: MediaGrid
       />
 
       {filtered.length === 0 ? (
-        <p className="py-6 text-center text-sm text-text-tertiary">No videos in this category.</p>
+        <p className="py-6 text-center text-sm text-text-tertiary">{tShared('noVideos')}</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((video) => (

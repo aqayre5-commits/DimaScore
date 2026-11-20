@@ -6,6 +6,7 @@ import { TeamStandingsSection } from './TeamStandingsSection';
 import type { StandingRow } from '@/lib/db/queries';
 import type { CompetitionSnapshot } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 interface TeamStandingsWithFilterProps {
   competitions: CompetitionSnapshot[];
@@ -81,7 +82,10 @@ export function TeamStandingsWithFilter({
           >
             {competitions.map((comp) => (
               <option key={comp.id} value={comp.id}>
-                {comp.name[locale] ?? comp.name['en'] ?? `Competition ${comp.id}`}
+                {arabicCompetitionName(comp, locale) ??
+                  comp.name[locale] ??
+                  comp.name['en'] ??
+                  `Competition ${comp.id}`}
               </option>
             ))}
           </select>

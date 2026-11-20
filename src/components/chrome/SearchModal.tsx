@@ -10,6 +10,7 @@ import { buildCompetitionHrefById } from '@/lib/constants/competitions-mega-menu
 import type { Locale } from '@/lib/i18n/config';
 import Image from 'next/image';
 import { Flag } from '@/components/shared/Flag';
+import { arabicCompetitionName, arabicTeamName } from '@/lib/i18n/localized-names';
 
 interface SearchModalProps {
   open: boolean;
@@ -94,7 +95,8 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   const flatItems: { href: string; label: string }[] = [];
   if (results) {
     for (const team of results.teams) {
-      const name = team.name[locale] ?? team.name['en'] ?? team.code ?? '—';
+      const name =
+        arabicTeamName(team, locale) ?? team.name[locale] ?? team.name['en'] ?? team.code ?? '—';
       flatItems.push({ href: `/${locale}/equipe/${team.slug}`, label: name });
     }
     for (const player of results.players) {
@@ -110,7 +112,8 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
       // exactly so keyboard-nav indices stay aligned with the rendered rows).
       const href = buildCompetitionHrefById(comp.id, locale as Locale);
       if (!href) continue;
-      const name = comp.name[locale] ?? comp.name['en'] ?? '—';
+      const name =
+        arabicCompetitionName(comp, locale) ?? comp.name[locale] ?? comp.name['en'] ?? '—';
       flatItems.push({ href, label: name });
     }
   }
@@ -165,7 +168,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close search"
+            aria-label={t('close')}
             className="shrink-0 text-text-tertiary hover:text-text-secondary"
           >
             <X className="size-5" />
@@ -175,7 +178,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         {/* Results */}
         {searchError && !loading && (
           <div className="px-4 py-6 text-center">
-            <p className="text-sm text-text-secondary">Search unavailable. Please try again.</p>
+            <p className="text-sm text-text-secondary">{t('unavailable')}</p>
           </div>
         )}
         {loading && (
@@ -197,7 +200,12 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
               <ResultGroup label={t('teams')}>
                 {results.teams.map((team) => {
                   const idx = flatIdx++;
-                  const name = team.name[locale] ?? team.name['en'] ?? team.code ?? '—';
+                  const name =
+                    arabicTeamName(team, locale) ??
+                    team.name[locale] ??
+                    team.name['en'] ??
+                    team.code ??
+                    '—';
                   return (
                     <ResultRow
                       key={`team-${team.id}`}
@@ -268,7 +276,11 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                   const href = buildCompetitionHrefById(comp.id, locale as Locale);
                   if (!href) return null;
                   const idx = flatIdx++;
-                  const name = comp.name[locale] ?? comp.name['en'] ?? '—';
+                  const name =
+                    arabicCompetitionName(comp, locale) ??
+                    comp.name[locale] ??
+                    comp.name['en'] ??
+                    '—';
                   return (
                     <ResultRow
                       key={`comp-${comp.id}`}

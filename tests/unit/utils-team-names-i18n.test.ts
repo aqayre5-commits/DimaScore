@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 
+// No id: these exercise the country-name rule, not the by-ID table (team-names-ar.ts).
 const nat = (en: string, countryCode: string) => ({
-  id: 1,
+  id: null,
   name: { en },
   shortName: { en },
   code: null,

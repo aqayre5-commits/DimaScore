@@ -14,6 +14,8 @@ import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { HomeFixture } from '@/lib/db/queries/homepage';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { localizeContextLabel, versusUpper } from '@/lib/i18n/feed-labels';
 
 type FeatureTag = NonNullable<HomeFixture['featureTag']>;
 
@@ -162,7 +164,7 @@ export function HomeFeatured({ matches, locale, now, labels }: Props) {
             <button
               type="button"
               onClick={() => goTo(safeIdx === 0 ? view.length - 1 : safeIdx - 1)}
-              aria-label="Previous"
+              aria-label={locale === 'ar' ? 'السابق' : locale === 'fr' ? 'Précédent' : 'Previous'}
               className="absolute start-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary sm:block"
             >
               <ChevronLeft className="size-5" />
@@ -170,7 +172,7 @@ export function HomeFeatured({ matches, locale, now, labels }: Props) {
             <button
               type="button"
               onClick={() => goTo(safeIdx === view.length - 1 ? 0 : safeIdx + 1)}
-              aria-label="Next"
+              aria-label={locale === 'ar' ? 'التالي' : locale === 'fr' ? 'Suivant' : 'Next'}
               className="absolute end-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-bg-surface-2 p-3 text-text-tertiary transition-colors hover:bg-bg-surface-3 hover:text-text-primary sm:block"
             >
               <ChevronRight className="size-5" />
@@ -263,7 +265,11 @@ function HeroCard({
 
   const homeName = stripWomenSuffix(getTeamDisplayName(match.homeTeam, locale));
   const awayName = stripWomenSuffix(getTeamDisplayName(match.awayTeam, locale));
-  const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
+  const compName =
+    arabicCompetitionName(match.competition, locale) ??
+    match.competition.name[locale] ??
+    match.competition.name['en'] ??
+    '';
 
   return (
     <Link
@@ -289,7 +295,10 @@ function HeroCard({
         <p className="text-sm font-medium text-text-secondary">
           {compName}
           {match.contextLabel && (
-            <span className="text-text-tertiary"> · {match.contextLabel}</span>
+            <span className="text-text-tertiary">
+              {' '}
+              · {localizeContextLabel(match.contextLabel, locale)}
+            </span>
           )}
         </p>
 
@@ -302,7 +311,9 @@ function HeroCard({
           </div>
 
           <div className="flex min-h-[68px] w-[128px] shrink-0 flex-col items-center justify-center gap-1.5">
-            <span className="text-3xl font-black tracking-tight text-accent-azure">VS</span>
+            <span className="text-3xl font-black tracking-tight text-accent-azure">
+              {versusUpper(locale)}
+            </span>
             <p
               className="text-xs font-medium tracking-wide text-text-tertiary"
               suppressHydrationWarning

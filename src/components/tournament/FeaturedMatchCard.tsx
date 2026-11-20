@@ -13,6 +13,7 @@ import { Flag } from '@/components/shared/Flag';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
+import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
 
 interface FeaturedMatchCardProps {
   fixture: FixtureWithTeams;
@@ -26,6 +27,7 @@ function resolveTeamCode(team: FixtureWithTeams['homeTeam'], locale: Locale): st
 
 export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
   const t = useTranslations('leaguePage');
+  const tShared = useTranslations('shared');
   const { homeTeam, awayTeam, kickoffAt, venue } = fixture;
 
   // Overlay the shared live poll so the card flips to a live/final score when the match
@@ -117,23 +119,23 @@ export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
                   <div className="mt-1 flex items-center justify-center gap-1">
                     <span className="size-1.5 animate-pulse rounded-full bg-score-live" />
                     <span className="text-xs font-semibold text-score-live">
-                      {statusCode === 'HT' ? 'HT' : statusCode}
+                      {localizeMatchStatus(statusCode, locale)}
                     </span>
                   </div>
                 ) : (
                   <span className="mt-0.5 inline-block rounded bg-bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-text-tertiary">
                     {statusCode === 'AET'
-                      ? 'AET'
+                      ? localizeMatchStatus('AET', locale)
                       : statusCode === 'PEN'
                         ? homeScorePen != null && awayScorePen != null
-                          ? `PEN ${homeScorePen}-${awayScorePen}`
-                          : 'PEN'
-                        : 'FT'}
+                          ? `${localizeMatchStatus('PEN', locale)} ${homeScorePen}-${awayScorePen}`
+                          : localizeMatchStatus('PEN', locale)
+                        : localizeMatchStatus('FT', locale)}
                   </span>
                 )}
               </>
             ) : (
-              <span className="text-xl font-bold text-text-tertiary">VS</span>
+              <span className="text-xl font-bold text-text-tertiary">{tShared('versusUpper')}</span>
             )}
           </div>
 

@@ -76,7 +76,7 @@ export function Topbar() {
 
   return (
     <nav
-      aria-label="Main navigation"
+      aria-label={t('mainNav')}
       className="sticky top-10 z-40 border-b border-border-subtle bg-bg-surface"
     >
       <div className="mx-auto flex h-12 max-w-[1280px] items-center gap-0.5 px-4">

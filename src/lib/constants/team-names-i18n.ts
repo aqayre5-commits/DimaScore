@@ -10,6 +10,7 @@
  * Arabic and French names are standard press usage — review before shipping.
  */
 import { getCountryNames } from './country-names-i18n';
+import { TEAM_NAMES_AR } from './team-names-ar';
 
 /**
  * `en` is the provider's stored English name for that ID (teams.name.en). It isn't rendered;
@@ -64,6 +65,7 @@ export interface TeamNameKey {
 /** Localized name for fr/ar when we have one; null means "use the stored name". */
 export function localizedTeamName(team: TeamNameKey, locale: string): string | null {
   if (locale !== 'fr' && locale !== 'ar') return null;
+  if (locale === 'ar' && team.id != null && TEAM_NAMES_AR[team.id]) return TEAM_NAMES_AR[team.id];
   if (team.id != null && CLUB_NAMES[team.id]?.[locale]) return CLUB_NAMES[team.id][locale]!;
   if (!team.isNational) return null;
   const country = getCountryNames(team.countryCode ?? null);

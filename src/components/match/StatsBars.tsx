@@ -1,11 +1,16 @@
 import type { MatchTeamStats, StatEntry } from '@/lib/db/queries/match-detail';
+import { localizeStatType } from '@/lib/i18n/feed-labels';
 
 interface StatsBarsProps {
   homeStats: MatchTeamStats;
   awayStats: MatchTeamStats;
+  locale?: string;
 }
 
 interface PairedStat {
+  /** Raw feed type ("Ball Possession"), stable across locales. */
+  type: string;
+  /** Display label, localized when a translation exists. */
   label: string;
   homeValue: number | string | null;
   awayValue: number | string | null;
@@ -27,7 +32,7 @@ function parseStatValue(value: number | string | null): {
   return { num: null, isPercentage: false };
 }
 
-export function pairStats(home: StatEntry[], away: StatEntry[]): PairedStat[] {
+export function pairStats(home: StatEntry[], away: StatEntry[], locale = 'en'): PairedStat[] {
   if (!Array.isArray(home) || !Array.isArray(away)) return [];
   const awayMap = new Map<string, StatEntry>();
   for (const s of away) {
@@ -45,7 +50,8 @@ export function pairStats(home: StatEntry[], away: StatEntry[]): PairedStat[] {
     if (hParsed.num == null && aParsed.num == null && h.value == null && a?.value == null) continue;
 
     paired.push({
-      label: h.type,
+      type: h.type,
+      label: localizeStatType(h.type, locale),
       homeValue: h.value,
       awayValue: a?.value ?? null,
       homeNum: hParsed.num,
@@ -63,16 +69,16 @@ function formatDisplay(value: number | string | null): string {
   return String(value);
 }
 
-export function StatsBars({ homeStats, awayStats }: StatsBarsProps) {
+export function StatsBars({ homeStats, awayStats, locale = 'en' }: StatsBarsProps) {
   if (homeStats.stats.length === 0 && awayStats.stats.length === 0) return null;
 
-  const paired = pairStats(homeStats.stats, awayStats.stats);
+  const paired = pairStats(homeStats.stats, awayStats.stats, locale);
   if (paired.length === 0) return null;
 
   return (
     <div className="divide-y divide-border-subtle">
       {paired.map((stat) => (
-        <StatRow key={stat.label} stat={stat} />
+        <StatRow key={stat.type} stat={stat} />
       ))}
     </div>
   );

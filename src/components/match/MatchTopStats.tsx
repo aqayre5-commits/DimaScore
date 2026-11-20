@@ -7,6 +7,7 @@ import { pairStats } from './StatsBars';
 interface MatchTopStatsProps {
   homeStats: MatchTeamStats;
   awayStats: MatchTeamStats;
+  locale?: string;
 }
 
 type PairedStat = ReturnType<typeof pairStats>[number];
@@ -21,12 +22,12 @@ function formatVal(value: number | string | null): string {
  * A summary of the full StatsBars section shown in the centre — reuses the same pairing logic and is
  * rendered desktop-only (mobile/tablet already get the full stats block inline).
  */
-export function MatchTopStats({ homeStats, awayStats }: MatchTopStatsProps) {
+export function MatchTopStats({ homeStats, awayStats, locale = 'en' }: MatchTopStatsProps) {
   const t = useTranslations('matchDetail');
-  const paired = pairStats(homeStats.stats, awayStats.stats);
+  const paired = pairStats(homeStats.stats, awayStats.stats, locale);
   if (paired.length === 0) return null;
 
-  const possession = paired.find((p) => /possession/i.test(p.label));
+  const possession = paired.find((p) => /possession/i.test(p.type));
   const rest = paired.filter((p) => p !== possession).slice(0, 4);
 
   return (
@@ -53,7 +54,7 @@ export function MatchTopStats({ homeStats, awayStats }: MatchTopStatsProps) {
           </div>
         )}
         {rest.map((stat) => (
-          <CompactStatRow key={stat.label} stat={stat} />
+          <CompactStatRow key={stat.type} stat={stat} />
         ))}
       </div>
     </div>

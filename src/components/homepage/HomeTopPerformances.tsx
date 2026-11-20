@@ -4,6 +4,7 @@ import { PlayerRatingBadge } from '@/components/match/PlayerRatingBadge';
 import { TeamLogo } from '@/components/shared/Logo';
 import type { TopPerformance } from '@/lib/db/queries/home-rail';
 import type { Locale } from '@/lib/i18n/config';
+import { localizePosition } from '@/lib/i18n/feed-labels';
 
 interface Props {
   performances: TopPerformance[];
@@ -52,7 +53,9 @@ export function HomeTopPerformances({ performances, locale, labels }: Props) {
                   <TeamLogo src={p.teamLogo} size={12} className="size-3 object-contain" />
                 )}
                 <span className="truncate text-[10px] text-text-tertiary">
-                  {p.position ? `${p.position} · ${p.teamName}` : p.teamName}
+                  {p.position
+                    ? `${localizePosition(p.position, locale)} · ${p.teamName}`
+                    : p.teamName}
                 </span>
               </div>
             </div>

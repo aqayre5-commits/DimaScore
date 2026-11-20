@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { BASE_URL } from '@/lib/constants/site';
+import { useTranslations } from 'next-intl';
 
 export interface BreadcrumbSegment {
   label: string;
@@ -32,6 +33,7 @@ export function SeoBreadcrumb({
   compact = false,
   emitJsonLd = true,
 }: SeoBreadcrumbProps) {
+  const tShared = useTranslations('shared');
   // BreadcrumbList rules: every ListItem except the last requires an absolute `item` URL. The
   // visible trail can include an unlinkable node (e.g. a country with no landing page) — drop
   // such non-last hrefless nodes from the JSON-LD and renumber so it stays valid, and emit
@@ -51,7 +53,7 @@ export function SeoBreadcrumb({
   };
 
   return (
-    <nav aria-label="breadcrumb" className={cn('px-4', compact ? 'py-px' : 'py-1')}>
+    <nav aria-label={tShared('breadcrumb')} className={cn('px-4', compact ? 'py-px' : 'py-1')}>
       <ol
         className={cn(
           'flex items-center',

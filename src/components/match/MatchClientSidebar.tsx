@@ -109,7 +109,7 @@ export function MatchClientLeftRail({
       {/* Desktop-only stats snapshot — mobile/tablet show the full stats block inline in the centre. */}
       {hasStats && homeStats && awayStats && (
         <div className="hidden xl:block">
-          <MatchTopStats homeStats={homeStats} awayStats={awayStats} />
+          <MatchTopStats homeStats={homeStats} awayStats={awayStats} locale={locale} />
         </div>
       )}
     </div>
