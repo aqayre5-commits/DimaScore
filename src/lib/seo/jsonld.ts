@@ -3,7 +3,7 @@
  * emits a single { "@context", "@graph": [...] } linked by stable @ids. Rendered server-side via
  * <JsonLd> (never from generateMetadata, where JSON-LD is silently ignored).
  *
- * Task 15.3 ships the sitewide nodes (Organization + WebSite/SearchAction). Per-page entity nodes
+ * Task 15.3 ships the sitewide nodes (Organization + WebSite). Per-page entity nodes
  * (SportsEvent, SportsTeam, Athlete, BreadcrumbList) are added in 15.4 and reference these @ids.
  *
  * Types are hand-declared (no schema-dts dependency) — the node set is small and the shapes are
@@ -28,6 +28,27 @@ export const organizationId = (baseUrl: string): string => `${baseUrl}/#organiza
 export const webSiteId = (baseUrl: string): string => `${baseUrl}/#website`;
 export const founderId = (baseUrl: string): string => `${baseUrl}/#founder`;
 
+/** Role as the About page words it in each language (the JSON-LD must match the visible text). */
+const FOUNDER_JOB_TITLE: Record<string, string> = {
+  en: 'Founder and Editor',
+  fr: 'Fondateur et éditeur',
+  ar: 'المؤسس والمحرّر',
+};
+
+/**
+ * Founder and editor. Emitted on /about only, the one page whose visible text names him (Google:
+ * mark up only what the page shows). Name and role only; the role follows the page language and
+ * falls back to English.
+ */
+export function buildFounder(baseUrl: string, locale = 'en'): JsonLdNode {
+  return {
+    '@type': 'Person',
+    '@id': founderId(baseUrl),
+    name: 'Abdilahi Qayre',
+    jobTitle: FOUNDER_JOB_TITLE[locale] ?? FOUNDER_JOB_TITLE.en,
+  };
+}
+
 /** Publisher / brand entity — sitewide, identical on every page. */
 export function buildOrganization(baseUrl: string): JsonLdNode {
   return {
@@ -42,19 +63,9 @@ export function buildOrganization(baseUrl: string): JsonLdNode {
 }
 
 /**
- * Founder and editor. Emitted on /about only, the one page whose visible text names him (Google:
- * mark up only what the page shows). Name and role only.
+ * WebSite node. No SearchAction: site search is the header modal (`/api/v1/search`), and
+ * `/{locale}/recherche` is not a page, so a SearchAction target would 404.
  */
-export function buildFounder(baseUrl: string): JsonLdNode {
-  return {
-    '@type': 'Person',
-    '@id': founderId(baseUrl),
-    name: 'Abdilahi Qayre',
-    jobTitle: 'Founder and Editor',
-  };
-}
-
-/** WebSite + SearchAction (sitelinks search box eligibility). Locale drives url + search target. */
 export function buildWebSite(baseUrl: string, locale: string): JsonLdNode {
   return {
     '@type': 'WebSite',
@@ -64,14 +75,6 @@ export function buildWebSite(baseUrl: string, locale: string): JsonLdNode {
     alternateName: ['ديماسكور', 'DimaScore'],
     inLanguage: ['fr-MA', 'ar-MA', 'en'],
     publisher: { '@id': organizationId(baseUrl) },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${baseUrl}/${locale}/recherche?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
   };
 }
 

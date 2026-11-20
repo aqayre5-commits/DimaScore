@@ -29,7 +29,7 @@ export function buildAboutPageGraph(
       isPartOf: { '@id': webSiteId(baseUrl) },
       about: { '@id': organizationId(baseUrl) },
     },
-    buildFounder(baseUrl),
+    buildFounder(baseUrl, locale),
     // Same @id as the sitewide organization: JSON-LD merges the nodes, adding `founder`.
     {
       '@type': 'NewsMediaOrganization',

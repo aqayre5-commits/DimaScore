@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CONTACT_EMAIL, HOSTING, SITE_PAGES_CONTENT } from '@/lib/constants/site-pages-content';
 import { buildAboutPageGraph } from '@/lib/seo/about-jsonld';
 import { execSync } from 'node:child_process';
-import { buildOrganization } from '@/lib/seo/jsonld';
+import { buildFounder, buildOrganization } from '@/lib/seo/jsonld';
 import { routing } from '@/lib/i18n/routing';
 
 // About, privacy and cookie copy (Revamp R7) states facts about the code. These tests pin each fact
@@ -170,6 +171,8 @@ describe('About JSON-LD', () => {
     });
   });
 
+  const JOB_TITLE = { en: 'Founder and Editor', fr: 'Fondateur et éditeur', ar: 'المؤسس والمحرّر' };
+
   it('the About graph adds the founder Person (name and job title only) and links it from #organization', () => {
     for (const locale of LOCALES) {
       const nodes = graph(locale);
@@ -177,7 +180,7 @@ describe('About JSON-LD', () => {
         '@type': 'Person',
         '@id': 'https://dimascore.ma/#founder',
         name: 'Abdilahi Qayre',
-        jobTitle: 'Founder and Editor',
+        jobTitle: JOB_TITLE[locale],
       });
       expect(nodes).toContainEqual({
         '@type': 'NewsMediaOrganization',
@@ -185,6 +188,25 @@ describe('About JSON-LD', () => {
         founder: { '@id': 'https://dimascore.ma/#founder' },
       });
     }
+  });
+
+  it('the job title is in the page language and matches the role the visible About text gives', () => {
+    const src = readFileSync(
+      join(process.cwd(), 'src/lib/constants/site-pages-content.ts'),
+      'utf8',
+    );
+    for (const locale of LOCALES) {
+      const person = graph(locale).find((n) => n['@type'] === 'Person')!;
+      // sentence case in prose ("Abdilahi Qayre, fondateur et éditeur."), capitalised as a title
+      expect(src.toLowerCase()).toContain(
+        `abdilahi qayre${locale === 'ar' ? '،' : ','} ${String(person.jobTitle).toLowerCase()}`,
+      );
+    }
+  });
+
+  it('falls back to the English job title for an unknown locale', () => {
+    expect(buildFounder(BASE).jobTitle).toBe('Founder and Editor');
+    expect(buildFounder(BASE, 'de').jobTitle).toBe('Founder and Editor');
   });
 
   it('the sitewide organization stays name, url, logo and sameAs X: no founder', () => {
