@@ -17,6 +17,7 @@ import { computeDeltas, type FixtureRow } from '../../live-poller/src/diff';
 
 const TRACKED_COMPETITION_IDS = new Set(VERIFIED_COMPETITIONS.map((c) => c.id));
 const EVENT_THROTTLE_MS = 120_000; // same as Railway
+let errorLoggerInstalled = false;
 
 export interface ShadowResult {
   liveCount: number;
@@ -37,6 +38,22 @@ export async function shadowTick(
   client.defaults.adapter = 'fetch';
   client.defaults.fetchOptions = { cache: 'no-store' };
   client.defaults.signal = AbortSignal.timeout(10_000);
+  if (!errorLoggerInstalled) {
+    // API-Football answers HTTP 200 with an `errors` object (token, plan, rate limit) and an empty
+    // `response`; log those messages (never the key) so an empty tick can be told apart from no matches.
+    client.interceptors.response.use((res) => {
+      const errors = (res.data as { errors?: unknown } | undefined)?.errors;
+      const has = Array.isArray(errors)
+        ? errors.length > 0
+        : !!errors && Object.keys(errors).length > 0;
+      if (has)
+        console.warn(
+          `  [shadow-api-errors] ${res.config.url ?? ''} status=${res.status} errors=${JSON.stringify(errors).slice(0, 300)}`,
+        );
+      return res;
+    });
+    errorLoggerInstalled = true;
+  }
   const provider = getDataProvider();
   const allLive = await provider.getLiveFixtures();
   const apiCalls = 1;
