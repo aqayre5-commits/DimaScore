@@ -7,6 +7,7 @@
  */
 import { inArray } from 'drizzle-orm';
 import { getDataProvider } from '@/lib/data';
+import { getClient } from '@/lib/data/adapters/api-football/client';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { mapFixtureToInsert } from '@/lib/ingestion/fixtures';
@@ -30,6 +31,12 @@ export async function shadowTick(
   lastEventSync: Record<string, number>,
   log: (line: string) => void,
 ): Promise<ShadowResult> {
+  // Axios 1.20's browser/fetch adapter explicitly supplies cache:"default", which workerd rejects.
+  // Scope the override to this shadow Worker only (the Railway entry point is unchanged).
+  const client = getClient();
+  client.defaults.adapter = 'fetch';
+  client.defaults.fetchOptions = { cache: 'no-store' };
+  client.defaults.signal = AbortSignal.timeout(10_000);
   const provider = getDataProvider();
   const allLive = await provider.getLiveFixtures();
   const apiCalls = 1;
