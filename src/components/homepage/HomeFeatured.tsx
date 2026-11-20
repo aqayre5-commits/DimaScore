@@ -38,60 +38,12 @@ interface Props {
     countdownDays: string;
     countdownHours: string;
     countdownMins: string;
-    live: string;
-    /** "Live now" / "En direct" / "مباشر الآن" — the live line under the score (hero I/J). */
-    liveNow: string;
-    noGoals: string;
     tags: Record<FeatureTag, string>;
-    half: {
-      firstHalf: string;
-      secondHalf: string;
-      halftime: string;
-      extraTime: string;
-      penalties: string;
-    };
+    /** Screen-reader heading (H2) for the hero block. */
+    heading: string;
+    /** Shown instead of the card when no upcoming match is scheduled. */
+    empty: { title: string; cta: string };
   };
-}
-
-type HalfLabels = Props['labels']['half'];
-
-/**
- * Live line under the hero score, live-score-card style (options I/J): "Live now 67'", or the
- * break / extra-time / penalties label when the clock isn't the story.
- */
-export function heroStatusParts(
-  statusCode: string,
-  minute: number | null,
-  half: HalfLabels,
-  liveNow: string,
-): { text: string; minute: number | null } {
-  switch (statusCode) {
-    case 'HT':
-    case 'BT':
-      return { text: half.halftime, minute: null };
-    case 'ET':
-      return { text: half.extraTime, minute };
-    case 'P':
-    case 'PEN':
-      return { text: half.penalties, minute: null };
-    default:
-      return { text: liveNow, minute };
-  }
-}
-
-/** The minute as its own LTR island, so "33'" keeps its apostrophe on the right in Arabic. */
-function Minute({ value }: { value: number }) {
-  return (
-    <bdi dir="ltr" className="tabular-nums">
-      {value}&apos;
-    </bdi>
-  );
-}
-
-/** Surname only, to keep hero scorer lines compact ("23' Shaw"). */
-function surname(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  return parts.length > 1 ? parts[parts.length - 1] : name;
 }
 
 function applyPatch(m: HomeFixture, patch: ReturnType<ReturnType<typeof useLiveFixtures>['get']>) {
@@ -118,9 +70,11 @@ function computeCountdown(kickoffAt: Date) {
 }
 
 /**
- * Reimagined landing hero: a single rotating hero across the top ranked matches (Morocco-first +
- * imminence-first + diversity cap from getFeaturedMatches). Live matches are pulled to the front,
- * finished slides are dropped, and rotation pauses on hover/focus. The server's #1 keeps the
+ * Landing hero: one rotating card across the top ranked UPCOMING matches (Morocco-first +
+ * imminence-first + diversity cap from getFeaturedMatches). Live matches are not shown here: they
+ * have their own card (HomeNextMatch, live only), the Live tab and the ticker. A slide that kicks
+ * off, goes live or finishes drops out; when none is left the card becomes an empty state of the
+ * same size, so nothing below it moves. Rotation pauses on hover/focus. The server's #1 keeps the
  * "Match of the day" badge; other slides read "Featured".
  */
 export function HomeFeatured({ matches, locale, labels }: Props) {
@@ -131,17 +85,12 @@ export function HomeFeatured({ matches, locale, labels }: Props) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const patched = matches.map((m) => applyPatch(m, livePatches.get(m.id)));
-  // Reshape by match state. Before mount use the code-only state so the server shell and the
-  // client's first render agree; after mount the time-aware getMatchState drops finished slides
-  // and pulls live to the front. Deferring the clock-dependent reshape avoids a #418 mismatch.
+  // Before mount use the code-only state so the server shell and the client's first render agree;
+  // after mount the time-aware getMatchState drops a slide whose kickoff has passed. Deferring the
+  // clock-dependent reshape avoids a #418 mismatch.
   const stateOf = (m: HomeFixture) =>
     mounted ? getMatchState(m.statusCode, m.kickoffAt) : codeMatchState(m.statusCode);
-  const notFinished = patched.filter((m) => stateOf(m) !== 'finished');
-  const base = notFinished.length > 0 ? notFinished : patched;
-  // Live-first: a match in progress always leads; the rest keep the server ranking.
-  const live = base.filter((m) => stateOf(m) === 'live');
-  const upcoming = base.filter((m) => stateOf(m) !== 'live');
-  const view = [...live, ...upcoming].slice(0, 8);
+  const view = patched.filter((m) => stateOf(m) === 'upcoming').slice(0, 8);
   const matchOfDayId = matches[0]?.id ?? null;
 
   const safeIdx = idx < view.length ? idx : 0;
@@ -164,8 +113,26 @@ export function HomeFeatured({ matches, locale, labels }: Props) {
     }
   }, []);
 
-  if (view.length === 0) return null;
   const match = view[safeIdx];
+
+  if (!match) {
+    return (
+      <div>
+        <h2 className="sr-only">{labels.heading}</h2>
+        <div className="flex min-h-[380px] flex-col items-center justify-center gap-3 rounded-xl border border-border-subtle bg-bg-surface px-6 text-center">
+          <p className="text-base font-semibold text-text-primary">{labels.empty.title}</p>
+          <a
+            href="#matches"
+            className="text-sm font-medium text-accent-azure underline-offset-2 hover:underline"
+          >
+            {labels.empty.cta}
+          </a>
+        </div>
+        {/* Same height as the pager row below the card, so the block never changes size. */}
+        <div className="mt-2 h-2" aria-hidden />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -174,6 +141,7 @@ export function HomeFeatured({ matches, locale, labels }: Props) {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
+      <h2 className="sr-only">{labels.heading}</h2>
       <div className="relative">
         <HeroCard
           match={match}
@@ -204,7 +172,11 @@ export function HomeFeatured({ matches, locale, labels }: Props) {
         )}
       </div>
 
-      {view.length > 1 && (
+      {/* The pager row keeps its height with a single slide, so a slide dropping out after mount
+          (kickoff passed) can't shift what's below. */}
+      {view.length <= 1 ? (
+        <div className="mt-2 h-2" aria-hidden />
+      ) : (
         <div className="mt-2 flex items-center justify-center gap-1.5">
           {view.map((m, i) => (
             <button
@@ -276,7 +248,6 @@ function HeroCard({
   labels: Props['labels'];
   isLead: boolean;
 }) {
-  const mounted = useMounted();
   const [remaining, setRemaining] = useState(() => computeCountdown(match.kickoffAt));
   const [prevKo, setPrevKo] = useState(match.kickoffAt.getTime());
   if (prevKo !== match.kickoffAt.getTime()) {
@@ -291,19 +262,6 @@ function HeroCard({
   const homeName = stripWomenSuffix(getTeamDisplayName(match.homeTeam, locale));
   const awayName = stripWomenSuffix(getTeamDisplayName(match.awayTeam, locale));
   const compName = match.competition.name[locale] ?? match.competition.name['en'] ?? '';
-  // Code-only state until mount so the prerendered shell and the first client render agree
-  // (see codeMatchState); the time-aware state takes over after hydration, flipping the slide
-  // to live/finished without a #418 structural mismatch.
-  const state = mounted
-    ? getMatchState(match.statusCode, match.kickoffAt)
-    : codeMatchState(match.statusCode);
-  const isLive = state === 'live';
-  const showScore = isLive && match.homeScore != null && match.awayScore != null;
-  const allGoals = match.goals ?? [];
-  const homeGoals = allGoals.filter((g) => g.teamId === match.homeTeamId).slice(0, 4);
-  const awayGoals = allGoals.filter((g) => g.teamId === match.awayTeamId).slice(0, 4);
-  const hasGoals = isLive && (homeGoals.length > 0 || awayGoals.length > 0);
-  const liveLine = heroStatusParts(match.statusCode, match.minute, labels.half, labels.liveNow);
 
   return (
     <Link
@@ -333,8 +291,8 @@ function HeroCard({
           )}
         </p>
 
-        {/* Match row — crest + name stay put; the center is a FIXED width and height so the flags
-            never shift or re-center between the VS/time and score/status states. */}
+        {/* Match row — the centre column has a fixed width and min-height so the crests never shift
+            as the time text changes. */}
         <div className="mt-6 flex w-full items-center justify-center gap-3">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:w-[160px] sm:flex-none">
             <TeamCrest team={match.homeTeam} />
@@ -342,37 +300,13 @@ function HeroCard({
           </div>
 
           <div className="flex min-h-[68px] w-[128px] shrink-0 flex-col items-center justify-center gap-1.5">
-            {showScore ? (
-              <>
-                {/* Big neutral score, live line in red under it (I light / J dark; J adds the dot).
-                    Height: 48px score + 6px gap + 14px line = 68px = the column's min-h, the same
-                    as before R9 (40 + 6 + 16 = 62, padded to 68), so the centre never grows. */}
-                {/* Flex, not text: in RTL the home score sits on the home (right) side. */}
-                <span className="flex items-center gap-2 text-5xl font-medium leading-none tabular-nums text-text-primary">
-                  <span>{match.homeScore}</span>
-                  <span className="text-3xl text-text-tertiary">–</span>
-                  <span>{match.awayScore}</span>
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold leading-[14px] text-score-live">
-                  <span
-                    aria-hidden
-                    className="size-1.5 animate-pulse rounded-full bg-score-live [[data-theme=light]_&]:hidden"
-                  />
-                  {liveLine.text}
-                  {liveLine.minute != null && <Minute value={liveLine.minute} />}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="text-3xl font-black tracking-tight text-accent-azure">VS</span>
-                <p
-                  className="text-xs font-medium tracking-wide text-text-tertiary"
-                  suppressHydrationWarning
-                >
-                  <LocalTime date={match.kickoffAt} locale={locale} format="featured" />
-                </p>
-              </>
-            )}
+            <span className="text-3xl font-black tracking-tight text-accent-azure">VS</span>
+            <p
+              className="text-xs font-medium tracking-wide text-text-tertiary"
+              suppressHydrationWarning
+            >
+              <LocalTime date={match.kickoffAt} locale={locale} format="featured" />
+            </p>
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 sm:w-[160px] sm:flex-none">
@@ -381,52 +315,20 @@ function HeroCard({
           </div>
         </div>
 
-        {/* Status band — constant min-height across states so the card height never changes.
-            Upcoming: countdown. Live: goal scorers under each team, top-anchored so they grow
-            DOWNWARD and never push the crests/names above them. 0-0 live shows "no goals yet". */}
+        {/* Countdown band — constant min-height so the card height never changes. */}
         <div className="mt-4 flex min-h-[104px] w-full items-start justify-center">
-          {state === 'upcoming' ? (
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
-                {labels.kicksOffIn}
-              </span>
-              <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
-                <CountdownUnit value={remaining.days} label={labels.countdownDays} />
-                <div className="h-12 w-px bg-border-subtle" />
-                <CountdownUnit value={remaining.hours} label={labels.countdownHours} />
-                <div className="h-12 w-px bg-border-subtle" />
-                <CountdownUnit value={remaining.minutes} label={labels.countdownMins} />
-              </div>
+          <div className="flex flex-col items-center gap-2">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-text-tertiary">
+              {labels.kicksOffIn}
+            </span>
+            <div className="flex items-center overflow-hidden rounded-lg border border-border-subtle bg-bg-surface-2">
+              <CountdownUnit value={remaining.days} label={labels.countdownDays} />
+              <div className="h-12 w-px bg-border-subtle" />
+              <CountdownUnit value={remaining.hours} label={labels.countdownHours} />
+              <div className="h-12 w-px bg-border-subtle" />
+              <CountdownUnit value={remaining.minutes} label={labels.countdownMins} />
             </div>
-          ) : isLive ? (
-            hasGoals ? (
-              <div className="flex w-full items-start justify-center gap-3">
-                <ul className="min-w-0 flex-1 space-y-1 text-center text-xs text-text-secondary sm:w-[160px] sm:flex-none">
-                  {homeGoals.map((g, i) => (
-                    <li key={i} className="truncate">
-                      {surname(g.playerName)}{' '}
-                      <span className="text-text-tertiary">
-                        <Minute value={g.minute} />
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="w-[128px] shrink-0" />
-                <ul className="min-w-0 flex-1 space-y-1 text-center text-xs text-text-secondary sm:w-[160px] sm:flex-none">
-                  {awayGoals.map((g, i) => (
-                    <li key={i} className="truncate">
-                      {surname(g.playerName)}{' '}
-                      <span className="text-text-tertiary">
-                        <Minute value={g.minute} />
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <span className="pt-2 text-xs font-medium text-text-tertiary">{labels.noGoals}</span>
-            )
-          ) : null}
+          </div>
         </div>
       </div>
 

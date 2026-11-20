@@ -21,8 +21,8 @@ interface Props {
   variant: 'desktop' | 'mobile';
 }
 
-// Final rail: next match → league snapshot → FIFA ranking → top performances.
-// Mobile omits 'nextMatch' (the Live Now card) — it's lifted above the filter tabs in page.tsx.
+// Final rail: live now (only while a match is live) → league snapshot → FIFA ranking → top
+// performances. Mobile omits 'nextMatch' (the Live Now card): it sits under the hero in page.tsx.
 // (lions / topMatches / liveGroups slots remain wired below but are no longer placed in the rail.)
 const SEQUENCES: Record<Props['variant'], string[]> = {
   desktop: ['nextMatch', 'leagueSnapshot', 'fifaRanking', 'topPerformances'],
@@ -54,6 +54,7 @@ export async function HomeRailWidgets({ data, locale, variant }: Props) {
         <HomeNextMatch
           candidates={nextFeaturedCandidates}
           locale={locale}
+          liveOnly
           labels={{
             nextMatch: t('nextMatch'),
             liveNow: t('liveNow'),

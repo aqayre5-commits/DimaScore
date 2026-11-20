@@ -19,6 +19,12 @@ interface LeagueLeftRailProps {
   locale: Locale;
   activeCompetitionId?: number;
   competitionLogos?: Record<number, string | null>;
+  /**
+   * Element for the group labels (Morocco, Teams, …). Default h2. The home page passes "p": its
+   * rail comes before the H1 in the DOM, and navigation labels there should not outrank the page's
+   * own headings.
+   */
+  groupHeading?: 'h2' | 'p';
 }
 
 /** Curated primary sections shown by default (competition ids). */
@@ -79,6 +85,7 @@ export function LeagueLeftRail({
   locale,
   activeCompetitionId,
   competitionLogos,
+  groupHeading = 'h2',
 }: LeagueLeftRailProps) {
   const t = useTranslations('megaMenu');
   const tC = useTranslations('competition');
@@ -106,10 +113,12 @@ export function LeagueLeftRail({
     <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
       <nav>
         {/* Morocco */}
-        <Section title={t('morocco')}>{renderComps(PRIMARY_SECTION_IDS[0].ids)}</Section>
+        <Section as={groupHeading} title={t('morocco')}>
+          {renderComps(PRIMARY_SECTION_IDS[0].ids)}
+        </Section>
 
         {/* Teams (national teams) */}
-        <Section title={t('teams')}>
+        <Section as={groupHeading} title={t('teams')}>
           {FEATURED_TEAMS.map((team) => (
             <TeamLink
               key={team.slug}
@@ -122,7 +131,7 @@ export function LeagueLeftRail({
 
         {/* Remaining curated sections */}
         {PRIMARY_SECTION_IDS.slice(1).map((section) => (
-          <Section key={section.labelKey} title={t(section.labelKey)}>
+          <Section as={groupHeading} key={section.labelKey} title={t(section.labelKey)}>
             {renderComps(section.ids)}
           </Section>
         ))}
@@ -130,7 +139,7 @@ export function LeagueLeftRail({
         {/* Expanded: the full catalog grouped by country */}
         {expanded &&
           countryGroups().map((group) => (
-            <Section key={group.key} title={getCountryLabel(group.key, locale)}>
+            <Section as={groupHeading} key={group.key} title={getCountryLabel(group.key, locale)}>
               {group.entries.map((entry) => (
                 <CompLink
                   key={`${entry.competitionId}-${entry.labelKey}`}
@@ -163,13 +172,21 @@ export function LeagueLeftRail({
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  as: Heading,
+  children,
+}: {
+  title: string;
+  as: 'h2' | 'p';
+  children: ReactNode;
+}) {
   return (
     <div>
       <div className="px-4 py-2">
-        <h2 className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
+        <Heading className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
           {title}
-        </h2>
+        </Heading>
       </div>
       {children}
     </div>
