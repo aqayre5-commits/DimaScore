@@ -52,6 +52,7 @@ import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-link
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
 import { MatchAnswerBlock } from '@/components/match/MatchAnswerBlock';
+import { buildKeyFacts, formatLongMatchDate, formatShortMatchDate } from '@/lib/match/key-facts';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 import { MatchClientCenter } from '@/components/match/MatchClientCenter';
 import { PreMatchForm } from '@/components/match/PreMatchForm';
@@ -168,6 +169,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     state: matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming',
     homeScore: match.homeScore,
     awayScore: match.awayScore,
+    dateLabel: formatShortMatchDate(match.kickoffAt, locale as Locale),
+    dateLabelLong: formatLongMatchDate(match.kickoffAt, locale as Locale),
   });
   // Slug+ID canonical (Latin, identical across locales); the bare-id request 301s to this.
   const matchSlug = buildMatchSlug(match.homeTeam?.slug, match.awayTeam?.slug, fixtureId);
@@ -656,7 +659,17 @@ export default async function MatchDetailPage({ params }: PageProps) {
               answer={answerText}
               recap={stageRecap}
               byline={answerByline}
-              facts={[]}
+              facts={buildKeyFacts({
+                locale: typedLocale,
+                kickoffAt: match.kickoffAt,
+                venue: match.venue?.name,
+                homeId: match.homeTeam?.id,
+                awayId: match.awayTeam?.id,
+                homeName: home,
+                awayName: away,
+                teamStats: isUpcoming ? null : prefetch.teamStats,
+                h2h: h2hSummary,
+              })}
               locale={typedLocale}
             />
             <ScoreHeader

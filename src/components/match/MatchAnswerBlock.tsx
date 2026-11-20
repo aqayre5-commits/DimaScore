@@ -3,6 +3,8 @@ import type { Locale } from '@/lib/i18n/config';
 export interface AnswerFact {
   label: string;
   value: string;
+  /** ISO timestamp: the value renders inside <time dateTime>. */
+  dateTime?: string;
 }
 
 interface MatchAnswerBlockProps {
@@ -68,7 +70,9 @@ export function MatchAnswerBlock({
           {facts.map((f, i) => (
             <div key={i} className="flex gap-1">
               <dt className="font-semibold text-text-secondary">{f.label}:</dt>
-              <dd className="min-w-0">{f.value}</dd>
+              <dd className="min-w-0">
+                {f.dateTime ? <time dateTime={f.dateTime}>{f.value}</time> : f.value}
+              </dd>
             </div>
           ))}
         </dl>
