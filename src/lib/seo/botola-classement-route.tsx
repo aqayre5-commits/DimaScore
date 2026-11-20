@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { type Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { BotolaClassementPage } from '@/components/seo/BotolaClassementPage';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
 import {
   BOTOLA_CLASSEMENT_SLUGS,
   botolaClassementPath,
@@ -51,5 +52,10 @@ export async function renderBotolaClassementRoute(locale: string, routeSlug: str
     permanentRedirect(botolaClassementPath(typed));
   }
   setRequestLocale(locale);
-  return <BotolaClassementPage locale={typed} />;
+  return (
+    <>
+      <BotolaClassementPage locale={typed} />
+      <MoroccoHubLinks locale={typed} current="botolaStandings" />
+    </>
+  );
 }

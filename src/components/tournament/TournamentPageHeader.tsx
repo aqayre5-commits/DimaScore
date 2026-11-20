@@ -168,10 +168,26 @@ export function TournamentPageHeader({
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <h1 className="font-display whitespace-nowrap text-lg font-semibold text-text-primary md:whitespace-normal md:text-3xl">
-                  <span className="hidden md:inline">{pageTitle}</span>
-                  <span className="md:hidden">{pageTitleShort ?? pageTitle}</span>
-                </h1>
+                {/* The H1 holds the title once (it used to render it twice, one copy per
+                    breakpoint, so its text read "AFCON 2025AFCON 2025"). A different mobile
+                    short title is a decorative, aria-hidden duplicate outside the H1. */}
+                {pageTitleShort && pageTitleShort !== pageTitle ? (
+                  <>
+                    <h1 className="font-display sr-only text-lg font-semibold text-text-primary md:not-sr-only md:text-3xl">
+                      {pageTitle}
+                    </h1>
+                    <p
+                      aria-hidden="true"
+                      className="font-display whitespace-nowrap text-lg font-semibold text-text-primary md:hidden"
+                    >
+                      {pageTitleShort}
+                    </p>
+                  </>
+                ) : (
+                  <h1 className="font-display whitespace-nowrap text-lg font-semibold text-text-primary md:whitespace-normal md:text-3xl">
+                    {pageTitle}
+                  </h1>
+                )}
                 {/* Mobile: host flags only (larger). Desktop: flags + country names. */}
                 <p className="mt-1 text-text-secondary">
                   <span className="text-lg md:hidden">{hostFlags}</span>

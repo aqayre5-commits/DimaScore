@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
+import { MOROCCO_TEAM_ID } from '@/lib/constants/morocco-hubs';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { buildTeamMeta } from '@/lib/seo/hub-metadata';
 import { isTeamIndexable } from '@/lib/seo/indexable';
@@ -407,6 +409,7 @@ export default async function TeamPage({ params }: PageProps) {
           </>
         }
       />
+      {team.id === MOROCCO_TEAM_ID && <MoroccoHubLinks locale={typedLocale} current="morocco" />}
     </>
   );
 }

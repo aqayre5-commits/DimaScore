@@ -1,4 +1,5 @@
 import type { Locale } from '@/lib/i18n/config';
+import { getCountrySlug } from './country-slugs';
 
 export interface MegaMenuEntry {
   competitionId: number;
@@ -467,11 +468,6 @@ export function findEntryByCompetitionId(competitionId: number): MegaMenuEntry |
  */
 export function buildCompetitionHref(entry: MegaMenuEntry, locale: Locale): string {
   const { countryKey, slugs } = entry;
-  // Import inline to avoid circular deps — country-slugs is a leaf module
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { getCountrySlug } = require('./country-slugs') as {
-    getCountrySlug: (key: string, locale: Locale) => string;
-  };
   const countrySlug = getCountrySlug(countryKey, locale);
   return `/${locale}/competition/${countrySlug}/${slugs[locale]}`;
 }
