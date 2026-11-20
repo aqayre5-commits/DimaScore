@@ -640,7 +640,19 @@
     "live": "En direct",
     "upcoming": "À venir",
     "results": "Résultats",
-    "dateFilter": "Date"
+    "dateFilter": "Date",
+    "tableHeading": "Classement {competition} {season}",
+    "tableCaption": "Classement {competition} {season} : rang, matchs joués, gagnés, nuls, perdus, différence de buts, buts et points de chaque équipe",
+    "fixturesHeading": "Calendrier et résultats par journée",
+    "roundResultsHeading": "Résultats de la journée {round}",
+    "colPlayedFull": "Joués",
+    "colWonFull": "Gagnés",
+    "colDrawnFull": "Nuls",
+    "colLostFull": "Perdus",
+    "colGoalDiffFull": "Différence de buts",
+    "colGoalsFull": "Buts pour et contre",
+    "colPointsFull": "Points",
+    "colRankFull": "Rang"
   },
   "shared": {
     "share": "Partager",

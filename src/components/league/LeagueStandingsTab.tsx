@@ -14,6 +14,8 @@ interface LeagueStandingsTabProps {
   standings: StandingRow[];
   locale: Locale;
   compact?: boolean;
+  /** Screen-reader caption naming the table (competition + season). */
+  caption?: string;
 }
 
 // Zone color from API-Football description field
@@ -52,7 +54,12 @@ function buildLegend(standings: StandingRow[], locale: Locale): ZoneLegendItem[]
   return items;
 }
 
-export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandingsTabProps) {
+export function LeagueStandingsTab({
+  standings,
+  locale,
+  compact,
+  caption,
+}: LeagueStandingsTabProps) {
   const t = useTranslations('leaguePage');
 
   // One row per team — a single-table league must not double a team that has variant group labels.
@@ -64,20 +71,35 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-border-subtle bg-bg-surface">
         <table className="w-full text-sm">
+          {caption && <caption className="sr-only">{caption}</caption>}
           <thead>
             <tr className="border-b border-border-subtle bg-bg-surface-3 text-xs font-medium uppercase text-text-tertiary">
-              <th className="w-8 px-1 py-2 text-center">#</th>
-              <th className="px-2 py-2 text-start">{t('team')}</th>
-              <th className="w-8 px-1 py-2 text-center tabular-nums">{t('colPlayed')}</th>
-              <th className="w-8 px-1 py-2 text-center tabular-nums">{t('colWon')}</th>
-              <th className="w-8 px-1 py-2 text-center tabular-nums">{t('colDrawn')}</th>
-              <th className="w-8 px-1 py-2 text-center tabular-nums">{t('colLost')}</th>
-              <th className="w-10 px-1 py-2 text-center tabular-nums">{t('colGoalDiff')}</th>
-              <th className="w-16 px-1 py-2 text-center tabular-nums">{t('colGoals')}</th>
-              <th className="hidden w-16 px-1 py-2 text-center sm:table-cell">{t('colForm')}</th>
-              <th className="w-10 px-1 py-2 text-center font-semibold tabular-nums">
-                {t('colPoints')}
+              <th scope="col" className="w-8 px-1 py-2 text-center">
+                <abbr title={t('colRankFull')} className="no-underline">
+                  #
+                </abbr>
               </th>
+              <th scope="col" className="px-2 py-2 text-start">
+                {t('team')}
+              </th>
+              <HeadCell short={t('colPlayed')} full={t('colPlayedFull')} className="w-8" />
+              <HeadCell short={t('colWon')} full={t('colWonFull')} className="w-8" />
+              <HeadCell short={t('colDrawn')} full={t('colDrawnFull')} className="w-8" />
+              <HeadCell short={t('colLost')} full={t('colLostFull')} className="w-8" />
+              <HeadCell short={t('colGoalDiff')} full={t('colGoalDiffFull')} className="w-10" />
+              <HeadCell
+                short={t('colGoals')}
+                full={t('colGoalsFull')}
+                className="hidden w-16 sm:table-cell"
+              />
+              <th scope="col" className="hidden w-16 px-1 py-2 text-center sm:table-cell">
+                {t('colForm')}
+              </th>
+              <HeadCell
+                short={t('colPoints')}
+                full={t('colPointsFull')}
+                className="w-10 font-semibold"
+              />
             </tr>
           </thead>
           <tbody>
@@ -102,7 +124,7 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
                   </td>
 
                   {/* Team */}
-                  <td className="px-2 py-2">
+                  <th scope="row" className="px-2 py-2 text-start font-normal">
                     <div className="flex items-center gap-2">
                       <Flag
                         countryCode={row.team?.countryCode}
@@ -124,7 +146,7 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
                         </span>
                       )}
                     </div>
-                  </td>
+                  </th>
 
                   {/* Stats */}
                   <td className="px-1 py-2 text-center tabular-nums text-text-secondary">
@@ -140,11 +162,16 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
                     {row.lost ?? 0}
                   </td>
                   <td className="px-1 py-2 text-center tabular-nums font-medium text-text-primary">
-                    {(row.goalDiff ?? 0) > 0 ? '+' : ''}
-                    {row.goalDiff ?? 0}
+                    {/* LTR isolate so "+4" doesn't render as "4+" in Arabic */}
+                    <bdi dir="ltr">
+                      {(row.goalDiff ?? 0) > 0 ? '+' : ''}
+                      {row.goalDiff ?? 0}
+                    </bdi>
                   </td>
-                  <td className="px-1 py-2 text-center tabular-nums text-text-secondary">
-                    {row.goalsFor ?? 0}:{row.goalsAgainst ?? 0}
+                  <td className="hidden px-1 py-2 text-center tabular-nums text-text-secondary sm:table-cell">
+                    <bdi dir="ltr">
+                      {row.goalsFor ?? 0}:{row.goalsAgainst ?? 0}
+                    </bdi>
                   </td>
                   <td className="hidden px-1 py-2 text-center sm:table-cell">
                     <FormPills
@@ -174,5 +201,15 @@ export function LeagueStandingsTab({ standings, locale, compact }: LeagueStandin
         </div>
       )}
     </div>
+  );
+}
+
+function HeadCell({ short, full, className }: { short: string; full: string; className: string }) {
+  return (
+    <th scope="col" className={cn('px-1 py-2 text-center tabular-nums', className)}>
+      <abbr title={full} className="no-underline">
+        {short}
+      </abbr>
+    </th>
   );
 }

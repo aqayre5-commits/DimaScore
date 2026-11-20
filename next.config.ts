@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
+import { COMPETITION_TAB_REDIRECT } from './src/lib/seo/competition-tab-redirects';
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
 
@@ -166,6 +167,8 @@ const nextConfig: NextConfig = {
         destination: '/ar/matchs-botola-pro',
         permanent: true,
       },
+      // Accidental /fixtures, /standings, /stats competition paths → hub (one 301 hop).
+      COMPETITION_TAB_REDIRECT,
       // BUG-016: /competition/uefa/ucl → canonical champions-league slug
       {
         source: '/:locale/competition/:country/ucl',

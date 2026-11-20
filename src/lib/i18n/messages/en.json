@@ -640,7 +640,19 @@
     "live": "Live",
     "upcoming": "Upcoming",
     "results": "Results",
-    "dateFilter": "Date"
+    "dateFilter": "Date",
+    "tableHeading": "{competition} {season} table",
+    "tableCaption": "{competition} {season} standings: position, played, won, drawn, lost, goal difference, goals and points for each team",
+    "fixturesHeading": "Fixtures and results by round",
+    "roundResultsHeading": "Round {round} results",
+    "colPlayedFull": "Played",
+    "colWonFull": "Won",
+    "colDrawnFull": "Drawn",
+    "colLostFull": "Lost",
+    "colGoalDiffFull": "Goal difference",
+    "colGoalsFull": "Goals for and against",
+    "colPointsFull": "Points",
+    "colRankFull": "Position"
   },
   "shared": {
     "share": "Share",
