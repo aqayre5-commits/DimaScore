@@ -20,6 +20,6 @@ export default async function CookiePolicyPage({ params }: PageProps) {
   setRequestLocale(locale);
   const content = SITE_PAGES_CONTENT[locale as Locale].cookiePolicy;
   return (
-    <StaticPage content={content} locale={locale as Locale} lastUpdated={new Date(2026, 9, 1)} />
+    <StaticPage content={content} locale={locale as Locale} lastUpdated={new Date(2026, 10, 19)} />
   );
 }

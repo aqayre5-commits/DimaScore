@@ -2,8 +2,11 @@ import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 import { type Locale } from '@/lib/i18n/config';
 import { SITE_PAGES_CONTENT } from '@/lib/constants/site-pages-content';
+import { BASE_URL } from '@/lib/constants/site';
 import { buildStaticPageMetadata } from '@/lib/seo/static-page-metadata';
+import { buildAboutPageGraph } from '@/lib/seo/about-jsonld';
 import { StaticPage } from '@/components/legal/StaticPage';
+import { JsonLd } from '@/components/seo/JsonLd';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -19,5 +22,10 @@ export default async function AboutPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const content = SITE_PAGES_CONTENT[locale as Locale].about;
-  return <StaticPage content={content} locale={locale as Locale} />;
+  return (
+    <>
+      <JsonLd graph={buildAboutPageGraph(BASE_URL, locale, content)} />
+      <StaticPage content={content} locale={locale as Locale} />
+    </>
+  );
 }

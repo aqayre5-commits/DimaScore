@@ -26,6 +26,28 @@ export interface JsonLdGraph {
 /** Stable @ids so nodes across the sitewide graph and per-page graphs reconcile to one entity. */
 export const organizationId = (baseUrl: string): string => `${baseUrl}/#organization`;
 export const webSiteId = (baseUrl: string): string => `${baseUrl}/#website`;
+export const founderId = (baseUrl: string): string => `${baseUrl}/#founder`;
+
+/** Role as the About page words it in each language (the JSON-LD must match the visible text). */
+const FOUNDER_JOB_TITLE: Record<string, string> = {
+  en: 'Founder and Editor',
+  fr: 'Fondateur et éditeur',
+  ar: 'المؤسس والمحرّر',
+};
+
+/**
+ * Founder and editor. Emitted on /about only, the one page whose visible text names him (Google:
+ * mark up only what the page shows). Name and role only; the role follows the page language and
+ * falls back to English.
+ */
+export function buildFounder(baseUrl: string, locale = 'en'): JsonLdNode {
+  return {
+    '@type': 'Person',
+    '@id': founderId(baseUrl),
+    name: 'Abdilahi Qayre',
+    jobTitle: FOUNDER_JOB_TITLE[locale] ?? FOUNDER_JOB_TITLE.en,
+  };
+}
 
 /** Publisher / brand entity — sitewide, identical on every page. */
 export function buildOrganization(baseUrl: string): JsonLdNode {
