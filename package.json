@@ -15,7 +15,7 @@
     "seed:wc": "tsx scripts/seed-wc.ts",
     "worker:live-poller": "tsx --env-file=.env.local workers/live-poller/src/index.ts",
     "prepare": "husky",
-    "cf:build": "DIMASCORE_TARGET=cloudflare CF_BUILD_NO_DB=1 NEXT_PUBLIC_BUILD_ID_SHA=$(git rev-parse --short HEAD) opennextjs-cloudflare build && node cf/patch-use-cache.mjs",
+    "cf:build": "DIMASCORE_TARGET=cloudflare CF_BUILD_NO_DB=1 NEXT_PUBLIC_BUILD_ID_SHA=$(git rev-parse --short HEAD) opennextjs-cloudflare build && node cf/patch-use-cache.mjs && node cf/patch-cookie.mjs",
     "cf:preview": "wrangler dev"
   },
   "dependencies": {
