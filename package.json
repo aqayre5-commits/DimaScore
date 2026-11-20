@@ -11,11 +11,12 @@
     "test:integration": "vitest run --project integration",
     "test:all": "vitest run",
     "test:watch": "vitest",
-    "test:integration": "vitest run --project integration",
     "seed": "tsx scripts/seed.ts",
     "seed:wc": "tsx scripts/seed-wc.ts",
     "worker:live-poller": "tsx --env-file=.env.local workers/live-poller/src/index.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "cf:build": "DIMASCORE_TARGET=cloudflare CF_BUILD_NO_DB=1 NEXT_PUBLIC_BUILD_ID_SHA=$(git rev-parse --short HEAD) opennextjs-cloudflare build && node cf/patch-use-cache.mjs",
+    "cf:preview": "wrangler dev"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -65,7 +66,9 @@
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.6",
+    "@opennextjs/cloudflare": "file:vendor/opennext-cf-pr1318-4879fe2.tgz",
+    "wrangler": "4.156.2"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

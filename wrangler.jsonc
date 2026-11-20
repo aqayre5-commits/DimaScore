@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // DimaScore on Cloudflare Workers (OpenNext). Build: `pnpm cf:build` (needs NEXT_PUBLIC_SITE_URL,
+  // NEXT_PUBLIC_PUSHER_HOST, NEXT_PUBLIC_PUSHER_KEY in the build env). Deploy: `opennextjs-cloudflare deploy`.
+  // Vercel ignores this file.
+  "name": "dimascore",
+  "main": "cf/worker.ts",
+  "minify": true,
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS", "html_handling": "none" },
+  // 'use cache' / ISR entries (open-next.config.ts: R2 incremental cache + regional Cache API).
+  "r2_buckets": [
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "dimascore-inc-cache", "jurisdiction": "eu" }
+  ],
+  "observability": { "enabled": true },
+  // Secrets (wrangler secret, never in git): DATABASE_URL (Neon pooled). At cutover also
+  // API_FOOTBALL_KEY and CRON_SECRET. Test deploy: DB_READ_ONLY=1 and VERCEL_ENV=preview (IndexNow off).
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://dimascore.ma",
+    "VERCEL_ENV": "preview",
+    "DB_READ_ONLY": "1"
+  },
+  // Vercel crons (vercel.json, UTC) are mapped in cf/worker.ts CRONS. OFF until the cron handover step;
+  // then: ["0 3 * * *","15 3 * * *","0,30 * * * *","15,45 * * * *","0 5 * * *","*/15 * * * *","0 4 * * 0"]
+  "triggers": { "crons": [] }
+}
