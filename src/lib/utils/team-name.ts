@@ -50,15 +50,18 @@ export function getCompactTeamLabel(team: TeamLike | null, locale: string, maxLe
   const isNational = team.isNational ?? false;
 
   if (locale === 'ar') {
+    const curated = arabicCompactName(team);
     return isNational
       ? (team.shortName['ar'] ??
           truncate(team.name['ar'], maxLen) ??
+          curated ??
           team.code ??
           team.shortName['en'] ??
           truncate(team.name['en'], maxLen) ??
           'TBD')
       : (team.shortName['ar'] ??
           truncate(team.name['ar'], maxLen) ??
+          curated ??
           team.shortName['en'] ??
           truncate(team.name['en'], maxLen) ??
           team.code ??
@@ -85,6 +88,36 @@ export function getCompactTeamLabel(team: TeamLike | null, locale: string, maxLe
     truncate(team.name['en'], maxLen) ??
     team.code ??
     'TBD'
+  );
+}
+
+/**
+ * Curated Arabic name (team-names-i18n: Moroccan clubs by ID, national teams via the country) for
+ * compact Arabic labels. Kept whole (cutting an Arabic name mid-word reads as a different word);
+ * names longer than 16 characters fall through to the next option.
+ */
+const AR_COMPACT_MAX = 16;
+function arabicCompactName(team: TeamLike): string | null {
+  const ar = localizedTeamName(team, 'ar');
+  return ar && ar.length <= AR_COMPACT_MAX ? ar : null;
+}
+
+/**
+ * Short label for score cards (competition featured-match card, league right-rail card).
+ * EN/FR: the scoreboard code (MAR, WYD), else the short name, else the first three letters.
+ * AR: an Arabic name first (stored, else curated), so Arabic pages don't show Latin labels.
+ */
+export function getScoreCardLabel(team: TeamLike | null, locale: string): string {
+  if (!team) return '—';
+  if (locale === 'ar') {
+    const ar = team.shortName['ar'] ?? team.name['ar'] ?? arabicCompactName(team);
+    if (ar) return ar;
+  }
+  return (
+    team.code ??
+    team.shortName[locale] ??
+    team.shortName['en'] ??
+    (team.name[locale] ?? team.name['en'] ?? '—').slice(0, 3).toUpperCase()
   );
 }
 
@@ -145,8 +178,10 @@ export function getTickerCode(team: TeamLike | null, locale: string): string {
   if (!team) return '—';
 
   if (locale === 'ar') {
-    const ar = team.shortName['ar'] ?? team.name['ar'];
-    if (ar) return truncate(ar, 12) ?? ar;
+    const stored = team.shortName['ar'] ?? team.name['ar'];
+    if (stored) return truncate(stored, 12) ?? stored;
+    const curated = arabicCompactName(team);
+    if (curated) return curated;
     return (
       (team.code && team.code.trim()) ||
       deriveTriCode(team.shortName['en'] ?? team.name['en']) ||

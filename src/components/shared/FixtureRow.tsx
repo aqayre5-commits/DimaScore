@@ -1,5 +1,6 @@
 'use client';
 
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { CompetitionLogo } from '@/components/shared/Logo';
 import { useTranslations } from 'next-intl';
 import { Flag } from '@/components/shared/Flag';
@@ -11,6 +12,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
 
 interface FixtureTeam {
+  id?: number | null;
   slug?: string | null;
   name: Record<string, string>;
   shortName: Record<string, string>;
@@ -210,15 +212,7 @@ function TeamBadge({ team, big = false }: { team: FixtureTeam | null; big?: bool
   );
 }
 
-/** Full localized name: name[locale] → name['en'] → shortName[locale] → shortName['en'] → code → '—' */
+/** Full localized name via the shared resolver (stored → curated fr/ar → English → short → code). */
 function resolveFullName(team: FixtureTeam | null, locale: Locale): string {
-  if (!team) return '—';
-  return (
-    team.name[locale] ??
-    team.name['en'] ??
-    team.shortName[locale] ??
-    team.shortName['en'] ??
-    team.code ??
-    '—'
-  );
+  return team ? getTeamDisplayName(team, locale) : '—';
 }

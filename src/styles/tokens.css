@@ -35,30 +35,33 @@
   --brand-red: #f0405a;
 }
 
-/* ─── Light mode (Media tab, About pages) ─── */
+/* ─── Light mode — option I / F (Revamp R9) ───
+   The accepted light palette: a brighter pass of the same hues (cooler canvas, white cards, softer
+   borders), text and accents tuned for WCAG 2.2 AA on white and on the canvas. Dark (option J / E)
+   is the live palette above, unchanged. tests/unit/design/palette-contrast.test.ts checks the pairs. */
 
 [data-theme='light'] {
-  --bg-canvas: #f0f4f8;
+  --bg-canvas: #f3f6f9;
   --bg-surface: #ffffff;
-  --bg-surface-2: #e8eef4;
-  --bg-surface-3: #dce4ec;
-  --border-subtle: #c8d1dc;
-  --border-strong: #a8b8c8;
-  --text-primary: #0d1117;
+  --bg-surface-2: #eef3f7;
+  --bg-surface-3: #e3eaf1;
+  --border-subtle: #dce3ea;
+  --border-strong: #b8c4d0;
+  --text-primary: #0f1a24;
   --text-secondary: #3d4f5f;
-  --text-tertiary: #566070;
-  --accent-green: #00a87f;
-  --accent-green-bright: #00c99a;
-  --accent-green-deep: #008f6b;
-  --accent-crimson: #e63950;
-  --accent-emerald: #00c853;
-  --accent-emerald-bright: #00e676;
+  --text-tertiary: #5a6676;
+  --accent-green: #007a5e;
+  --accent-green-bright: #00a87f;
+  --accent-green-deep: #006650;
+  --accent-crimson: #cf2a3c;
+  --accent-emerald: #0b7a4b;
+  --accent-emerald-bright: #0e9a5e;
   --accent-azure: #3a56d4;
-  --accent-amber: #e8913a;
-  --accent-violet: #8e44ad;
-  --score-live: #e63950;
-  --score-live-bg: #e6395014;
-  --brand-green: #003d2b;
+  --accent-amber: #b86200;
+  --accent-violet: #7d3c98;
+  --score-live: #cf2a3c;
+  --score-live-bg: #cf2a3c14;
+  --brand-green: #0b7a4b;
   --brand-red: #c8102e;
 }
 

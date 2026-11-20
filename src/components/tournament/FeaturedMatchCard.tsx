@@ -1,5 +1,6 @@
 'use client';
 
+import { getScoreCardLabel } from '@/lib/utils/team-name';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { useTranslations } from 'next-intl';
@@ -19,13 +20,8 @@ interface FeaturedMatchCardProps {
 }
 
 function resolveTeamCode(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
-  if (!team) return '—';
-  return stripWomenSuffix(
-    team.code ??
-      team.shortName[locale] ??
-      team.shortName['en'] ??
-      (team.name[locale] ?? team.name['en'] ?? '—').slice(0, 3).toUpperCase(),
-  );
+  // Arabic pages get an Arabic label (stored or curated) instead of a Latin code (R9).
+  return stripWomenSuffix(getScoreCardLabel(team, locale));
 }
 
 export function FeaturedMatchCard({ fixture, locale }: FeaturedMatchCardProps) {
