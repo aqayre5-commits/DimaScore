@@ -38,15 +38,23 @@ export default async function AppLayout({
       >
         <Topbar />
       </Suspense>
-      <main id="main" className="flex-1 min-w-0">
+      {/* Reserve at least one viewport (minus the 40px strip + 48px topbar) for the page, so the
+          streamed "Today's matches" block and footer start below the fold instead of painting in
+          view and being pushed down when the page body streams in (home CLS was 0.89, footer).
+          Short static pages (StaticPage, FAQ) mark their root with data-fit-content and opt out,
+          so they don't get a screen of blank space above the footer. */}
+      <main
+        id="main"
+        className="min-h-[calc(100svh-88px)] min-w-0 flex-1 has-[[data-fit-content]]:min-h-0"
+      >
         {children}
       </main>
       <Suspense>
         <TodaysMatchLinks locale={locale} />
       </Suspense>
-      <Suspense>
-        <Footer />
-      </Suspense>
+      {/* Footer has no request-time reads (only its copyright year suspends), so it ships in the
+          static shell instead of as one more streamed boundary competing with the page body. */}
+      <Footer />
       <Suspense>
         <MobileBottomTabBar />
       </Suspense>

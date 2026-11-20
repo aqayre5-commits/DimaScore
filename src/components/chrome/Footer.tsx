@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import type { Locale } from '@/lib/i18n/config';
@@ -117,13 +118,16 @@ const legalLinks = [
   { key: 'contact', route: 'contact' },
 ] as const;
 
+function CopyrightLine() {
+  const t = useTranslations('footer');
+  return <>{t('copyright', { year: new Date().getFullYear() })}</>;
+}
+
 export function Footer() {
   const t = useTranslations('footer');
   const tApp = useTranslations('app');
   const tMega = useTranslations('megaMenu');
   const locale = useLocale() as Locale;
-  const year = new Date().getFullYear();
-
   return (
     <footer className="border-t border-border-subtle bg-bg-surface">
       <div className="mx-auto max-w-[1280px] px-4 py-8">
@@ -222,7 +226,12 @@ export function Footer() {
       {/* Sub-footer — copyright */}
       <div className="border-t border-border-subtle">
         <div className="mx-auto flex max-w-[1280px] items-center justify-center px-4 py-3">
-          <p className="text-xs text-text-tertiary">{t('copyright', { year })}</p>
+          <p className="text-xs text-text-tertiary">
+            {/* Only the year is request-time; the rest of the footer stays in the static shell. */}
+            <Suspense fallback={t('copyright', { year: '' })}>
+              <CopyrightLine />
+            </Suspense>
+          </p>
         </div>
       </div>
     </footer>

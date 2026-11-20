@@ -8,6 +8,7 @@ import type { Locale } from '@/lib/i18n/config';
 import { BASE_URL } from '@/lib/constants/site';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { buildGraph, buildOrganization, buildWebSite } from '@/lib/seo/jsonld';
+import { pickClientMessages } from '@/lib/i18n/client-messages';
 import '../globals.css';
 
 const ibmPlexSans = IBM_Plex_Sans({
@@ -121,7 +122,8 @@ export default async function LocaleLayout({
       ? `${ibmPlexSansArabic.variable} font-[family-name:var(--font-ibm-plex-arabic)]`
       : `${ibmPlexSans.variable} font-[family-name:var(--font-ibm-plex-sans)]`;
 
-  const messages = (await import(`@/lib/i18n/messages/${locale}.json`)).default;
+  // Only the namespaces client components read (see client-messages.ts) go into the payload.
+  const messages = pickClientMessages((await import(`@/lib/i18n/messages/${locale}.json`)).default);
 
   return (
     <html
