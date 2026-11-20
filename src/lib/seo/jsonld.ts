@@ -11,6 +11,7 @@
  */
 
 import { buildMatchSlug } from '@/lib/seo/match-slug';
+import { SOCIAL_ALLOWLIST } from '@/lib/constants/social-links';
 
 export interface JsonLdNode {
   '@type': string | string[];
@@ -57,8 +58,9 @@ export function buildOrganization(baseUrl: string): JsonLdNode {
     name: 'DimaScore',
     url: `${baseUrl}/`,
     logo: { '@type': 'ImageObject', url: `${baseUrl}/dimascore-logo.svg` },
-    // Only confirmed accounts. Instagram/YouTube/TikTok @dimascore are unconfirmed — omitted.
-    sameAs: ['https://x.com/DimaScoreMa'],
+    // Only confirmed accounts (X, Facebook Page); same list as the footer (constants/social-links).
+    // Instagram/YouTube/TikTok @dimascore are unconfirmed — omitted.
+    sameAs: [...SOCIAL_ALLOWLIST],
   };
 }
 

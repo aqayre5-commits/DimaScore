@@ -209,10 +209,13 @@ describe('About JSON-LD', () => {
     expect(buildFounder(BASE, 'de').jobTitle).toBe('Founder and Editor');
   });
 
-  it('the sitewide organization stays name, url, logo and sameAs X: no founder', () => {
+  it('the sitewide organization stays name, url, logo and sameAs (X, Facebook): no founder', () => {
     const org = buildOrganization(BASE);
     expect(Object.keys(org).sort()).toEqual(['@id', '@type', 'logo', 'name', 'sameAs', 'url']);
-    expect(org.sameAs).toEqual(['https://x.com/DimaScoreMa']);
+    expect(org.sameAs).toEqual([
+      'https://x.com/DimaScoreMa',
+      'https://www.facebook.com/profile.php?id=61596604236635',
+    ]);
   });
 
   it('the founder is emitted on About only: not by the sitewide layout, not by any other page', () => {
