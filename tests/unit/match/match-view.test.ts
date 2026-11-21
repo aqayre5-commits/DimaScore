@@ -9,6 +9,7 @@ import {
   matchSummary,
   matchweekNumber,
   minuteLabel,
+  narrativeScorers,
   pitchSpots,
   runningScores,
   shortPlayerName,
@@ -229,5 +230,46 @@ describe('header / summary helpers', () => {
     expect(
       matchSummary({ ...base, state: 'finished', locale: 'en', homeScore: 1, awayScore: 1 }),
     ).toContain('drew 1–1');
+  });
+});
+
+describe('narrativeScorers', () => {
+  it('keeps real goals and drops missed penalties and shoot-out kicks', () => {
+    const events = [
+      ev({
+        minute: 30,
+        type: 'Goal',
+        detail: 'Normal Goal',
+        teamId: HOME,
+        player: { id: 1, name: { en: 'Home Striker' } },
+      }),
+      ev({
+        minute: 75,
+        type: 'Goal',
+        detail: 'Penalty',
+        teamId: AWAY,
+        player: { id: 2, name: { en: 'Away Nine' } },
+      }),
+      ev({ minute: 80, type: 'Goal', detail: 'Missed Penalty', teamId: HOME }),
+      ev({
+        minute: 120,
+        type: 'Goal',
+        detail: 'Penalty',
+        comments: 'Penalty Shootout',
+        teamId: AWAY,
+      }),
+      ev({
+        minute: 120,
+        type: 'Goal',
+        detail: 'Penalty',
+        comments: 'Penalty Shoot-out',
+        teamId: HOME,
+      }),
+    ];
+    const out = narrativeScorers(events, HOME, 'en');
+    expect(out.map((s) => [s.name, s.minute, s.side, s.isPenalty])).toEqual([
+      ['Home Striker', 30, 'home', false],
+      ['Away Nine', 75, 'away', true],
+    ]);
   });
 });

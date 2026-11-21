@@ -9,7 +9,7 @@ import type {
   MatchTeamStats,
   StatEntry,
 } from '@/lib/db/queries/match-detail';
-import { resultClause } from '@/lib/seo/match-narrative';
+import { resultClause, type NarrativeScorer } from '@/lib/seo/match-narrative';
 
 // ── Events ──────────────────────────────────────────────────────────────────
 
@@ -60,6 +60,30 @@ export function eventGroup(k: EventKind): EventFilter | null {
 
 /** Shoot-out kicks are logged as goal events; they never change the match score. */
 export const isShootout = (e: Pick<MatchEvent, 'comments'>) => /shoot-?out/i.test(e.comments ?? '');
+
+/** Scorers for the summary prose: real goals only (no missed penalties, no shoot-out kicks,
+ *  which never change the match score). */
+export function narrativeScorers(
+  events: MatchEvent[],
+  homeTeamId: number | null | undefined,
+  locale: string,
+): NarrativeScorer[] {
+  return events.flatMap((e) => {
+    const type = e.type?.toLowerCase() ?? '';
+    const detail = (e.detail ?? '').toLowerCase();
+    if (type !== 'goal' || detail.includes('missed') || isShootout(e)) return [];
+    return [
+      {
+        name: e.player?.name?.[locale] ?? e.player?.name?.en ?? '—',
+        minute: e.minute,
+        extra: e.extraMinute,
+        side: (e.teamId === homeTeamId ? 'home' : 'away') as 'home' | 'away',
+        isPenalty: detail.includes('penalty'),
+        isOwnGoal: detail.includes('own goal'),
+      },
+    ];
+  });
+}
 
 /** Minute sort key: 45+2 sorts after 45 and before 46. */
 export const minuteKey = (e: Pick<MatchEvent, 'minute' | 'extraMinute'>) =>
@@ -340,6 +364,8 @@ export interface SummaryInput {
   away: string;
   homeScore: number | null;
   awayScore: number | null;
+  homePen?: number | null;
+  awayPen?: number | null;
   minute: number | null;
   goals: Array<{ name: string; minute: string; side: 'home' | 'away'; ownGoal: boolean }>;
   stats: { home: StatEntry[]; away: StatEntry[] } | null;
@@ -360,6 +386,8 @@ export function matchSummary(input: SummaryInput): string | null {
     away,
     homeScore: hs,
     awayScore: as,
+    homePen: input.homePen,
+    awayPen: input.awayPen,
     locale,
   });
   if (locale === 'ar')

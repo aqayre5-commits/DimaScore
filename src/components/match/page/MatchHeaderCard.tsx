@@ -32,6 +32,9 @@ const INTERRUPTED: Record<string, string> = {
   WO: 'walkover',
 };
 
+const CENTRE =
+  'flex items-center justify-center gap-2 self-stretch text-[44px] font-black leading-none tabular-nums text-text-primary md:gap-3 md:px-8 md:pt-2 md:text-[60px]';
+
 export interface HeaderStrip {
   competitionName: string;
   competitionHref: string | null;
@@ -41,6 +44,10 @@ export interface HeaderStrip {
   /** Long date in the page language (site zone). */
   dateLabel: string;
   venueLabel: string | null;
+  /** "0–1" once the server has the match finished (the h1 shows it); null otherwise. */
+  h1Score: string | null;
+  /** The h1's fixture separator when there is no final score ("vs" / "–" / "ضد"). */
+  vsWord: string;
 }
 
 export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: HeaderStrip }) {
@@ -109,16 +116,31 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
         </div>
       </div>
 
-      {/* Teams and score. The first row is the page's single h1 ("Home 0 – 1 Away", plus the
-          competition for screen readers and crawlers); it shares the columns of the row below
-          (scorers | status | scorers) through subgrid, so the layout is unchanged. */}
+      {/* Teams and score. The first row is the page's single h1, and its text is exactly the
+          server's matchH1: "Home 0–1 Away — Competition" once finished, "Home vs Away —
+          Competition" before and during play (as in the <title>). The live score or kick-off
+          time then sits over the h1's centre cell, outside the h1, so live updates never change
+          the heading. The h1 shares the columns of the row below (scorers | status | scorers)
+          through subgrid, so the layout is unchanged. */}
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-2 px-3 py-5 md:gap-x-6 md:px-8 md:py-7">
-        <h1 className="col-span-3 grid grid-cols-subgrid items-center">
-          <TeamHead team={view.home} side="home" />
-          <span
-            className="flex items-center justify-center gap-2 self-stretch text-[44px] font-black leading-none tabular-nums text-text-primary md:gap-3 md:border-x md:border-border-subtle md:px-8 md:pt-2 md:text-[60px]"
-            suppressHydrationWarning
-          >
+        <h1 className="col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid items-center">
+          <TeamHead team={view.home} side="home" />{' '}
+          <span className={`${CENTRE} md:border-x md:border-border-subtle`}>
+            {strip.h1Score ? (
+              <>
+                <span>{strip.h1Score.split('–')[0]}</span>
+                <span className="font-bold">–</span>
+                <span>{strip.h1Score.split('–')[1]}</span>
+              </>
+            ) : (
+              <span className="sr-only">{strip.vsWord}</span>
+            )}
+          </span>{' '}
+          <TeamHead team={view.away} side="away" />
+          <span className="sr-only"> — {strip.competitionName}</span>
+        </h1>
+        {!strip.h1Score && (
+          <span className={`${CENTRE} col-start-2 row-start-1`} suppressHydrationWarning>
             {showScore ? (
               <>
                 <span>{homeScore}</span>
@@ -131,9 +153,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
               </span>
             )}
           </span>
-          <TeamHead team={view.away} side="away" />
-          <span className="sr-only"> — {strip.competitionName}</span>
-        </h1>
+        )}
 
         <Scorers goals={scorers(view.home.id)} side="home" locale={view.locale} />
         <div className="flex flex-col items-center gap-2 pt-2 md:border-x md:border-border-subtle md:px-8 md:pb-2">

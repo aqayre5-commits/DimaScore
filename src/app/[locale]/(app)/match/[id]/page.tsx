@@ -21,7 +21,6 @@ import {
   buildMatchAnswer,
   buildLiveNarrative,
   summarizeH2H,
-  type NarrativeScorer,
 } from '@/lib/seo/match-narrative';
 import { qk } from '@/lib/query-keys';
 import { previewFromMatchDetail } from '@/lib/match-header-preview';
@@ -52,6 +51,7 @@ import {
   eventKind,
   isShootout,
   eventGroup,
+  narrativeScorers,
   statGroups,
 } from '@/lib/match/match-view';
 import { MatchHeaderCard, type HeaderStrip } from '@/components/match/page/MatchHeaderCard';
@@ -284,21 +284,10 @@ export default async function MatchDetailPage({ params }: PageProps) {
   // ── SEO editorial layer (Task 15.11): server-rendered prose per state ──
   const narrativeState =
     matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming';
-  const scorers: NarrativeScorer[] = (prefetch.events ?? []).flatMap((e) => {
-    const type = e.type?.toLowerCase() ?? '';
-    const detail = (e.detail ?? '').toLowerCase();
-    if (type !== 'goal' || detail.includes('missed')) return [];
-    return [
-      {
-        name: e.player?.name?.[typedLocale] ?? e.player?.name?.en ?? '—',
-        minute: e.minute,
-        extra: e.extraMinute,
-        side: (e.teamId === match.homeTeam?.id ? 'home' : 'away') as 'home' | 'away',
-        isPenalty: detail.includes('penalty'),
-        isOwnGoal: detail.includes('own goal'),
-      },
-    ];
-  });
+  // Shoot-out score, only for a match decided on penalties (so the prose names the winner).
+  const pens =
+    match.statusCode === 'PEN' ? { homePen: match.homeScorePen, awayPen: match.awayScorePen } : {};
+  const scorers = narrativeScorers(prefetch.events ?? [], match.homeTeam?.id, typedLocale);
   const h2hSummary =
     match.homeTeam?.id != null && match.awayTeam?.id != null
       ? summarizeH2H(prefetch.h2h, match.homeTeam.id, match.awayTeam.id)
@@ -338,6 +327,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
           away,
           homeScore: match.homeScore,
           awayScore: match.awayScore,
+          ...pens,
           scorers,
           competition: compName,
           locale: typedLocale,
@@ -350,6 +340,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
     away,
     homeScore: match.homeScore,
     awayScore: match.awayScore,
+    ...pens,
     competition: compName,
     // Upcoming: date only (the card owns the exact kickoff). Live/finished: the full label.
     kickoffLabel: narrativeState === 'upcoming' ? dateLabel : kickoffLabel,
@@ -439,6 +430,13 @@ export default async function MatchDetailPage({ params }: PageProps) {
     competitionLogo: match.competition.logoUrl,
     roundLabel,
     dateLabel: longDate,
+    // The h1 is the header's team row: its text equals matchH1 (score only once finished, as
+    // in the <title>; the live score / kick-off time is shown beside it, outside the h1).
+    h1Score:
+      matchState === 'finished' && match.homeScore != null && match.awayScore != null
+        ? `${match.homeScore}–${match.awayScore}`
+        : null,
+    vsWord: typedLocale === 'en' ? 'vs' : typedLocale === 'ar' ? 'ضد' : '–',
     // Venue name only, as in the mockup.
     venueLabel: match.venue?.name ?? null,
   };
@@ -464,6 +462,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
           away,
           homeScore: match.homeScore,
           awayScore: match.awayScore,
+          ...pens,
           minute: match.minute,
           goals: (prefetch.events ?? [])
             .filter((e) => !isShootout(e))
