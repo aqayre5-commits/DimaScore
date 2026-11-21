@@ -33,7 +33,13 @@ export function StatBarRow({
     wide ? 'text-[15px] md:row-span-1 md:self-end' : 'text-base md:text-lg'
   }`;
   return (
-    <div className="grid grid-cols-[3.5rem_1fr_3.5rem] gap-x-2 py-2.5 md:grid-cols-[4.5rem_1fr_4.5rem]">
+    <div
+      className={`grid grid-cols-[3.5rem_1fr_3.5rem] gap-x-2 py-2.5 ${
+        wide
+          ? 'md:grid-cols-[4.5rem_1fr_4.5rem]'
+          : 'md:grid-cols-[minmax(4.5rem,1fr)_minmax(0,36rem)_minmax(4.5rem,1fr)]'
+      }`}
+    >
       <span className={value}>{row.homeText}</span>
       <span className="col-start-2 row-start-1 text-center text-[13px] text-text-primary md:text-sm">
         {label}
@@ -58,7 +64,7 @@ export function StatBarRow({
 /** Home value | label | away value, no bar (Passing, Discipline). */
 export function StatPlainRow({ row, label }: { row: StatRow; label: string }) {
   return (
-    <div className="grid grid-cols-[3.5rem_1fr_3.5rem] items-baseline gap-x-2 py-2.5 text-sm md:grid-cols-[4.5rem_1fr_4.5rem] md:text-[15px]">
+    <div className="grid grid-cols-[3.5rem_1fr_3.5rem] items-baseline gap-x-2 py-2.5 text-sm md:grid-cols-[minmax(4.5rem,1fr)_minmax(0,36rem)_minmax(4.5rem,1fr)] md:text-[15px]">
       <span className="font-bold tabular-nums text-text-primary">{row.homeText}</span>
       <span className="text-center text-text-primary">{label}</span>
       <span className="text-end font-bold tabular-nums text-text-primary">{row.awayText}</span>
