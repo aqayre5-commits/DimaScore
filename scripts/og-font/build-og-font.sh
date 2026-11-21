@@ -1,8 +1,8 @@
 #!/bin/bash
 # Regenerates src/lib/og/og-font-data.ts: a subset of IBM Plex Sans Arabic Bold (the site's own
 # Arabic UI font, SIL OFL 1.1, text in src/lib/og/OFL.txt), cut down to Latin + Latin-1/Extended-A
-# + Arabic + general punctuation, keeping the Arabic shaping features
-# (init/medi/fina/isol/rlig/liga/calt/ccmp/mark/mkmk/kern).
+# + Arabic + Arabic presentation forms (used by src/lib/og/arabic-shape.ts) + general punctuation,
+# keeping the Arabic shaping features (init/medi/fina/isol/rlig/liga/calt/ccmp/mark/mkmk/kern).
 #
 # "Plex" is a Reserved Font Name and a subset is a Modified Version under the OFL, so the subset is
 # renamed "DimaScore OG" and keeps the copyright and licence name records (IDs 0, 13, 14).
@@ -12,7 +12,7 @@ cd "$(dirname "$0")/../.."
 tmp=$(mktemp -d)
 curl -sSfL -o "$tmp/full.ttf" https://github.com/google/fonts/raw/main/ofl/ibmplexsansarabic/IBMPlexSansArabic-Bold.ttf
 pyftsubset "$tmp/full.ttf" \
-  --unicodes="U+0020-007E,U+00A0-017F,U+0600-06FF,U+2010-2027,U+2030-205E,U+200C-200F" \
+  --unicodes="U+0020-007E,U+00A0-017F,U+0600-06FF,U+2010-2027,U+2030-205E,U+200C-200F,U+FB50-FBFF,U+FE70-FEFF" \
   --layout-features='kern,mark,mkmk,init,medi,fina,isol,rlig,liga,calt,ccmp,locl' \
   --name-IDs='0,1,2,3,4,5,6,13,14' \
   --no-hinting --desubroutinize --output-file="$tmp/sub.ttf" 2>/dev/null

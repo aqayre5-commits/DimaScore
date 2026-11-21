@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { visualArabic } from './arabic-shape';
 
 /**
  * Arabic in Open Graph images.
@@ -9,6 +10,10 @@ import type { CSSProperties } from 'react';
  * `row-reverse` flex row for RTL locales: the first word sits on the right and lines wrap in the
  * right order. Runs of Latin letters and digits ("2 - 1", "A. Sabiri", "120+1'") keep their own
  * left-to-right order inside one run.
+ *
+ * Each Arabic word is pre-shaped into presentation forms (arabic-shape.ts) so Satori measures the
+ * joined glyphs it draws. Without that, every word box was measured with the wider isolated
+ * glyphs and the words were drawn with big gaps between them.
  */
 
 const ARABIC = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/;
@@ -83,23 +88,36 @@ export function OgText({
   const fontSize = typeof style?.fontSize === 'number' ? style.fontSize : 24;
   const rtl = runs.length > 1 || runs[0]?.dir === 'rtl';
   if (!rtl) return <div style={{ display: 'flex', ...style }}>{text}</div>;
+  // The outer box takes the caller's layout (maxWidth, margins, alignment). The inner row is
+  // shrink-wrapped around the words, so columnGap is the only space between them, and still wraps
+  // when a line is longer than the outer box.
   return (
     <div
       style={{
         display: 'flex',
-        flexDirection: 'row-reverse',
-        flexWrap: 'wrap',
         justifyContent: 'center',
-        columnGap: Math.round(fontSize * 0.18),
         ...style,
         // Letter-spacing and uppercase break Arabic joining; they only make sense for Latin.
         letterSpacing: 0,
         textTransform: 'none',
       }}
     >
-      {runs.map((r, i) => (
-        <span key={i}>{r.text}</span>
-      ))}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row-reverse',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+          width: 'auto',
+          alignSelf: 'center',
+          flexGrow: 0,
+          columnGap: Math.round(fontSize * 0.236), // the font's space advance (236/1000 em)
+        }}
+      >
+        {runs.map((r, i) => (
+          <span key={i}>{r.dir === 'rtl' ? visualArabic(r.text) : r.text}</span>
+        ))}
+      </div>
     </div>
   );
 }

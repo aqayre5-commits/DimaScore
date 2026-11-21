@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { competitionShareMeta } from '@/lib/og/og-urls';
 import { getTranslations } from 'next-intl/server';
 import { type Locale } from '@/lib/i18n/config';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
@@ -61,6 +62,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
+  const share = competitionShareMeta({
+    base: baseUrl,
+    locale,
+    country,
+    tournament,
+    name,
+    title,
+    description,
+  });
+
   return {
     title,
     description,
@@ -70,7 +81,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       type: 'website',
       url: `${baseUrl}/${locale}/competition/${country}/${tournament}/bracket`,
+      images: share.images,
     },
+    twitter: share.twitter,
   };
 }
 

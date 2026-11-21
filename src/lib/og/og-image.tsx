@@ -16,7 +16,8 @@ export const OG_FONT_FAMILY = 'DimaScore OG';
  * Fallback images always get DEFAULT, so a transient failure is never cached at the edge.
  */
 export const OG_CACHE_DEFAULT = 'public, max-age=0, must-revalidate';
-export const OG_CACHE_FINISHED = 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800';
+export const OG_CACHE_FINISHED =
+  'public, max-age=0, must-revalidate, s-maxage=86400, stale-while-revalidate=604800';
 
 function decodeBase64(b64: string): ArrayBuffer {
   const bin = atob(b64);

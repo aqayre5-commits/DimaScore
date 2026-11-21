@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { competitionShareMeta } from '@/lib/og/og-urls';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
@@ -101,6 +102,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   languages['x-default'] = languages[defaultLocale];
 
+  const share = competitionShareMeta({
+    base: BASE_URL,
+    locale,
+    country,
+    tournament,
+    name: displayName,
+    title,
+    description,
+  });
+
   return {
     title,
     description,
@@ -113,7 +124,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'DimaScore',
       locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
       type: 'website',
+      images: share.images,
     },
+    twitter: share.twitter,
   };
 }
 
