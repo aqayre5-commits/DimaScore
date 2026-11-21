@@ -4,7 +4,13 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { localizeRound, versusUpper } from '@/lib/i18n/feed-labels';
 import { ogFixtureId } from '@/lib/og/og-ids';
-import { OG_FONT_FAMILY, OG_SIZE, renderOgImage } from '@/lib/og/og-image';
+import {
+  OG_CACHE_DEFAULT,
+  OG_CACHE_FINISHED,
+  OG_FONT_FAMILY,
+  OG_SIZE,
+  renderOgImage,
+} from '@/lib/og/og-image';
 import { OgText } from '@/lib/og/og-text';
 
 const OG_FINISHED: Record<string, Record<'AET' | 'PEN' | 'FT', string>> = {
@@ -24,6 +30,7 @@ function ogFinishedLabel(statusCode: string, locale: string): string {
   return statusCode === 'AET' ? labels.AET : statusCode === 'PEN' ? labels.PEN : labels.FT;
 }
 
+// Fallback only: the match page sets a localized og:image:alt in generateMetadata.
 export const alt = 'Match — DimaScore';
 export const size = OG_SIZE;
 export const contentType = 'image/png';
@@ -156,7 +163,10 @@ export default async function OGImage({
     </div>
   );
 
-  return renderOgImage(image, fallback(locale));
+  // A finished match's card no longer changes, so the CDN may keep it longer.
+  return renderOgImage(image, fallback(locale), {
+    cacheControl: isFinished ? OG_CACHE_FINISHED : OG_CACHE_DEFAULT,
+  });
 }
 
 function Brand({ size }: { size: number }) {

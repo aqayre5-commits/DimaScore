@@ -108,11 +108,84 @@ describe('renderOgImage', () => {
       }),
     );
     const res = await renderOgImage(el, el);
+    expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toBe('image/png');
+    expect(res.headers.get('cache-control')).toBe('public, max-age=0, must-revalidate');
     const png = Buffer.from(await res.arrayBuffer());
     expect(png.subarray(1, 4).toString()).toBe('PNG');
     expect(png.length).toBeGreaterThan(5_000);
     expect(network).toEqual([]);
     if (process.env.OG_TEST_OUT) writeFileSync(process.env.OG_TEST_OUT, png);
+  });
+});
+
+describe('renderOgImage: cache headers and failure paths (never a 500)', () => {
+  const ok = () =>
+    createElement(
+      'div',
+      { style: { display: 'flex', width: '100%', height: '100%', background: '#0d1117' } },
+      'ok',
+    );
+  function Boom(): never {
+    throw new Error('boom');
+  }
+  const broken = () => createElement('div', { style: { display: 'flex' } }, createElement(Boom));
+
+  async function expectPng(res: Response) {
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('image/png');
+    const png = Buffer.from(await res.arrayBuffer());
+    expect(png.subarray(1, 4).toString()).toBe('PNG');
+    // IHDR: 1200x630, as the routes declare.
+    expect(png.readUInt32BE(16)).toBe(1200);
+    expect(png.readUInt32BE(20)).toBe(630);
+    return png;
+  }
+
+  it('uses the longer CDN cache for a finished match', async () => {
+    const { renderOgImage, OG_CACHE_FINISHED } = await import('@/lib/og/og-image');
+    const res = await renderOgImage(ok(), ok(), { cacheControl: OG_CACHE_FINISHED });
+    await expectPng(res);
+    expect(res.headers.get('cache-control')).toBe(
+      'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',
+    );
+  });
+
+  it('serves the fallback image (200, short cache) when the main render throws', async () => {
+    const { renderOgImage, OG_CACHE_FINISHED } = await import('@/lib/og/og-image');
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await renderOgImage(broken(), ok(), { cacheControl: OG_CACHE_FINISHED });
+    await expectPng(res);
+    expect(res.headers.get('cache-control')).toBe('public, max-age=0, must-revalidate');
+    expect(err).toHaveBeenCalledTimes(1);
+    err.mockRestore();
+  });
+
+  it('serves the static PNG (200) when the fallback render throws too', async () => {
+    const { renderOgImage, ogStaticFallbackPng } = await import('@/lib/og/og-image');
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await renderOgImage(broken(), broken());
+    const png = await expectPng(res);
+    expect(png.equals(Buffer.from(ogStaticFallbackPng()))).toBe(true);
+    expect(res.headers.get('cache-control')).toBe('public, max-age=0, must-revalidate');
+    expect(err).toHaveBeenCalledTimes(2);
+    err.mockRestore();
+  });
+
+  it('serves the static PNG when the renderer itself fails (e.g. a font error)', async () => {
+    vi.resetModules();
+    vi.doMock('next/og', () => ({
+      ImageResponse: class {
+        arrayBuffer() {
+          return Promise.reject(new Error('lookupType: 5 - substFormat: 3 is not yet supported'));
+        }
+      },
+    }));
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { renderOgImage } = await import('@/lib/og/og-image');
+    await expectPng(await renderOgImage(ok(), ok()));
+    err.mockRestore();
+    vi.doUnmock('next/og');
+    vi.resetModules();
   });
 });

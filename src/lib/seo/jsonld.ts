@@ -186,6 +186,8 @@ export function buildSportsEventMatch(args: {
   locale?: string;
   /** A visible sentence about the match (the answer block). */
   description?: string | null;
+  /** The match share image (1200×630 og:image). Falls back to the crests when absent. */
+  image?: string | null;
   homeLogo?: string | null;
   awayLogo?: string | null;
   /** Team pages the visible team names link to. */
@@ -217,8 +219,16 @@ export function buildSportsEventMatch(args: {
   const home = team('home', args.homeName, args.homeLogo, args.homeUrl, args.homeSameAs);
   const away = team('away', args.awayName, args.awayLogo, args.awayUrl, args.awaySameAs);
   const ref = (n: JsonLdNode) => ({ '@id': n['@id'] as string });
-  const images = [args.homeLogo, args.awayLogo].filter((x): x is string => !!x);
-  // Only what the page shows: the venue strip (name, city), the crests, the answer sentence. No
+  // performer carries its name too, so a reader doesn't have to follow the @id.
+  const named = (n: JsonLdNode) => ({
+    '@type': 'SportsTeam',
+    '@id': n['@id'] as string,
+    name: n.name,
+  });
+  const images = args.image
+    ? [args.image]
+    : [args.homeLogo, args.awayLogo].filter((x): x is string => !!x);
+  // Only what the page shows: the venue strip (name, city), the share image, the answer sentence. No
   // score property (the visible H1 carries it), no organizer/offers/endDate (we don't have them).
   return {
     '@type': 'SportsEvent',
@@ -233,7 +243,7 @@ export function buildSportsEventMatch(args: {
     homeTeam: ref(home),
     awayTeam: ref(away),
     competitor: [home, away],
-    performer: [ref(home), ref(away)],
+    performer: [named(home), named(away)],
     ...(args.venueName
       ? {
           eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',

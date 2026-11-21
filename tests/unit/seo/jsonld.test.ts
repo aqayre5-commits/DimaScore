@@ -107,11 +107,33 @@ describe('buildSportsEventMatch: Event rich-result fields, only what the page sh
     expect(node.image).toHaveLength(2);
     expect(node.homeTeam).toEqual({ '@id': `${url}#home-team` });
     expect(node.awayTeam).toEqual({ '@id': `${url}#away-team` });
-    expect(node.performer).toEqual([{ '@id': `${url}#home-team` }, { '@id': `${url}#away-team` }]);
+    expect(node.performer).toEqual([
+      { '@type': 'SportsTeam', '@id': `${url}#home-team`, name: 'مانشستر سيتي' },
+      { '@type': 'SportsTeam', '@id': `${url}#away-team`, name: 'فولهام' },
+    ]);
     const competitors = node.competitor as Array<Record<string, unknown>>;
     expect(competitors.map((c) => c.name)).toEqual(['مانشستر سيتي', 'فولهام']);
     expect(competitors[1].url).toBe(`${base}/ar/equipe/fulham-36`);
     expect(node.description).toContain('فولهام');
+  });
+
+  it('uses the 1200x630 share image as the event image when given', () => {
+    const og = `${url}/opengraph-image-2z6s0d`;
+    const n = buildSportsEventMatch({
+      url,
+      locale: 'ar',
+      image: og,
+      homeName: 'مانشستر سيتي',
+      awayName: 'فولهام',
+      homeLogo: 'https://media.api-sports.io/football/teams/50.png',
+      competitionName: 'الدوري الإنجليزي الممتاز',
+      kickoffAt: new Date('2026-11-21T15:00:00.000Z'),
+      statusCode: 'FT',
+    });
+    expect(n.image).toEqual([og]);
+    // The crest stays on the team node.
+    const competitors = n.competitor as Array<Record<string, unknown>>;
+    expect(competitors[0].logo).toBe('https://media.api-sports.io/football/teams/50.png');
   });
 
   it('adds nothing we do not have, and no score', () => {

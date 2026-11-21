@@ -50,6 +50,8 @@ import { getMediaVideos } from '@/lib/db/queries/media';
 import { getStandings } from '@/lib/db/queries';
 import { parseTrailingId } from '@/lib/seo/entity-slug';
 import { buildMatchSlug } from '@/lib/seo/match-slug';
+import { matchOgImageAlt, matchOgImageUrl } from '@/lib/og/og-urls';
+import { OG_SIZE } from '@/lib/og/og-size';
 import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
 import { InnerPageShell } from '@/components/layout/InnerPageShell';
 import { ScoreHeader } from '@/components/match/ScoreHeader';
@@ -174,7 +176,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     dateLabel: formatShortMatchDate(match.kickoffAt, locale as Locale),
     dateLabelLong: formatLongMatchDate(match.kickoffAt, locale as Locale),
   });
-  // Slug+ID canonical (Latin, identical across locales); the bare-id request 301s to this.
+  // Slug+ID canonical (Latin, identical across locales); the bare-id request 308s to this.
   const matchSlug = buildMatchSlug(match.homeTeam?.slug, match.awayTeam?.slug, fixtureId);
   const canonical = `${BASE_URL}/${locale}/match/${matchSlug}`;
   // Index policy (src/lib/seo/indexable.ts): same SQL as the sitemap. A finished match older
@@ -199,9 +201,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: 'DimaScore',
       locale: locale === 'ar' ? 'ar_MA' : locale === 'fr' ? 'fr_MA' : 'en_US',
       type: 'website',
+      // Set explicitly (instead of the file convention's static alt) so the alt is in the page
+      // language. Same URL as the opengraph-image route; twitter:image is filled from it.
+      images: [
+        {
+          url: matchOgImageUrl(BASE_URL, locale, matchSlug),
+          width: OG_SIZE.width,
+          height: OG_SIZE.height,
+          type: 'image/png',
+          alt: matchOgImageAlt(home, away, locale),
+        },
+      ],
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title,
       description,
     },
@@ -600,6 +613,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
               awayUrl: match.awayTeam?.slug
                 ? `${BASE_URL}/${typedLocale}/equipe/${match.awayTeam.slug}`
                 : null,
+              // The 1200×630 share image (og:image) is the event image; crests stay on the teams.
+              image: matchOgImageUrl(BASE_URL, typedLocale, matchSlug),
               // The image the score header shows (the flag for national teams).
               homeLogo: match.homeTeam ? flagImageSrc(match.homeTeam) : null,
               awayLogo: match.awayTeam ? flagImageSrc(match.awayTeam) : null,
