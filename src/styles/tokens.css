@@ -103,7 +103,7 @@
 :root {
   --mp-pill-bg: #3b2c0e;
   --mp-pill-fg: #ffd28a;
-  --mp-bar-away: #5d6778;
+  --mp-bar-away: #6e788a; /* 3.1:1 vs track, 3.9:1 vs surface */
   --mp-bar-track: #252d3a;
   --mp-goal-bg: rgba(0, 217, 166, 0.09);
   --mp-highlight-bg: rgba(0, 217, 166, 0.1);
@@ -118,7 +118,7 @@
 [data-theme='light'] {
   --mp-pill-bg: #fde7b0;
   --mp-pill-fg: #6b4100;
-  --mp-bar-away: #8a94a6;
+  --mp-bar-away: #7d8799; /* 3.0:1 vs track, 3.6:1 vs white (mockup #dbe0e7 is 1.1:1, too faint) */
   --mp-bar-track: #e6ebf1;
   --mp-goal-bg: #eaf6f0;
   --mp-highlight-bg: #e7f5ee;

@@ -75,8 +75,8 @@ function MomentRow({ event, view }: { event: MatchEvent; view: MatchView }) {
   const team = event.teamId === view.home.id ? view.home : view.away;
   const player = event.player?.name?.[view.locale] ?? event.player?.name?.en ?? null;
   const assist = event.assist?.name?.[view.locale] ?? event.assist?.name?.en ?? null;
-  const second =
-    (k === 'goal' || k === 'penaltyGoal') && assist ? t('assist', { name: assist }) : team.name;
+  const assistLine =
+    (k === 'goal' || k === 'penaltyGoal') && assist ? t('assist', { name: assist }) : null;
   return (
     <li className="flex items-center gap-3 py-3">
       <span className="w-11 shrink-0 text-[15px] font-bold tabular-nums text-text-primary">
@@ -89,9 +89,22 @@ function MomentRow({ event, view }: { event: MatchEvent; view: MatchView }) {
           {t(k === 'other' ? 'goal' : k)}
           {player && ` · ${player}`}
         </span>
-        <span className="block truncate text-xs text-text-secondary">{second}</span>
+        {/* Second line: "Assist: …" when there is one; on desktop the team otherwise. Mobile
+            shows the team next to the crest instead (as in the mockup). */}
+        {assistLine ? (
+          <span className="block truncate text-xs text-text-secondary">{assistLine}</span>
+        ) : (
+          <span className="block truncate text-xs text-text-secondary max-md:hidden">
+            {team.name}
+          </span>
+        )}
       </span>
-      <TeamBadge team={team} size={22} />
+      <span className="flex shrink-0 items-center gap-2">
+        <TeamBadge team={team} size={22} />
+        <span className="max-w-[6.5rem] truncate text-xs text-text-primary md:hidden">
+          {team.name}
+        </span>
+      </span>
     </li>
   );
 }

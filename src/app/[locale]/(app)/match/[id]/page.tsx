@@ -587,11 +587,12 @@ export default async function MatchDetailPage({ params }: PageProps) {
     competitionLogo: match.competition.logoUrl,
     roundLabel,
     dateLabel: longDate,
-    venueLabel,
+    // Venue name only in the strip (as in the mockup); the city is in Match details.
+    venueLabel: match.venue?.name ?? null,
   };
 
-  // Overview › summary: the answer line (also the SportsEvent description, so it must stay
-  // visible), then the recap / live narrative, or a stats-based line when there is none.
+  // Overview › summary: one paragraph (see summaryText below); stats-based line only when there
+  // is no recap or live narrative.
   const summaryState =
     match.statusCode === 'HT'
       ? 'halfTime'
@@ -632,7 +633,11 @@ export default async function MatchDetailPage({ params }: PageProps) {
               : null,
         })
       : null;
-  const summaryParagraphs = [answerText, stageRecap ?? statsLine].filter((x): x is string => !!x);
+  // One plain paragraph: the recap (finished; also the NewsArticle body), the live narrative, or
+  // the preview / answer line before kick-off. It is also the SportsEvent description, so the
+  // structured data only states what the page shows.
+  const summaryText = stageRecap ?? statsLine ?? answerText;
+  const summaryParagraphs = [summaryText];
   const summaryTitle = tMp(
     summaryState === 'halfTime'
       ? 'summaryHalfTime'
@@ -729,7 +734,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
               url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
               name: matchH1,
               locale: typedLocale,
-              description: answerText,
+              description: summaryText,
               homeName: home,
               awayName: away,
               homeUrl: match.homeTeam?.slug

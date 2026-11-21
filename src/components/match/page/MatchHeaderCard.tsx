@@ -76,39 +76,40 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
   const goals = chronological(events).filter((e) => isGoalKind(eventKind(e)) && !isShootout(e));
   const scorers = (teamId: number) => goals.filter((g) => g.teamId === teamId);
 
-  // Mobile: competition + round on line 1, date | venue on line 2.
-  const stripItems = [
-    { text: strip.roundLabel, breakBefore: false },
-    { text: strip.dateLabel, breakBefore: true },
-    { text: strip.venueLabel, breakBefore: false },
-  ].filter((x): x is { text: string; breakBefore: boolean } => !!x.text);
-
   return (
     <div className="rounded-2xl border border-border-subtle bg-bg-surface shadow-[0_1px_2px_rgba(15,26,36,0.04)]">
       {/* Strip: competition | matchweek | date | venue */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-subtle px-4 py-3 text-xs text-text-secondary md:border-b-0 md:px-6 md:pb-0 md:pt-4 md:text-sm">
-        <span className="flex items-center gap-2 font-bold text-text-primary">
-          <CompetitionLogo src={strip.competitionLogo} size={20} />
-          {strip.competitionHref ? (
-            <Link href={strip.competitionHref} prefetch={false} className="hover:underline">
-              {strip.competitionName}
-            </Link>
-          ) : (
-            strip.competitionName
-          )}
-        </span>
-        {stripItems.map((item, i) => (
-          <span key={i} className="contents">
-            {item.breakBefore && <span aria-hidden className="basis-full md:hidden" />}
-            <span className="flex items-center gap-3">
-              <span
-                aria-hidden
-                className={`h-4 w-px bg-border-subtle ${item.breakBefore ? 'max-md:hidden' : ''}`}
-              />
-              <span className="min-w-0">{item.text}</span>
-            </span>
+      {/* Mobile: competition | round on line 1, date | venue on line 2 (one line, the venue
+          truncates). Desktop: one row. Dividers only ever sit between two items. */}
+      <div className="flex flex-col gap-1 border-b border-border-subtle px-4 py-3 text-xs text-text-secondary md:flex-row md:items-center md:gap-3 md:border-b-0 md:px-6 md:pb-0 md:pt-4 md:text-sm">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex shrink-0 items-center gap-2 font-bold text-text-primary">
+            <CompetitionLogo src={strip.competitionLogo} size={20} />
+            {strip.competitionHref ? (
+              <Link href={strip.competitionHref} prefetch={false} className="hover:underline">
+                {strip.competitionName}
+              </Link>
+            ) : (
+              strip.competitionName
+            )}
           </span>
-        ))}
+          {strip.roundLabel && (
+            <>
+              <StripDivider />
+              <span className="min-w-0 truncate">{strip.roundLabel}</span>
+            </>
+          )}
+        </div>
+        <StripDivider className="max-md:hidden" />
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="shrink-0 whitespace-nowrap">{strip.dateLabel}</span>
+          {strip.venueLabel && (
+            <>
+              <StripDivider />
+              <span className="min-w-0 truncate">{strip.venueLabel}</span>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Teams and score */}
@@ -156,6 +157,10 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
       </div>
     </div>
   );
+}
+
+function StripDivider({ className = '' }: { className?: string }) {
+  return <span aria-hidden className={`h-4 w-px shrink-0 bg-border-subtle ${className}`} />;
 }
 
 function TeamSide({

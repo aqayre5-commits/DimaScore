@@ -9,6 +9,7 @@ import type {
   MatchTeamStats,
   StatEntry,
 } from '@/lib/db/queries/match-detail';
+import { resultClause } from '@/lib/seo/match-narrative';
 
 // ── Events ──────────────────────────────────────────────────────────────────
 
@@ -365,66 +366,40 @@ export interface SummaryInput {
 export function matchSummary(input: SummaryInput): string | null {
   const { state, locale, home, away, homeScore: hs, awayScore: as } = input;
   if (state === 'upcoming' || hs == null || as == null) return null;
-  const lead = hs === as ? null : hs > as ? home : away;
-  const trail = hs > as ? away : home;
-  const hi = Math.max(hs, as);
-  const lo = Math.min(hs, as);
-  const score = `${hi}–${lo}`;
   const min = input.minute ?? 0;
   const parts: string[] = [];
-
-  if (locale === 'ar') {
-    if (state === 'finished')
-      parts.push(
-        lead ? `فاز ${lead} على ${trail} بنتيجة ${score}.` : `تعادل ${home} و${away} ${score}.`,
-      );
-    else if (state === 'halfTime')
-      parts.push(
-        lead
-          ? `${lead} متقدّم ${score} بين الشوطين.`
-          : `التعادل ${score} بين ${home} و${away} بين الشوطين.`,
-      );
-    else
-      parts.push(
-        lead
-          ? `${lead} متقدّم ${score} بعد ${min} دقيقة.`
-          : `التعادل ${score} بين ${home} و${away} بعد ${min} دقيقة.`,
-      );
-  } else if (locale === 'fr') {
-    if (state === 'finished')
-      parts.push(
-        lead
-          ? `${lead} s'impose ${score} face à ${trail}.`
-          : `${home} et ${away} se quittent sur un nul ${score}.`,
-      );
-    else if (state === 'halfTime')
-      parts.push(
-        lead
-          ? `${lead} mène ${score} à la pause face à ${trail}.`
-          : `${home} et ${away} sont à ${score} à la pause.`,
-      );
-    else
-      parts.push(
-        lead
-          ? `${lead} mène ${score} face à ${trail} après ${min} minutes.`
-          : `${home} et ${away} sont à ${score} après ${min} minutes.`,
-      );
-  } else {
-    if (state === 'finished')
-      parts.push(lead ? `${lead} beat ${trail} ${score}.` : `${home} and ${away} drew ${score}.`);
-    else if (state === 'halfTime')
-      parts.push(
-        lead
-          ? `${lead} lead ${trail} ${score} at half-time.`
-          : `${home} and ${away} are level at ${score} at half-time.`,
-      );
-    else
-      parts.push(
-        lead
-          ? `${lead} lead ${trail} ${score} after ${min} minutes.`
-          : `${home} and ${away} are level at ${score} after ${min} minutes.`,
-      );
-  }
+  const result = resultClause({
+    state: state === 'finished' ? 'finished' : 'live',
+    home,
+    away,
+    homeScore: hs,
+    awayScore: as,
+    locale,
+  });
+  if (locale === 'ar')
+    parts.push(
+      state === 'finished'
+        ? `${result}.`
+        : state === 'halfTime'
+          ? `${result} بين الشوطين.`
+          : `${result} بعد ${min} دقيقة.`,
+    );
+  else if (locale === 'fr')
+    parts.push(
+      state === 'finished'
+        ? `${result}.`
+        : state === 'halfTime'
+          ? `${result} à la pause.`
+          : `${result} après ${min} minutes.`,
+    );
+  else
+    parts.push(
+      state === 'finished'
+        ? `${result}.`
+        : state === 'halfTime'
+          ? `${result} at the break.`
+          : `${result} after ${min} minutes.`,
+    );
 
   if (input.goals.length > 0) {
     const og = locale === 'ar' ? 'هـ.ذ' : locale === 'fr' ? 'CSC' : 'OG';

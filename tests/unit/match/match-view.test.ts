@@ -206,7 +206,7 @@ describe('header / summary helpers', () => {
 
   it('writes a half-time summary in en, fr and ar', () => {
     const en = matchSummary({ ...base, state: 'halfTime', locale: 'en' })!;
-    expect(en).toContain('Chelsea lead Arsenal 1–0 at half-time.');
+    expect(en).toContain('Chelsea lead 1–0 at Arsenal at the break.');
     expect(en).toContain('Goals: Palmer 16′.');
     expect(en).toContain('60%');
     expect(matchSummary({ ...base, state: 'halfTime', locale: 'fr' })).toContain('à la pause');
@@ -215,7 +215,7 @@ describe('header / summary helpers', () => {
 
   it('writes a result at full time and nothing before kick-off', () => {
     expect(matchSummary({ ...base, state: 'finished', locale: 'en' })).toContain(
-      'Chelsea beat Arsenal 1–0.',
+      'Chelsea won 1–0 at Arsenal.',
     );
     expect(matchSummary({ ...base, state: 'upcoming', locale: 'en' })).toBeNull();
     expect(
