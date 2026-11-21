@@ -321,8 +321,8 @@ export function pitchSpots(starters: LineupPlayer[], formation: string | null): 
   for (const s of placed) colsIn.set(s.line, Math.max(colsIn.get(s.line) ?? 0, s.col));
   return placed.map(({ p, line, col }) => {
     const cols = colsIn.get(line) ?? 1;
-    // Goalkeeper at 90% from the top, the furthest line at 12%.
-    const y = lines > 1 ? 90 - ((line - 1) / (lines - 1)) * 78 : 50;
+    // Goalkeeper at 91% from the top (inside the box), the furthest line at 9%.
+    const y = lines > 1 ? 91 - ((line - 1) / (lines - 1)) * 82 : 50;
     const x = (col / (cols + 1)) * 100;
     return { player: p, x, y, isKeeper: line === 1 };
   });

@@ -52,7 +52,7 @@ export function LineupsCard({
       <div
         role="group"
         aria-label={t('chooseTeam')}
-        className="mt-4 grid grid-cols-2 gap-1 rounded-full bg-bg-surface-2 p-1 md:hidden"
+        className="mt-4 grid grid-cols-2 overflow-hidden rounded-lg border border-border-subtle md:hidden"
       >
         {(['home', 'away'] as const).map((s) => {
           const team = s === 'home' ? view.home : view.away;
@@ -68,7 +68,6 @@ export function LineupsCard({
                   : 'text-text-secondary'
               }`}
             >
-              <TeamBadge team={team} size={18} />
               <span className="truncate">{team.name}</span>
             </button>
           );
@@ -98,8 +97,10 @@ function TeamLineup({
   const spots = pitchSpots(lineup.starters, lineup.formation);
   const formation = lineup.formation ?? '';
   return (
-    <div className={mobileHidden ? 'max-md:hidden' : ''}>
-      <div className="mb-3 flex items-center gap-2">
+    <div
+      className={`rounded-xl border border-border-subtle p-2 md:p-3 ${mobileHidden ? 'max-md:hidden' : ''}`}
+    >
+      <div className="mb-2 flex items-center gap-2 px-1 py-1 md:mb-3">
         <TeamBadge team={team} size={26} />
         <h3 className="min-w-0 flex-1 truncate text-base font-bold text-text-primary md:text-lg">
           {team.name}
@@ -159,7 +160,7 @@ function Shirt({ fill, number }: { fill: string; number: number }) {
   return (
     <svg
       viewBox="0 0 32 30"
-      className="size-8 drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)] md:size-9"
+      className="h-8 w-9 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)] md:h-10 md:w-11"
       aria-hidden
     >
       <path
@@ -168,7 +169,7 @@ function Shirt({ fill, number }: { fill: string; number: number }) {
         stroke="rgba(15,26,36,0.35)"
         strokeWidth="1"
       />
-      <text x="16" y="21" textAnchor="middle" fontSize="10" fontWeight="800" fill="#0f1a24">
+      <text x="16" y="20.5" textAnchor="middle" fontSize="10.5" fontWeight="800" fill="#0f1a24">
         {number}
       </text>
     </svg>
@@ -189,10 +190,10 @@ function Pitch({
       dir="ltr"
       role="img"
       aria-label={label}
-      className="relative aspect-[68/66] w-full overflow-hidden rounded-xl"
+      className="relative aspect-[68/66] w-full overflow-hidden rounded-lg"
       style={{
         backgroundImage:
-          'repeating-linear-gradient(to bottom, var(--mp-pitch-a) 0 10%, var(--mp-pitch-b) 10% 20%)',
+          'repeating-linear-gradient(to bottom, var(--mp-pitch-a) 0 12.5%, var(--mp-pitch-b) 12.5% 25%)',
       }}
     >
       <svg
@@ -201,14 +202,15 @@ function Pitch({
         className="absolute inset-0 size-full"
         aria-hidden
       >
-        <g fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="0.35">
+        <g fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="0.35">
           <rect x="1" y="1" width="66" height="64" />
-          <path d="M24.85 1a9.15 9.15 0 0 0 18.3 0" />
-          <rect x="13.85" y="48.5" width="40.3" height="16.5" />
-          <rect x="24.85" y="59.5" width="18.3" height="5.5" />
-          <path d="M26.7 48.5a9.15 9.15 0 0 1 14.6 0" />
+          <line x1="1" y1="33" x2="67" y2="33" />
+          <circle cx="34" cy="33" r="7" />
+          <rect x="16" y="1" width="36" height="10" />
+          <rect x="26" y="1" width="16" height="4" />
+          <rect x="16" y="55" width="36" height="10" />
+          <rect x="26" y="61" width="16" height="4" />
         </g>
-        <circle cx="34" cy="54" r="0.45" fill="rgba(255,255,255,0.8)" />
       </svg>
       {spots.map((s) => (
         <div

@@ -157,9 +157,9 @@ describe('pitchSpots', () => {
     const s = pitchSpots(xi, '2-1');
     const gk = s.find((x) => x.player.id === 1)!;
     expect(gk.isKeeper).toBe(true);
-    expect(gk.y).toBe(90);
+    expect(gk.y).toBe(91);
     expect(gk.x).toBe(50);
-    expect(s.find((x) => x.player.id === 4)!.y).toBe(12);
+    expect(s.find((x) => x.player.id === 4)!.y).toBe(9);
     expect(s.find((x) => x.player.id === 2)!.x).toBeCloseTo(33.33, 1);
   });
 

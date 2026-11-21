@@ -35,14 +35,14 @@ export function StatsCard({ view }: { view: MatchView }) {
           <p className="mt-4 text-sm text-text-secondary">{t('noDataYet')}</p>
         ) : (
           <>
-            <div className="mt-5 flex items-center justify-between gap-2 text-sm font-bold text-text-primary">
+            <div className="mt-5 flex items-center justify-between gap-2 text-sm font-bold text-text-primary md:text-lg">
               <span className="flex min-w-0 items-center gap-2">
-                <TeamBadge team={view.home} size={24} />
+                <TeamBadge team={view.home} size={30} />
                 <span className="truncate">{view.home.name}</span>
               </span>
               <span className="flex min-w-0 items-center gap-2">
                 <span className="truncate">{view.away.name}</span>
-                <TeamBadge team={view.away} size={24} />
+                <TeamBadge team={view.away} size={30} />
               </span>
             </div>
             {groups.map((g) => (

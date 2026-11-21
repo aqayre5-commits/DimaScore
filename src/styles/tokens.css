@@ -124,8 +124,8 @@
   --mp-highlight-bg: #e7f5ee;
   --mp-on-accent: #ffffff;
   --mp-band: #eef2f6;
-  --mp-pitch-a: #3f9a5a;
-  --mp-pitch-b: #3a9054;
+  --mp-pitch-a: #5aa45b;
+  --mp-pitch-b: #559d56;
 }
 
 /* Tab panels: every panel stays in the HTML; only the active one is shown. The active id lives on

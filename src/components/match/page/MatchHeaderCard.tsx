@@ -86,7 +86,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
   return (
     <div className="rounded-2xl border border-border-subtle bg-bg-surface shadow-[0_1px_2px_rgba(15,26,36,0.04)]">
       {/* Strip: competition | matchweek | date | venue */}
-      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-b border-border-subtle px-4 py-3 text-xs text-text-secondary md:justify-start md:px-6 md:text-sm">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-subtle px-4 py-3 text-xs text-text-secondary md:border-b-0 md:px-6 md:pb-0 md:pt-4 md:text-sm">
         <span className="flex items-center gap-2 font-bold text-text-primary">
           <CompetitionLogo src={strip.competitionLogo} size={20} />
           {strip.competitionHref ? (
@@ -105,7 +105,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
                 aria-hidden
                 className={`h-4 w-px bg-border-subtle ${item.breakBefore ? 'max-md:hidden' : ''}`}
               />
-              <span>{item.text}</span>
+              <span className="min-w-0">{item.text}</span>
             </span>
           </span>
         ))}
@@ -122,7 +122,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
               suppressHydrationWarning
             >
               <span>{homeScore}</span>
-              <span aria-hidden className="text-text-tertiary">
+              <span aria-hidden className="font-bold">
                 –
               </span>
               <span>{awayScore}</span>
@@ -188,26 +188,26 @@ function TeamSide({
   // Desktop: crest on the outside, name towards the score. Mobile: crest above the name.
   return (
     <div
-      className={`flex min-w-0 flex-col items-center gap-2 text-center md:gap-4 ${
-        side === 'home' ? 'md:flex-row md:text-start' : 'md:flex-row-reverse md:text-end'
+      className={`flex min-w-0 flex-col items-center gap-2 text-center md:flex-row md:gap-5 md:text-start ${
+        side === 'away' ? 'md:justify-between' : ''
       }`}
     >
       {team.href ? (
         <Link
           href={team.href}
           prefetch={false}
-          className="shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-accent-green"
+          className={`shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-accent-green ${
+            side === 'away' ? 'md:order-last' : ''
+          }`}
           tabIndex={-1}
           aria-hidden
         >
           {crest}
         </Link>
       ) : (
-        crest
+        <span className={`shrink-0 ${side === 'away' ? 'md:order-last' : ''}`}>{crest}</span>
       )}
-      <div
-        className={`flex min-w-0 flex-col gap-1.5 ${side === 'home' ? 'md:items-start' : 'md:items-end'}`}
-      >
+      <div className="flex min-w-0 flex-col items-center gap-1.5 md:items-start">
         {team.href ? (
           <Link href={team.href} prefetch={false} className="hover:underline">
             {name}

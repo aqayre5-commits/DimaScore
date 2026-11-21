@@ -106,7 +106,7 @@ export async function TableCard({
     return (
       <li
         key={`${r.groupLabel}-${r.teamId}`}
-        className={`grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] items-center border-s-4 px-3 py-2.5 text-sm md:grid-cols-[3.5rem_1fr_5rem_5rem] ${
+        className={`grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] items-center border-s-4 px-3 py-2.5 text-sm md:text-[15px] md:grid-cols-[3.5rem_1fr_5rem_5rem] ${
           hl
             ? 'border-accent-green bg-[var(--mp-highlight-bg)] font-bold text-text-primary'
             : 'border-transparent text-text-primary'
@@ -119,19 +119,19 @@ export async function TableCard({
             countryCode={r.team?.countryCode}
             logoUrl={r.team?.logoUrl}
             isNational={r.team?.isNational}
-            size={20}
+            size={24}
             label={name}
           />
           <span className="truncate">{name}</span>
         </span>
         <span className="text-center tabular-nums">{r.played}</span>
-        <span className="text-center tabular-nums">{r.points}</span>
+        <span className="text-center font-bold tabular-nums">{r.points}</span>
       </li>
     );
   };
 
   const band = (label: string) => (
-    <h3 className="mt-4 rounded-lg border-s-4 border-accent-green bg-[var(--mp-band)] px-4 py-2 text-sm font-bold text-text-primary">
+    <h3 className="mt-4 rounded-lg border-s-4 border-accent-green bg-[var(--mp-band)] px-4 py-2 text-sm font-bold text-text-primary md:text-base">
       {label}
     </h3>
   );

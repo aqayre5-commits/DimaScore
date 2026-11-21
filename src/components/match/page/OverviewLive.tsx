@@ -35,6 +35,7 @@ export function KeyStatsCard({ view }: { view: MatchView }) {
           <StatBarRow
             key={r.key}
             row={r}
+            wide
             label={t(r.key)}
             srLabel={t('statsBarLabel', {
               label: t(r.key),

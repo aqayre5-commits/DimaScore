@@ -130,7 +130,7 @@ export function EventsCard({ view }: { view: MatchView }) {
           </Divider>
         )}
         {firstHalf.map(row)}
-        <li className="flex items-center gap-3 px-2 py-3">
+        <li className="flex items-center gap-3 px-2 py-3 md:gap-4 md:px-4">
           <span className="w-12 shrink-0" />
           <span
             aria-hidden
@@ -173,7 +173,7 @@ function EventRow({
   return (
     <li
       hidden={hidden}
-      className={`flex items-center gap-3 rounded-xl px-2 py-3 ${goal ? 'bg-[var(--mp-goal-bg)]' : ''}`}
+      className={`flex items-center gap-3 border-b border-border-subtle px-2 py-3 md:gap-4 md:px-4 ${goal ? 'rounded-xl border-transparent bg-[var(--mp-goal-bg)]' : ''}`}
     >
       <span className="w-12 shrink-0 text-[15px] font-bold tabular-nums text-text-primary">
         {minuteLabel(event)}
@@ -186,11 +186,11 @@ function EventRow({
       </span>
       <EventIcon kind={k} />
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-bold text-text-primary">
+        <span className="block text-sm font-bold text-text-primary md:text-base">
           {t(k === 'other' ? 'goal' : k)}
           {player && ` · ${player}`}
         </span>
-        <span className="block text-xs text-text-secondary">{second}</span>
+        <span className="block text-xs text-text-secondary md:text-sm">{second}</span>
       </span>
       {goal && score && <ScoreChip h={score[0]} a={score[1]} />}
       <TeamBadge team={team} size={22} />
