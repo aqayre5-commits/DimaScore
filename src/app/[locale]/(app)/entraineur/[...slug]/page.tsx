@@ -12,6 +12,7 @@ import { CoachPageHeader } from '@/components/coach/CoachPageHeader';
 import { CoachCareerTable } from '@/components/coach/CoachCareerTable';
 import { db } from '@/lib/db/client';
 import { getCoachById } from '@/lib/db/queries/coach';
+import { teamLabel } from '@/lib/i18n/localized-names';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -122,9 +123,7 @@ export default async function CoachPage({ params }: PageProps) {
             name: displayName,
             nationality,
             image: coach.photoUrl,
-            affiliation: coach.currentTeam
-              ? (coach.currentTeam.name[typedLocale] ?? coach.currentTeam.name['en'])
-              : null,
+            affiliation: coach.currentTeam ? teamLabel(coach.currentTeam, typedLocale) : null,
           }),
           buildBreadcrumbList(
             breadcrumbs,

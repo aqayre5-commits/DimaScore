@@ -76,7 +76,7 @@ export default async function LionsAbroadPage({ params }: PageProps) {
   const typedLocale = locale as Locale;
   const t = await getTranslations({ locale, namespace: 'lionsAbroadPage' });
   const tHome = await getTranslations({ locale, namespace: 'homepage' });
-  const { fixtures, performances } = await getLionsAbroadHubData();
+  const { fixtures, performances } = await getLionsAbroadHubData(locale);
 
   const botola = findEntryByCompetitionId(200);
   const botolaHref = botola ? buildCompetitionHref(botola, typedLocale) : `/${locale}`;

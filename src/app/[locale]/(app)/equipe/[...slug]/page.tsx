@@ -51,6 +51,7 @@ import {
 import { BASE_URL } from '@/lib/constants/site';
 import { cacheLife } from 'next/cache';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -228,7 +229,11 @@ export default async function TeamPage({ params }: PageProps) {
   // its mega-menu entry when one exists (else a plain text crumb).
   const breadcrumbs: BreadcrumbSegment[] = [{ label: tBc('football'), href: `/${locale}` }];
   if (primaryComp) {
-    const compName = primaryComp.name[typedLocale] ?? primaryComp.name['en'] ?? primaryComp.slug;
+    const compName =
+      arabicCompetitionName(primaryComp, typedLocale) ??
+      primaryComp.name[typedLocale] ??
+      primaryComp.name['en'] ??
+      primaryComp.slug;
     const countrySlug = (primaryComp.countryCode ?? '').toLowerCase();
     breadcrumbs.push({
       label: compName,
@@ -236,7 +241,10 @@ export default async function TeamPage({ params }: PageProps) {
     });
   } else if (allStandings.competitions[0]) {
     const fallbackComp = allStandings.competitions[0];
-    const fallbackName = fallbackComp.name[typedLocale] ?? fallbackComp.name['en'];
+    const fallbackName =
+      arabicCompetitionName(fallbackComp, typedLocale) ??
+      fallbackComp.name[typedLocale] ??
+      fallbackComp.name['en'];
     if (fallbackName) {
       const fallbackEntry = findEntryByCompetitionId(fallbackComp.id);
       breadcrumbs.push({
@@ -336,7 +344,9 @@ export default async function TeamPage({ params }: PageProps) {
               name: teamName,
               logo: team.logoUrl,
               competitionName: primaryComp
-                ? (primaryComp.name[typedLocale] ?? primaryComp.name['en'])
+                ? (arabicCompetitionName(primaryComp, typedLocale) ??
+                  primaryComp.name[typedLocale] ??
+                  primaryComp.name['en'])
                 : null,
               sameAs: sameAsForTeam(team.id),
             }),

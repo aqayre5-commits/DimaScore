@@ -5,6 +5,7 @@ import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
 import { computeAge, isUnderage } from '@/lib/utils/age';
 import Image from 'next/image';
+import { teamLabel } from '@/lib/i18n/localized-names';
 
 interface PlayerInfoCardProps {
   player: PlayerDetail;
@@ -41,9 +42,7 @@ export function PlayerInfoCard({ player, locale }: PlayerInfoCardProps) {
   const age = computeAge(player.birthDate);
   // Under-16 safeguarding: hide exact DOB + physical details (age stays — it's coarse).
   const underage = isUnderage(player.birthDate);
-  const clubName = player.currentTeam
-    ? (player.currentTeam.name[locale] ?? player.currentTeam.name['en'] ?? '—')
-    : null;
+  const clubName = player.currentTeam ? teamLabel(player.currentTeam, locale, '—') : null;
 
   const rows: { label: string; value: React.ReactNode }[] = [];
 

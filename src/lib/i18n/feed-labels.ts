@@ -82,10 +82,85 @@ export function localizeStatType(type: string, locale: string): string {
 export function localizeRound(round: string | null | undefined, locale: string): string {
   if (!round) return '';
   if (!isAr(locale)) return round;
-  const exact = lookup(AR_GROUP_LABELS, round) ?? lookup(AR_ROUND_TEMPLATES, round);
+  return arabicRound(round.trim()) ?? round;
+}
+
+/**
+ * Generic round names the feed uses beyond the translator's pack (new seasons, other cups).
+ * Hand-written to the pack's terminology (الدور / الجولة / الملحق / دور الـN); the pack wins on
+ * any overlap. Ordinals cover "1st…10th <Qualifying|Preliminary> Round".
+ */
+const AR_ROUND_EXTRA: Record<string, string> = {
+  'Knockout Round Play-offs': 'ملحق الأدوار الإقصائية',
+  'Knockout Play-offs': 'ملحق الأدوار الإقصائية',
+  'Promotion Play-offs': 'ملحق الصعود',
+  'Relegation Play-offs': 'ملحق الهبوط',
+  'Play-off': 'الملحق',
+  Playoffs: 'الملحق',
+  'Relegation Round': 'مجموعة الهبوط',
+  'Championship Round': 'مجموعة اللقب',
+  'Group Stage': 'دور المجموعات',
+  'League Stage': 'مرحلة الدوري',
+  'Qualifying Round': 'الدور التأهيلي',
+  Qualifying: 'التصفيات',
+  'Final Round': 'الدور النهائي',
+  Finals: 'النهائي',
+  'Quarter-Finals': 'ربع النهائي',
+  '8th Finals': 'دور الـ16',
+  '3rd Place': 'مباراة المركز الثالث',
+  'Round of {n}': 'دور الـ{n}',
+  'Round {n}': 'الجولة {n}',
+  'Matchday {n}': 'الجولة {n}',
+  '{n}': 'الجولة {n}',
+};
+
+const AR_ORDINALS = [
+  '',
+  'الأول',
+  'الثاني',
+  'الثالث',
+  'الرابع',
+  'الخامس',
+  'السادس',
+  'السابع',
+  'الثامن',
+  'التاسع',
+  'العاشر',
+];
+const ORDINAL_ROUND_RE = /^(\d{1,2})(?:st|nd|rd|th) (Qualifying |Preliminary )?Round$/i;
+
+let extraTemplates: Compiled[] | null = null;
+
+function arabicRoundSegment(seg: string): string | null {
+  const exact =
+    lookup(AR_GROUP_LABELS, seg) ?? lookup(AR_ROUND_TEMPLATES, seg) ?? lookup(AR_ROUND_EXTRA, seg);
   if (exact) return exact;
   roundTemplates ??= compile(AR_ROUND_TEMPLATES);
-  return applyTemplates(round.trim(), roundTemplates) ?? round;
+  extraTemplates ??= compile(AR_ROUND_EXTRA);
+  const templated = applyTemplates(seg, roundTemplates) ?? applyTemplates(seg, extraTemplates);
+  if (templated) return templated;
+  const ord = ORDINAL_ROUND_RE.exec(seg);
+  if (ord && AR_ORDINALS[Number(ord[1])]) {
+    const kind = ord[2]?.trim().toLowerCase();
+    const base =
+      kind === 'qualifying'
+        ? 'الدور التأهيلي'
+        : kind === 'preliminary'
+          ? 'الدور التمهيدي'
+          : 'الدور';
+    return `${base} ${AR_ORDINALS[Number(ord[1])]}`;
+  }
+  return null;
+}
+
+/** Whole label first, then " - "-separated parts ("Play-offs - Semi-finals"); null if any part is unknown. */
+function arabicRound(round: string): string | null {
+  const whole = arabicRoundSegment(round);
+  if (whole) return whole;
+  const parts = round.split(' - ');
+  if (parts.length < 2) return null;
+  const out = parts.map((p) => arabicRoundSegment(p.trim()));
+  return out.every((p) => p != null) ? out.join(' - ') : null;
 }
 
 /** Standings group heading from the feed. */
@@ -118,4 +193,31 @@ export function localizeContextLabel(label: string | null | undefined, locale: s
 /** Big "VS" between two crests on hero/next-match cards (hook-free for those components). */
 export function versusUpper(locale: string): string {
   return locale === 'ar' ? 'ضد' : 'VS';
+}
+
+/** Shoot-out score shown after a drawn knockout score: "(4-2 pen)" / "(4-2 t.a.b.)" / "(ركلات الترجيح 4-2)". */
+export function penaltySuffix(home: number, away: number, locale: string): string {
+  if (locale === 'ar') return `(ركلات الترجيح ${home}-${away})`;
+  if (locale === 'fr') return `(${home}-${away} t.a.b.)`;
+  return `(${home}-${away} pen)`;
+}
+
+const RESULT_LETTERS: Record<string, Record<'W' | 'D' | 'L', string>> = {
+  ar: { W: 'ف', D: 'ت', L: 'خ' },
+  fr: { W: 'V', D: 'N', L: 'D' },
+};
+
+/** Win/draw/loss badge letter (same letters as the form column: ف/ت/خ on /ar). */
+export function resultLetter(result: 'W' | 'D' | 'L', locale: string): string {
+  return RESULT_LETTERS[locale]?.[result] ?? result;
+}
+
+const INJURY_TYPES: Record<string, Record<string, string>> = {
+  ar: { 'Missing Fixture': 'غائب', Questionable: 'مشكوك في مشاركته' },
+  fr: { 'Missing Fixture': 'Absent', Questionable: 'Incertain' },
+};
+
+/** Injury list status from the feed ("Missing Fixture" / "Questionable"). */
+export function localizeInjuryType(type: string, locale: string): string {
+  return INJURY_TYPES[locale]?.[type] ?? type;
 }

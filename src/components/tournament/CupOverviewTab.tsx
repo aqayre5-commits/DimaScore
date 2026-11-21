@@ -7,6 +7,7 @@ import type { TopPlayerRow, LeagueCoverageRecord } from '@/lib/db/queries/league
 import type { Locale } from '@/lib/i18n/config';
 import { CupFixturesTab } from './CupFixturesTab';
 import { Flag } from '@/components/shared/Flag';
+import { getTeamDisplayName } from '@/lib/utils/team-name';
 
 interface CupOverviewTabProps {
   fixtures: FixtureWithTeams[];
@@ -52,10 +53,10 @@ export function CupOverviewTab({
                 <tr className="border-b border-border-subtle text-text-tertiary">
                   <th className="py-2 pl-4 text-left font-medium">#</th>
                   <th className="py-2 text-left font-medium">{t('team')}</th>
-                  <th className="py-2 text-center font-medium">P</th>
-                  <th className="py-2 text-center font-medium">W</th>
-                  <th className="py-2 text-center font-medium">D</th>
-                  <th className="py-2 text-center font-medium">L</th>
+                  <th className="py-2 text-center font-medium">{t('colPlayed')}</th>
+                  <th className="py-2 text-center font-medium">{t('colWon')}</th>
+                  <th className="py-2 text-center font-medium">{t('colDrawn')}</th>
+                  <th className="py-2 text-center font-medium">{t('colLost')}</th>
                   <th className="py-2 text-center font-medium">{t('colGoalDiff')}</th>
                   <th className="py-2 pr-4 text-center font-medium">{t('colPoints')}</th>
                 </tr>
@@ -79,7 +80,7 @@ export function CupOverviewTab({
                           label={row.team?.code}
                         />
                         <span className="truncate font-medium text-text-primary">
-                          {row.team?.name?.en ?? row.team?.code ?? '—'}
+                          {row.team ? getTeamDisplayName(row.team, locale) : '—'}
                         </span>
                       </div>
                     </td>

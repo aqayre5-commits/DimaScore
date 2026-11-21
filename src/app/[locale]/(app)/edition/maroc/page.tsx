@@ -145,8 +145,8 @@ export default async function MoroccoEditionPage({ params }: PageProps) {
       }),
     ),
     getNextFeaturedMatches(db),
-    getMoroccanPlayerPerformances(db),
-    getRightRailTopScorers(db),
+    getMoroccanPlayerPerformances(db, 7, 6, typedLocale),
+    getRightRailTopScorers(db, 5, typedLocale),
   ]);
 
   // Standings: Morocco leagues only

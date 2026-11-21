@@ -9,6 +9,7 @@ import type { RoundInfo } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { SITE_TZ } from '@/lib/utils/date';
+import { localizeRound } from '@/lib/i18n/feed-labels';
 
 interface LeagueFixturesCardProps {
   fixtures: FixtureWithTeams[];
@@ -122,7 +123,9 @@ export function LeagueFixturesCard({
           >
             {rounds.map((r) => (
               <option key={r.roundNumber} value={r.roundNumber}>
-                {t('round')} {formatRoundLabel(r.round)}
+                {/\d+$/.test(r.round)
+                  ? `${t('round')} ${formatRoundLabel(r.round)}`
+                  : localizeRound(r.round, locale)}
               </option>
             ))}
           </select>

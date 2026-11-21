@@ -13,6 +13,7 @@ import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { Flag } from '@/components/shared/Flag';
 import { applyResult } from '@/lib/standings/apply-result';
 import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { localizeRound } from '@/lib/i18n/feed-labels';
 
 interface Labels {
   liveGroupStandings: string;
@@ -158,7 +159,7 @@ function GroupCard({
           />
         )}
         <h2 className="truncate text-xs font-semibold text-text-primary">
-          {compName} · Group {group.groupLabel}
+          {compName} · {localizeRound(`Group ${group.groupLabel}`, locale)}
         </h2>
         {hasLive && (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-score-live/10 px-1.5 py-0.5 text-[10px] font-bold text-score-live">

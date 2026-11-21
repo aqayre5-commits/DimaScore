@@ -45,6 +45,8 @@ import { LeagueRightRail } from '@/components/league/LeagueRightRail';
 import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
 import { getLeagueCountryName } from '@/lib/constants/league-content';
+import { teamLabel } from '@/lib/i18n/localized-names';
+import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 
 async function getCachedGenericCupData(competitionId: number, seasonYear: number, locale: Locale) {
   'use cache';
@@ -64,7 +66,7 @@ async function getCachedGenericCupData(competitionId: number, seasonYear: number
     getKnockoutFixtures(db, competitionId, seasonYear),
     getLeagueFixtures(db, competitionId, seasonYear),
     getLeagueCoverage(db, competitionId, seasonYear),
-    getInjuriesForCompetition(db, competitionId, seasonYear),
+    getInjuriesForCompetition(db, competitionId, seasonYear, 30, locale),
     getResolvedTopScorers(db, competitionId, seasonYear, locale, 5),
     getResolvedTopAssists(db, competitionId, seasonYear, locale, 5),
     getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
@@ -116,7 +118,11 @@ export async function renderGenericCupPage(
       : currentSeasonYear;
 
   if (!seasonYear) {
-    const name = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+    const name =
+      arabicCompetitionName(competition, locale) ??
+      competition.name[locale] ??
+      competition.name['en'] ??
+      competition.slug;
     return (
       <div className="mx-auto w-full max-w-[1280px] px-4 py-8">
         <div className="mt-8 flex flex-col items-center gap-4 text-center">
@@ -139,7 +145,11 @@ export async function renderGenericCupPage(
     competitionTeams,
   } = await getCachedGenericCupData(competition.id, seasonYear, locale);
 
-  const competitionName = competition.name[locale] ?? competition.name['en'] ?? competition.slug;
+  const competitionName =
+    arabicCompetitionName(competition, locale) ??
+    competition.name[locale] ??
+    competition.name['en'] ??
+    competition.slug;
   const countryName = getLeagueCountryName(competition.countryCode, locale);
 
   const breadcrumbs: BreadcrumbSegment[] = [
@@ -254,8 +264,8 @@ export async function renderGenericCupPage(
                   id: f.id,
                   kickoffAt: f.kickoffAt,
                   statusCode: f.statusCode,
-                  homeName: f.homeTeam!.name[locale] ?? f.homeTeam!.name['en'] ?? '',
-                  awayName: f.awayTeam!.name[locale] ?? f.awayTeam!.name['en'] ?? '',
+                  homeName: teamLabel(f.homeTeam, locale),
+                  awayName: teamLabel(f.awayTeam, locale),
                   homeSlug: f.homeTeam!.slug,
                   awaySlug: f.awayTeam!.slug,
                 })),

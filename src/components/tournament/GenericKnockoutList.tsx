@@ -6,6 +6,7 @@ import { FixtureRow } from '@/components/shared/FixtureRow';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
+import { localizeRound } from '@/lib/i18n/feed-labels';
 
 interface GenericKnockoutListProps {
   fixtures: FixtureWithTeams[];
@@ -91,7 +92,9 @@ export function GenericKnockoutList({ fixtures, locale }: GenericKnockoutListPro
       {sortedRounds.map(([round, roundFixtures]) => (
         <div key={round}>
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-            {ROUND_LABEL_KEYS[round] ? t(ROUND_LABEL_KEYS[round] as never) : round}
+            {ROUND_LABEL_KEYS[round]
+              ? t(ROUND_LABEL_KEYS[round] as never)
+              : localizeRound(round, locale)}
           </h3>
           <div className="divide-y divide-border-subtle rounded-lg border border-border-subtle bg-bg-surface">
             {roundFixtures.map((f) => (

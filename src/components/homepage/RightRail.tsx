@@ -69,7 +69,7 @@ export async function RightRail({ locale }: RightRailProps) {
         return getStandings(db, w.compId, year);
       }),
     ),
-    uclYear ? getTopScorersForLeague(db, 2, uclYear, 5) : Promise.resolve([]),
+    uclYear ? getTopScorersForLeague(db, 2, uclYear, 5, locale) : Promise.resolve([]),
   ]);
 
   return (

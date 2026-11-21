@@ -11,6 +11,7 @@ import type { TeamSnapshot } from '@/lib/db/queries-hydrate';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
 import { arabicTeamName } from '@/lib/i18n/localized-names';
+import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
 
 interface KnockoutMatchCardProps {
   fixture: FixtureWithTeams;
@@ -51,7 +52,7 @@ export function KnockoutMatchCard({ fixture: raw, locale }: KnockoutMatchCardPro
       dateOptions={{ weekday: 'short', month: 'short', day: 'numeric' }}
     />
   );
-  const ftLabel = f.statusCode === 'AET' ? 'AET' : 'FT';
+  const ftLabel = localizeMatchStatus(f.statusCode === 'AET' ? 'AET' : 'FT', locale);
 
   return (
     <Link
@@ -83,7 +84,7 @@ export function KnockoutMatchCard({ fixture: raw, locale }: KnockoutMatchCardPro
         {isLive ? (
           <span className="flex items-center gap-1.5 text-sm font-bold text-score-live">
             <span className="size-2 animate-pulse rounded-full bg-score-live" />
-            {f.statusCode === 'HT' ? 'HT' : 'LIVE'}
+            {localizeMatchStatus(f.statusCode === 'HT' ? 'HT' : 'LIVE', locale)}
           </span>
         ) : isFinished ? (
           <span className="leading-tight">
