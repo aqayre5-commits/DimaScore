@@ -10,9 +10,9 @@ import { Card, CardTitle } from './Card';
 export function SummaryCard({ title, paragraphs }: { title: string; paragraphs: string[] }) {
   if (paragraphs.length === 0) return null;
   return (
-    <Card labelledBy="mp-summary">
+    <Card labelledBy="mp-summary" pad="pb-2 pt-1 md:px-[18px] md:pb-[30px] md:pt-[15px]">
       <CardTitle id="mp-summary">{title}</CardTitle>
-      <div className="mt-1.5 space-y-2 text-sm leading-snug text-text-secondary md:mt-3 md:text-[17px]">
+      <div className="mt-1 space-y-2 text-[15px] leading-[17px] text-text-secondary md:mt-[11.5px] md:text-[21px] md:leading-snug">
         {paragraphs.map((p, i) => (
           <p key={i} className={i === 0 ? 'text-text-primary' : undefined}>
             {p}
@@ -37,10 +37,10 @@ export function MatchDetailsCard({
       <CardTitle id="mp-details" size="md">
         {title}
       </CardTitle>
-      <dl className="mt-2 divide-y divide-border-subtle text-sm">
+      <dl className="mt-2 divide-y divide-border-subtle text-sm md:mt-[6.5px] md:text-base md:leading-6">
         {rows.map((r, i) => (
-          <div key={i} className="flex items-baseline justify-between gap-4 py-2.5">
-            <dt className="text-text-secondary">{r.label}</dt>
+          <div key={i} className="flex items-baseline justify-between gap-4 py-2.5 md:py-1">
+            <dt className="text-text-secondary md:text-[17px]">{r.label}</dt>
             <dd className="text-end text-text-primary">{r.value}</dd>
           </div>
         ))}
@@ -75,7 +75,7 @@ export async function TableCard({
   const outside = rows.slice(5).filter(inMatch);
 
   const head = (
-    <div className="grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] border-b border-border-subtle px-3 py-2 text-xs font-semibold text-text-secondary md:text-sm md:grid-cols-[4.5rem_1fr_9rem_9rem]">
+    <div className="grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] border-b border-border-subtle px-3 pb-[3px] pt-[13px] text-[15px] font-semibold text-text-secondary md:grid-cols-[92px_1fr_132px_129px] md:pe-0 md:ps-[18px] md:py-[7px] md:text-base md:leading-6">
       <span>{t('pos')}</span>
       <span>{t('club')}</span>
       <span className="text-center">
@@ -99,7 +99,7 @@ export async function TableCard({
     return (
       <li
         key={`${r.groupLabel}-${r.teamId}`}
-        className={`grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] items-center border-s-4 px-3 py-1.5 text-sm md:py-2 md:text-base md:grid-cols-[4.5rem_1fr_9rem_9rem] ${
+        className={`grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] items-center border-s-4 px-3 py-[5px] text-[16.5px] md:grid-cols-[88px_1fr_132px_129px] md:py-1 md:pe-0 md:ps-[14px] md:text-lg ${
           hl
             ? 'border-accent-green bg-[var(--mp-highlight-bg)] font-bold text-text-primary'
             : 'border-transparent text-text-primary'
@@ -107,14 +107,14 @@ export async function TableCard({
         aria-current={hl ? 'true' : undefined}
       >
         <span className="tabular-nums">{r.rank}</span>
-        <span className="flex min-w-0 items-center gap-2 md:gap-4">
+        <span className="flex min-w-0 items-center gap-2 md:gap-[22px]">
           <Flag
             countryCode={r.team?.countryCode}
             logoUrl={r.team?.logoUrl}
             isNational={r.team?.isNational}
-            size={28}
+            size={30}
             label={name}
-            className="max-md:!h-6 max-md:!w-6"
+            className="max-md:!h-7 max-md:!w-7"
           />
           <span className="truncate">{name}</span>
         </span>
@@ -124,33 +124,40 @@ export async function TableCard({
     );
   };
 
-  const band = (label: string) => (
-    <h3 className="mt-4 rounded-lg border-s-4 border-accent-green bg-[var(--mp-band)] px-4 py-2 text-sm font-bold text-text-primary md:py-1.5 md:text-lg">
+  const band = (label: string, mt: string) => (
+    <h3
+      className={`${mt} rounded-lg border-s-4 border-accent-green bg-[var(--mp-band)] px-4 py-[3px] text-[21px] font-bold leading-tight text-text-primary md:rounded-[9px] md:pe-4 md:ps-[17px] md:py-[3px] md:text-[22.5px] md:leading-[1.2]`}
+    >
       {label}
     </h3>
   );
 
   return (
-    <Card labelledBy="mp-table">
-      <CardTitle id="mp-table">{t('tableTitle', { competition: competitionName })}</CardTitle>
-      {band(t('topFive'))}
+    <Card labelledBy="mp-table" pad="md:px-[23px] md:pb-6 md:pt-[11.5px]">
+      <CardTitle id="mp-table" size="table">
+        {t('tableTitle', { competition: competitionName })}
+      </CardTitle>
+      {band(t('topFive'), 'mt-4 md:mt-[14px]')}
       {head}
       <ol className="divide-y divide-border-subtle">{top.map(row)}</ol>
       {outside.map((r) => (
         <div key={r.teamId}>
-          {band(t('teamPosition', { team: r.team ? getTeamDisplayName(r.team, locale) : '—' }))}
-          <p aria-hidden className="py-1 text-center text-text-tertiary">
+          {band(
+            t('teamPosition', { team: r.team ? getTeamDisplayName(r.team, locale) : '—' }),
+            'mt-[29px] md:mt-[25px]',
+          )}
+          <p aria-hidden className="py-3 text-center text-text-tertiary md:py-[11px] md:leading-6">
             …
           </p>
           <ol className="divide-y divide-border-subtle">{row(r)}</ol>
         </div>
       ))}
       {competitionHref && (
-        <p className="mt-4">
+        <p className="mt-4 md:mt-[13px]">
           <Link
             href={competitionHref}
             prefetch={false}
-            className="text-sm font-semibold text-accent-green underline underline-offset-4 hover:no-underline md:text-base"
+            className="text-sm font-semibold text-accent-green underline underline-offset-4 hover:no-underline md:text-[18.5px]"
           >
             {t('fullTable', { competition: competitionName })}
           </Link>

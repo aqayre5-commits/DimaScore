@@ -40,20 +40,20 @@ export function StatBarRow({
 }) {
   const value = `font-bold tabular-nums text-text-primary ${
     wide
-      ? 'self-end text-[15px] leading-tight md:text-base md:leading-normal'
-      : 'row-span-2 self-center text-base md:text-[19px]'
+      ? 'self-end text-[15px] leading-tight md:text-xl md:leading-none'
+      : 'row-span-2 self-center text-[19px] md:text-[22.5px] md:leading-[1.2]'
   }`;
   return (
     <div
-      className={`grid grid-cols-[3.5rem_1fr_3.5rem] gap-x-2 ${wide ? 'py-0.5 md:py-2' : 'py-2.5'} ${
+      className={`grid grid-cols-[minmax(2.25rem,auto)_1fr_minmax(2.25rem,auto)] md:gap-x-2 ${wide ? 'py-0.5 md:py-[5.5px]' : 'py-1.5 md:pb-1 md:pt-[4.5px]'} ${
         wide
           ? 'md:grid-cols-[4.5rem_1fr_4.5rem]'
-          : 'md:grid-cols-[minmax(4.5rem,1fr)_minmax(0,38rem)_minmax(4.5rem,1fr)]'
+          : 'md:grid-cols-[minmax(4.5rem,1fr)_minmax(0,545px)_minmax(4.5rem,1fr)]'
       }`}
     >
       <span className={value}>{row.homeText}</span>
       <span
-        className={`col-start-2 row-start-1 text-center text-[13px] text-text-primary ${wide ? 'leading-tight md:text-sm md:leading-normal' : 'md:text-[15px]'}`}
+        className={`col-start-2 row-start-1 text-center text-text-primary ${wide ? 'text-[13px] leading-tight md:text-[17px] md:leading-none' : 'text-base leading-tight md:text-[18.5px] md:leading-[1.2]'}`}
       >
         {label}
       </span>
@@ -62,7 +62,7 @@ export function StatBarRow({
         <div
           role="img"
           aria-label={srLabel}
-          className={`col-start-2 row-start-2 flex h-[7px] overflow-hidden rounded-full bg-[var(--mp-bar-track)] md:h-2 ${wide ? 'mt-1' : 'mt-1.5'} ${
+          className={`col-start-2 row-start-2 flex overflow-hidden rounded-full bg-[var(--mp-bar-track)] ${wide ? 'mt-1 h-[7px] md:mt-[4px] md:h-2.5' : 'mt-1.5 h-2 md:mt-[5px]'} ${
             wide ? 'md:col-span-3 md:col-start-1' : ''
           }`}
         >
@@ -77,10 +77,12 @@ export function StatBarRow({
 /** Home value | label | away value, no bar (Passing, Discipline). */
 export function StatPlainRow({ row, label }: { row: StatRow; label: string }) {
   return (
-    <div className="grid grid-cols-[3.5rem_1fr_3.5rem] items-baseline gap-x-2 py-2 text-sm md:grid-cols-[minmax(4.5rem,1fr)_minmax(0,38rem)_minmax(4.5rem,1fr)] md:text-base">
-      <span className="font-bold tabular-nums text-text-primary md:text-lg">{row.homeText}</span>
+    <div className="grid grid-cols-[3.5rem_1fr_3.5rem] items-baseline gap-x-2 py-[7px] text-base md:grid-cols-[minmax(4.5rem,1fr)_minmax(0,545px)_minmax(4.5rem,1fr)] md:py-1 md:text-[18.5px] md:leading-[1.2]">
+      <span className="text-[19.5px] font-bold leading-tight tabular-nums text-text-primary md:text-[21.5px] md:leading-[1.2]">
+        {row.homeText}
+      </span>
       <span className="text-center text-text-primary">{label}</span>
-      <span className="text-end font-bold tabular-nums text-text-primary md:text-lg">
+      <span className="text-end text-[19.5px] font-bold leading-tight tabular-nums text-text-primary md:text-[21.5px] md:leading-[1.2]">
         {row.awayText}
       </span>
     </div>

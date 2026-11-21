@@ -47,13 +47,15 @@ export function LineupsCard({
     return null;
 
   return (
-    <Card labelledBy="mp-lineups">
-      <CardTitle id="mp-lineups">{title}</CardTitle>
+    <Card labelledBy="mp-lineups" pad="pt-1.5 md:px-[19px] md:pb-[17px] md:pt-2.5">
+      <CardTitle id="mp-lineups" size="lineups">
+        {title}
+      </CardTitle>
 
       <div
         role="group"
         aria-label={t('chooseTeam')}
-        className="mt-4 grid grid-cols-2 overflow-hidden rounded-lg border border-border-subtle md:hidden"
+        className="mt-3 grid grid-cols-2 overflow-hidden rounded-lg border border-border-subtle md:hidden"
       >
         {(['home', 'away'] as const).map((s) => {
           const team = s === 'home' ? view.home : view.away;
@@ -63,10 +65,10 @@ export function LineupsCard({
               type="button"
               aria-pressed={side === s}
               onClick={() => setSide(s)}
-              className={`flex min-w-0 items-center justify-center gap-2 rounded-full px-3 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-accent-green ${
+              className={`flex min-w-0 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-[17.5px] focus-visible:outline-2 focus-visible:outline-accent-green ${
                 side === s
-                  ? 'bg-[var(--mp-highlight-bg)] text-accent-green shadow-sm'
-                  : 'text-text-secondary'
+                  ? 'bg-[var(--mp-highlight-bg)] font-bold text-accent-green shadow-sm'
+                  : 'font-medium text-text-primary'
               }`}
             >
               <span className="truncate">{team.name}</span>
@@ -75,7 +77,7 @@ export function LineupsCard({
         })}
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 md:mt-5 md:grid-cols-2 md:gap-6">
+      <div className="mt-2.5 grid grid-cols-1 gap-4 md:mt-[20.5px] md:grid-cols-2 md:gap-2.5">
         <TeamLineup team={view.home} lineup={home} kit="home" mobileHidden={side !== 'home'} />
         <TeamLineup team={view.away} lineup={away} kit="away" mobileHidden={side !== 'away'} />
       </div>
@@ -99,15 +101,15 @@ function TeamLineup({
   const formation = lineup.formation ?? '';
   return (
     <div className={mobileHidden ? 'max-md:hidden' : undefined}>
-      <div className="rounded-xl border border-border-subtle p-2 md:p-3">
-        <div className="mb-2 flex items-center gap-2 px-1 py-1 md:mb-3">
-          <TeamBadge team={team} size={26} />
-          <h3 className="min-w-0 flex-1 truncate text-base font-bold text-text-primary md:text-lg">
+      <div className="rounded-xl border border-border-subtle p-2 md:p-[9px]">
+        <div className="mb-2 flex items-center gap-2.5 px-1 py-1 md:mb-[8.5px] md:gap-4 md:pe-[13.5px] md:ps-3 md:py-0">
+          <TeamBadge team={team} size={45} className="max-md:!h-10 max-md:!w-10" />
+          <h3 className="min-w-0 flex-1 truncate text-lg font-bold text-text-primary md:text-[21.5px]">
             {team.name}
           </h3>
           {formation && (
             <span
-              className="text-sm font-bold tabular-nums text-text-secondary"
+              className="text-[17.5px] font-semibold tabular-nums text-text-primary md:text-[20.5px] md:font-medium md:text-text-secondary"
               aria-label={t('formationLabel', { formation })}
             >
               {formation}
@@ -145,7 +147,7 @@ function Shirt({ fill, number }: { fill: string; number: number }) {
   return (
     <svg
       viewBox="0 0 32 30"
-      className="h-8 w-9 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)] md:h-10 md:w-11"
+      className="h-10 w-11 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)] md:h-9 md:w-[43px]"
       aria-hidden
     >
       <path
@@ -154,7 +156,7 @@ function Shirt({ fill, number }: { fill: string; number: number }) {
         stroke="rgba(15,26,36,0.35)"
         strokeWidth="1"
       />
-      <text x="16" y="20.5" textAnchor="middle" fontSize="10.5" fontWeight="800" fill="#0f1a24">
+      <text x="16" y="21.5" textAnchor="middle" fontSize="13" fontWeight="800" fill="#0f1a24">
         {number}
       </text>
     </svg>
@@ -175,7 +177,7 @@ function Pitch({
       dir="ltr"
       role="img"
       aria-label={label}
-      className="relative aspect-[68/66] w-full overflow-hidden rounded-lg"
+      className="relative aspect-[382/422] w-full overflow-hidden rounded-lg md:aspect-[68/66]"
       style={{
         backgroundImage:
           'repeating-linear-gradient(to bottom, var(--mp-pitch-a) 0 12.5%, var(--mp-pitch-b) 12.5% 25%)',
@@ -190,17 +192,24 @@ function Pitch({
         <g fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="0.35">
           <rect x="1" y="1" width="66" height="64" />
           <line x1="1" y1="33" x2="67" y2="33" />
-          <circle cx="34" cy="33" r="7" />
           <rect x="16" y="1" width="36" height="10" />
           <rect x="26" y="1" width="16" height="4" />
           <rect x="16" y="55" width="36" height="10" />
           <rect x="26" y="61" width="16" height="4" />
         </g>
       </svg>
+      {/* Centre circle in its own square box so it stays round at the taller mobile ratio. */}
+      <svg
+        viewBox="0 0 14 14"
+        className="absolute left-1/2 top-1/2 aspect-square w-[20.6%] -translate-x-1/2 -translate-y-1/2 overflow-visible"
+        aria-hidden
+      >
+        <circle cx="7" cy="7" r="7" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="0.35" />
+      </svg>
       {spots.map((s) => (
         <div
           key={s.player.id}
-          className="absolute flex w-[22%] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-0.5"
+          className="absolute flex w-[27%] -translate-x-1/2 md:w-[22%] -translate-y-1/2 flex-col items-center gap-0.5 md:gap-0"
           style={{ left: `${s.x}%`, top: `${s.y}%` }}
         >
           <Shirt
@@ -213,7 +222,7 @@ function Pitch({
             }
             number={s.player.number}
           />
-          <span className="max-w-full truncate rounded bg-white px-1.5 py-px text-[10px] font-semibold leading-tight text-[#0f1a24] shadow-sm md:text-[11px]">
+          <span className="max-w-full truncate rounded bg-white px-2 py-0.5 text-[13px] font-semibold leading-tight text-[#0f1a24] shadow-sm md:px-3 md:py-0.5 md:text-[13px]">
             {shortPlayerName(s.player.name)}
           </span>
         </div>

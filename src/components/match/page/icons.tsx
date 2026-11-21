@@ -5,13 +5,25 @@ export function EventIcon({
   kind,
   className = '',
   accentGoal = false,
+  large = false,
 }: {
   kind: EventKind;
   className?: string;
+  /** Desktop rows of Key moments / Match events: the mockups' larger cards and ball. */
+  large?: boolean | 'xl';
   /** Events tab: scored goals use the accent colour and a larger ball, as in the mockup. */
   accentGoal?: boolean;
 }) {
   const cls = `inline-block shrink-0 ${className}`;
+  const card =
+    large === 'xl'
+      ? 'h-[18px] w-3.5 md:h-[23px] md:w-[18px] md:rounded-[3px]'
+      : large
+        ? 'h-4 w-3 md:h-[21px] md:w-[17px] md:rounded-[3px]'
+        : 'h-4 w-3';
+  const ballMd = large === 'xl' ? 'md:size-7' : large ? 'md:size-[22px]' : '';
+  const ball = `${large === 'xl' ? 'size-[22px]' : accentGoal ? 'size-5' : large ? 'size-4' : ''} ${ballMd}`;
+  const glyph = large === 'xl' ? 'size-5' : large ? 'size-4 md:size-5' : 'size-4';
   switch (kind) {
     case 'goal':
     case 'penaltyGoal':
@@ -23,18 +35,21 @@ export function EventIcon({
             kind === 'ownGoal' || kind === 'missedPenalty'
               ? 'text-accent-crimson'
               : accentGoal
-                ? 'size-5 text-accent-green'
+                ? 'text-accent-green'
                 : 'text-text-primary'
-          }`}
+          } ${ball}`}
         />
       );
     case 'yellowCard':
-      return <span aria-hidden className={`${cls} h-4 w-3 rounded-[2px] bg-yellow-400`} />;
+      return <span aria-hidden className={`${cls} ${card} rounded-[2px] bg-yellow-400`} />;
     case 'redCard':
-      return <span aria-hidden className={`${cls} h-4 w-3 rounded-[2px] bg-red-500`} />;
+      return <span aria-hidden className={`${cls} ${card} rounded-[2px] bg-red-500`} />;
     case 'secondYellow':
       return (
-        <span aria-hidden className={`${cls} relative h-4 w-4`}>
+        <span
+          aria-hidden
+          className={`${cls} relative ${large ? 'size-4 md:size-[22px]' : 'size-4'}`}
+        >
           <span className="absolute start-0 top-0 h-3.5 w-2.5 rounded-[2px] bg-yellow-400" />
           <span className="absolute bottom-0 end-0 h-3.5 w-2.5 rounded-[2px] bg-red-500" />
         </span>
@@ -44,7 +59,7 @@ export function EventIcon({
         <svg
           aria-hidden
           viewBox="0 0 16 16"
-          className={`${cls} size-4 text-accent-green`}
+          className={`${cls} ${glyph} text-accent-green`}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.8"
@@ -59,7 +74,7 @@ export function EventIcon({
         <svg
           aria-hidden
           viewBox="0 0 16 16"
-          className={`${cls} size-4 text-text-secondary`}
+          className={`${cls} ${glyph} text-text-secondary`}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.6"

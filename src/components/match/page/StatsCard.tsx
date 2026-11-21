@@ -25,24 +25,26 @@ export function StatsCard({ view }: { view: MatchView }) {
 
   if (groups.length === 0) return null;
   return (
-    <Card labelledBy="mp-stats">
-      <CardTitle id="mp-stats">{t('matchStatistics')}</CardTitle>
-      <div className="mt-5 flex items-center justify-between gap-2 text-sm font-bold text-text-primary md:text-lg">
-        <span className="flex min-w-0 items-center gap-2">
-          <TeamBadge team={view.home} size={30} />
+    <Card labelledBy="mp-stats" pad="md:px-[17.5px] md:pb-[13px] md:pt-[14px]">
+      <CardTitle id="mp-stats" size="stats">
+        {t('matchStatistics')}
+      </CardTitle>
+      <div className="mt-5 flex items-center justify-between gap-2 px-[3px] text-[17.5px] font-bold text-text-primary md:mt-[15.5px] md:px-[5px] md:text-xl">
+        <span className="flex min-w-0 items-center gap-4">
+          <TeamBadge team={view.home} size={45} className="max-md:!h-8 max-md:!w-8" />
           <span className="truncate">{view.home.name}</span>
         </span>
-        <span className="flex min-w-0 items-center gap-2">
+        <span className="flex min-w-0 items-center gap-4">
           <span className="truncate">{view.away.name}</span>
-          <TeamBadge team={view.away} size={30} />
+          <TeamBadge team={view.away} size={45} className="max-md:!h-8 max-md:!w-8" />
         </span>
       </div>
       {groups.map((g) => (
-        <div key={g.id} className="mt-4">
-          <h3 className="rounded-lg bg-[var(--mp-band)] px-4 py-2 text-sm font-bold text-text-primary md:py-1.5 md:text-[17px]">
+        <div key={g.id} className="mt-4 [&+&]:mt-5 md:mt-[11px] md:[&+&]:mt-[13px]">
+          <h3 className="-mx-1.5 rounded-lg bg-[var(--mp-band)] px-2.5 py-1 text-[18.5px] font-bold leading-tight text-text-primary md:mx-0 md:px-[13.5px] md:py-[5px] md:text-[20.5px] md:leading-[1.2]">
             {t(GROUP_KEY[g.id])}
           </h3>
-          <div className="divide-y divide-border-subtle px-1">
+          <div className="mt-1.5 divide-y divide-border-subtle px-2 md:mt-[5px] md:px-[18px]">
             {g.rows.map((r) =>
               r.bar ? (
                 <StatBarRow

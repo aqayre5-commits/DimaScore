@@ -43,6 +43,7 @@ import {
   pitchSpots,
   statGroups,
 } from '@/lib/match/match-view';
+import { matchFontFamily } from './match-font';
 import { MatchHeaderCard, type HeaderStrip } from '@/components/match/page/MatchHeaderCard';
 import { MatchTabs, MatchTabPanel, type MatchTab } from '@/components/match/page/MatchTabs';
 import { KeyStatsCard, KeyMomentsCard } from '@/components/match/page/OverviewLive';
@@ -446,13 +447,16 @@ export default async function MatchDetailPage({ params }: PageProps) {
         )}
       />
 
-      <div className="mx-auto w-full max-w-[1280px] px-2 pb-10 md:px-4 md:pt-5">
+      <div
+        className="mx-auto w-full max-w-[1280px] px-2 pb-10 md:px-4 md:pt-5"
+        style={{ fontFamily: matchFontFamily(locale === 'ar') }}
+      >
         <MatchHeaderCard view={view} strip={strip} />
-        <div className="md:mt-1">
+        <div className="md:mt-[3px]">
           <MatchTabs tabs={tabs} label={tMp('tabsLabel')}>
             <MatchTabPanel id="overview">
-              <div className="grid grid-cols-1 gap-2.5 md:grid-cols-[minmax(0,5fr)_minmax(0,3fr)] md:gap-4">
-                <div className="contents md:block md:space-y-4">
+              <div className="grid grid-cols-1 gap-2.5 md:grid-cols-[minmax(0,5fr)_minmax(0,3fr)] md:gap-[19px]">
+                <div className="contents md:block md:space-y-[19px]">
                   {summaryText && (
                     <div className="order-1 min-w-0">
                       <SummaryCard title={summaryTitle} paragraphs={[summaryText]} />
@@ -464,7 +468,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
                     </div>
                   )}
                 </div>
-                <div className="contents md:block md:space-y-4">
+                <div className="contents md:block md:space-y-[14px]">
                   {!isUpcoming && (
                     <div className="order-2 min-w-0">
                       <KeyStatsCard view={view} />

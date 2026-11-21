@@ -167,8 +167,16 @@ describe('pitchSpots', () => {
     expect(gk.isKeeper).toBe(true);
     expect(gk.y).toBe(91);
     expect(gk.x).toBe(50);
-    expect(s.find((x) => x.player.id === 4)!.y).toBe(9);
+    expect(s.find((x) => x.player.id === 4)!.y).toBe(12);
     expect(s.find((x) => x.player.id === 2)!.x).toBeCloseTo(33.33, 1);
+  });
+
+  it('spreads lines of three or more towards the touchlines', () => {
+    const xi = [p(1, '1:1'), p(2, '2:1'), p(3, '2:2'), p(4, '2:3'), p(5, '2:4')];
+    const xs = pitchSpots(xi, '4')
+      .filter((x) => !x.isKeeper)
+      .map((x) => x.x);
+    expect(xs).toEqual([12.5, 37.5, 62.5, 87.5]);
   });
 
   it('falls back to the formation string, or gives up', () => {

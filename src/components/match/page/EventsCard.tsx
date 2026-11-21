@@ -30,7 +30,7 @@ const SECOND_HALF_CODES = new Set(['2H', 'ET', 'BT', 'P', 'FT', 'AET', 'PEN']);
 
 function ScoreChip({ h, a }: { h: number; a: number }) {
   return (
-    <span className="flex shrink-0 items-center gap-1 rounded-md bg-bg-surface px-2 py-0.5 text-xs font-bold tabular-nums md:gap-1.5 md:rounded-lg md:px-3 md:py-1 md:text-sm text-text-primary ring-1 ring-border-subtle">
+    <span className="flex shrink-0 items-center gap-1 rounded-md bg-bg-surface px-2 py-0.5 text-base font-bold tabular-nums md:gap-1.5 md:rounded-lg md:px-[14px] md:py-[3px] md:text-xl md:leading-[25px] text-text-primary ring-1 ring-border-subtle">
       <span>{h}</span>
       <span aria-hidden>–</span>
       <span>{a}</span>
@@ -41,11 +41,11 @@ function ScoreChip({ h, a }: { h: number; a: number }) {
 function Divider({ children }: { children: React.ReactNode }) {
   return (
     <li
-      className="flex items-center gap-3 py-3"
+      className="flex items-center gap-3 py-3 md:pb-3 md:pt-[19px]"
       aria-label={typeof children === 'string' ? children : undefined}
     >
       <span aria-hidden className="h-px flex-1 bg-border-subtle" />
-      <span className="rounded-full border border-border-subtle bg-bg-surface-2 px-3 py-1 text-xs font-semibold text-text-primary md:px-5 md:text-sm">
+      <span className="rounded-full border border-border-subtle bg-bg-surface-2 px-6 py-1 text-[17px] font-semibold text-text-primary md:px-[29px] md:text-[20.5px] md:leading-6">
         {children}
       </span>
       <span aria-hidden className="h-px flex-1 bg-border-subtle" />
@@ -89,19 +89,25 @@ export function EventsCard({ view }: { view: MatchView }) {
   );
 
   return (
-    <Card labelledBy="mp-events">
-      <CardTitle id="mp-events">{t('matchEvents')}</CardTitle>
-      <div role="group" aria-label={t('filterLabel')} className="mt-4 flex flex-wrap gap-2">
+    <Card labelledBy="mp-events" pad="md:px-7 md:pb-3 md:pt-[11px]">
+      <CardTitle id="mp-events" size="events" className="max-md:ps-1">
+        {t('matchEvents')}
+      </CardTitle>
+      <div
+        role="group"
+        aria-label={t('filterLabel')}
+        className="mt-[15px] flex flex-wrap gap-3 max-md:ps-1.5 md:mt-[17.5px] md:gap-3.5"
+      >
         {FILTERS.map((f) => (
           <button
             key={f}
             type="button"
             aria-pressed={filter === f}
             onClick={() => setFilter(f)}
-            className={`rounded-lg border px-3.5 py-1 text-[13px] font-semibold md:px-5 md:py-1.5 md:text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-green ${
+            className={`rounded-lg border px-4 py-[3px] text-base md:min-w-20 md:rounded-[10px] md:px-[21px] md:py-[5px] md:text-[19.5px] md:leading-6 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-green ${
               filter === f
-                ? 'border-accent-green bg-accent-green text-[var(--mp-on-accent)]'
-                : 'border-border-strong bg-bg-surface text-text-primary hover:border-accent-green'
+                ? 'border-accent-green bg-accent-green font-bold text-[var(--mp-on-accent)]'
+                : 'border-border-strong bg-bg-surface font-medium text-text-primary hover:border-accent-green'
             }`}
           >
             {t(FILTER_KEY[f])}
@@ -109,7 +115,7 @@ export function EventsCard({ view }: { view: MatchView }) {
         ))}
       </div>
 
-      <ol className="relative mt-4">
+      <ol className="relative mt-3.5 md:mt-4">
         {secondHalf.map(row)}
         {showHt && (
           <Divider>
@@ -117,15 +123,17 @@ export function EventsCard({ view }: { view: MatchView }) {
           </Divider>
         )}
         {firstHalf.map(row)}
-        <li className="flex items-center gap-2 px-1 py-2.5 md:gap-4 md:px-4 md:py-3">
-          <span className="w-11 shrink-0 md:w-14" />
+        <li className="flex items-center gap-2 px-0.5 py-[15px] md:gap-0 md:px-0 md:py-[13px]">
+          <span className="w-10 shrink-0 md:w-[55px]" />
           <span
             aria-hidden
-            className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-top-3 before:bottom-1/2 before:start-1/2 before:w-px before:bg-border-subtle"
+            className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-top-[15px] before:bottom-1/2 before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-top-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
           >
             <span className="relative size-3.5 rounded-full border-2 border-accent-green bg-bg-surface" />
           </span>
-          <span className="text-sm font-bold text-text-primary md:text-[17px]">{t('kickOff')}</span>
+          <span className="text-lg font-bold text-text-primary md:ms-[21px] md:text-[21px] md:leading-[1.2]">
+            {t('kickOff')}
+          </span>
         </li>
       </ol>
     </Card>
@@ -149,6 +157,7 @@ function EventRow({
   const player = event.player?.name?.[view.locale] ?? event.player?.name?.en ?? null;
   const other = event.assist?.name?.[view.locale] ?? event.assist?.name?.en ?? null;
   const goal = isGoalKind(k);
+  const minute = minuteLabel(event);
   const second =
     k === 'substitution' && other
       ? t('replaces', { name: other })
@@ -160,27 +169,39 @@ function EventRow({
   return (
     <li
       hidden={hidden}
-      className={`flex items-center gap-2 border-b border-border-subtle px-1 py-2.5 md:gap-4 md:px-4 md:py-3 ${goal ? 'rounded-xl border-transparent bg-[var(--mp-goal-bg)]' : ''}`}
+      className={`relative flex items-center gap-2 px-0.5 py-[15px] md:gap-0 md:py-[13px] md:pe-[27px] md:ps-0 ${goal ? 'rounded-xl bg-[var(--mp-goal-bg)]' : 'after:absolute after:bottom-0 after:end-0 after:start-[60px] after:h-px after:bg-border-subtle md:after:start-[102px]'}`}
     >
-      <span className="w-11 shrink-0 text-end text-sm font-bold tabular-nums text-text-primary md:w-14 md:text-[17px]">
-        {minuteLabel(event)}
+      <span
+        className={`w-10 shrink-0 whitespace-nowrap text-start font-bold tabular-nums text-text-primary md:w-[55px] md:-translate-y-[5px] md:text-end ${
+          minute.includes('+') ? 'text-[13px] md:text-[17px]' : 'text-[17.5px] md:text-[22.5px]'
+        }`}
+      >
+        {minute}
       </span>
       <span
         aria-hidden
-        className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-inset-y-3 before:start-1/2 before:w-px before:bg-border-subtle"
+        className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-inset-y-[15px] before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-inset-y-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
       >
-        <span className="relative size-2 rounded-full bg-text-tertiary" />
+        <span className="relative size-2 rounded-full bg-text-tertiary md:size-[11px] md:-translate-y-1" />
       </span>
-      <EventIcon kind={k} accentGoal />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-bold text-text-primary md:text-[17px]">
+      <span className="flex w-4 shrink-0 justify-center md:ms-[21px] md:w-[22px]">
+        <EventIcon kind={k} accentGoal large="xl" />
+      </span>
+      <span className="min-w-0 flex-1 md:ms-[27px]">
+        <span className="block truncate text-[17px] font-bold leading-[1.2] text-text-primary md:text-[21px]">
           {t(k === 'other' ? 'goal' : k)}
           {player && ` · ${player}`}
         </span>
-        <span className="block truncate text-xs text-text-secondary md:text-sm">{second}</span>
+        <span className="block truncate text-sm leading-[1.2] text-text-secondary md:text-[16.5px]">
+          {second}
+        </span>
       </span>
-      {goal && score && <ScoreChip h={score[0]} a={score[1]} />}
-      <TeamBadge team={team} size={26} className="max-md:!h-[22px] max-md:!w-[22px]" />
+      {goal && score && (
+        <span className="md:me-8">
+          <ScoreChip h={score[0]} a={score[1]} />
+        </span>
+      )}
+      <TeamBadge team={team} size={36} className="max-md:!h-[26px] max-md:!w-[26px]" />
     </li>
   );
 }

@@ -33,7 +33,7 @@ const INTERRUPTED: Record<string, string> = {
 };
 
 const CENTRE =
-  'flex items-center justify-center gap-2 self-stretch max-md:[&>*]:-translate-y-3 md:[&>*]:-translate-y-2.5 text-[41px] font-extrabold leading-none tabular-nums text-text-primary md:gap-7 md:px-11 md:pt-1 md:text-[76px]';
+  'flex items-center justify-center gap-2 self-stretch max-md:[&>*]:-translate-y-1.5 md:h-[78px] md:w-[267px] md:self-center md:[&>*]:-translate-y-4 text-[43px] font-extrabold leading-none tabular-nums text-text-primary md:gap-7 md:text-[83px]';
 
 export interface HeaderStrip {
   competitionName: string;
@@ -85,12 +85,12 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
       {/* Strip: competition | matchweek | date | venue */}
       {/* Mobile: competition | round on line 1, date | venue on line 2 (one line, the venue
           truncates). Desktop: one row. Dividers only ever sit between two items. */}
-      <div className="flex flex-col gap-1 border-b border-border-subtle bg-bg-canvas px-4 py-2.5 text-xs text-text-secondary md:flex-row md:items-center md:gap-7 md:border-b-0 md:bg-transparent md:px-6 md:pb-0 md:pt-4 md:text-base">
+      <div className="flex flex-col border-b border-border-subtle bg-bg-canvas px-4 pb-[5px] pt-1.5 text-[12.5px] text-text-secondary md:flex-row md:items-center md:gap-7 md:border-b-0 md:bg-transparent md:pb-0 md:pe-6 md:ps-[22px] md:pt-1.5 md:text-lg">
         <div className="flex min-w-0 items-center gap-3 md:gap-7">
-          <span className="flex shrink-0 items-center gap-2.5 text-[13px] font-bold text-text-primary md:gap-3 md:text-[19px]">
+          <span className="flex shrink-0 items-center gap-2.5 text-[15px] font-bold text-text-primary md:gap-4 md:text-[21.5px]">
             <CompetitionLogo
               src={strip.competitionLogo}
-              size={28}
+              size={35}
               className="object-contain max-md:!h-6 max-md:!w-6"
             />
             {strip.competitionHref ? (
@@ -104,7 +104,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
           {strip.roundLabel && (
             <>
               <StripDivider />
-              <span className="min-w-0 truncate">{strip.roundLabel}</span>
+              <span className="min-w-0 truncate max-md:text-[13.5px]">{strip.roundLabel}</span>
             </>
           )}
         </div>
@@ -126,7 +126,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
           time then sits over the h1's centre cell, outside the h1, so live updates never change
           the heading. The h1 shares the columns of the row below (scorers | status | scorers)
           through subgrid, so the layout is unchanged. */}
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-2 px-3 py-4 md:gap-x-6 md:px-24 md:pb-6 md:pt-7">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-2 px-3 pb-4 pt-[5px] md:gap-x-[39px] md:px-24 md:pb-7 md:pt-5">
         <h1 className="col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid items-center">
           <TeamHead team={view.home} side="home" />{' '}
           <span className={`${CENTRE} md:border-x md:border-border-subtle`}>
@@ -160,9 +160,9 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
         )}
 
         <Scorers goals={scorers(view.home.id)} side="home" locale={view.locale} />
-        <div className="-mt-7 flex flex-col items-center gap-2 md:-mt-7 md:border-x md:border-border-subtle md:px-11 md:pb-1 md:pt-4">
+        <div className="-mt-[22px] flex flex-col items-center gap-2 md:-mt-[27px]">
           <span
-            className="inline-flex items-center rounded-lg bg-[var(--mp-pill-bg)] px-3.5 py-0.5 text-xs font-semibold text-[var(--mp-pill-fg)] md:px-6 md:py-1 md:text-[17px]"
+            className="inline-flex items-center rounded-lg bg-[var(--mp-pill-bg)] px-3.5 py-0.5 text-[13px] font-semibold text-[var(--mp-pill-fg)] md:px-[25px] md:py-[3px] md:text-[20.5px] md:leading-tight"
             suppressHydrationWarning
           >
             {pill.text}
@@ -190,19 +190,19 @@ function TeamHead({ team, side }: { team: TeamView; side: 'home' | 'away' }) {
       countryCode={team.countryCode}
       logoUrl={team.logoUrl}
       isNational={team.isNational}
-      size={108}
+      size={112}
       label={team.name}
       className="max-md:!h-[62px] max-md:!w-[62px]"
     />
   );
   const name = (
-    <span className="text-base font-bold leading-tight text-text-primary md:-translate-y-1.5 md:text-[31px]">
+    <span className="text-[17px] font-bold leading-tight text-text-primary md:-translate-y-[31px] md:text-[36px]">
       {team.name}
     </span>
   );
   return (
     <span
-      className={`flex min-w-0 flex-col items-center gap-2 text-center md:flex-row md:gap-6 md:text-start ${
+      className={`flex min-w-0 flex-col items-center gap-1 text-center md:flex-row md:gap-6 md:text-start ${
         side === 'away' ? 'md:justify-between' : ''
       }`}
     >
@@ -244,8 +244,8 @@ function Scorers({
   if (goals.length === 0) return <span />;
   return (
     <ul
-      className={`flex min-w-0 flex-col items-center gap-0.5 pt-1.5 text-xs text-text-primary md:-mt-10 md:items-start md:pt-3 md:text-[17px] ${
-        side === 'home' ? 'md:ps-[132px]' : ''
+      className={`flex min-w-0 flex-col items-center gap-0.5 pt-0.5 text-xs text-text-primary md:-mt-[38px] md:items-start md:pt-0 md:text-[21px] ${
+        side === 'home' ? 'md:ps-[136px]' : ''
       }`}
     >
       {goals.map((g) => {
@@ -253,7 +253,7 @@ function Scorers({
         const player = g.player?.name?.[locale] ?? g.player?.name?.en ?? '—';
         return (
           <li key={g.id} className="flex items-center gap-1.5 md:gap-2">
-            <BallIcon className="size-3.5 text-text-primary md:size-[18px]" />
+            <BallIcon className="size-3.5 text-text-primary md:size-5" />
             <span>
               {player} {minuteLabel(g)}
               {k === 'penaltyGoal' && ` ${goalMarker('penalty', locale)}`}
