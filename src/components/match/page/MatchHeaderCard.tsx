@@ -113,7 +113,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
       </div>
 
       {/* Teams and score */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2 px-3 py-5 md:items-center md:gap-6 md:px-8 md:py-7">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 px-3 py-5 md:items-center md:gap-6 md:px-8 md:py-7">
         <TeamSide team={view.home} goals={scorers(view.home.id)} side="home" locale={view.locale} />
 
         <div className="flex flex-col items-center gap-2 self-center md:border-x md:border-border-subtle md:px-8">

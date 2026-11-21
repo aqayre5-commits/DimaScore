@@ -801,9 +801,9 @@ export default async function MatchDetailPage({ params }: PageProps) {
         <div className="mt-4 md:mt-6">
           <MatchTabs tabs={tabs} label={tMp('tabsLabel')}>
             <MatchTabPanel id="overview">
-              <div className="grid gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-6">
                 <div className="contents md:block md:space-y-6">
-                  <div className="order-1">
+                  <div className="order-1 min-w-0">
                     <SummaryCard
                       title={summaryTitle}
                       paragraphs={summaryParagraphs}
@@ -811,12 +811,12 @@ export default async function MatchDetailPage({ params }: PageProps) {
                     />
                   </div>
                   {!isUpcoming && (
-                    <div className="order-3">
+                    <div className="order-3 min-w-0">
                       <KeyMomentsCard view={view} />
                     </div>
                   )}
                   {isUpcoming && (
-                    <div className="order-3">
+                    <div className="order-3 min-w-0">
                       <PreMatchForm
                         locale={typedLocale}
                         homeName={home}
@@ -829,14 +829,14 @@ export default async function MatchDetailPage({ params }: PageProps) {
                 </div>
                 <div className="contents md:block md:space-y-6">
                   {!isUpcoming && (
-                    <div className="order-2">
+                    <div className="order-2 min-w-0">
                       <KeyStatsCard view={view} />
                     </div>
                   )}
-                  <div className="order-4">
+                  <div className="order-4 min-w-0">
                     <MatchDetailsCard title={tMp('matchDetails')} rows={detailRows} />
                   </div>
-                  <div className="order-5">
+                  <div className="order-5 min-w-0">
                     <NextMatchCard
                       fixtures={prefetch.nextFixtures}
                       homeTeamId={homeTeamId}
@@ -848,7 +848,9 @@ export default async function MatchDetailPage({ params }: PageProps) {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 grid gap-4 md:mt-6 md:grid-cols-2 md:gap-6">{narrativeTail}</div>
+              <div className="mt-4 grid grid-cols-1 gap-4 md:mt-6 md:grid-cols-2 md:gap-6">
+                {narrativeTail}
+              </div>
             </MatchTabPanel>
             {tabIds.has('events') && (
               <MatchTabPanel id="events">

@@ -74,7 +74,7 @@ export function LineupsCard({
         })}
       </div>
 
-      <div className="mt-4 grid gap-4 md:mt-5 md:grid-cols-2 md:gap-6">
+      <div className="mt-4 grid grid-cols-1 gap-4 md:mt-5 md:grid-cols-2 md:gap-6">
         <TeamLineup team={view.home} lineup={home} kit="home" mobileHidden={side !== 'home'} />
         <TeamLineup team={view.away} lineup={away} kit="away" mobileHidden={side !== 'away'} />
       </div>
