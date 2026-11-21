@@ -18,12 +18,13 @@ export function EventIcon({
   const cls = `inline-block shrink-0 ${className}`;
   const card =
     large === 'xl'
-      ? 'h-[18px] w-3.5 md:h-[23px] md:w-[18px] md:rounded-[3px]'
+      ? 'h-[20.3px] w-[15.94px] md:h-[28.48px] md:w-[24.5px] md:rounded-[3px]'
       : large
-        ? 'h-4 w-3 md:h-[21px] md:w-[17px] md:rounded-[3px]'
+        ? 'h-[14.75px] w-[11.28px] md:h-[18.62px] md:w-[15.04px] md:rounded-[3px]'
         : 'h-4 w-3';
-  const ballMd = large === 'xl' ? 'md:size-7' : large ? 'md:size-[22px]' : '';
-  const ball = `${large === 'xl' ? 'size-[22px]' : accentGoal ? 'size-5' : large ? 'size-4' : ''} ${ballMd}`;
+  // Ball box = ink size × 24/23.6 (the outlined circle spans 23.6 of the 24-unit viewBox).
+  const ballMd = large === 'xl' ? 'md:size-[33.4px]' : large ? 'md:size-[19.67px]' : '';
+  const ball = `${large === 'xl' ? 'size-[23.84px]' : accentGoal ? 'size-5' : large ? 'size-[14.12px]' : ''} ${ballMd}`;
   const glyph = large === 'xl' ? 'size-5' : large ? 'size-4 md:size-5' : 'size-4';
   switch (kind) {
     case 'goal':
@@ -123,7 +124,8 @@ export function ChevronIcon({ className = '' }: { className?: string }) {
     <svg
       aria-hidden
       viewBox="0 0 16 16"
-      className={`size-4 ${className}`}
+      className={/\b(size|w)-/.test(className) ? className : `size-4 ${className}`}
+      preserveAspectRatio="none"
       fill="none"
       stroke="currentColor"
       strokeWidth="2"

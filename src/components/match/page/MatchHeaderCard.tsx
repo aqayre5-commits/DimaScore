@@ -90,8 +90,8 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
           <span className="flex shrink-0 items-center gap-2.5 text-[15px] font-bold text-text-primary md:gap-4 md:text-[21.5px]">
             <CompetitionLogo
               src={strip.competitionLogo}
-              size={35}
-              className="object-contain max-md:!h-6 max-md:!w-6"
+              size={30}
+              className="object-contain max-md:!h-[24.3px] max-md:!w-[24.3px]"
             />
             {strip.competitionHref ? (
               <Link href={strip.competitionHref} prefetch={false} className="hover:underline">
@@ -253,7 +253,7 @@ function Scorers({
         const player = g.player?.name?.[locale] ?? g.player?.name?.en ?? '—';
         return (
           <li key={g.id} className="flex items-center gap-1.5 md:gap-2">
-            <BallIcon className="size-3.5 text-text-primary md:size-5" />
+            <BallIcon className="size-[13.2px] text-text-primary md:size-[18.54px]" />
             <span>
               {player} {minuteLabel(g)}
               {k === 'penaltyGoal' && ` ${goalMarker('penalty', locale)}`}

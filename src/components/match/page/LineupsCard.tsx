@@ -129,7 +129,7 @@ function TeamLineup({
         <details className="group mt-3 rounded-xl border border-border-subtle md:hidden">
           <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-bold text-text-primary focus-visible:outline-2 focus-visible:outline-accent-green [&::-webkit-details-marker]:hidden">
             {t('substitutes')}
-            <ChevronIcon className="text-text-secondary transition-transform group-open:rotate-180" />
+            <ChevronIcon className="size-[21px] text-text-secondary transition-transform group-open:rotate-180" />
           </summary>
           <ul className="divide-y divide-border-subtle border-t border-border-subtle text-sm">
             {lineup.substitutes.map((p) => (
@@ -147,12 +147,30 @@ function TeamLineup({
   );
 }
 
-function Shirt({ fill, number }: { fill: string; number: number }) {
+/** Box sizes from icon-measurements.xlsx (ink W×H): mobile outfield 42.4×34.5, keeper 43.7×35;
+ *  desktop home 54.5×43.4, keeper 54.5×41.4, away (white) 54.5×39.4. The jersey ink spans
+ *  46.9×37.8 of the 48×40 viewBox, so box = ink × 48/46.9 wide and × 40/37.8 tall. */
+const SHIRT_BOX = {
+  home: 'h-[36.5px] w-[43.4px] md:h-[45.9px] md:w-[55.8px]',
+  away: 'h-[36.5px] w-[43.4px] md:h-[41.7px] md:w-[55.8px]',
+  keeper: 'h-[37px] w-[44.7px] md:h-[43.8px] md:w-[55.8px]',
+} as const;
+
+function Shirt({
+  fill,
+  number,
+  role,
+}: {
+  fill: string;
+  number: number;
+  role: keyof typeof SHIRT_BOX;
+}) {
   return (
     // Mockup jersey: rounded shoulders, short angled sleeves, curved collar notch, dark outline.
     <svg
       viewBox="0 0 48 40"
-      className="h-8 w-[38px] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)] md:h-[38px] md:w-[46px]"
+      preserveAspectRatio="none"
+      className={`${SHIRT_BOX[role]} drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]`}
       aria-hidden
     >
       <path
@@ -242,6 +260,7 @@ function Pitch({
                   : 'var(--mp-shirt-away)'
             }
             number={s.player.number}
+            role={s.isKeeper ? 'keeper' : kit}
           />
           <span className="-mt-px max-w-full truncate rounded-[5px] bg-white px-1.5 py-0.5 text-[12.5px] font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)] md:px-2.5 md:text-[13.5px]">
             {shortPlayerName(s.player.name)}

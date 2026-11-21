@@ -124,14 +124,14 @@ export function EventsCard({ view }: { view: MatchView }) {
         )}
         {firstHalf.map(row)}
         <li className="flex items-center gap-2 px-0.5 py-4 md:gap-0 md:px-0 md:py-[13px]">
-          <span className="w-10 shrink-0 md:w-[55px]" />
+          <span className="w-[34px] shrink-0 md:w-[55px]" />
           <span
             aria-hidden
-            className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-top-4 before:bottom-1/2 before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-top-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
+            className="relative flex w-[9px] shrink-0 items-center justify-center self-stretch before:absolute before:-top-4 before:bottom-1/2 before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-top-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
           >
-            <span className="relative size-3.5 rounded-full border-2 border-accent-green bg-bg-surface" />
+            <span className="relative size-[15.5px] shrink-0 rounded-full border-2 border-accent-green bg-bg-surface md:size-[19.2px] md:border-[2.5px]" />
           </span>
-          <span className="text-lg font-bold text-text-primary md:ms-[21px] md:text-[21px] md:leading-[1.2]">
+          <span className="ms-3 text-lg font-bold text-text-primary md:ms-[21px] md:text-[21px] md:leading-[1.2]">
             {t('kickOff')}
           </span>
         </li>
@@ -172,19 +172,19 @@ function EventRow({
       className={`relative flex items-center gap-2 px-0.5 py-4 md:gap-0 md:py-[13px] md:pe-[27px] md:ps-0 ${goal ? 'rounded-xl bg-[var(--mp-goal-bg)]' : 'after:absolute after:bottom-0 after:end-0 after:start-[60px] after:h-px after:bg-border-subtle md:after:start-[102px]'}`}
     >
       <span
-        className={`w-10 shrink-0 whitespace-nowrap text-start font-bold tabular-nums text-text-primary md:w-[55px] md:-translate-y-[5px] md:text-end ${
-          minute.includes('+') ? 'text-[13px] md:text-[17px]' : 'text-lg md:text-[22.5px]'
+        className={`w-[34px] shrink-0 whitespace-nowrap text-start font-bold tabular-nums text-text-primary md:w-[55px] md:-translate-y-[5px] md:text-end ${
+          minute.includes('+') ? 'text-[12px] md:text-[17px]' : 'text-lg md:text-[22.5px]'
         }`}
       >
         {minute}
       </span>
       <span
         aria-hidden
-        className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-inset-y-4 before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-inset-y-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
+        className="relative flex w-[9px] shrink-0 items-center justify-center self-stretch before:absolute before:-inset-y-4 before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-inset-y-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
       >
-        <span className="relative size-2 rounded-full bg-text-tertiary md:size-[11px] md:-translate-y-1" />
+        <span className="relative size-[10.8px] shrink-0 rounded-full bg-text-tertiary md:size-[14.73px] md:-translate-y-1" />
       </span>
-      <span className="flex w-4 shrink-0 justify-center md:ms-[21px] md:w-[22px]">
+      <span className="-me-1 flex w-[33px] shrink-0 justify-center md:me-0 md:ms-[21px] md:w-[22px]">
         <EventIcon kind={k} accentGoal large="xl" />
       </span>
       <span className="min-w-0 flex-1 md:ms-[27px]">

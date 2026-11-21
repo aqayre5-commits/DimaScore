@@ -146,8 +146,13 @@ export async function TableCard({
             t('teamPosition', { team: r.team ? getTeamDisplayName(r.team, locale) : '—' }),
             'mt-[29px] md:mt-[25px]',
           )}
-          <p aria-hidden className="py-3 text-center text-text-tertiary md:py-[11px] md:leading-6">
-            …
+          <p
+            aria-hidden
+            className="flex h-12 items-center justify-center gap-[6px] md:h-[46px] md:gap-[8.16px]"
+          >
+            <span className="size-[3.42px] rounded-full bg-text-tertiary md:size-[4.07px]" />
+            <span className="size-[3.42px] rounded-full bg-text-tertiary md:size-[4.07px]" />
+            <span className="size-[3.42px] rounded-full bg-text-tertiary md:size-[4.07px]" />
           </p>
           <ol className="divide-y divide-border-subtle">{row(r)}</ol>
         </div>
