@@ -69,7 +69,7 @@ export function LineupsCard({
               type="button"
               aria-pressed={side === s}
               onClick={() => setSide(s)}
-              className={`flex min-w-0 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-[17.5px] focus-visible:outline-2 focus-visible:outline-accent-green ${
+              className={`flex min-w-0 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-base focus-visible:outline-2 focus-visible:outline-accent-green ${
                 side === s
                   ? 'bg-[var(--mp-highlight-bg)] font-bold text-accent-green shadow-sm'
                   : 'font-medium text-text-primary'
@@ -81,7 +81,7 @@ export function LineupsCard({
         })}
       </div>
 
-      <div className="mt-2.5 grid grid-cols-1 gap-4 md:mt-[20.5px] md:grid-cols-2 md:gap-2.5">
+      <div className="mt-2 grid grid-cols-1 gap-4 md:mt-[20.5px] md:grid-cols-2 md:gap-2.5">
         <TeamLineup team={view.home} lineup={home} kit="home" mobileHidden={side !== 'home'} />
         <TeamLineup team={view.away} lineup={away} kit="away" mobileHidden={side !== 'away'} />
       </div>
@@ -106,14 +106,14 @@ function TeamLineup({
   return (
     <div className={mobileHidden ? 'max-md:hidden' : undefined}>
       <div className="rounded-xl border border-border-subtle p-2 md:p-[9px]">
-        <div className="mb-2 flex items-center gap-2.5 px-1 py-1 md:mb-[8.5px] md:gap-4 md:pe-[13.5px] md:ps-3 md:py-0">
-          <TeamBadge team={team} size={45} className="max-md:!h-10 max-md:!w-10" />
-          <h3 className="min-w-0 flex-1 truncate text-lg font-bold text-text-primary md:text-[21.5px]">
+        <div className="mb-1 flex items-center gap-2.5 px-1 py-1 md:mb-[8.5px] md:gap-4 md:pe-[13.5px] md:ps-3 md:py-0">
+          <TeamBadge team={team} size={45} className="max-md:!h-9 max-md:!w-9" />
+          <h3 className="min-w-0 flex-1 truncate text-[16.5px] font-bold text-text-primary md:text-[21.5px]">
             {team.name}
           </h3>
           {formation && (
             <span
-              className="text-[17.5px] font-semibold tabular-nums text-text-primary md:text-[20.5px] md:font-medium md:text-text-secondary"
+              className="text-base font-semibold tabular-nums text-text-primary md:text-[20.5px] md:font-medium md:text-text-secondary"
               aria-label={t('formationLabel', { formation })}
             >
               {formation}
@@ -152,7 +152,7 @@ function Shirt({ fill, number }: { fill: string; number: number }) {
     // Mockup jersey: rounded shoulders, short angled sleeves, curved collar notch, dark outline.
     <svg
       viewBox="0 0 48 40"
-      className="h-[35px] w-[42px] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)] md:h-[38px] md:w-[46px]"
+      className="h-8 w-[38px] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)] md:h-[38px] md:w-[46px]"
       aria-hidden
     >
       <path

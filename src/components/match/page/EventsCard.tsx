@@ -96,7 +96,7 @@ export function EventsCard({ view }: { view: MatchView }) {
       <div
         role="group"
         aria-label={t('filterLabel')}
-        className="mt-[15px] flex flex-wrap gap-3 max-md:ps-1.5 md:mt-[17.5px] md:gap-3.5"
+        className="mt-[17px] flex flex-wrap gap-3 max-md:ps-1.5 md:mt-[17.5px] md:gap-3.5"
       >
         {FILTERS.map((f) => (
           <button
@@ -104,7 +104,7 @@ export function EventsCard({ view }: { view: MatchView }) {
             type="button"
             aria-pressed={filter === f}
             onClick={() => setFilter(f)}
-            className={`rounded-lg border px-4 py-[3px] text-base md:min-w-20 md:rounded-[10px] md:px-[21px] md:py-[5px] md:text-[19.5px] md:leading-6 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-green ${
+            className={`rounded-lg border px-4 py-[3px] text-[16.5px] md:min-w-20 md:rounded-[10px] md:px-[21px] md:py-[5px] md:text-[19.5px] md:leading-6 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-green ${
               filter === f
                 ? 'border-accent-green bg-accent-green font-bold text-[var(--mp-on-accent)]'
                 : 'border-border-strong bg-bg-surface font-medium text-text-primary hover:border-accent-green'
@@ -115,7 +115,7 @@ export function EventsCard({ view }: { view: MatchView }) {
         ))}
       </div>
 
-      <ol className="relative mt-3.5 md:mt-4">
+      <ol className="relative mt-[15px] md:mt-4">
         {secondHalf.map(row)}
         {showHt && (
           <Divider>
@@ -123,11 +123,11 @@ export function EventsCard({ view }: { view: MatchView }) {
           </Divider>
         )}
         {firstHalf.map(row)}
-        <li className="flex items-center gap-2 px-0.5 py-[15px] md:gap-0 md:px-0 md:py-[13px]">
+        <li className="flex items-center gap-2 px-0.5 py-4 md:gap-0 md:px-0 md:py-[13px]">
           <span className="w-10 shrink-0 md:w-[55px]" />
           <span
             aria-hidden
-            className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-top-[15px] before:bottom-1/2 before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-top-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
+            className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-top-4 before:bottom-1/2 before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-top-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
           >
             <span className="relative size-3.5 rounded-full border-2 border-accent-green bg-bg-surface" />
           </span>
@@ -169,18 +169,18 @@ function EventRow({
   return (
     <li
       hidden={hidden}
-      className={`relative flex items-center gap-2 px-0.5 py-[15px] md:gap-0 md:py-[13px] md:pe-[27px] md:ps-0 ${goal ? 'rounded-xl bg-[var(--mp-goal-bg)]' : 'after:absolute after:bottom-0 after:end-0 after:start-[60px] after:h-px after:bg-border-subtle md:after:start-[102px]'}`}
+      className={`relative flex items-center gap-2 px-0.5 py-4 md:gap-0 md:py-[13px] md:pe-[27px] md:ps-0 ${goal ? 'rounded-xl bg-[var(--mp-goal-bg)]' : 'after:absolute after:bottom-0 after:end-0 after:start-[60px] after:h-px after:bg-border-subtle md:after:start-[102px]'}`}
     >
       <span
         className={`w-10 shrink-0 whitespace-nowrap text-start font-bold tabular-nums text-text-primary md:w-[55px] md:-translate-y-[5px] md:text-end ${
-          minute.includes('+') ? 'text-[13px] md:text-[17px]' : 'text-[17.5px] md:text-[22.5px]'
+          minute.includes('+') ? 'text-[13px] md:text-[17px]' : 'text-lg md:text-[22.5px]'
         }`}
       >
         {minute}
       </span>
       <span
         aria-hidden
-        className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-inset-y-[15px] before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-inset-y-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
+        className="relative flex w-4 items-center justify-center self-stretch before:absolute before:-inset-y-4 before:start-1/2 before:w-px before:bg-border-subtle md:ms-6 md:w-[22px] md:before:-inset-y-[13px] md:before:w-0.5 md:before:-translate-x-1/2"
       >
         <span className="relative size-2 rounded-full bg-text-tertiary md:size-[11px] md:-translate-y-1" />
       </span>
@@ -188,11 +188,11 @@ function EventRow({
         <EventIcon kind={k} accentGoal large="xl" />
       </span>
       <span className="min-w-0 flex-1 md:ms-[27px]">
-        <span className="block truncate text-[17px] font-bold leading-[1.2] text-text-primary md:text-[21px]">
+        <span className="block truncate text-[17.5px] font-bold leading-[1.2] text-text-primary md:text-[21px]">
           {t(k === 'other' ? 'goal' : k)}
           {player && ` · ${player}`}
         </span>
-        <span className="block truncate text-sm leading-[1.2] text-text-secondary md:text-[16.5px]">
+        <span className="block truncate text-[14.5px] leading-[1.2] text-text-secondary md:text-[16.5px]">
           {second}
         </span>
       </span>

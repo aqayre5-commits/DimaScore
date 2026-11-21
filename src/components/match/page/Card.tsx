@@ -28,9 +28,9 @@ export function Card({
 const SIZES = {
   lg: 'text-[19.5px] md:text-[28.5px]',
   md: 'text-[19.5px] md:text-[26px]',
-  events: 'text-[27.5px] md:text-[38.5px]',
-  stats: 'text-[28px] md:text-[31.5px]',
-  lineups: 'text-[28px] md:text-[31px]',
+  events: 'text-[28.5px] md:text-[38.5px]',
+  stats: 'text-[29px] md:text-[31.5px]',
+  lineups: 'text-[25.5px] md:text-[31px]',
   table: 'text-[26.5px] md:text-[31.5px]',
 } as const;
 
