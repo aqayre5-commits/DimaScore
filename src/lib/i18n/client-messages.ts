@@ -23,6 +23,7 @@ export const CLIENT_MESSAGE_NAMESPACES = [
   'homepage',
   'leaguePage',
   'matchDetail',
+  'matchPage',
   'megaMenu',
   'mobileTabBar',
   'nav',

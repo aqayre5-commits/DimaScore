@@ -97,3 +97,54 @@
   --font-arabic: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
 }
+
+/* ─── Match page (redesign) ─── */
+/* Colours only the match page uses. Dark is the default; light matches the mockups. */
+:root {
+  --mp-pill-bg: #3b2c0e;
+  --mp-pill-fg: #ffd28a;
+  --mp-bar-away: #5d6778;
+  --mp-bar-track: #252d3a;
+  --mp-goal-bg: rgba(0, 217, 166, 0.09);
+  --mp-highlight-bg: rgba(0, 217, 166, 0.1);
+  --mp-on-accent: #04221a;
+  --mp-band: #1e2530;
+  --mp-pitch-a: #2e7d4a;
+  --mp-pitch-b: #2a7344;
+  --mp-shirt-home: #8ecdf5;
+  --mp-shirt-away: #ffffff;
+  --mp-shirt-keeper: #3ddc68;
+}
+[data-theme='light'] {
+  --mp-pill-bg: #fde7b0;
+  --mp-pill-fg: #6b4100;
+  --mp-bar-away: #8a94a6;
+  --mp-bar-track: #e6ebf1;
+  --mp-goal-bg: #eaf6f0;
+  --mp-highlight-bg: #e7f5ee;
+  --mp-on-accent: #ffffff;
+  --mp-band: #eef2f6;
+  --mp-pitch-a: #3f9a5a;
+  --mp-pitch-b: #3a9054;
+}
+
+/* Tab panels: every panel stays in the HTML; only the active one is shown. The active id lives on
+   the tabs root (data-tab), set on the server to "overview" and before paint from the URL hash. */
+[data-mp-tabs] [data-mp-panel] {
+  display: none;
+}
+[data-mp-tabs][data-tab='overview'] [data-mp-panel='overview'],
+[data-mp-tabs][data-tab='events'] [data-mp-panel='events'],
+[data-mp-tabs][data-tab='stats'] [data-mp-panel='stats'],
+[data-mp-tabs][data-tab='lineups'] [data-mp-panel='lineups'],
+[data-mp-tabs][data-tab='table'] [data-mp-panel='table'] {
+  display: block;
+}
+[data-mp-tabs][data-tab='overview'] [data-mp-tab='overview'],
+[data-mp-tabs][data-tab='events'] [data-mp-tab='events'],
+[data-mp-tabs][data-tab='stats'] [data-mp-tab='stats'],
+[data-mp-tabs][data-tab='lineups'] [data-mp-tab='lineups'],
+[data-mp-tabs][data-tab='table'] [data-mp-tab='table'] {
+  color: var(--accent-green);
+  border-bottom-color: var(--accent-green);
+}

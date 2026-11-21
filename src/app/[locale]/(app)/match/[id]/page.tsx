@@ -53,17 +53,30 @@ import { buildMatchSlug } from '@/lib/seo/match-slug';
 import { matchOgImageAlt, matchOgImageUrl } from '@/lib/og/og-urls';
 import { OG_SIZE } from '@/lib/og/og-size';
 import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
-import { InnerPageShell } from '@/components/layout/InnerPageShell';
-import { ScoreHeader } from '@/components/match/ScoreHeader';
-import { MatchAnswerBlock } from '@/components/match/MatchAnswerBlock';
-import { buildKeyFacts, formatLongMatchDate, formatShortMatchDate } from '@/lib/match/key-facts';
+import { formatLongMatchDate, formatShortMatchDate } from '@/lib/match/key-facts';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
-import { MatchClientCenter } from '@/components/match/MatchClientCenter';
 import { PreMatchForm } from '@/components/match/PreMatchForm';
-import { PredictedLineup } from '@/components/match/PredictedLineup';
+import { NextMatchCard } from '@/components/match/NextMatchCard';
+import { LocalTime } from '@/components/shared/LocalTime';
 import { getTeamForm, type FormResult } from '@/lib/db/queries/homepage';
 import { getCachedPredictedXI } from '@/lib/db/queries/predicted-lineup';
-import { MatchClientLeftRail, MatchClientRightRail } from '@/components/match/MatchClientSidebar';
+import { localizeRound } from '@/lib/i18n/feed-labels';
+import {
+  matchSummary,
+  matchweekNumber,
+  minuteLabel,
+  eventKind,
+  isShootout,
+} from '@/lib/match/match-view';
+import { MatchHeaderCard, type HeaderStrip } from '@/components/match/page/MatchHeaderCard';
+import { MatchTabs, MatchTabPanel, type MatchTab } from '@/components/match/page/MatchTabs';
+import { KeyStatsCard, KeyMomentsCard } from '@/components/match/page/OverviewLive';
+import { EventsCard } from '@/components/match/page/EventsCard';
+import { StatsCard } from '@/components/match/page/StatsCard';
+import { LineupsCard } from '@/components/match/page/LineupsCard';
+import { SummaryCard, MatchDetailsCard, TableCard } from '@/components/match/page/ServerCards';
+import { Card, CardTitle } from '@/components/match/page/Card';
+import type { MatchView, TeamView } from '@/components/match/page/types';
 
 import { cacheLife } from 'next/cache';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
@@ -124,6 +137,18 @@ async function getCachedMatchData(fixtureId: number) {
   const standings = fullStandings.slice(0, 5);
   const homeRank = fullStandings.find((s) => s.teamId === homeTeamId)?.rank ?? null;
   const awayRank = fullStandings.find((s) => s.teamId === awayTeamId)?.rank ?? null;
+  // Table tab: the group (or league table) this match's teams are in, ordered by rank. Only the
+  // top five plus the match teams' rows are rendered; empty when neither team is in the table.
+  const tableGroup = fullStandings.find(
+    (s) => s.teamId === homeTeamId || s.teamId === awayTeamId,
+  )?.groupLabel;
+  const tableRows =
+    tableGroup != null
+      ? fullStandings
+          .filter((s) => s.groupLabel === tableGroup)
+          .sort((a, b) => a.rank - b.rank)
+          .filter((s, i) => i < 5 || s.teamId === homeTeamId || s.teamId === awayTeamId)
+      : [];
 
   return {
     match,
@@ -142,6 +167,7 @@ async function getCachedMatchData(fixtureId: number) {
       standings,
       homeRank,
       awayRank,
+      tableRows,
     },
   };
 }
@@ -298,59 +324,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
     })),
   });
 
-  // Serialize match for client components (Date → ISO string)
-  const serializedMatch = {
-    ...match,
-    kickoffAt: match.kickoffAt.toISOString(),
-  };
-
-  // Rendered twice: in the right rail (desktop) and, via belowCenter, as an
-  // lg:hidden block so mobile/tablet (where the rail is hidden) still gets match info + H2H.
-  const classementCard =
-    prefetch.standings.length > 0 ? (
-      <div className="overflow-hidden rounded-xl border border-border-subtle bg-bg-surface">
-        <div className="border-b border-border-subtle bg-bg-surface-2 px-4 py-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-accent-green">
-            {typedLocale === 'ar'
-              ? 'الترتيب — أفضل 5'
-              : typedLocale === 'en'
-                ? 'Standings — top 5'
-                : 'Classement — top 5'}
-          </h3>
-        </div>
-        <div className="divide-y divide-border-subtle">
-          {prefetch.standings.map((r) => (
-            <div key={r.teamId ?? r.rank} className="flex items-center gap-2 px-4 py-2 text-sm">
-              <span className="w-5 text-center text-xs font-semibold tabular-nums text-text-tertiary">
-                {r.rank}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-text-primary">
-                {r.team ? getTeamDisplayName(r.team, typedLocale) : '—'}
-              </span>
-              <span className="text-xs font-semibold tabular-nums text-text-secondary">
-                {r.points}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    ) : null;
-  const matchSidebar = (
-    <>
-      <MatchClientRightRail
-        matchId={matchId}
-        locale={typedLocale}
-        match={serializedMatch}
-        competitionHref={competitionHref}
-        homeTeamId={homeTeamId}
-        awayTeamId={awayTeamId}
-        homeName={home}
-        awayName={away}
-      />
-      {classementCard}
-    </>
-  );
-
   // ── SEO editorial layer (Task 15.11): server-rendered prose per state ──
   const narrativeState =
     matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming';
@@ -401,13 +374,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
   }).format(match.kickoffAt);
   const homeFormStr = prefetch.homeForm.length ? prefetch.homeForm.slice(0, 5).join('') : null;
   const awayFormStr = prefetch.awayForm.length ? prefetch.awayForm.slice(0, 5).join('') : null;
-  const stateWord = (
-    {
-      finished: { fr: 'Terminé', en: 'Finished', ar: 'انتهت' },
-      live: { fr: 'En direct', en: 'Live', ar: 'مباشر' },
-      upcoming: { fr: 'À venir', en: 'Upcoming', ar: 'قادمة' },
-    } as const
-  )[narrativeState][typedLocale];
   const bylineWord = ({ fr: 'publié le', en: 'published', ar: 'نُشر في' } as const)[typedLocale];
   const secLabels = (
     {
@@ -534,45 +500,204 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const narrativeTail = (
     <>
       {h2hNarr && (
-        <section aria-labelledby="h2h-h">
-          <h2 id="h2h-h" className="mb-1.5 text-base font-semibold text-text-primary">
-            {secLabels.h2h}
-          </h2>
-          <p className="text-sm leading-relaxed text-text-secondary">{h2hNarr}</p>
+        <Card labelledBy="h2h-h">
+          <CardTitle id="h2h-h">{secLabels.h2h}</CardTitle>
+          <p className="mt-3 text-[15px] leading-relaxed text-text-secondary">{h2hNarr}</p>
           {h2hRows.length > 0 && (
-            <div className="mt-2 max-w-md">
+            <div className="mt-3">
               {h2hRows.map((r, i) => (
                 <div
                   key={i}
-                  className="flex justify-between border-t border-border-subtle py-1.5 text-sm text-text-secondary first:border-t-0"
+                  className="flex justify-between gap-4 border-t border-border-subtle py-2.5 text-sm text-text-secondary first:border-t-0"
                 >
                   <span>{r.date}</span>
-                  <span className="font-semibold text-text-primary">
+                  <span className="text-end font-semibold text-text-primary">
                     {r.hn} {r.hs}–{r.as} {r.an}
                   </span>
                 </div>
               ))}
             </div>
           )}
-        </section>
+        </Card>
       )}
       {matchFaq.length > 0 && (
-        <section aria-labelledby="faq-h">
-          <h2 id="faq-h" className="mb-1.5 text-base font-semibold text-text-primary">
-            {secLabels.faq}
-          </h2>
-          <dl className="space-y-2">
+        <Card labelledBy="faq-h">
+          <CardTitle id="faq-h">{secLabels.faq}</CardTitle>
+          <dl className="mt-3 space-y-3">
             {matchFaq.map((f, i) => (
               <div key={i}>
                 <dt className="text-sm font-semibold text-text-primary">{f.q}</dt>
-                <dd className="text-sm text-text-secondary">{f.a}</dd>
+                <dd className="mt-0.5 text-sm text-text-secondary">{f.a}</dd>
               </div>
             ))}
           </dl>
-        </section>
+        </Card>
       )}
     </>
   );
+
+  // ── Match page view model (serializable; the client cards read live data on top of it) ──
+  const teamView = (team: typeof match.homeTeam, id: number, name: string): TeamView => ({
+    id,
+    name,
+    href: team?.slug ? `/${typedLocale}/equipe/${team.slug}` : null,
+    logoUrl: team?.logoUrl ?? null,
+    countryCode: team?.countryCode ?? null,
+    isNational: team?.isNational ?? null,
+  });
+  const view: MatchView = {
+    matchId,
+    locale: typedLocale,
+    coverage,
+    isUpcoming,
+    statusCode: match.statusCode,
+    homeScore: match.homeScore,
+    awayScore: match.awayScore,
+    homeScoreHt: match.homeScoreHt,
+    awayScoreHt: match.awayScoreHt,
+    homeScorePen: match.homeScorePen,
+    awayScorePen: match.awayScorePen,
+    minute: match.minute,
+    extraMinute: match.extraMinute,
+    kickoffAt: match.kickoffAt.toISOString(),
+    home: teamView(match.homeTeam, homeTeamId, home),
+    away: teamView(match.awayTeam, awayTeamId, away),
+  };
+  const tMp = await getTranslations({ locale: typedLocale, namespace: 'matchPage' });
+  const mw = matchweekNumber(match.round);
+  const roundLabel =
+    mw != null
+      ? tMp('matchweekN', { n: mw })
+      : match.groupLabel || match.round
+        ? localizeRound(match.groupLabel ?? match.round, typedLocale)
+        : null;
+  const longDate = new Intl.DateTimeFormat(bcp, {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Africa/Casablanca',
+  }).format(match.kickoffAt);
+  const venueLabel = match.venue?.name
+    ? [match.venue.name, match.venue.city].filter(Boolean).join(', ')
+    : null;
+  const strip: HeaderStrip = {
+    competitionName: compName,
+    competitionHref,
+    competitionLogo: match.competition.logoUrl,
+    roundLabel,
+    dateLabel: longDate,
+    venueLabel,
+  };
+
+  // Overview › summary: the answer line (also the SportsEvent description, so it must stay
+  // visible), then the recap / live narrative, or a stats-based line when there is none.
+  const summaryState =
+    match.statusCode === 'HT'
+      ? 'halfTime'
+      : narrativeState === 'finished'
+        ? 'finished'
+        : narrativeState === 'live'
+          ? 'live'
+          : 'upcoming';
+  const homeStatsRow = prefetch.teamStats?.find((x) => x.teamId === homeTeamId);
+  const awayStatsRow = prefetch.teamStats?.find((x) => x.teamId === awayTeamId);
+  const statsLine =
+    stageRecap == null
+      ? matchSummary({
+          state: summaryState,
+          locale: typedLocale,
+          home,
+          away,
+          homeScore: match.homeScore,
+          awayScore: match.awayScore,
+          minute: match.minute,
+          goals: (prefetch.events ?? [])
+            .filter((e) => !isShootout(e))
+            .flatMap((e) => {
+              const k = eventKind(e);
+              if (k !== 'goal' && k !== 'penaltyGoal' && k !== 'ownGoal') return [];
+              return [
+                {
+                  name: e.player?.name?.[typedLocale] ?? e.player?.name?.en ?? '—',
+                  minute: minuteLabel(e),
+                  side: (e.teamId === homeTeamId ? 'home' : 'away') as 'home' | 'away',
+                  ownGoal: k === 'ownGoal',
+                },
+              ];
+            }),
+          stats:
+            homeStatsRow && awayStatsRow
+              ? { home: homeStatsRow.stats, away: awayStatsRow.stats }
+              : null,
+        })
+      : null;
+  const summaryParagraphs = [answerText, stageRecap ?? statsLine].filter((x): x is string => !!x);
+  const summaryTitle = tMp(
+    summaryState === 'halfTime'
+      ? 'summaryHalfTime'
+      : summaryState === 'finished'
+        ? 'summaryFullTime'
+        : summaryState === 'live'
+          ? 'summaryLive'
+          : 'summaryPreview',
+  );
+
+  const detailRows: Array<{ label: string; value: React.ReactNode }> = [
+    {
+      label: tMp('competition'),
+      value: competitionHref ? (
+        <a href={competitionHref} className="text-accent-green hover:underline">
+          {compName}
+        </a>
+      ) : (
+        compName
+      ),
+    },
+    ...(roundLabel
+      ? [
+          {
+            label: mw != null ? tMp('matchweek') : tMp('round'),
+            value: mw != null ? String(mw) : roundLabel,
+          },
+        ]
+      : []),
+    { label: tMp('date'), value: longDate },
+    {
+      label: tMp('kickOffTime'),
+      value: <LocalTime date={view.kickoffAt} locale={typedLocale} format="time" />,
+    },
+    ...(venueLabel ? [{ label: tMp('venue'), value: venueLabel }] : []),
+    ...(match.referee ? [{ label: tMp('referee'), value: match.referee }] : []),
+    ...(match.venue?.capacity
+      ? [
+          {
+            label: tMp('capacity'),
+            value: new Intl.NumberFormat(typedLocale === 'ar' ? 'ar-MA-u-nu-latn' : bcp).format(
+              match.venue.capacity,
+            ),
+          },
+        ]
+      : []),
+  ];
+
+  // Tabs: shown when there is data, or while live when the feed covers it (fills in shortly).
+  const hasEvents = (prefetch.events?.length ?? 0) > 0;
+  const hasStatsData = (prefetch.teamStats?.length ?? 0) === 2;
+  const hasLineups =
+    (prefetch.lineups?.length ?? 0) === 2 || !!(predicted?.home && predicted?.away);
+  const tabs: MatchTab[] = [
+    { id: 'overview', label: tMp('overview') },
+    ...(hasEvents || (isLive && coverage?.events) ? [{ id: 'events', label: tMp('events') }] : []),
+    ...(hasStatsData || (isLive && coverage?.statisticsFixtures)
+      ? [{ id: 'stats', label: tMp('stats') }]
+      : []),
+    ...(hasLineups || (isLive && coverage?.lineups)
+      ? [{ id: 'lineups', label: tMp('lineups') }]
+      : []),
+    ...(prefetch.tableRows.length > 0 ? [{ id: 'table', label: tMp('table') }] : []),
+  ];
+  const tabIds = new Set(tabs.map((x) => x.id));
 
   const matchH1 = buildMatchH1({
     home,
@@ -666,93 +791,90 @@ export default async function MatchDetailPage({ params }: PageProps) {
         />
       </div>
 
-      <InnerPageShell
-        leftRail={
-          <MatchClientLeftRail
-            matchId={matchId}
-            locale={typedLocale}
-            match={serializedMatch}
-            coverage={coverage}
-            homeTeamId={homeTeamId}
-            awayTeamId={awayTeamId}
-            isUpcoming={isUpcoming}
-          />
-        }
-        center={
-          <div className="space-y-4">
-            <MatchAnswerBlock
-              state={narrativeState}
-              stateLabel={stateWord}
-              answer={answerText}
-              recap={stageRecap}
-              byline={answerByline}
-              facts={buildKeyFacts({
-                locale: typedLocale,
-                kickoffAt: match.kickoffAt,
-                venue: match.venue?.name,
-                homeId: match.homeTeam?.id,
-                awayId: match.awayTeam?.id,
-                homeName: home,
-                awayName: away,
-                teamStats: isUpcoming ? null : prefetch.teamStats,
-                h2h: h2hSummary,
-              })}
-              locale={typedLocale}
-            />
-            <ScoreHeader
-              match={match}
-              locale={typedLocale}
-              competitionHref={competitionHref}
-              goalScorers={(prefetch.events ?? []).flatMap((e) => {
-                const type = e.type?.toLowerCase() ?? '';
-                const detail = (e.detail ?? '').toLowerCase();
-                if (type !== 'goal' || detail.includes('missed')) return [];
-                return [
-                  {
-                    playerName: e.player?.name?.[typedLocale] ?? e.player?.name?.en ?? '—',
-                    minute: e.minute,
-                    extraMinute: e.extraMinute,
-                    isOwnGoal: detail.includes('own goal'),
-                    isPenalty: detail.includes('penalty'),
-                    teamId: e.teamId,
-                  },
-                ];
-              })}
-            />
-            {isUpcoming && (
-              <PreMatchForm
-                locale={typedLocale}
-                homeName={home}
-                awayName={away}
-                homeForm={prefetch.homeForm}
-                awayForm={prefetch.awayForm}
-              />
+      <div className="mx-auto w-full max-w-[1280px] px-4 pb-10 pt-3 md:pt-4">
+        <MatchHeaderCard view={view} strip={strip} />
+        <div className="mt-4 md:mt-6">
+          <MatchTabs tabs={tabs} label={tMp('tabsLabel')}>
+            <MatchTabPanel id="overview">
+              <div className="grid gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-6">
+                <div className="contents md:block md:space-y-6">
+                  <div className="order-1">
+                    <SummaryCard
+                      title={summaryTitle}
+                      paragraphs={summaryParagraphs}
+                      byline={answerByline}
+                    />
+                  </div>
+                  {!isUpcoming && (
+                    <div className="order-3">
+                      <KeyMomentsCard view={view} />
+                    </div>
+                  )}
+                  {isUpcoming && (
+                    <div className="order-3">
+                      <PreMatchForm
+                        locale={typedLocale}
+                        homeName={home}
+                        awayName={away}
+                        homeForm={prefetch.homeForm}
+                        awayForm={prefetch.awayForm}
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="contents md:block md:space-y-6">
+                  {!isUpcoming && (
+                    <div className="order-2">
+                      <KeyStatsCard view={view} />
+                    </div>
+                  )}
+                  <div className="order-4">
+                    <MatchDetailsCard title={tMp('matchDetails')} rows={detailRows} />
+                  </div>
+                  <div className="order-5">
+                    <NextMatchCard
+                      fixtures={prefetch.nextFixtures}
+                      homeTeamId={homeTeamId}
+                      awayTeamId={awayTeamId}
+                      homeTeam={match.homeTeam}
+                      awayTeam={match.awayTeam}
+                      locale={typedLocale}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-4 md:mt-6 md:grid-cols-2 md:gap-6">{narrativeTail}</div>
+            </MatchTabPanel>
+            {tabIds.has('events') && (
+              <MatchTabPanel id="events">
+                <EventsCard view={view} />
+              </MatchTabPanel>
             )}
-            {isUpcoming && predicted && (
-              <PredictedLineup
-                locale={typedLocale}
-                homeName={home}
-                awayName={away}
-                homeLineup={predicted.home}
-                awayLineup={predicted.away}
-              />
+            {tabIds.has('stats') && (
+              <MatchTabPanel id="stats">
+                <StatsCard view={view} />
+              </MatchTabPanel>
             )}
-            <MatchClientCenter
-              matchId={matchId}
-              locale={typedLocale}
-              coverage={coverage}
-              homeTeamId={homeTeamId}
-              awayTeamId={awayTeamId}
-              homeName={home}
-              awayName={away}
-              isUpcoming={isUpcoming}
-            />
-            {narrativeTail}
-          </div>
-        }
-        rightRail={matchSidebar}
-        belowCenter={<div className="lg:hidden">{matchSidebar}</div>}
-      />
+            {tabIds.has('lineups') && (
+              <MatchTabPanel id="lineups">
+                <LineupsCard view={view} predicted={predicted} />
+              </MatchTabPanel>
+            )}
+            {tabIds.has('table') && (
+              <MatchTabPanel id="table">
+                <TableCard
+                  locale={typedLocale}
+                  rows={prefetch.tableRows}
+                  homeTeamId={homeTeamId}
+                  awayTeamId={awayTeamId}
+                  competitionName={compName}
+                  competitionHref={competitionHref}
+                />
+              </MatchTabPanel>
+            )}
+          </MatchTabs>
+        </div>
+      </div>
     </>
   );
 
