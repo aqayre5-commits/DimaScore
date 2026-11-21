@@ -300,10 +300,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
   }).format(match.kickoffAt);
   const strip: HeaderStrip = {
     competitionName: compName,
-    competitionHref,
-    competitionLogo: match.competition.logoUrl,
-    roundLabel,
-    dateLabel: longDate,
     // The h1 is the header's team row: its text equals matchH1 (score only once finished, as
     // in the <title>; the live score / kick-off time is shown beside it, outside the h1).
     h1Score:
@@ -311,8 +307,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
         ? `${match.homeScore}–${match.awayScore}`
         : null,
     vsWord: typedLocale === 'en' ? 'vs' : typedLocale === 'ar' ? 'ضد' : '–',
-    // Venue name only, as in the mockup.
-    venueLabel: match.venue?.name ?? null,
   };
 
   const summaryState =
