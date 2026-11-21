@@ -1,7 +1,8 @@
-import { ImageResponse } from 'next/og';
+import { OG_FONT_FAMILY, OG_SIZE, renderOgImage } from '@/lib/og/og-image';
+import { OgText } from '@/lib/og/og-text';
 
 export const alt = 'DimaScore';
-export const size = { width: 1200, height: 630 };
+export const size = OG_SIZE;
 export const contentType = 'image/png';
 
 export default async function OGImage({ params }: { params: Promise<{ locale: string }> }) {
@@ -14,7 +15,14 @@ export default async function OGImage({ params }: { params: Promise<{ locale: st
         ? 'Le football marocain et au-delà'
         : 'Moroccan football and beyond';
 
-  return new ImageResponse(
+  const footer =
+    locale === 'ar'
+      ? 'نتائج مباشرة وإحصائيات'
+      : locale === 'fr'
+        ? 'SCORES EN DIRECT ET STATS'
+        : 'LIVE SCORES & STATS';
+
+  const image = (
     <div
       style={{
         width: '100%',
@@ -24,7 +32,7 @@ export default async function OGImage({ params }: { params: Promise<{ locale: st
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1c2128 100%)',
-        fontFamily: 'system-ui, sans-serif',
+        fontFamily: OG_FONT_FAMILY,
       }}
     >
       {/* Accent bar */}
@@ -41,21 +49,16 @@ export default async function OGImage({ params }: { params: Promise<{ locale: st
 
       {/* Logo text */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-        <span style={{ fontSize: 72, fontWeight: 700, color: '#e6edf3' }}>Dima</span>
-        <span style={{ fontSize: 72, fontWeight: 700, color: '#3a56d4' }}>Score</span>
+        <span style={{ fontSize: 72, color: '#e6edf3' }}>Dima</span>
+        <span style={{ fontSize: 72, color: '#3a56d4' }}>Score</span>
       </div>
 
       {/* Tagline */}
-      <p
-        style={{
-          fontSize: 28,
-          color: '#8b96a9',
-          marginTop: 16,
-          fontWeight: 500,
-        }}
-      >
-        {tagline}
-      </p>
+      <OgText
+        text={tagline}
+        locale={locale}
+        style={{ fontSize: 28, color: '#8b96a9', marginTop: 16 }}
+      />
 
       {/* Bottom accent */}
       <div
@@ -75,11 +78,14 @@ export default async function OGImage({ params }: { params: Promise<{ locale: st
             background: '#00a87f',
           }}
         />
-        <span style={{ fontSize: 16, color: '#627080', fontWeight: 600, letterSpacing: 2 }}>
-          LIVE SCORES & STATS
-        </span>
+        <OgText
+          text={footer}
+          locale={locale}
+          style={{ fontSize: 16, color: '#627080', letterSpacing: 2 }}
+        />
       </div>
-    </div>,
-    { ...size },
+    </div>
   );
+
+  return renderOgImage(image, image);
 }

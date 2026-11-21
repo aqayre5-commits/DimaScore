@@ -11,6 +11,7 @@
  */
 
 import { buildMatchSlug } from '@/lib/seo/match-slug';
+import { matchupLabel } from '@/lib/i18n/feed-labels';
 import { SOCIAL_ALLOWLIST } from '@/lib/constants/social-links';
 
 export interface JsonLdNode {
@@ -179,10 +180,17 @@ export function buildSportsEventMatch(args: {
   url: string;
   homeName: string;
   awayName: string;
-  /** Visible heading. Defaults to "Home vs Away" when the caller has no on-page H1. */
+  /** Visible heading. Defaults to "Home vs Away" (in `locale`) when the caller has no on-page H1. */
   name?: string;
+  /** Page language, for the default name's connector ("vs" / "ضد"). */
+  locale?: string;
+  /** A visible sentence about the match (the answer block). */
+  description?: string | null;
   homeLogo?: string | null;
   awayLogo?: string | null;
+  /** Team pages the visible team names link to. */
+  homeUrl?: string | null;
+  awayUrl?: string | null;
   competitionName: string;
   kickoffAt: Date;
   statusCode: string;
@@ -192,34 +200,49 @@ export function buildSportsEventMatch(args: {
   awaySameAs?: string[];
   competitionSameAs?: string[];
 }): JsonLdNode {
+  const team = (
+    side: 'home' | 'away',
+    name: string,
+    logo?: string | null,
+    teamUrl?: string | null,
+    sameAs?: string[],
+  ): JsonLdNode => ({
+    '@type': 'SportsTeam',
+    '@id': `${args.url}#${side}-team`,
+    name,
+    ...(logo ? { logo } : {}),
+    ...(teamUrl ? { url: teamUrl } : {}),
+    ...(sameAs && sameAs.length > 0 ? { sameAs } : {}),
+  });
+  const home = team('home', args.homeName, args.homeLogo, args.homeUrl, args.homeSameAs);
+  const away = team('away', args.awayName, args.awayLogo, args.awayUrl, args.awaySameAs);
+  const ref = (n: JsonLdNode) => ({ '@id': n['@id'] as string });
+  const images = [args.homeLogo, args.awayLogo].filter((x): x is string => !!x);
+  // Only what the page shows: the venue strip (name, city), the crests, the answer sentence. No
+  // score property (the visible H1 carries it), no organizer/offers/endDate (we don't have them).
   return {
     '@type': 'SportsEvent',
     '@id': `${args.url}#event`,
-    name: args.name ?? `${args.homeName} vs ${args.awayName}`,
+    name: args.name ?? matchupLabel(args.homeName, args.awayName, args.locale ?? 'en'),
+    ...(args.description ? { description: args.description } : {}),
     sport: 'https://schema.org/Soccer',
     startDate: args.kickoffAt.toISOString(),
     eventStatus: sportsEventStatus(args.statusCode),
     mainEntityOfPage: { '@id': webPageId(args.url) },
-    competitor: [
-      {
-        '@type': 'SportsTeam',
-        name: args.homeName,
-        ...(args.homeLogo ? { logo: args.homeLogo } : {}),
-        ...(args.homeSameAs && args.homeSameAs.length > 0 ? { sameAs: args.homeSameAs } : {}),
-      },
-      {
-        '@type': 'SportsTeam',
-        name: args.awayName,
-        ...(args.awayLogo ? { logo: args.awayLogo } : {}),
-        ...(args.awaySameAs && args.awaySameAs.length > 0 ? { sameAs: args.awaySameAs } : {}),
-      },
-    ],
+    ...(images.length > 0 ? { image: images } : {}),
+    homeTeam: ref(home),
+    awayTeam: ref(away),
+    competitor: [home, away],
+    performer: [ref(home), ref(away)],
     ...(args.venueName
       ? {
+          eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
           location: {
             '@type': 'Place',
             name: args.venueName,
-            ...(args.venueCity ? { address: args.venueCity } : {}),
+            ...(args.venueCity
+              ? { address: { '@type': 'PostalAddress', addressLocality: args.venueCity } }
+              : {}),
           },
         }
       : {}),
@@ -355,7 +378,7 @@ export function buildFixtureItemList(args: {
         item: {
           '@type': 'SportsEvent',
           '@id': `${matchUrl}#event`,
-          name: `${f.homeName} vs ${f.awayName}`,
+          name: matchupLabel(f.homeName, f.awayName, args.locale),
           sport: 'https://schema.org/Soccer',
           startDate: f.kickoffAt.toISOString(),
           eventStatus: sportsEventStatus(f.statusCode),

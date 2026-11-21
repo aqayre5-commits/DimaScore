@@ -34,6 +34,8 @@ import {
   buildCompetitionHref,
 } from '@/lib/constants/competitions-mega-menu';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { matchupLabel } from '@/lib/i18n/feed-labels';
+import { flagImageSrc } from '@/components/shared/Flag';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
@@ -256,7 +258,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${locale}` },
     { label: compName, href: competitionHref ?? undefined },
-    { label: `${home} vs ${away}` },
+    { label: matchupLabel(home, away, typedLocale) },
   ];
 
   const matchId = String(fixtureId);
@@ -430,6 +432,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
           day: 'numeric',
           month: 'short',
           year: 'numeric',
+          timeZone: 'Africa/Casablanca',
         }).format(f.kickoffAt),
         hn: homeIsThisHome ? home : away,
         hs: (homeIsThisHome ? f.homeScore : f.awayScore) as number,
@@ -587,10 +590,19 @@ export default async function MatchDetailPage({ params }: PageProps) {
             buildSportsEventMatch({
               url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
               name: matchH1,
+              locale: typedLocale,
+              description: answerText,
               homeName: home,
               awayName: away,
-              homeLogo: match.homeTeam?.logoUrl,
-              awayLogo: match.awayTeam?.logoUrl,
+              homeUrl: match.homeTeam?.slug
+                ? `${BASE_URL}/${typedLocale}/equipe/${match.homeTeam.slug}`
+                : null,
+              awayUrl: match.awayTeam?.slug
+                ? `${BASE_URL}/${typedLocale}/equipe/${match.awayTeam.slug}`
+                : null,
+              // The image the score header shows (the flag for national teams).
+              homeLogo: match.homeTeam ? flagImageSrc(match.homeTeam) : null,
+              awayLogo: match.awayTeam ? flagImageSrc(match.awayTeam) : null,
               competitionName: compName,
               kickoffAt: match.kickoffAt,
               statusCode: match.statusCode,

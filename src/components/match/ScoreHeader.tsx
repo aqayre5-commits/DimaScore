@@ -5,7 +5,7 @@ import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i
 import { LiveScoreDisplay } from '@/components/match/LiveScoreDisplay';
 import type { MatchDetail } from '@/lib/db/queries/match-detail';
 import type { Locale } from '@/lib/i18n/config';
-import { localizeRound } from '@/lib/i18n/feed-labels';
+import { crestAlt, goalMarker, localizeRound } from '@/lib/i18n/feed-labels';
 
 export interface GoalScorer {
   playerName: string;
@@ -84,6 +84,7 @@ export function ScoreHeader({
                   isNational={match.homeTeam?.isNational}
                   size={56}
                   label={homeName}
+                  alt={crestAlt(homeName, locale, !!match.homeTeam?.isNational)}
                 />
                 <span className="text-base font-semibold text-text-primary hover:text-accent hover:underline">
                   {homeName}
@@ -97,11 +98,12 @@ export function ScoreHeader({
                   isNational={match.homeTeam?.isNational}
                   size={56}
                   label={homeName}
+                  alt={crestAlt(homeName, locale, !!match.homeTeam?.isNational)}
                 />
                 <span className="text-base font-semibold text-text-primary">{homeName}</span>
               </>
             )}
-            {homeGoals.length > 0 && <GoalScorerList goals={homeGoals} />}
+            {homeGoals.length > 0 && <GoalScorerList goals={homeGoals} locale={locale} />}
           </div>
 
           {/* Score / status center — client component for live updates */}
@@ -135,6 +137,7 @@ export function ScoreHeader({
                   isNational={match.awayTeam?.isNational}
                   size={56}
                   label={awayName}
+                  alt={crestAlt(awayName, locale, !!match.awayTeam?.isNational)}
                 />
                 <span className="text-base font-semibold text-text-primary hover:text-accent hover:underline">
                   {awayName}
@@ -148,11 +151,12 @@ export function ScoreHeader({
                   isNational={match.awayTeam?.isNational}
                   size={56}
                   label={awayName}
+                  alt={crestAlt(awayName, locale, !!match.awayTeam?.isNational)}
                 />
                 <span className="text-base font-semibold text-text-primary">{awayName}</span>
               </>
             )}
-            {awayGoals.length > 0 && <GoalScorerList goals={awayGoals} />}
+            {awayGoals.length > 0 && <GoalScorerList goals={awayGoals} locale={locale} />}
           </div>
         </div>
 
@@ -169,12 +173,16 @@ export function ScoreHeader({
   );
 }
 
-function GoalScorerList({ goals }: { goals: GoalScorer[] }) {
+function GoalScorerList({ goals, locale }: { goals: GoalScorer[]; locale: Locale }) {
   return (
     <div className="mt-0.5 flex flex-col items-center gap-0.5">
       {goals.map((g, i) => {
         const min = g.extraMinute ? `${g.minute}+${g.extraMinute}'` : `${g.minute}'`;
-        const suffix = g.isOwnGoal ? ' (OG)' : g.isPenalty ? ' (P)' : '';
+        const suffix = g.isOwnGoal
+          ? ` ${goalMarker('ownGoal', locale)}`
+          : g.isPenalty
+            ? ` ${goalMarker('penalty', locale)}`
+            : '';
         return (
           <span key={i} className="text-[11px] leading-tight text-text-secondary">
             {g.playerName} {min}

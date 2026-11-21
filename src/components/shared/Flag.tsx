@@ -14,7 +14,22 @@ export interface FlagProps {
   size?: number;
   /** Fallback initials/code shown when no image resolves. */
   label?: string | null;
+  /** Image alt text. Empty (decorative) by default, for badges next to the visible name. */
+  alt?: string;
   className?: string;
+}
+
+/** The image URL Flag shows for these props (null when it falls back to initials). Kept in one
+ *  place so structured data can point at the same image the page shows. */
+export function flagImageSrc({
+  countryCode,
+  logoUrl,
+  isNational,
+}: Pick<FlagProps, 'countryCode' | 'logoUrl' | 'isNational'>): string | null {
+  const cc = countryCode?.trim().toLowerCase();
+  const crest = logoUrl ?? null;
+  const asFlag = !!cc && (isNational === true || (isNational == null && !crest));
+  return asFlag ? `https://media.api-sports.io/flags/${cc}.svg` : crest;
 }
 
 /**
@@ -30,6 +45,7 @@ export function Flag({
   isNational,
   size = 16,
   label,
+  alt = '',
   className,
 }: FlagProps) {
   const cc = countryCode?.trim().toLowerCase();
@@ -47,13 +63,13 @@ export function Flag({
   // shorter 4:3 side; crests stay square. `size` is the badge's width footprint.
   const width = size;
   const height = asFlag ? Math.round((size * 3) / 4) : size;
-  const src = asFlag ? `https://media.api-sports.io/flags/${cc}.svg` : crest;
+  const src = flagImageSrc({ countryCode, logoUrl, isNational });
 
   if (src) {
     return (
       <Image
         src={src}
-        alt=""
+        alt={alt}
         width={asFlag ? 96 : 72}
         height={72}
         style={{ width, height }}
