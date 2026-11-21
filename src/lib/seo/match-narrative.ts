@@ -78,13 +78,9 @@ function scorerClause(scorers: NarrativeScorer[], side: 'home' | 'away', locale:
     },
     locale,
   );
-  // One entry per player, minutes in order: "Pedro Neto (46', 90')".
-  const byName = new Map<string, string[]>();
-  for (const s of list) {
-    const m = `${min(s)}${s.isPenalty ? p.pen : s.isOwnGoal ? p.og : ''}`;
-    byName.set(s.name, [...(byName.get(s.name) ?? []), m]);
-  }
-  return [...byName].map(([name, mins]) => `${name} (${mins.join(', ')})`).join(', ');
+  return list
+    .map((s) => `${s.name} (${min(s)}${s.isPenalty ? p.pen : s.isOwnGoal ? p.og : ''})`)
+    .join(', ');
 }
 
 /**

@@ -81,7 +81,7 @@ describe('match prose never puts the loser’s score first', () => {
     });
   }
 
-  it('groups a player’s goals and uses the article in en', () => {
+  it('uses the article in en', () => {
     const recap = buildRecap({
       ...t,
       homeScore: 0,
@@ -91,7 +91,7 @@ describe('match prose never puts the loser’s score first', () => {
       locale: 'en',
     });
     expect(recap).toBe(
-      "Chelsea won 2–0 at Everton in the Premier League. Chelsea: Pedro Neto (46', 90'). Chelsea kept a clean sheet.",
+      "Chelsea won 2–0 at Everton in the Premier League. Chelsea: Pedro Neto (46'), Pedro Neto (90'). Chelsea kept a clean sheet.",
     );
   });
 });
