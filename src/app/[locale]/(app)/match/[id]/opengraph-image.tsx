@@ -1,9 +1,17 @@
-import { ImageResponse } from 'next/og';
 import { db } from '@/lib/db/client';
 import { getMatchDetail } from '@/lib/db/queries/match-detail';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import { localizeRound, versusUpper } from '@/lib/i18n/feed-labels';
+import { ogFixtureId } from '@/lib/og/og-ids';
+import {
+  OG_CACHE_DEFAULT,
+  OG_CACHE_FINISHED,
+  OG_FONT_FAMILY,
+  OG_SIZE,
+  renderOgImage,
+} from '@/lib/og/og-image';
+import { OgText } from '@/lib/og/og-text';
 
 const OG_FINISHED: Record<string, Record<'AET' | 'PEN' | 'FT', string>> = {
   en: { AET: 'After Extra Time', PEN: 'Penalties', FT: 'Full Time' },
@@ -11,14 +19,20 @@ const OG_FINISHED: Record<string, Record<'AET' | 'PEN' | 'FT', string>> = {
   ar: { AET: 'بعد الأشواط الإضافية', PEN: 'ركلات الترجيح', FT: 'نهاية المباراة' },
 };
 const OG_LIVE: Record<string, string> = { en: 'LIVE', fr: 'EN DIRECT', ar: 'مباشر' };
+const OG_FALLBACK: Record<string, string> = {
+  en: 'Match details',
+  fr: 'Détails du match',
+  ar: 'تفاصيل المباراة',
+};
 
 function ogFinishedLabel(statusCode: string, locale: string): string {
   const labels = OG_FINISHED[locale] ?? OG_FINISHED.en;
   return statusCode === 'AET' ? labels.AET : statusCode === 'PEN' ? labels.PEN : labels.FT;
 }
 
+// Fallback only: the match page sets a localized og:image:alt in generateMetadata.
 export const alt = 'Match — DimaScore';
-export const size = { width: 1200, height: 630 };
+export const size = OG_SIZE;
 export const contentType = 'image/png';
 
 const FINISHED_CODES = new Set(['FT', 'AET', 'PEN']);
@@ -29,14 +43,11 @@ export default async function OGImage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id: rawId } = await params;
-  const fixtureId = Number(rawId);
-
-  if (!fixtureId || !Number.isFinite(fixtureId)) {
-    return fallback();
-  }
+  const fixtureId = ogFixtureId(rawId);
+  if (!fixtureId) return renderOgImage(fallback(locale), fallback('en'));
 
   const match = await getMatchDetail(db, fixtureId);
-  if (!match) return fallback();
+  if (!match) return renderOgImage(fallback(locale), fallback('en'));
 
   const home = getTeamDisplayName(match.homeTeam, locale);
   const away = getTeamDisplayName(match.awayTeam, locale);
@@ -44,10 +55,31 @@ export default async function OGImage({
     { id: match.competition.id, name: match.competition.name, slug: match.competition.slug },
     locale,
   );
+  const round = localizeRound(match.groupLabel ?? match.round, locale);
   const isFinished = FINISHED_CODES.has(match.statusCode);
   const hasScore = match.homeScore != null && match.awayScore != null;
+  const rtl = locale === 'ar';
 
-  return new ImageResponse(
+  const team = (name: string, logo: string | null | undefined) => (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 320 }}>
+      {logo && (
+        <img
+          src={logo}
+          alt=""
+          width={96}
+          height={96}
+          style={{ objectFit: 'contain', marginBottom: 12 }}
+        />
+      )}
+      <OgText
+        text={name}
+        locale={locale}
+        style={{ fontSize: 30, color: '#e6edf3', textAlign: 'center', justifyContent: 'center' }}
+      />
+    </div>
+  );
+
+  const image = (
     <div
       style={{
         width: '100%',
@@ -57,10 +89,9 @@ export default async function OGImage({
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1c2128 100%)',
-        fontFamily: 'system-ui, sans-serif',
+        fontFamily: OG_FONT_FAMILY,
       }}
     >
-      {/* Accent bar */}
       <div
         style={{
           position: 'absolute',
@@ -72,139 +103,92 @@ export default async function OGImage({
         }}
       />
 
-      {/* Competition */}
-      <p
+      <OgText
+        text={round ? `${compName} — ${round}` : compName}
+        locale={locale}
         style={{
-          fontSize: 22,
-          fontWeight: 600,
+          fontSize: 24,
           color: '#8b96a9',
           textTransform: 'uppercase',
           letterSpacing: 3,
-          marginBottom: 24,
+          marginBottom: 28,
+          maxWidth: 1000,
+          justifyContent: 'center',
         }}
-      >
-        {compName}
-        {(match.groupLabel ?? match.round)
-          ? ` — ${localizeRound(match.groupLabel ?? match.round, locale)}`
-          : ''}
-      </p>
+      />
 
-      {/* Teams row */}
+      {/* Home sits on the right on /ar, as on the page. */}
       <div
         style={{
           display: 'flex',
+          flexDirection: rtl ? 'row-reverse' : 'row',
           alignItems: 'center',
           gap: 40,
         }}
       >
-        {/* Home */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: 300,
-          }}
-        >
-          {match.homeTeam?.logoUrl && (
-            <img
-              src={match.homeTeam.logoUrl}
-              width={96}
-              height={96}
-              style={{ objectFit: 'contain', marginBottom: 12 }}
-            />
-          )}
-          <span
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              color: '#e6edf3',
-              textAlign: 'center',
-            }}
-          >
-            {home}
-          </span>
-        </div>
-
-        {/* Score or VS */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
+        {team(home, match.homeTeam?.logoUrl)}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {hasScore ? (
-            <span style={{ fontSize: 64, fontWeight: 800, color: '#e6edf3' }}>
-              {match.homeScore} - {match.awayScore}
+            <span style={{ fontSize: 64, color: '#e6edf3' }}>
+              {rtl
+                ? `${match.awayScore} - ${match.homeScore}`
+                : `${match.homeScore} - ${match.awayScore}`}
             </span>
           ) : (
-            <span style={{ fontSize: 56, fontWeight: 800, color: '#3a56d4' }}>
-              {versusUpper(locale)}
-            </span>
-          )}
-          {isFinished && (
-            <span style={{ fontSize: 18, color: '#627080', fontWeight: 600, marginTop: 4 }}>
-              {ogFinishedLabel(match.statusCode, locale)}
-            </span>
-          )}
-          {!isFinished && hasScore && (
-            <span style={{ fontSize: 18, color: '#e11d48', fontWeight: 700, marginTop: 4 }}>
-              {OG_LIVE[locale] ?? 'LIVE'}
-            </span>
-          )}
-        </div>
-
-        {/* Away */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: 300,
-          }}
-        >
-          {match.awayTeam?.logoUrl && (
-            <img
-              src={match.awayTeam.logoUrl}
-              width={96}
-              height={96}
-              style={{ objectFit: 'contain', marginBottom: 12 }}
+            <OgText
+              text={versusUpper(locale)}
+              locale={locale}
+              style={{ fontSize: 56, color: '#3a56d4' }}
             />
           )}
-          <span
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              color: '#e6edf3',
-              textAlign: 'center',
-            }}
-          >
-            {away}
-          </span>
+          {isFinished && (
+            <OgText
+              text={ogFinishedLabel(match.statusCode, locale)}
+              locale={locale}
+              style={{ fontSize: 20, color: '#8b96a9', marginTop: 4 }}
+            />
+          )}
+          {!isFinished && hasScore && (
+            <OgText
+              text={OG_LIVE[locale] ?? OG_LIVE.en}
+              locale={locale}
+              style={{ fontSize: 20, color: '#e11d48', marginTop: 4 }}
+            />
+          )}
         </div>
+        {team(away, match.awayTeam?.logoUrl)}
       </div>
 
-      {/* Branding */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 32,
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: 4,
-        }}
-      >
-        <span style={{ fontSize: 24, fontWeight: 700, color: '#e6edf3' }}>Dima</span>
-        <span style={{ fontSize: 24, fontWeight: 700, color: '#3a56d4' }}>Score</span>
-      </div>
-    </div>,
-    { ...size },
+      <Brand size={24} />
+    </div>
+  );
+
+  // A finished match's card no longer changes, so the CDN may keep it longer.
+  return renderOgImage(image, fallback(locale), {
+    cacheControl: isFinished ? OG_CACHE_FINISHED : OG_CACHE_DEFAULT,
+  });
+}
+
+function Brand({ size }: { size: number }) {
+  // The wordmark is Latin on every locale (as in the site header).
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: 32,
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 4,
+      }}
+    >
+      <span style={{ fontSize: size, color: '#e6edf3' }}>Dima</span>
+      <span style={{ fontSize: size, color: '#3a56d4' }}>Score</span>
+    </div>
   );
 }
 
-function fallback() {
-  return new ImageResponse(
+function fallback(locale: string) {
+  return (
     <div
       style={{
         width: '100%',
@@ -214,15 +198,18 @@ function fallback() {
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1c2128 100%)',
-        fontFamily: 'system-ui, sans-serif',
+        fontFamily: OG_FONT_FAMILY,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-        <span style={{ fontSize: 72, fontWeight: 700, color: '#e6edf3' }}>Dima</span>
-        <span style={{ fontSize: 72, fontWeight: 700, color: '#3a56d4' }}>Score</span>
+        <span style={{ fontSize: 72, color: '#e6edf3' }}>Dima</span>
+        <span style={{ fontSize: 72, color: '#3a56d4' }}>Score</span>
       </div>
-      <p style={{ fontSize: 28, color: '#8b96a9', marginTop: 16 }}>Match Details</p>
-    </div>,
-    { ...size },
+      <OgText
+        text={OG_FALLBACK[locale] ?? OG_FALLBACK.en}
+        locale={locale}
+        style={{ fontSize: 28, color: '#8b96a9', marginTop: 16 }}
+      />
+    </div>
   );
 }

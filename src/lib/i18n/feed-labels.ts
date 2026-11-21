@@ -190,6 +190,31 @@ export function localizeContextLabel(label: string | null | undefined, locale: s
   return applyTemplates(label, railTemplates) ?? localizeRound(label, locale);
 }
 
+/** Lower-case connector in a fixture name: "Morocco vs Spain" / "المغرب ضد إسبانيا". */
+export function versusWord(locale: string): string {
+  return locale === 'ar' ? 'ضد' : 'vs';
+}
+
+/** Fixture name for breadcrumbs, aria labels and compact schema names, in the page language. */
+export function matchupLabel(home: string, away: string, locale: string): string {
+  return `${home} ${versusWord(locale)} ${away}`;
+}
+
+/** Goal-scorer marker after the minute: "(OG)" / "(CSC)" / "(هـ.ذ)", "(pen.)" / "(ج.ت)". */
+export function goalMarker(kind: 'ownGoal' | 'penalty', locale: string): string {
+  const own: Record<string, string> = { en: 'OG', fr: 'CSC', ar: 'هـ.ذ' };
+  const pen: Record<string, string> = { en: 'pen.', fr: 'pen.', ar: 'ج.ت' };
+  const table = kind === 'ownGoal' ? own : pen;
+  return `(${table[locale] ?? table.en})`;
+}
+
+/** Alt text for a team crest (club) or flag (national team), in the page language. */
+export function crestAlt(name: string, locale: string, isFlag: boolean): string {
+  if (locale === 'ar') return `${isFlag ? 'علم' : 'شعار'} ${name}`;
+  if (locale === 'fr') return `${isFlag ? 'Drapeau' : 'Logo'} : ${name}`;
+  return `${name} ${isFlag ? 'flag' : 'crest'}`;
+}
+
 /** Big "VS" between two crests on hero/next-match cards (hook-free for those components). */
 export function versusUpper(locale: string): string {
   return locale === 'ar' ? 'ضد' : 'VS';

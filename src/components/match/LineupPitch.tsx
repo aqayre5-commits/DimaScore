@@ -230,7 +230,7 @@ export function LineupPitch({
           viewBox={`0 0 ${W} ${H}`}
           className="w-full"
           role="img"
-          aria-label={`${homeTeamName} vs ${awayTeamName} ${t('lineups').toLowerCase()}`}
+          aria-label={`${homeTeamName} ${t('vs')} ${awayTeamName} ${t('lineups').toLowerCase()}`}
         >
           {/* Pitch background */}
           <rect x="0" y="0" width={W} height={H} className="fill-[#1a8a3e]" />
@@ -273,7 +273,7 @@ export function LineupPitch({
           viewBox={`0 0 ${V_W} ${V_H}`}
           className="w-full"
           role="img"
-          aria-label={`${homeTeamName} vs ${awayTeamName} ${t('lineups').toLowerCase()}`}
+          aria-label={`${homeTeamName} ${t('vs')} ${awayTeamName} ${t('lineups').toLowerCase()}`}
         >
           {/* Pitch background */}
           <rect x="0" y="0" width={V_W} height={V_H} className="fill-[#1a8a3e]" />
