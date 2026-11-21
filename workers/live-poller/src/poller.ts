@@ -10,6 +10,7 @@ import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
 import { VERIFIED_COMPETITIONS } from '@/lib/constants/competitions';
 import { computeDeltas, type FixtureRow } from './diff';
 import { trackCall, resetTick, isQuotaExhausted } from './quota';
+import { DroppedFixtureTracker, finalizeDroppedFixtures } from './finalize-dropped';
 
 const TRACKED_COMPETITION_IDS = new Set(VERIFIED_COMPETITIONS.map((c) => c.id));
 
@@ -17,6 +18,8 @@ const TRACKED_COMPETITION_IDS = new Set(VERIFIED_COMPETITIONS.map((c) => c.id));
 const EVENT_THROTTLE_MS = 120_000;
 // Per-fixture last events-sync time; persists across ticks in the long-running worker.
 const lastEventSync = new Map<number, number>();
+// Tracked fixtures that just left the live feed (match ended) → fetched by id right away.
+const droppedTracker = new DroppedFixtureTracker();
 
 export interface PollResult {
   liveCount: number;
@@ -37,6 +40,11 @@ export async function pollLiveFixtures(): Promise<PollResult> {
   trackCall();
 
   const liveFixtures = allLive.filter((f) => TRACKED_COMPETITION_IDS.has(f.league.id));
+
+  await finalizeDropped(
+    provider,
+    liveFixtures.map((f) => f.id),
+  );
 
   if (liveFixtures.length === 0) {
     const { tickCalls } = resetTick();
@@ -217,4 +225,55 @@ export async function pollLiveFixtures(): Promise<PollResult> {
     updatedCount: deltas.length,
     apiCalls: tickCalls,
   };
+}
+
+/**
+ * A tracked match that disappears from the live feed has (almost always) just finished. Fetch it
+ * by id in one call and write the final score/status now, rather than leaving it frozen at its
+ * last live snapshot until the finalize-stale cron picks it up.
+ */
+async function finalizeDropped(
+  provider: ReturnType<typeof getDataProvider>,
+  currentLiveIds: number[],
+): Promise<void> {
+  const ids = droppedTracker.update(currentLiveIds);
+  if (ids.length === 0 || isQuotaExhausted()) return;
+  try {
+    const { settled, stillLive } = await finalizeDroppedFixtures(provider, db, ids);
+    trackCall();
+    droppedTracker.settle(
+      ids,
+      settled.map((f) => f.id),
+    );
+
+    const pusher = getPusherServer();
+    for (const f of [...settled, ...stillLive]) {
+      const payload: ScoreUpdatePayload = {
+        fixtureId: f.id,
+        homeName: f.homeTeam.name,
+        awayName: f.awayTeam.name,
+        homeScore: f.goals.home,
+        awayScore: f.goals.away,
+        statusCode: f.status.short,
+        minute: f.status.elapsed,
+        extraMinute: null,
+      };
+      try {
+        await pusher.trigger(CHANNELS.LIVE_SCORES, EVENTS.SCORE_UPDATE, payload);
+        await pusher.trigger(CHANNELS.fixture(f.id), EVENTS.SCORE_UPDATE, payload);
+      } catch (pusherErr) {
+        console.error(`  [pusher] Failed to trigger for fixture=${f.id}:`, pusherErr);
+      }
+      console.log(
+        `  [dropped] fixture=${f.id} score=${f.goals.home}-${f.goals.away} status=${f.status.short}${stillLive.includes(f) ? ' (still live per API, will re-check)' : ''}`,
+      );
+    }
+  } catch (err) {
+    // Count the attempt so a persistently failing id is eventually left to finalize-stale.
+    droppedTracker.settle(ids, []);
+    console.error(
+      `  [dropped] fixtures=${ids.join(',')} failed:`,
+      err instanceof Error ? err.message : err,
+    );
+  }
 }
