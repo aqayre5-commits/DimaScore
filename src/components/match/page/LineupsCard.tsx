@@ -36,14 +36,7 @@ export function LineupsCard({
   }
   const title = isPredicted ? t('lineupsPredicted') : t('lineupsConfirmed');
 
-  if (!home || !away) {
-    return (
-      <Card labelledBy="mp-lineups">
-        <CardTitle id="mp-lineups">{t('lineupsConfirmed')}</CardTitle>
-        <p className="mt-4 text-sm text-text-secondary">{t('noDataYet')}</p>
-      </Card>
-    );
-  }
+  if (!home || !away) return null;
 
   return (
     <Card labelledBy="mp-lineups">

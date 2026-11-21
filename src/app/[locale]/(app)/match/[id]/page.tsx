@@ -11,7 +11,6 @@ import {
   getMatchStatistics,
   getMatchPlayerStats,
   getHeadToHead,
-  getNextFixtures,
 } from '@/lib/db/queries/match-detail';
 import { getMatchState, LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { buildMatchMeta, buildMatchH1 } from '@/lib/seo/match-metadata';
@@ -19,8 +18,6 @@ import { isMatchIndexable } from '@/lib/seo/indexable';
 import {
   buildRecap,
   buildPreview,
-  buildH2HNarrative,
-  buildMatchFaq,
   buildMatchAnswer,
   buildLiveNarrative,
   summarizeH2H,
@@ -34,19 +31,9 @@ import {
   buildCompetitionHref,
 } from '@/lib/constants/competitions-mega-menu';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { matchupLabel } from '@/lib/i18n/feed-labels';
 import { flagImageSrc } from '@/components/shared/Flag';
-import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { JsonLd } from '@/components/seo/JsonLd';
-import {
-  buildGraph,
-  buildWebPage,
-  buildSportsEventMatch,
-  buildBreadcrumbList,
-  buildNewsArticle,
-  buildVideoObject,
-} from '@/lib/seo/jsonld';
-import { getMediaVideos } from '@/lib/db/queries/media';
+import { buildGraph, buildWebPage, buildSportsEventMatch } from '@/lib/seo/jsonld';
 import { getStandings } from '@/lib/db/queries';
 import { parseTrailingId } from '@/lib/seo/entity-slug';
 import { buildMatchSlug } from '@/lib/seo/match-slug';
@@ -55,9 +42,6 @@ import { OG_SIZE } from '@/lib/og/og-size';
 import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
 import { formatLongMatchDate, formatShortMatchDate } from '@/lib/match/key-facts';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
-import { PreMatchForm } from '@/components/match/PreMatchForm';
-import { NextMatchCard } from '@/components/match/NextMatchCard';
-import { LocalTime } from '@/components/shared/LocalTime';
 import { getTeamForm, type FormResult } from '@/lib/db/queries/homepage';
 import { getCachedPredictedXI } from '@/lib/db/queries/predicted-lineup';
 import { localizeRound } from '@/lib/i18n/feed-labels';
@@ -67,6 +51,8 @@ import {
   minuteLabel,
   eventKind,
   isShootout,
+  eventGroup,
+  statGroups,
 } from '@/lib/match/match-view';
 import { MatchHeaderCard, type HeaderStrip } from '@/components/match/page/MatchHeaderCard';
 import { MatchTabs, MatchTabPanel, type MatchTab } from '@/components/match/page/MatchTabs';
@@ -75,7 +61,6 @@ import { EventsCard } from '@/components/match/page/EventsCard';
 import { StatsCard } from '@/components/match/page/StatsCard';
 import { LineupsCard } from '@/components/match/page/LineupsCard';
 import { SummaryCard, MatchDetailsCard, TableCard } from '@/components/match/page/ServerCards';
-import { Card, CardTitle } from '@/components/match/page/Card';
 import type { MatchView, TeamView } from '@/components/match/page/types';
 
 import { cacheLife } from 'next/cache';
@@ -112,23 +97,16 @@ async function getCachedMatchData(fixtureId: number) {
 
   // Server-prefetch the tab data so the client useQuery hydrates with it (no
   // client-fetch "content dump"). Same gate as MatchClientCenter (`!isUpcoming`).
-  const [events, lineups, teamStats, playerStats, h2h, nextFixtures, formMap] = await Promise.all([
+  const [events, lineups, teamStats, playerStats, h2h, formMap] = await Promise.all([
     !isUpcoming ? getMatchEvents(db, fixtureId) : null,
     !isUpcoming ? getMatchLineups(db, fixtureId) : null,
     hasStats ? getMatchStatistics(db, fixtureId) : null,
     hasStats ? getMatchPlayerStats(db, fixtureId) : null,
     hasTeams ? getHeadToHead(db, homeTeamId, awayTeamId, fixtureId) : [],
-    hasTeams ? getNextFixtures(db, homeTeamId, awayTeamId, fixtureId) : [],
     hasTeams ? getTeamForm(db, [homeTeamId, awayTeamId]) : new Map<number, FormResult[]>(),
   ]);
   const homeForm = formMap.get(homeTeamId) ?? [];
   const awayForm = formMap.get(awayTeamId) ?? [];
-
-  // Highlights video for the recap VideoObject (finished/live only; null when none is linked).
-  const highlightVideo = !isUpcoming
-    ? ((await getMediaVideos(db, { fixtureId, category: 'highlights', limit: 1 })).videos[0] ??
-      null)
-    : null;
 
   // Top of the competition table for the right-rail "Classement" card.
   const fullStandings = hasTeams
@@ -160,10 +138,8 @@ async function getCachedMatchData(fixtureId: number) {
       playerStats,
       hasStats,
       h2h,
-      nextFixtures,
       homeForm,
       awayForm,
-      highlightVideo,
       standings,
       homeRank,
       awayRank,
@@ -253,10 +229,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) notFound();
 
-  const [data, tBc] = await Promise.all([
-    getCachedMatchData(fixtureId),
-    getTranslations({ locale, namespace: 'breadcrumb' }),
-  ]);
+  const data = await getCachedMatchData(fixtureId);
   if (!data) notFound();
   const { match, coverage, prefetch } = data;
 
@@ -292,14 +265,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
     ? buildCompetitionHref(competitionEntry, typedLocale)
     : null;
 
-  // Concise, entity-first trail: Football › Competition › Home vs Away. Keyword intent
-  // (live score, lineups, …) lives in the <title>/<h1>, not the breadcrumb.
-  const breadcrumbs: BreadcrumbSegment[] = [
-    { label: tBc('football'), href: `/${locale}` },
-    { label: compName, href: competitionHref ?? undefined },
-    { label: matchupLabel(home, away, typedLocale) },
-  ];
-
   const matchId = String(fixtureId);
 
   // Seed a server QueryClient with the prefetched tab data under the same keys
@@ -316,14 +281,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
       playerStats: prefetch.playerStats ?? [],
     });
   }
-  queryClient.setQueryData([...qk.match(matchId), 'sidebar'], {
-    h2h: prefetch.h2h.map((f) => ({ ...f, kickoffAt: f.kickoffAt.toISOString() })),
-    nextFixtures: prefetch.nextFixtures.map((f) => ({
-      ...f,
-      kickoffAt: f.kickoffAt.toISOString(),
-    })),
-  });
-
   // ── SEO editorial layer (Task 15.11): server-rendered prose per state ──
   const narrativeState =
     matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming';
@@ -358,12 +315,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
     },
   ).format(match.kickoffAt);
   const bcp = typedLocale === 'ar' ? 'ar-MA' : typedLocale === 'en' ? 'en-GB' : 'fr-MA';
-  const dateShort = new Intl.DateTimeFormat(bcp, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'Africa/Casablanca',
-  }).format(match.kickoffAt);
   // Date-only label for the answer/preview prose — the exact kickoff time (viewer-local) lives in
   // the match card + MATCH INFO, so the prose never states a clock that contradicts it.
   const dateLabel = new Intl.DateTimeFormat(bcp, {
@@ -374,61 +325,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
   }).format(match.kickoffAt);
   const homeFormStr = prefetch.homeForm.length ? prefetch.homeForm.slice(0, 5).join('') : null;
   const awayFormStr = prefetch.awayForm.length ? prefetch.awayForm.slice(0, 5).join('') : null;
-  const bylineWord = ({ fr: 'publié le', en: 'published', ar: 'نُشر في' } as const)[typedLocale];
-  const secLabels = (
-    {
-      fr: {
-        recap: 'Résumé du match',
-        preview: 'Avant-match',
-        h2h: 'Face-à-face',
-        faq: 'Questions fréquentes',
-        notes: 'Notes des joueurs',
-      },
-      en: {
-        recap: 'Match recap',
-        preview: 'Preview',
-        h2h: 'Head-to-head',
-        faq: 'FAQ',
-        notes: 'Player ratings',
-      },
-      ar: {
-        recap: 'ملخص المباراة',
-        preview: 'قبل المباراة',
-        h2h: 'المواجهات المباشرة',
-        faq: 'الأسئلة الشائعة',
-        notes: 'تقييمات اللاعبين',
-      },
-    } as const
-  )[typedLocale];
-  const h2hNarr = buildH2HNarrative({ home, away, h2h: h2hSummary, locale: typedLocale });
-  const h2hRows = (match.homeTeam?.id != null ? prefetch.h2h : [])
-    .filter((f) => f.homeScore != null && f.awayScore != null)
-    .slice(0, 5)
-    .map((f) => {
-      const homeIsThisHome = f.homeTeamId === match.homeTeam?.id;
-      return {
-        date: new Intl.DateTimeFormat(bcp, {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-          timeZone: 'Africa/Casablanca',
-        }).format(f.kickoffAt),
-        hn: homeIsThisHome ? home : away,
-        hs: (homeIsThisHome ? f.homeScore : f.awayScore) as number,
-        as: (homeIsThisHome ? f.awayScore : f.homeScore) as number,
-        an: homeIsThisHome ? away : home,
-      };
-    });
-  const matchFaq = buildMatchFaq({
-    state: narrativeState,
-    home,
-    away,
-    homeScore: match.homeScore,
-    awayScore: match.awayScore,
-    scorers,
-    kickoffLabel,
-    locale: typedLocale,
-  });
   // Recap only for genuinely-played results (FT/AET/PEN). Awarded/walkover/abandoned scores are
   // administrative — their goal events can contradict the scoreline, so they get no played recap.
   const isPlayedResult = ['FT', 'AET', 'PEN'].includes(match.statusCode);
@@ -495,47 +391,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
             competition: compName,
             locale: typedLocale,
           });
-  const answerByline =
-    narrativeState === 'finished' && recapText ? `DimaScore · ${bylineWord} ${dateShort}` : null;
-  const narrativeTail = (
-    <>
-      {h2hNarr && (
-        <Card labelledBy="h2h-h">
-          <CardTitle id="h2h-h">{secLabels.h2h}</CardTitle>
-          <p className="mt-3 text-[15px] leading-relaxed text-text-secondary">{h2hNarr}</p>
-          {h2hRows.length > 0 && (
-            <div className="mt-3">
-              {h2hRows.map((r, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between gap-4 border-t border-border-subtle py-2.5 text-sm text-text-secondary first:border-t-0"
-                >
-                  <span>{r.date}</span>
-                  <span className="text-end font-semibold text-text-primary">
-                    {r.hn} {r.hs}–{r.as} {r.an}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      )}
-      {matchFaq.length > 0 && (
-        <Card labelledBy="faq-h">
-          <CardTitle id="faq-h">{secLabels.faq}</CardTitle>
-          <dl className="mt-3 space-y-3">
-            {matchFaq.map((f, i) => (
-              <div key={i}>
-                <dt className="text-sm font-semibold text-text-primary">{f.q}</dt>
-                <dd className="mt-0.5 text-sm text-text-secondary">{f.a}</dd>
-              </div>
-            ))}
-          </dl>
-        </Card>
-      )}
-    </>
-  );
-
   // ── Match page view model (serializable; the client cards read live data on top of it) ──
   const teamView = (team: typeof match.homeTeam, id: number, name: string): TeamView => ({
     id,
@@ -578,16 +433,13 @@ export default async function MatchDetailPage({ params }: PageProps) {
     year: 'numeric',
     timeZone: 'Africa/Casablanca',
   }).format(match.kickoffAt);
-  const venueLabel = match.venue?.name
-    ? [match.venue.name, match.venue.city].filter(Boolean).join(', ')
-    : null;
   const strip: HeaderStrip = {
     competitionName: compName,
     competitionHref,
     competitionLogo: match.competition.logoUrl,
     roundLabel,
     dateLabel: longDate,
-    // Venue name only in the strip (as in the mockup); the city is in Match details.
+    // Venue name only, as in the mockup.
     venueLabel: match.venue?.name ?? null,
   };
 
@@ -668,38 +520,24 @@ export default async function MatchDetailPage({ params }: PageProps) {
         ]
       : []),
     { label: tMp('date'), value: longDate },
-    {
-      label: tMp('kickOffTime'),
-      value: <LocalTime date={view.kickoffAt} locale={typedLocale} format="time" />,
-    },
-    ...(venueLabel ? [{ label: tMp('venue'), value: venueLabel }] : []),
-    ...(match.referee ? [{ label: tMp('referee'), value: match.referee }] : []),
-    ...(match.venue?.capacity
-      ? [
-          {
-            label: tMp('capacity'),
-            value: new Intl.NumberFormat(typedLocale === 'ar' ? 'ar-MA-u-nu-latn' : bcp).format(
-              match.venue.capacity,
-            ),
-          },
-        ]
-      : []),
+    ...(match.venue?.name ? [{ label: tMp('venue'), value: match.venue.name }] : []),
   ];
 
-  // Tabs: shown when there is data, or while live when the feed covers it (fills in shortly).
-  const hasEvents = (prefetch.events?.length ?? 0) > 0;
-  const hasStatsData = (prefetch.teamStats?.length ?? 0) === 2;
+  // Tabs: only when the server already has something to show in them (the mockups have no
+  // empty states). Events = goals, cards and substitutions; Stats = the mockup's rows only.
+  const hasEvents = (prefetch.events ?? []).some((e) => eventGroup(eventKind(e)) != null);
+  const hasStatsData = !!(
+    homeStatsRow &&
+    awayStatsRow &&
+    statGroups(homeStatsRow, awayStatsRow).length > 0
+  );
   const hasLineups =
     (prefetch.lineups?.length ?? 0) === 2 || !!(predicted?.home && predicted?.away);
   const tabs: MatchTab[] = [
     { id: 'overview', label: tMp('overview') },
-    ...(hasEvents || (isLive && coverage?.events) ? [{ id: 'events', label: tMp('events') }] : []),
-    ...(hasStatsData || (isLive && coverage?.statisticsFixtures)
-      ? [{ id: 'stats', label: tMp('stats') }]
-      : []),
-    ...(hasLineups || (isLive && coverage?.lineups)
-      ? [{ id: 'lineups', label: tMp('lineups') }]
-      : []),
+    ...(hasEvents ? [{ id: 'events', label: tMp('events') }] : []),
+    ...(hasStatsData ? [{ id: 'stats', label: tMp('stats') }] : []),
+    ...(hasLineups ? [{ id: 'lineups', label: tMp('lineups') }] : []),
     ...(prefetch.tableRows.length > 0 ? [{ id: 'table', label: tMp('table') }] : []),
   ];
   const tabIds = new Set(tabs.map((x) => x.id));
@@ -716,11 +554,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
   const pageContent = (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
-        <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
-        <h1 className="mt-1 px-1 text-base font-semibold text-text-primary sm:text-lg">
-          {matchH1}
-        </h1>
+      <div className="mx-auto w-full max-w-[1280px] px-4">
         <JsonLd
           graph={buildGraph(
             buildWebPage({
@@ -728,7 +562,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
               name: `${home} - ${away} — ${compName}`,
               locale: typedLocale,
               baseUrl: BASE_URL,
-              hasBreadcrumb: true,
+              hasBreadcrumb: false,
             }),
             buildSportsEventMatch({
               url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
@@ -757,41 +591,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
               awaySameAs: sameAsForTeam(match.awayTeam?.id),
               competitionSameAs: sameAsForCompetition(match.competition.id),
             }),
-            buildBreadcrumbList(
-              breadcrumbs,
-              `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
-              BASE_URL,
-            ),
-            recapText
-              ? buildNewsArticle({
-                  url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
-                  baseUrl: BASE_URL,
-                  headline: buildMatchMeta({
-                    home,
-                    away,
-                    competition: compName,
-                    locale: typedLocale,
-                    state: 'finished',
-                    homeScore: match.homeScore,
-                    awayScore: match.awayScore,
-                  }).title,
-                  body: recapText,
-                  datePublished: match.kickoffAt.toISOString(),
-                })
-              : null,
-            prefetch.highlightVideo
-              ? buildVideoObject({
-                  url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
-                  youtubeId: prefetch.highlightVideo.youtubeId,
-                  name: prefetch.highlightVideo.title,
-                  description: prefetch.highlightVideo.title,
-                  thumbnailUrl: prefetch.highlightVideo.thumbnailUrl,
-                  uploadDate: (
-                    prefetch.highlightVideo.publishedAt ?? match.kickoffAt
-                  ).toISOString(),
-                  durationSeconds: prefetch.highlightVideo.duration,
-                })
-              : null,
+            // No BreadcrumbList (no visible breadcrumb), no NewsArticle (no visible publish date)
+            // and no VideoObject (no video on the page): structured data only for what is shown.
           )}
         />
       </div>
@@ -804,26 +605,11 @@ export default async function MatchDetailPage({ params }: PageProps) {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-6">
                 <div className="contents md:block md:space-y-6">
                   <div className="order-1 min-w-0">
-                    <SummaryCard
-                      title={summaryTitle}
-                      paragraphs={summaryParagraphs}
-                      byline={answerByline}
-                    />
+                    <SummaryCard title={summaryTitle} paragraphs={summaryParagraphs} />
                   </div>
                   {!isUpcoming && (
                     <div className="order-3 min-w-0">
                       <KeyMomentsCard view={view} />
-                    </div>
-                  )}
-                  {isUpcoming && (
-                    <div className="order-3 min-w-0">
-                      <PreMatchForm
-                        locale={typedLocale}
-                        homeName={home}
-                        awayName={away}
-                        homeForm={prefetch.homeForm}
-                        awayForm={prefetch.awayForm}
-                      />
                     </div>
                   )}
                 </div>
@@ -836,20 +622,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
                   <div className="order-4 min-w-0">
                     <MatchDetailsCard title={tMp('matchDetails')} rows={detailRows} />
                   </div>
-                  <div className="order-5 min-w-0">
-                    <NextMatchCard
-                      fixtures={prefetch.nextFixtures}
-                      homeTeamId={homeTeamId}
-                      awayTeamId={awayTeamId}
-                      homeTeam={match.homeTeam}
-                      awayTeam={match.awayTeam}
-                      locale={typedLocale}
-                    />
-                  </div>
                 </div>
-              </div>
-              <div className="mt-4 grid grid-cols-1 gap-4 md:mt-6 md:grid-cols-2 md:gap-6">
-                {narrativeTail}
               </div>
             </MatchTabPanel>
             {tabIds.has('events') && (

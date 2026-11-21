@@ -7,15 +7,7 @@ import { Flag } from '@/components/shared/Flag';
 import { Card, CardTitle } from './Card';
 
 /** Overview › First-half summary / Match summary / Match so far / Preview. */
-export function SummaryCard({
-  title,
-  paragraphs,
-  byline,
-}: {
-  title: string;
-  paragraphs: string[];
-  byline?: string | null;
-}) {
+export function SummaryCard({ title, paragraphs }: { title: string; paragraphs: string[] }) {
   if (paragraphs.length === 0) return null;
   return (
     <Card labelledBy="mp-summary">
@@ -27,7 +19,6 @@ export function SummaryCard({
           </p>
         ))}
       </div>
-      {byline && <p className="mt-3 text-xs text-text-tertiary">{byline}</p>}
     </Card>
   );
 }

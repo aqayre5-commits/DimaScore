@@ -27,7 +27,6 @@ const FILTER_KEY = {
   subs: 'filterSubs',
 } as const;
 const SECOND_HALF_CODES = new Set(['2H', 'ET', 'BT', 'P', 'FT', 'AET', 'PEN']);
-const FINISHED = new Set(['FT', 'AET', 'PEN']);
 
 function ScoreChip({ h, a }: { h: number; a: number }) {
   return (
@@ -55,7 +54,7 @@ function Divider({ children }: { children: React.ReactNode }) {
 }
 
 /**
- * Events tab: the whole timeline, newest first, with Half-time / Full-time markers and the
+ * Events tab: goals, cards and substitutions, newest first, with the Half-time marker and the
  * kick-off at the end. The chips filter on the client; every row stays in the HTML (hidden).
  */
 export function EventsCard({ view }: { view: MatchView }) {
@@ -64,20 +63,13 @@ export function EventsCard({ view }: { view: MatchView }) {
   const { events } = useMatchData(view.matchId, view.coverage, view.isUpcoming);
   const [filter, setFilter] = useState<EventFilter>('all');
   const statusCode = live?.statusCode ?? view.statusCode;
-  const homeScore = live?.homeScore ?? view.homeScore;
-  const awayScore = live?.awayScore ?? view.awayScore;
 
-  if (events.length === 0) {
-    return (
-      <Card labelledBy="mp-events">
-        <CardTitle id="mp-events">{t('matchEvents')}</CardTitle>
-        <p className="mt-4 text-sm text-text-secondary">{t('noDataYet')}</p>
-      </Card>
-    );
-  }
+  // Goals, cards and substitutions only (the mockup's chips); VAR and other feed rows are left out.
+  const shown = events.filter((e) => eventGroup(eventKind(e)) != null);
+  if (shown.length === 0) return null;
 
   const scores = runningScores(events, view.home.id);
-  const ordered = chronological(events).reverse();
+  const ordered = chronological(shown).reverse();
   const firstHalf = ordered.filter((e) => e.minute <= 45);
   const secondHalf = ordered.filter((e) => e.minute > 45);
   const htScore =
@@ -85,10 +77,6 @@ export function EventsCard({ view }: { view: MatchView }) {
       ? `${view.homeScoreHt} – ${view.awayScoreHt}`
       : null;
   const showHt = statusCode === 'HT' || SECOND_HALF_CODES.has(statusCode);
-  const ft =
-    FINISHED.has(statusCode) && homeScore != null && awayScore != null
-      ? `${homeScore} – ${awayScore}`
-      : null;
 
   const row = (e: MatchEvent) => (
     <EventRow
@@ -122,7 +110,6 @@ export function EventsCard({ view }: { view: MatchView }) {
       </div>
 
       <ol className="relative mt-4">
-        {ft && <Divider>{t('fullTimeScore', { score: ft })}</Divider>}
         {secondHalf.map(row)}
         {showHt && (
           <Divider>

@@ -6,7 +6,7 @@ import { Flag } from '@/components/shared/Flag';
 import { CompetitionLogo } from '@/components/shared/Logo';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { useLiveMatch } from '@/components/match/MatchLiveUpdater';
-import { crestAlt, goalMarker } from '@/lib/i18n/feed-labels';
+import { goalMarker } from '@/lib/i18n/feed-labels';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import {
   chronological,
@@ -60,17 +60,14 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
   const showScore = (isLive || isFinished || interrupted) && homeScore != null && awayScore != null;
 
   const pill = (() => {
-    if (statusCode === 'HT') return { text: t('statusHalfTime'), live: false };
+    if (statusCode === 'HT') return { text: t('statusHalfTime') };
     if (isLive)
-      return {
-        text: minute != null ? `${minute}${extra ? `+${extra}` : ''}′` : t('statusLive'),
-        live: true,
-      };
-    if (statusCode === 'AET') return { text: t('statusAfterExtraTime'), live: false };
-    if (statusCode === 'PEN') return { text: t('statusAfterPenalties'), live: false };
-    if (isFinished) return { text: t('statusFullTime'), live: false };
-    if (interrupted) return { text: tD(interrupted as never), live: false };
-    return { text: t('statusUpcoming'), live: false };
+      return { text: minute != null ? `${minute}${extra ? `+${extra}` : ''}′` : t('statusLive') };
+    if (statusCode === 'AET') return { text: t('statusAfterExtraTime') };
+    if (statusCode === 'PEN') return { text: t('statusAfterPenalties') };
+    if (isFinished) return { text: t('statusFullTime') };
+    if (interrupted) return { text: tD(interrupted as never) };
+    return { text: t('statusUpcoming') };
   })();
 
   const goals = chronological(events).filter((e) => isGoalKind(eventKind(e)) && !isShootout(e));
@@ -112,38 +109,38 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
         </div>
       </div>
 
-      {/* Teams and score */}
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 px-3 py-5 md:items-center md:gap-6 md:px-8 md:py-7">
-        <TeamSide team={view.home} goals={scorers(view.home.id)} side="home" locale={view.locale} />
-
-        <div className="flex flex-col items-center gap-2 self-center md:border-x md:border-border-subtle md:px-8">
-          {showScore ? (
-            <p
-              className="flex items-center gap-2 text-[44px] font-black leading-none tabular-nums text-text-primary md:gap-3 md:text-[60px]"
-              suppressHydrationWarning
-            >
-              <span>{homeScore}</span>
-              <span aria-hidden className="font-bold">
-                –
-              </span>
-              <span>{awayScore}</span>
-            </p>
-          ) : (
-            <p className="text-[32px] font-black leading-none tabular-nums text-text-primary md:text-[44px]">
-              <LocalTime date={view.kickoffAt} locale={view.locale} format="time" />
-            </p>
-          )}
+      {/* Teams and score. The first row is the page's single h1 ("Home 0 – 1 Away", plus the
+          competition for screen readers and crawlers); it shares the columns of the row below
+          (scorers | status | scorers) through subgrid, so the layout is unchanged. */}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-2 px-3 py-5 md:gap-x-6 md:px-8 md:py-7">
+        <h1 className="col-span-3 grid grid-cols-subgrid items-center">
+          <TeamHead team={view.home} side="home" />
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold md:text-sm ${
-              pill.live
-                ? 'bg-score-live-bg text-score-live'
-                : 'bg-[var(--mp-pill-bg)] text-[var(--mp-pill-fg)]'
-            }`}
+            className="flex items-center justify-center gap-2 self-stretch text-[44px] font-black leading-none tabular-nums text-text-primary md:gap-3 md:border-x md:border-border-subtle md:px-8 md:pt-2 md:text-[60px]"
             suppressHydrationWarning
           >
-            {pill.live && (
-              <span aria-hidden className="size-1.5 animate-pulse rounded-full bg-score-live" />
+            {showScore ? (
+              <>
+                <span>{homeScore}</span>
+                <span className="font-bold">–</span>
+                <span>{awayScore}</span>
+              </>
+            ) : (
+              <span className="text-[32px] md:text-[44px]">
+                <LocalTime date={view.kickoffAt} locale={view.locale} format="time" />
+              </span>
             )}
+          </span>
+          <TeamHead team={view.away} side="away" />
+          <span className="sr-only"> — {strip.competitionName}</span>
+        </h1>
+
+        <Scorers goals={scorers(view.home.id)} side="home" locale={view.locale} />
+        <div className="flex flex-col items-center gap-2 pt-2 md:border-x md:border-border-subtle md:px-8 md:pb-2">
+          <span
+            className="inline-flex items-center rounded-full bg-[var(--mp-pill-bg)] px-3 py-1 text-xs font-bold text-[var(--mp-pill-fg)] md:text-sm"
+            suppressHydrationWarning
+          >
             {pill.text}
           </span>
           {statusCode === 'PEN' && view.homeScorePen != null && view.awayScorePen != null && (
@@ -152,8 +149,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
             </span>
           )}
         </div>
-
-        <TeamSide team={view.away} goals={scorers(view.away.id)} side="away" locale={view.locale} />
+        <Scorers goals={scorers(view.away.id)} side="away" locale={view.locale} />
       </div>
     </div>
   );
@@ -163,17 +159,8 @@ function StripDivider({ className = '' }: { className?: string }) {
   return <span aria-hidden className={`h-4 w-px shrink-0 bg-border-subtle ${className}`} />;
 }
 
-function TeamSide({
-  team,
-  goals,
-  side,
-  locale,
-}: {
-  team: TeamView;
-  goals: MatchEvent[];
-  side: 'home' | 'away';
-  locale: string;
-}) {
+/** Crest + name, inside the h1. Desktop: crest on the outside edge; mobile: crest above. */
+function TeamHead({ team, side }: { team: TeamView; side: 'home' | 'away' }) {
   const crest = (
     <Flag
       countryCode={team.countryCode}
@@ -181,7 +168,6 @@ function TeamSide({
       isNational={team.isNational}
       size={88}
       label={team.name}
-      alt={crestAlt(team.name, locale, !!team.isNational)}
       className="max-md:!h-14 max-md:!w-14"
     />
   );
@@ -190,9 +176,8 @@ function TeamSide({
       {team.name}
     </span>
   );
-  // Desktop: crest on the outside, name towards the score. Mobile: crest above the name.
   return (
-    <div
+    <span
       className={`flex min-w-0 flex-col items-center gap-2 text-center md:flex-row md:gap-5 md:text-start ${
         side === 'away' ? 'md:justify-between' : ''
       }`}
@@ -201,9 +186,7 @@ function TeamSide({
         <Link
           href={team.href}
           prefetch={false}
-          className={`shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-accent-green ${
-            side === 'away' ? 'md:order-last' : ''
-          }`}
+          className={`shrink-0 rounded-md ${side === 'away' ? 'md:order-last' : ''}`}
           tabIndex={-1}
           aria-hidden
         >
@@ -212,36 +195,49 @@ function TeamSide({
       ) : (
         <span className={`shrink-0 ${side === 'away' ? 'md:order-last' : ''}`}>{crest}</span>
       )}
-      <div className="flex min-w-0 flex-col items-center gap-1.5 md:items-start">
-        {team.href ? (
-          <Link href={team.href} prefetch={false} className="hover:underline">
-            {name}
-          </Link>
-        ) : (
-          name
-        )}
-        {goals.length > 0 && (
-          <ul className="flex flex-col gap-0.5 text-xs text-text-secondary md:text-sm">
-            {goals.map((g) => {
-              const k = eventKind(g);
-              const player = g.player?.name?.[locale] ?? g.player?.name?.en ?? '—';
-              return (
-                <li
-                  key={g.id}
-                  className={`flex items-center gap-1.5 ${side === 'home' ? 'md:justify-start' : 'md:justify-end'} justify-center`}
-                >
-                  <BallIcon className="size-3.5 text-text-primary" />
-                  <span>
-                    {player} {minuteLabel(g)}
-                    {k === 'penaltyGoal' && ` ${goalMarker('penalty', locale)}`}
-                    {k === 'ownGoal' && ` ${goalMarker('ownGoal', locale)}`}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </div>
+      {team.href ? (
+        <Link href={team.href} prefetch={false} className="min-w-0 hover:underline">
+          {name}
+        </Link>
+      ) : (
+        name
+      )}
+    </span>
+  );
+}
+
+/** Goal scorers under a team (ball icon + "Name 16′"). On desktop the home list lines up under
+ *  the name, past the crest. */
+function Scorers({
+  goals,
+  side,
+  locale,
+}: {
+  goals: MatchEvent[];
+  side: 'home' | 'away';
+  locale: string;
+}) {
+  if (goals.length === 0) return <span />;
+  return (
+    <ul
+      className={`flex min-w-0 flex-col items-center gap-0.5 pt-2 text-xs text-text-secondary md:items-start md:text-sm ${
+        side === 'home' ? 'md:ps-[108px]' : ''
+      }`}
+    >
+      {goals.map((g) => {
+        const k = eventKind(g);
+        const player = g.player?.name?.[locale] ?? g.player?.name?.en ?? '—';
+        return (
+          <li key={g.id} className="flex items-center gap-1.5">
+            <BallIcon className="size-3.5 text-text-primary" />
+            <span>
+              {player} {minuteLabel(g)}
+              {k === 'penaltyGoal' && ` ${goalMarker('penalty', locale)}`}
+              {k === 'ownGoal' && ` ${goalMarker('ownGoal', locale)}`}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

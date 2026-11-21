@@ -14,6 +14,7 @@ import {
   shortPlayerName,
   statGroups,
   statRow,
+  STAT_GROUPS,
 } from '@/lib/match/match-view';
 
 const HOME = 10;
@@ -128,6 +129,13 @@ describe('stats', () => {
     expect(groups.map((g) => g.id)).toEqual(['attack', 'passing']);
     expect(groups[0].rows.every((r) => r.bar)).toBe(true);
     expect(groups[1].rows.every((r) => !r.bar)).toBe(true);
+  });
+
+  it('only has the mockup rows: Attack xG/shots/on target/corners, Passing possession/passes', () => {
+    expect(STAT_GROUPS.map((g) => [g.id, g.rows.map(([k]) => k)])).toEqual([
+      ['attack', ['xg', 'totalShots', 'shotsOnTarget', 'corners']],
+      ['passing', ['possession', 'totalPasses', 'accuratePasses']],
+    ]);
   });
 
   it('keeps xG with two decimals when both sides have it', () => {

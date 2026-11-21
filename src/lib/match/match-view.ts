@@ -221,8 +221,9 @@ export function statRow(
 
 export const KEY_STATS: StatKey[] = ['xg', 'totalShots', 'shotsOnTarget', 'possession'];
 
+/** The mockup's Match statistics rows: Attack (bars) and Passing (plain), nothing else. */
 export const STAT_GROUPS: Array<{
-  id: 'attack' | 'passing' | 'defence' | 'discipline';
+  id: 'attack' | 'passing';
   rows: Array<[StatKey, boolean]>;
 }> = [
   {
@@ -231,10 +232,6 @@ export const STAT_GROUPS: Array<{
       ['xg', true],
       ['totalShots', true],
       ['shotsOnTarget', true],
-      ['shotsOffTarget', true],
-      ['blockedShots', true],
-      ['shotsInsideBox', true],
-      ['shotsOutsideBox', true],
       ['corners', true],
     ],
   },
@@ -244,17 +241,6 @@ export const STAT_GROUPS: Array<{
       ['possession', false],
       ['totalPasses', false],
       ['accuratePasses', false],
-      ['passAccuracy', false],
-    ],
-  },
-  { id: 'defence', rows: [['saves', false]] },
-  {
-    id: 'discipline',
-    rows: [
-      ['fouls', false],
-      ['offsides', false],
-      ['yellowCards', false],
-      ['redCards', false],
     ],
   },
 ];
