@@ -2,7 +2,7 @@
 
 import {
   useCallback,
-  useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -61,7 +61,9 @@ export function MatchTabs({
     [ids],
   );
 
-  useEffect(() => {
+  // Layout effects: the hash sync and the data-tab write both land before the first paint after
+  // hydration, so a page opened on "#lineups" never flashes Overview (no layout shift).
+  useLayoutEffect(() => {
     const sync = () => {
       const id = resolve(window.location.hash.slice(1));
       if (id) setActive(id);
@@ -71,7 +73,7 @@ export function MatchTabs({
     return () => window.removeEventListener('hashchange', sync);
   }, [resolve]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     rootRef.current?.setAttribute('data-tab', active);
   }, [active]);
 
