@@ -145,18 +145,27 @@ function TeamLineup({
 
 function Shirt({ fill, number }: { fill: string; number: number }) {
   return (
+    // Mockup jersey: rounded shoulders, short angled sleeves, curved collar notch, dark outline.
     <svg
-      viewBox="0 0 32 30"
-      className="h-10 w-11 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)] md:h-9 md:w-[43px]"
+      viewBox="0 0 48 40"
+      className="h-[35px] w-[42px] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)] md:h-[38px] md:w-[46px]"
       aria-hidden
     >
       <path
-        d="M10 2l-8 4 3 7 4-2v17h14V11l4 2 3-7-8-4c-1 2.5-3.4 4-6 4s-5-1.5-6-4z"
+        d="M17 2.5Q24 9 31 2.5L38.5 4.6Q41 5.4 42.3 7.6L46.8 15.3L40 19.6L38 16.8V37.5Q38 39 36.5 39H11.5Q10 39 10 37.5V16.8L8 19.6L1.2 15.3L5.7 7.6Q7 5.4 9.5 4.6Z"
         fill={fill}
-        stroke="rgba(15,26,36,0.35)"
-        strokeWidth="1"
+        stroke="#1b2733"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
       />
-      <text x="16" y="21.5" textAnchor="middle" fontSize="13" fontWeight="800" fill="#0f1a24">
+      <path
+        d="M18.2 3.6Q24 8.6 29.8 3.6"
+        fill="none"
+        stroke="#ffffff"
+        strokeOpacity="0.85"
+        strokeWidth="1.2"
+      />
+      <text x="24" y="27.6" textAnchor="middle" fontSize="21" fontWeight="800" fill="#0f1a24">
         {number}
       </text>
     </svg>
@@ -189,13 +198,13 @@ function Pitch({
         className="absolute inset-0 size-full"
         aria-hidden
       >
-        <g fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="0.35">
-          <rect x="1" y="1" width="66" height="64" />
-          <line x1="1" y1="33" x2="67" y2="33" />
-          <rect x="16" y="1" width="36" height="10" />
-          <rect x="26" y="1" width="16" height="4" />
-          <rect x="16" y="55" width="36" height="10" />
-          <rect x="26" y="61" width="16" height="4" />
+        <g fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2">
+          <rect x="1" y="1" width="66" height="64" vectorEffect="non-scaling-stroke" />
+          <line x1="1" y1="33" x2="67" y2="33" vectorEffect="non-scaling-stroke" />
+          <rect x="16" y="1" width="36" height="10" vectorEffect="non-scaling-stroke" />
+          <rect x="26" y="1" width="16" height="4" vectorEffect="non-scaling-stroke" />
+          <rect x="16" y="55" width="36" height="10" vectorEffect="non-scaling-stroke" />
+          <rect x="26" y="61" width="16" height="4" vectorEffect="non-scaling-stroke" />
         </g>
       </svg>
       {/* Centre circle in its own square box so it stays round at the taller mobile ratio. */}
@@ -204,12 +213,20 @@ function Pitch({
         className="absolute left-1/2 top-1/2 aspect-square w-[20.6%] -translate-x-1/2 -translate-y-1/2 overflow-visible"
         aria-hidden
       >
-        <circle cx="7" cy="7" r="7" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="0.35" />
+        <circle
+          cx="7"
+          cy="7"
+          r="7"
+          fill="none"
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+        />
       </svg>
       {spots.map((s) => (
         <div
           key={s.player.id}
-          className="absolute flex w-[27%] -translate-x-1/2 md:w-[22%] -translate-y-1/2 flex-col items-center gap-0.5 md:gap-0"
+          className="absolute flex w-[25%] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[22%]"
           style={{ left: `${s.x}%`, top: `${s.y}%` }}
         >
           <Shirt
@@ -222,7 +239,7 @@ function Pitch({
             }
             number={s.player.number}
           />
-          <span className="max-w-full truncate rounded bg-white px-2 py-0.5 text-[13px] font-semibold leading-tight text-[#0f1a24] shadow-sm md:px-3 md:py-0.5 md:text-[13px]">
+          <span className="-mt-px max-w-full truncate rounded-[5px] bg-white px-1.5 py-0.5 text-[12.5px] font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)] md:px-[11px] md:text-[13.5px]">
             {shortPlayerName(s.player.name)}
           </span>
         </div>

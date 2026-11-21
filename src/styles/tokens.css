@@ -110,16 +110,16 @@
   --mp-highlight-bg: color-mix(in srgb, var(--accent-green) 10%, var(--bg-surface));
   --mp-on-accent: var(--bg-canvas);
   --mp-band: var(--bg-surface-2);
-  --mp-pitch-a: color-mix(in srgb, var(--accent-emerald) 42%, var(--bg-canvas));
-  --mp-pitch-b: color-mix(in srgb, var(--accent-emerald) 38%, var(--bg-canvas));
-  --mp-shirt-home: color-mix(in srgb, var(--accent-azure) 45%, #ffffff);
+  /* Line-ups pitch illustration: the mockup's grass, sky-blue home kit and bright green keeper
+     (fixed in both themes, like a photo). */
+  --mp-pitch-a: #7bb271;
+  --mp-pitch-b: #77ae6d;
+  --mp-shirt-home: #82c1f8;
   --mp-shirt-away: #ffffff;
-  --mp-shirt-keeper: var(--accent-emerald-bright);
+  --mp-shirt-keeper: #37c943;
 }
 [data-theme='light'] {
   --mp-on-accent: var(--bg-surface);
-  --mp-pitch-a: color-mix(in srgb, var(--accent-emerald) 72%, #ffffff);
-  --mp-pitch-b: color-mix(in srgb, var(--accent-emerald) 78%, #ffffff);
 }
 
 /* Tab panels: every panel stays in the HTML; only the active one is shown. The active id lives on

@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { EventKind } from '@/lib/match/match-view';
 
 /** Small inline icons for event rows (decorative: the row text names the event). */
@@ -35,13 +36,13 @@ export function EventIcon({
             kind === 'ownGoal' || kind === 'missedPenalty'
               ? 'text-accent-crimson'
               : accentGoal
-                ? 'text-accent-green'
+                ? 'text-[#07a616]'
                 : 'text-text-primary'
           } ${ball}`}
         />
       );
     case 'yellowCard':
-      return <span aria-hidden className={`${cls} ${card} rounded-[2px] bg-yellow-400`} />;
+      return <span aria-hidden className={`${cls} ${card} rounded-[2px] bg-[#fdce06]`} />;
     case 'redCard':
       return <span aria-hidden className={`${cls} ${card} rounded-[2px] bg-red-500`} />;
     case 'secondYellow':
@@ -50,7 +51,7 @@ export function EventIcon({
           aria-hidden
           className={`${cls} relative ${large ? 'size-4 md:size-[22px]' : 'size-4'}`}
         >
-          <span className="absolute start-0 top-0 h-3.5 w-2.5 rounded-[2px] bg-yellow-400" />
+          <span className="absolute start-0 top-0 h-3.5 w-2.5 rounded-[2px] bg-[#fdce06]" />
           <span className="absolute bottom-0 end-0 h-3.5 w-2.5 rounded-[2px] bg-red-500" />
         </span>
       );
@@ -88,21 +89,31 @@ export function EventIcon({
   }
 }
 
+/** The mockups' classic football: white panels, a dark centre pentagon and edge patches, outlined
+ *  in the current text colour (black in Key moments and the header, green for goals in Events). */
 export function BallIcon({ className = '' }: { className?: string }) {
+  const clip = `ball-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   return (
     <svg
       aria-hidden
-      viewBox="0 0 16 16"
+      viewBox="0 0 24 24"
       className={/\bsize-/.test(className) ? className : `size-4 ${className}`}
     >
-      <circle cx="8" cy="8" r="7" fill="currentColor" />
-      <path d="M8 4.6l2.3 1.7-.9 2.7H6.6l-.9-2.7z" className="fill-bg-surface" />
-      <path
-        d="M8 1v3.6M10.3 6.3l3.4-1.1M9.4 9l2.1 2.9M6.6 9l-2.1 2.9M5.7 6.3L2.3 5.2"
-        className="stroke-bg-surface"
-        strokeWidth="1"
-        fill="none"
-      />
+      <defs>
+        <clipPath id={clip}>
+          <circle cx="12" cy="12" r="10.6" />
+        </clipPath>
+      </defs>
+      <circle cx="12" cy="12" r="10.6" fill="#ffffff" />
+      <g clipPath={`url(#${clip})`} fill="currentColor">
+        <path d="M12.00 8.20L15.61 10.83L14.23 15.07L9.77 15.07L8.39 10.83Z" />
+        <circle cx="12.00" cy="0.80" r="4" />
+        <circle cx="22.65" cy="8.54" r="4" />
+        <circle cx="18.58" cy="21.06" r="4" />
+        <circle cx="5.42" cy="21.06" r="4" />
+        <circle cx="1.35" cy="8.54" r="4" />
+      </g>
+      <circle cx="12" cy="12" r="10.6" fill="none" stroke="currentColor" strokeWidth="2.4" />
     </svg>
   );
 }
