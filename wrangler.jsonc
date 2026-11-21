@@ -15,6 +15,14 @@
   "r2_buckets": [
     { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "dimascore-inc-cache", "jurisdiction": "eu" }
   ],
+  // ISR revalidation queue (open-next.config.ts `queue: doQueue`). The DO revalidates a stale page by
+  // sending a HEAD request back to this Worker through WORKER_SELF_REFERENCE (must name THIS Worker;
+  // a test copy deployed under another name must point it at that name).
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "dimascore" }],
+  "durable_objects": {
+    "bindings": [{ "name": "NEXT_CACHE_DO_QUEUE", "class_name": "DOQueueHandler" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DOQueueHandler"] }],
   "observability": { "enabled": true },
   // Secrets (wrangler secret, never in git): DATABASE_URL (Neon pooled). At cutover also
   // API_FOOTBALL_KEY and CRON_SECRET. Test deploy: DB_READ_ONLY=1 and VERCEL_ENV=preview (IndexNow off).
