@@ -83,32 +83,116 @@ function scorerClause(scorers: NarrativeScorer[], side: 'home' | 'away', locale:
     .join(', ');
 }
 
+/**
+ * The result (or the live state) with the leading side's score first: "Everton beat Chelsea 2–0",
+ * "Chelsea won 2–0 at Everton", "Everton and Chelsea drew 1–1". Never "beat Everton 0–2".
+ */
+export function resultClause(input: {
+  state: 'live' | 'finished';
+  home: string;
+  away: string;
+  homeScore: number;
+  awayScore: number;
+  /** Shoot-out score; only used for a finished level match decided on penalties (PEN). */
+  homePen?: number | null;
+  awayPen?: number | null;
+  locale: string;
+}): string {
+  const { state, home, away, homeScore: hs, awayScore: as, locale } = input;
+  const hi = Math.max(hs, as);
+  const lo = Math.min(hs, as);
+  const sc = `${hi}–${lo}`;
+  const homeWin = hs > as;
+  const draw = hs === as;
+  const hp = input.homePen;
+  const ap = input.awayPen;
+  if (state === 'finished' && draw && hp != null && ap != null && hp !== ap) {
+    // Level after play, decided on penalties: the shoot-out winner first, never "drew".
+    const pens = `${Math.max(hp, ap)}–${Math.min(hp, ap)}`;
+    const homePens = hp > ap;
+    if (locale === 'en')
+      return homePens
+        ? `${home} beat ${away} ${pens} on penalties after a ${sc} draw`
+        : `${away} won ${pens} on penalties after a ${sc} draw at ${home}`;
+    if (locale === 'ar')
+      return homePens
+        ? `فاز ${home} على ${away} ${pens} بركلات الترجيح بعد التعادل ${sc}`
+        : `فاز ${away} على ${home} ${pens} بركلات الترجيح خارج أرضه بعد التعادل ${sc}`;
+    return homePens
+      ? `${home} a battu ${away} ${pens} aux tirs au but, après un nul ${sc}`
+      : `${away} s'est imposé ${pens} aux tirs au but à l'extérieur face à ${home}, après un nul ${sc}`;
+  }
+  if (locale === 'en') {
+    if (state === 'finished')
+      return draw
+        ? `${home} and ${away} drew ${sc}`
+        : homeWin
+          ? `${home} beat ${away} ${sc}`
+          : `${away} won ${sc} at ${home}`;
+    return draw
+      ? `${home} and ${away} are level at ${sc}`
+      : homeWin
+        ? `${home} lead ${away} ${sc}`
+        : `${away} lead ${sc} at ${home}`;
+  }
+  if (locale === 'ar') {
+    if (state === 'finished')
+      return draw
+        ? `تعادل ${home} و${away} ${sc}`
+        : homeWin
+          ? `فاز ${home} على ${away} ${sc}`
+          : `فاز ${away} على ${home} ${sc} خارج أرضه`;
+    return draw
+      ? `${home} و${away} متعادلان ${sc}`
+      : homeWin
+        ? `${home} يتقدّم على ${away} ${sc}`
+        : `${away} يتقدّم ${sc} خارج أرضه أمام ${home}`;
+  }
+  if (state === 'finished')
+    return draw
+      ? `${home} et ${away} ont fait match nul ${sc}`
+      : homeWin
+        ? `${home} a battu ${away} ${sc}`
+        : `${away} s'est imposé ${sc} à l'extérieur face à ${home}`;
+  return draw
+    ? `${home} et ${away} font jeu égal ${sc}`
+    : homeWin
+      ? `${home} mène ${sc} face à ${away}`
+      : `${away} mène ${sc} à l'extérieur face à ${home}`;
+}
+
 // ── Recap (finished) ─────────────────────────────────────────────────────
 export function buildRecap(input: {
   home: string;
   away: string;
   homeScore: number;
   awayScore: number;
+  homePen?: number | null;
+  awayPen?: number | null;
   scorers: NarrativeScorer[];
   competition: string;
   locale: string;
 }): string {
   const { home, away, homeScore, awayScore, competition, locale } = input;
-  const score = `${homeScore}–${awayScore}`;
-  const margin = Math.abs(homeScore - awayScore);
   const draw = homeScore === awayScore;
   const winner = homeScore > awayScore ? home : away;
   const cleanSheet = homeScore === 0 || awayScore === 0;
   const homeGoals = scorerClause(input.scorers, 'home', locale);
   const awayGoals = scorerClause(input.scorers, 'away', locale);
 
+  const result = resultClause({
+    state: 'finished',
+    home,
+    away,
+    homeScore,
+    awayScore,
+    homePen: input.homePen,
+    awayPen: input.awayPen,
+    locale,
+  });
+
   if (locale === 'en') {
-    let lead: string;
-    if (draw)
-      lead = `${home} and ${away} shared the points in a ${score} draw in the ${competition}.`;
-    else if (margin >= 3)
-      lead = `${winner} cruised past ${winner === home ? away : home} ${score} in the ${competition}.`;
-    else lead = `${winner} edged ${winner === home ? away : home} ${score} in the ${competition}.`;
+    const lead = `${result} in ${withArticleEn(competition)}.`;
     const goals = [homeGoals && `${home}: ${homeGoals}`, awayGoals && `${away}: ${awayGoals}`]
       .filter(Boolean)
       .join('. ');
@@ -117,12 +201,7 @@ export function buildRecap(input: {
   }
 
   if (locale === 'ar') {
-    let lead: string;
-    if (draw) lead = `تعادل ${home} و${away} بنتيجة ${score} في ${competition}.`;
-    else if (margin >= 3)
-      lead = `فاز ${winner} بسهولة على ${winner === home ? away : home} بنتيجة ${score} في ${competition}.`;
-    else
-      lead = `حقق ${winner} فوزاً صعباً على ${winner === home ? away : home} بنتيجة ${score} في ${competition}.`;
+    const lead = `${result} في ${competition}.`;
     const goals = [homeGoals && `${home}: ${homeGoals}`, awayGoals && `${away}: ${awayGoals}`]
       .filter(Boolean)
       .join('، ');
@@ -131,12 +210,7 @@ export function buildRecap(input: {
   }
 
   // fr (default)
-  let lead: string;
-  if (draw) lead = `${home} et ${away} se sont quittés sur un nul ${score} en ${competition}.`;
-  else if (margin >= 3)
-    lead = `${winner} s'est largement imposé ${score} face à ${winner === home ? away : home} en ${competition}.`;
-  else
-    lead = `${winner} s'est imposé ${score} face à ${winner === home ? away : home} en ${competition}.`;
+  const lead = `${result} en ${competition}.`;
   const goals = [homeGoals && `${home} : ${homeGoals}`, awayGoals && `${away} : ${awayGoals}`]
     .filter(Boolean)
     .join('. ');
@@ -213,6 +287,8 @@ export function buildMatchAnswer(input: {
   away: string;
   homeScore: number | null;
   awayScore: number | null;
+  homePen?: number | null;
+  awayPen?: number | null;
   competition: string;
   kickoffLabel: string; // pre-formatted, locale-aware
   venue?: string | null;
@@ -222,10 +298,6 @@ export function buildMatchAnswer(input: {
   const { state, home, away, competition, kickoffLabel, venue, minute, locale } = input;
   const hs = input.homeScore ?? 0;
   const as = input.awayScore ?? 0;
-  const score = `${hs}–${as}`;
-  const draw = hs === as;
-  const leader = hs > as ? home : away;
-  const trailer = hs > as ? away : home;
   const mm = minute != null ? ` (${minute}’)` : '';
 
   if (state === 'upcoming') {
@@ -236,27 +308,20 @@ export function buildMatchAnswer(input: {
     return `${home} reçoit ${away} en ${competition}, ${kickoffLabel}${venue ? ` au ${venue}` : ''}.`;
   }
 
-  if (state === 'live') {
-    if (draw) {
-      if (locale === 'ar') return `${home} و${away} متعادلان ${score}${mm} في ${competition}.`;
-      if (locale === 'en')
-        return `${home} and ${away} are level ${score}${mm} in the ${competition}.`;
-      return `${home} et ${away} font jeu égal ${score}${mm} en ${competition}.`;
-    }
-    if (locale === 'ar') return `${leader} يتقدّم على ${trailer} ${score}${mm} في ${competition}.`;
-    if (locale === 'en') return `${leader} lead ${trailer} ${score}${mm} in the ${competition}.`;
-    return `${leader} mène face à ${trailer} ${score}${mm} en ${competition}.`;
-  }
-
-  // finished
-  if (draw) {
-    if (locale === 'ar') return `تعادل ${home} و${away} ${score} في ${competition}.`;
-    if (locale === 'en') return `${home} and ${away} drew ${score} in the ${competition}.`;
-    return `${home} et ${away} ont fait match nul ${score} en ${competition}.`;
-  }
-  if (locale === 'ar') return `فاز ${leader} على ${trailer} ${score} في ${competition}.`;
-  if (locale === 'en') return `${leader} beat ${trailer} ${score} in the ${competition}.`;
-  return `${leader} a battu ${trailer} ${score} en ${competition}.`;
+  const result = resultClause({
+    state,
+    home,
+    away,
+    homeScore: hs,
+    awayScore: as,
+    homePen: input.homePen,
+    awayPen: input.awayPen,
+    locale,
+  });
+  if (locale === 'ar') return `${result}${state === 'live' ? mm : ''} في ${competition}.`;
+  if (locale === 'en')
+    return `${result}${state === 'live' ? mm : ''} in ${withArticleEn(competition)}.`;
+  return `${result}${state === 'live' ? mm : ''} en ${competition}.`;
 }
 
 // ── Live narrative paragraph ─────────────────────────────────────────────
@@ -274,15 +339,16 @@ export function buildLiveNarrative(input: {
   const { home, away, scorers, minute, competition, locale } = input;
   const hs = input.homeScore ?? 0;
   const as = input.awayScore ?? 0;
-  const score = `${hs}–${as}`;
   const homeGoals = scorerClause(scorers, 'home', locale);
   const awayGoals = scorerClause(scorers, 'away', locale);
+
+  const result = resultClause({ state: 'live', home, away, homeScore: hs, awayScore: as, locale });
 
   if (locale === 'ar') {
     const lead =
       minute != null
-        ? `مع مرور ${minute} دقيقة، النتيجة ${home} ${hs} - ${away} ${as} في ${competition}.`
-        : `النتيجة ${score} بين ${home} و${away} في ${competition}.`;
+        ? `بعد ${minute} دقيقة، ${result} في ${competition}.`
+        : `${result} في ${competition}.`;
     const goals = [homeGoals && `${home}: ${homeGoals}`, awayGoals && `${away}: ${awayGoals}`]
       .filter(Boolean)
       .join('، ');
@@ -291,8 +357,8 @@ export function buildLiveNarrative(input: {
   if (locale === 'en') {
     const lead =
       minute != null
-        ? `After ${minute} minutes it's ${home} ${hs}, ${away} ${as} in the ${competition}.`
-        : `It's ${score} between ${home} and ${away} in the ${competition}.`;
+        ? `After ${minute} minutes, ${result} in ${withArticleEn(competition)}.`
+        : `${result} in ${withArticleEn(competition)}.`;
     const goals = [homeGoals && `${home}: ${homeGoals}`, awayGoals && `${away}: ${awayGoals}`]
       .filter(Boolean)
       .join('. ');
@@ -300,8 +366,8 @@ export function buildLiveNarrative(input: {
   }
   const lead =
     minute != null
-      ? `Après ${minute} minutes, ${home} ${hs}, ${away} ${as} en ${competition}.`
-      : `Score de ${score} entre ${home} et ${away} en ${competition}.`;
+      ? `Après ${minute} minutes, ${result} en ${competition}.`
+      : `${result} en ${competition}.`;
   const goals = [homeGoals && `${home} : ${homeGoals}`, awayGoals && `${away} : ${awayGoals}`]
     .filter(Boolean)
     .join('. ');
@@ -336,6 +402,8 @@ export function buildMatchFaq(input: {
   away: string;
   homeScore?: number | null;
   awayScore?: number | null;
+  homePen?: number | null;
+  awayPen?: number | null;
   scorers?: NarrativeScorer[];
   kickoffLabel?: string | null;
   nextMatchLabel?: string | null;
@@ -365,12 +433,17 @@ export function buildMatchFaq(input: {
   );
 
   if (state === 'finished' && typeof homeScore === 'number' && typeof awayScore === 'number') {
-    const res =
-      locale === 'en'
-        ? `${home} ${homeScore}–${awayScore} ${away}.`
-        : locale === 'ar'
-          ? `انتهت المباراة ${homeScore}–${awayScore} لصالح ${homeScore >= awayScore ? home : away}.`
-          : `${home} ${homeScore}–${awayScore} ${away}.`;
+    // Same winner-first wording as the summary (a draw names no winner).
+    const res = `${resultClause({
+      state: 'finished',
+      home,
+      away,
+      homeScore,
+      awayScore,
+      homePen: input.homePen,
+      awayPen: input.awayPen,
+      locale,
+    })}.`;
     items.push({ q: L.score, a: res });
     const hs = scorerClause(scorers, 'home', locale);
     const as = scorerClause(scorers, 'away', locale);
