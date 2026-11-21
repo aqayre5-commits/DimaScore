@@ -47,7 +47,11 @@ export function LineupsCard({
     return null;
 
   return (
-    <Card labelledBy="mp-lineups" pad="pt-1.5 md:px-[19px] md:pb-[17px] md:pt-2.5">
+    <Card
+      labelledBy="mp-lineups"
+      pad="pt-1.5 md:px-[19px] md:pb-[17px] md:pt-2.5"
+      className="md:max-w-[886px]"
+    >
       <CardTitle id="mp-lineups" size="lineups">
         {title}
       </CardTitle>
@@ -226,7 +230,7 @@ function Pitch({
       {spots.map((s) => (
         <div
           key={s.player.id}
-          className="absolute flex w-[25%] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[22%]"
+          className="absolute flex w-[25%] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[25%]"
           style={{ left: `${s.x}%`, top: `${s.y}%` }}
         >
           <Shirt
@@ -239,7 +243,7 @@ function Pitch({
             }
             number={s.player.number}
           />
-          <span className="-mt-px max-w-full truncate rounded-[5px] bg-white px-1.5 py-0.5 text-[12.5px] font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)] md:px-[11px] md:text-[13.5px]">
+          <span className="-mt-px max-w-full truncate rounded-[5px] bg-white px-1.5 py-0.5 text-[12.5px] font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)] md:px-2.5 md:text-[13.5px]">
             {shortPlayerName(s.player.name)}
           </span>
         </div>
