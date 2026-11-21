@@ -8,7 +8,14 @@ import type {
   NextFixture,
 } from '@/lib/db/queries/match-detail';
 import type { TeamSnapshot } from '@/lib/db/queries-hydrate';
-import type { GoalScorer } from '@/components/match/ScoreHeader';
+export interface GoalScorer {
+  playerName: string;
+  minute: number;
+  extraMinute: number | null;
+  isOwnGoal: boolean;
+  isPenalty: boolean;
+  teamId: number | null;
+}
 
 /** JSON-serialized match summary (dates as ISO strings) */
 export interface MatchSummary {

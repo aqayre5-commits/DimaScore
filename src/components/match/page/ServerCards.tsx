@@ -12,7 +12,7 @@ export function SummaryCard({ title, paragraphs }: { title: string; paragraphs: 
   return (
     <Card labelledBy="mp-summary">
       <CardTitle id="mp-summary">{title}</CardTitle>
-      <div className="mt-3 space-y-2 text-[15px] leading-relaxed text-text-secondary md:text-base">
+      <div className="mt-1.5 space-y-2 text-sm leading-snug text-text-secondary md:mt-3 md:text-[17px]">
         {paragraphs.map((p, i) => (
           <p key={i} className={i === 0 ? 'text-text-primary' : undefined}>
             {p}
@@ -34,12 +34,14 @@ export function MatchDetailsCard({
   if (rows.length === 0) return null;
   return (
     <Card labelledBy="mp-details">
-      <CardTitle id="mp-details">{title}</CardTitle>
-      <dl className="mt-3 divide-y divide-border-subtle text-sm">
+      <CardTitle id="mp-details" size="md">
+        {title}
+      </CardTitle>
+      <dl className="mt-2 divide-y divide-border-subtle text-sm">
         {rows.map((r, i) => (
-          <div key={i} className="flex items-baseline justify-between gap-4 py-3">
+          <div key={i} className="flex items-baseline justify-between gap-4 py-2.5">
             <dt className="text-text-secondary">{r.label}</dt>
-            <dd className="text-end font-semibold text-text-primary">{r.value}</dd>
+            <dd className="text-end text-text-primary">{r.value}</dd>
           </div>
         ))}
       </dl>
@@ -73,7 +75,7 @@ export async function TableCard({
   const outside = rows.slice(5).filter(inMatch);
 
   const head = (
-    <div className="grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] px-3 py-2 text-xs font-semibold text-text-secondary md:grid-cols-[3.5rem_1fr_5rem_5rem]">
+    <div className="grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] border-b border-border-subtle px-3 py-2 text-xs font-semibold text-text-secondary md:text-sm md:grid-cols-[4.5rem_1fr_9rem_9rem]">
       <span>{t('pos')}</span>
       <span>{t('club')}</span>
       <span className="text-center">
@@ -97,7 +99,7 @@ export async function TableCard({
     return (
       <li
         key={`${r.groupLabel}-${r.teamId}`}
-        className={`grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] items-center border-s-4 px-3 py-2.5 text-sm md:text-[15px] md:grid-cols-[3.5rem_1fr_5rem_5rem] ${
+        className={`grid grid-cols-[2.75rem_1fr_3.5rem_3.5rem] items-center border-s-4 px-3 py-1.5 text-sm md:py-2 md:text-base md:grid-cols-[4.5rem_1fr_9rem_9rem] ${
           hl
             ? 'border-accent-green bg-[var(--mp-highlight-bg)] font-bold text-text-primary'
             : 'border-transparent text-text-primary'
@@ -105,13 +107,14 @@ export async function TableCard({
         aria-current={hl ? 'true' : undefined}
       >
         <span className="tabular-nums">{r.rank}</span>
-        <span className="flex min-w-0 items-center gap-2">
+        <span className="flex min-w-0 items-center gap-2 md:gap-4">
           <Flag
             countryCode={r.team?.countryCode}
             logoUrl={r.team?.logoUrl}
             isNational={r.team?.isNational}
-            size={24}
+            size={28}
             label={name}
+            className="max-md:!h-6 max-md:!w-6"
           />
           <span className="truncate">{name}</span>
         </span>
@@ -122,7 +125,7 @@ export async function TableCard({
   };
 
   const band = (label: string) => (
-    <h3 className="mt-4 rounded-lg border-s-4 border-accent-green bg-[var(--mp-band)] px-4 py-2 text-sm font-bold text-text-primary md:text-base">
+    <h3 className="mt-4 rounded-lg border-s-4 border-accent-green bg-[var(--mp-band)] px-4 py-2 text-sm font-bold text-text-primary md:py-1.5 md:text-lg">
       {label}
     </h3>
   );
@@ -147,7 +150,7 @@ export async function TableCard({
           <Link
             href={competitionHref}
             prefetch={false}
-            className="text-sm font-semibold text-accent-green underline underline-offset-4 hover:no-underline"
+            className="text-sm font-semibold text-accent-green underline underline-offset-4 hover:no-underline md:text-base"
           >
             {t('fullTable', { competition: competitionName })}
           </Link>

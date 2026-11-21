@@ -13,7 +13,8 @@ import type { MatchView, TeamView } from './types';
 /**
  * Line-ups tab. Desktop: both teams side by side, each on its own half pitch (goalkeeper at the
  * bottom). Mobile: a home/away toggle shows one pitch; the other stays in the HTML, hidden.
- * Substitutes (and the coach) sit in a native <details> accordion.
+ * Substitutes sit in a native <details> accordion below the pitch, on mobile only (as in the
+ * mockups).
  */
 export function LineupsCard({
   view,
@@ -36,7 +37,14 @@ export function LineupsCard({
   }
   const title = isPredicted ? t('lineupsPredicted') : t('lineupsConfirmed');
 
-  if (!home || !away) return null;
+  // The mockup is a pitch per team; without pitch positions for both, the tab has nothing to show.
+  if (
+    !home ||
+    !away ||
+    pitchSpots(home.starters, home.formation).length === 0 ||
+    pitchSpots(away.starters, away.formation).length === 0
+  )
+    return null;
 
   return (
     <Card labelledBy="mp-lineups">
@@ -90,39 +98,29 @@ function TeamLineup({
   const spots = pitchSpots(lineup.starters, lineup.formation);
   const formation = lineup.formation ?? '';
   return (
-    <div
-      className={`rounded-xl border border-border-subtle p-2 md:p-3 ${mobileHidden ? 'max-md:hidden' : ''}`}
-    >
-      <div className="mb-2 flex items-center gap-2 px-1 py-1 md:mb-3">
-        <TeamBadge team={team} size={26} />
-        <h3 className="min-w-0 flex-1 truncate text-base font-bold text-text-primary md:text-lg">
-          {team.name}
-        </h3>
-        {formation && (
-          <span
-            className="text-sm font-bold tabular-nums text-text-secondary"
-            aria-label={t('formationLabel', { formation })}
-          >
-            {formation}
-          </span>
-        )}
+    <div className={mobileHidden ? 'max-md:hidden' : undefined}>
+      <div className="rounded-xl border border-border-subtle p-2 md:p-3">
+        <div className="mb-2 flex items-center gap-2 px-1 py-1 md:mb-3">
+          <TeamBadge team={team} size={26} />
+          <h3 className="min-w-0 flex-1 truncate text-base font-bold text-text-primary md:text-lg">
+            {team.name}
+          </h3>
+          {formation && (
+            <span
+              className="text-sm font-bold tabular-nums text-text-secondary"
+              aria-label={t('formationLabel', { formation })}
+            >
+              {formation}
+            </span>
+          )}
+        </div>
+
+        <Pitch spots={spots} kit={kit} label={t('pitchLabel', { team: team.name, formation })} />
       </div>
 
-      {spots.length > 0 ? (
-        <Pitch spots={spots} kit={kit} label={t('pitchLabel', { team: team.name, formation })} />
-      ) : (
-        <ul className="grid grid-cols-1 gap-1 text-sm">
-          {lineup.starters.map((p) => (
-            <li key={p.id} className="flex gap-2">
-              <span className="w-6 text-end font-bold tabular-nums">{p.number}</span>
-              <span>{p.name}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {(lineup.substitutes.length > 0 || lineup.coach) && (
-        <details className="group mt-3 rounded-xl border border-border-subtle">
+      {/* Substitutes: mobile only, below the pitch (the desktop mockup has none). */}
+      {lineup.substitutes.length > 0 && (
+        <details className="group mt-3 rounded-xl border border-border-subtle md:hidden">
           <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-bold text-text-primary focus-visible:outline-2 focus-visible:outline-accent-green [&::-webkit-details-marker]:hidden">
             {t('substitutes')}
             <ChevronIcon className="text-text-secondary transition-transform group-open:rotate-180" />
@@ -136,12 +134,6 @@ function TeamLineup({
                 <span className="text-text-primary">{p.name}</span>
               </li>
             ))}
-            {lineup.coach && (
-              <li className="flex items-center gap-3 px-4 py-2">
-                <span className="text-text-secondary">{t('coach')}</span>
-                <span className="font-semibold text-text-primary">{lineup.coach.name}</span>
-              </li>
-            )}
           </ul>
         </details>
       )}
@@ -221,7 +213,7 @@ function Pitch({
             }
             number={s.player.number}
           />
-          <span className="max-w-full truncate rounded-full bg-white px-1.5 py-px text-[10px] font-semibold leading-tight text-[#0f1a24] shadow-sm md:text-[11px]">
+          <span className="max-w-full truncate rounded bg-white px-1.5 py-px text-[10px] font-semibold leading-tight text-[#0f1a24] shadow-sm md:text-[11px]">
             {shortPlayerName(s.player.name)}
           </span>
         </div>

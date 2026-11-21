@@ -1,7 +1,16 @@
 import type { EventKind } from '@/lib/match/match-view';
 
 /** Small inline icons for event rows (decorative: the row text names the event). */
-export function EventIcon({ kind, className = '' }: { kind: EventKind; className?: string }) {
+export function EventIcon({
+  kind,
+  className = '',
+  accentGoal = false,
+}: {
+  kind: EventKind;
+  className?: string;
+  /** Events tab: scored goals use the accent colour and a larger ball, as in the mockup. */
+  accentGoal?: boolean;
+}) {
   const cls = `inline-block shrink-0 ${className}`;
   switch (kind) {
     case 'goal':
@@ -10,18 +19,24 @@ export function EventIcon({ kind, className = '' }: { kind: EventKind; className
     case 'missedPenalty':
       return (
         <BallIcon
-          className={`${cls} ${kind === 'ownGoal' || kind === 'missedPenalty' ? 'text-accent-crimson' : 'text-text-primary'}`}
+          className={`${cls} ${
+            kind === 'ownGoal' || kind === 'missedPenalty'
+              ? 'text-accent-crimson'
+              : accentGoal
+                ? 'size-5 text-accent-green'
+                : 'text-text-primary'
+          }`}
         />
       );
     case 'yellowCard':
-      return <span aria-hidden className={`${cls} h-4 w-3 rounded-[2px] bg-[#f5c518]`} />;
+      return <span aria-hidden className={`${cls} h-4 w-3 rounded-[2px] bg-yellow-400`} />;
     case 'redCard':
-      return <span aria-hidden className={`${cls} h-4 w-3 rounded-[2px] bg-[#e03131]`} />;
+      return <span aria-hidden className={`${cls} h-4 w-3 rounded-[2px] bg-red-500`} />;
     case 'secondYellow':
       return (
         <span aria-hidden className={`${cls} relative h-4 w-4`}>
-          <span className="absolute start-0 top-0 h-3.5 w-2.5 rounded-[2px] bg-[#f5c518]" />
-          <span className="absolute bottom-0 end-0 h-3.5 w-2.5 rounded-[2px] bg-[#e03131]" />
+          <span className="absolute start-0 top-0 h-3.5 w-2.5 rounded-[2px] bg-yellow-400" />
+          <span className="absolute bottom-0 end-0 h-3.5 w-2.5 rounded-[2px] bg-red-500" />
         </span>
       );
     case 'substitution':
@@ -60,7 +75,11 @@ export function EventIcon({ kind, className = '' }: { kind: EventKind; className
 
 export function BallIcon({ className = '' }: { className?: string }) {
   return (
-    <svg aria-hidden viewBox="0 0 16 16" className={`size-4 ${className}`}>
+    <svg
+      aria-hidden
+      viewBox="0 0 16 16"
+      className={/\bsize-/.test(className) ? className : `size-4 ${className}`}
+    >
       <circle cx="8" cy="8" r="7" fill="currentColor" />
       <path d="M8 4.6l2.3 1.7-.9 2.7H6.6l-.9-2.7z" className="fill-bg-surface" />
       <path

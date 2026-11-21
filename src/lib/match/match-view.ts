@@ -9,7 +9,6 @@ import type {
   MatchTeamStats,
   StatEntry,
 } from '@/lib/db/queries/match-detail';
-import { resultClause, type NarrativeScorer } from '@/lib/seo/match-narrative';
 
 // ── Events ──────────────────────────────────────────────────────────────────
 
@@ -60,30 +59,6 @@ export function eventGroup(k: EventKind): EventFilter | null {
 
 /** Shoot-out kicks are logged as goal events; they never change the match score. */
 export const isShootout = (e: Pick<MatchEvent, 'comments'>) => /shoot-?out/i.test(e.comments ?? '');
-
-/** Scorers for the summary prose: real goals only (no missed penalties, no shoot-out kicks,
- *  which never change the match score). */
-export function narrativeScorers(
-  events: MatchEvent[],
-  homeTeamId: number | null | undefined,
-  locale: string,
-): NarrativeScorer[] {
-  return events.flatMap((e) => {
-    const type = e.type?.toLowerCase() ?? '';
-    const detail = (e.detail ?? '').toLowerCase();
-    if (type !== 'goal' || detail.includes('missed') || isShootout(e)) return [];
-    return [
-      {
-        name: e.player?.name?.[locale] ?? e.player?.name?.en ?? '—',
-        minute: e.minute,
-        extra: e.extraMinute,
-        side: (e.teamId === homeTeamId ? 'home' : 'away') as 'home' | 'away',
-        isPenalty: detail.includes('penalty'),
-        isOwnGoal: detail.includes('own goal'),
-      },
-    ];
-  });
-}
 
 /** Minute sort key: 45+2 sorts after 45 and before 46. */
 export const minuteKey = (e: Pick<MatchEvent, 'minute' | 'extraMinute'>) =>
@@ -362,96 +337,51 @@ export interface SummaryInput {
   locale: string;
   home: string;
   away: string;
-  homeScore: number | null;
-  awayScore: number | null;
-  homePen?: number | null;
-  awayPen?: number | null;
-  minute: number | null;
-  goals: Array<{ name: string; minute: string; side: 'home' | 'away'; ownGoal: boolean }>;
   stats: { home: StatEntry[]; away: StatEntry[] } | null;
 }
 
+const WORDS: Record<string, string[]> = {
+  en: ['none', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'],
+  fr: ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix'],
+};
+const word = (n: number, locale: string) => WORDS[locale]?.[n] ?? String(n);
+
 /**
- * One or two plain sentences about the match so far, built only from the score, the goals and
- * the team stats. Null before kick-off (the preview copy covers that) or with no score.
+ * The mockup's summary: two short plain sentences from the shot counts, e.g. "City have taken
+ * nine shots to Fulham's two. Both sides have put two on target." Null before kick-off or when
+ * the feed has no shot counts (the card is then hidden).
  */
 export function matchSummary(input: SummaryInput): string | null {
-  const { state, locale, home, away, homeScore: hs, awayScore: as } = input;
-  if (state === 'upcoming' || hs == null || as == null) return null;
-  const min = input.minute ?? 0;
-  const parts: string[] = [];
-  const result = resultClause({
-    state: state === 'finished' ? 'finished' : 'live',
-    home,
-    away,
-    homeScore: hs,
-    awayScore: as,
-    homePen: input.homePen,
-    awayPen: input.awayPen,
-    locale,
-  });
-  if (locale === 'ar')
-    parts.push(
-      state === 'finished'
-        ? `${result}.`
-        : state === 'halfTime'
-          ? `${result} بين الشوطين.`
-          : `${result} بعد ${min} دقيقة.`,
-    );
-  else if (locale === 'fr')
-    parts.push(
-      state === 'finished'
-        ? `${result}.`
-        : state === 'halfTime'
-          ? `${result} à la pause.`
-          : `${result} après ${min} minutes.`,
-    );
-  else
-    parts.push(
-      state === 'finished'
-        ? `${result}.`
-        : state === 'halfTime'
-          ? `${result} at the break.`
-          : `${result} after ${min} minutes.`,
-    );
-
-  if (input.goals.length > 0) {
-    const og = locale === 'ar' ? 'هـ.ذ' : locale === 'fr' ? 'CSC' : 'OG';
-    const list = input.goals
-      .map((g) => `${g.name} ${g.minute}${g.ownGoal ? ` (${og})` : ''}`)
-      .join(locale === 'ar' ? '، ' : ', ');
-    parts.push(
-      locale === 'ar'
-        ? `الأهداف: ${list}.`
-        : locale === 'fr'
-          ? `Buts : ${list}.`
-          : `Goals: ${list}.`,
-    );
+  const { state, locale, home, away, stats } = input;
+  if (state === 'upcoming' || !stats) return null;
+  const sh = statNumber(stats.home, 'totalShots');
+  const sa = statNumber(stats.away, 'totalShots');
+  const oh = statNumber(stats.home, 'shotsOnTarget');
+  const oa = statNumber(stats.away, 'shotsOnTarget');
+  if (sh == null || sa == null) return null;
+  const past = state === 'finished';
+  const target = oh != null && oa != null;
+  if (locale === 'ar') {
+    const first = `عدد التسديدات ${sh} لـ${home} مقابل ${sa} لـ${away}.`;
+    if (!target) return first;
+    if (oh === 0 && oa === 0) return `${first} ولم يسدّد أي فريق على المرمى.`;
+    return oh === oa
+      ? `${first} وسدّد كل فريق ${oh} على المرمى.`
+      : `${first} وعلى المرمى: ${oh} لـ${home} مقابل ${oa} لـ${away}.`;
   }
-
-  const st = input.stats;
-  if (st) {
-    const pos = statNumber(st.home, 'possession');
-    const sh = statNumber(st.home, 'totalShots');
-    const sa = statNumber(st.away, 'totalShots');
-    const oh = statNumber(st.home, 'shotsOnTarget') ?? 0;
-    const oa = statNumber(st.away, 'shotsOnTarget') ?? 0;
-    if (pos != null && sh != null && sa != null) {
-      const p = Math.round(pos);
-      const past = state === 'finished';
-      if (locale === 'ar')
-        parts.push(
-          `استحوذ ${home} على الكرة بنسبة ${p}٪، والتسديدات ${sh}–${sa} (${oh}–${oa} على المرمى).`,
-        );
-      else if (locale === 'fr')
-        parts.push(
-          `${home} ${past ? 'a eu' : 'a'} ${p} % de possession ; tirs ${sh}–${sa} (${oh}–${oa} cadrés).`,
-        );
-      else
-        parts.push(
-          `${home} ${past ? 'had' : 'have had'} ${p}% of the ball; shots ${sh}–${sa} (${oh}–${oa} on target).`,
-        );
-    }
+  if (locale === 'fr') {
+    const first = `${home} a tenté ${word(sh, 'fr')} tir${sh === 1 ? '' : 's'} contre ${word(sa, 'fr')} pour ${away}.`;
+    if (!target) return first;
+    if (oh === 0 && oa === 0) return `${first} Aucune des deux équipes n'a cadré de tir.`;
+    return oh === oa
+      ? `${first} Les deux équipes en ont cadré ${word(oh, 'fr')}.`
+      : `${first} ${home} en a cadré ${word(oh, 'fr')}, ${away} ${word(oa, 'fr')}.`;
   }
-  return parts.join(' ');
+  const first = `${home} ${past ? 'took' : 'have taken'} ${word(sh, 'en')} shot${sh === 1 ? '' : 's'} to ${away}'s ${word(sa, 'en')}.`;
+  if (!target) return first;
+  if (oh === 0 && oa === 0)
+    return `${first} Neither side ${past ? 'put' : 'has put'} a shot on target.`;
+  return oh === oa
+    ? `${first} Both sides ${past ? 'put' : 'have put'} ${word(oh, 'en')} on target.`
+    : `${first} ${home} ${past ? 'put' : 'have put'} ${word(oh, 'en')} on target, ${away} ${word(oa, 'en')}.`;
 }

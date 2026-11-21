@@ -33,7 +33,7 @@ const INTERRUPTED: Record<string, string> = {
 };
 
 const CENTRE =
-  'flex items-center justify-center gap-2 self-stretch text-[44px] font-black leading-none tabular-nums text-text-primary md:gap-3 md:px-8 md:pt-2 md:text-[60px]';
+  'flex items-center justify-center gap-2 self-stretch max-md:[&>*]:-translate-y-3 md:[&>*]:-translate-y-2.5 text-[41px] font-extrabold leading-none tabular-nums text-text-primary md:gap-7 md:px-11 md:pt-1 md:text-[76px]';
 
 export interface HeaderStrip {
   competitionName: string;
@@ -81,14 +81,18 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
   const scorers = (teamId: number) => goals.filter((g) => g.teamId === teamId);
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-bg-surface shadow-[0_1px_2px_rgba(15,26,36,0.04)]">
+    <div className="border-b border-border-subtle bg-bg-surface max-md:-mx-2 md:rounded-xl md:border md:shadow-[0_1px_2px_rgba(15,26,36,0.04)]">
       {/* Strip: competition | matchweek | date | venue */}
       {/* Mobile: competition | round on line 1, date | venue on line 2 (one line, the venue
           truncates). Desktop: one row. Dividers only ever sit between two items. */}
-      <div className="flex flex-col gap-1 border-b border-border-subtle px-4 py-3 text-xs text-text-secondary md:flex-row md:items-center md:gap-3 md:border-b-0 md:px-6 md:pb-0 md:pt-4 md:text-sm">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex shrink-0 items-center gap-2 font-bold text-text-primary">
-            <CompetitionLogo src={strip.competitionLogo} size={20} />
+      <div className="flex flex-col gap-1 border-b border-border-subtle bg-bg-canvas px-4 py-2.5 text-xs text-text-secondary md:flex-row md:items-center md:gap-7 md:border-b-0 md:bg-transparent md:px-6 md:pb-0 md:pt-4 md:text-base">
+        <div className="flex min-w-0 items-center gap-3 md:gap-7">
+          <span className="flex shrink-0 items-center gap-2.5 text-[13px] font-bold text-text-primary md:gap-3 md:text-[19px]">
+            <CompetitionLogo
+              src={strip.competitionLogo}
+              size={28}
+              className="object-contain max-md:!h-6 max-md:!w-6"
+            />
             {strip.competitionHref ? (
               <Link href={strip.competitionHref} prefetch={false} className="hover:underline">
                 {strip.competitionName}
@@ -105,7 +109,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
           )}
         </div>
         <StripDivider className="max-md:hidden" />
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3 md:gap-7">
           <span className="shrink-0 whitespace-nowrap">{strip.dateLabel}</span>
           {strip.venueLabel && (
             <>
@@ -122,14 +126,14 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
           time then sits over the h1's centre cell, outside the h1, so live updates never change
           the heading. The h1 shares the columns of the row below (scorers | status | scorers)
           through subgrid, so the layout is unchanged. */}
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-2 px-3 py-5 md:gap-x-6 md:px-8 md:py-7">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-2 px-3 py-4 md:gap-x-6 md:px-24 md:pb-6 md:pt-7">
         <h1 className="col-span-3 col-start-1 row-start-1 grid grid-cols-subgrid items-center">
           <TeamHead team={view.home} side="home" />{' '}
           <span className={`${CENTRE} md:border-x md:border-border-subtle`}>
             {strip.h1Score ? (
               <>
                 <span>{strip.h1Score.split('–')[0]}</span>
-                <span className="font-bold">–</span>
+                <span className="text-[0.6em] font-semibold">–</span>
                 <span>{strip.h1Score.split('–')[1]}</span>
               </>
             ) : (
@@ -144,7 +148,7 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
             {showScore ? (
               <>
                 <span>{homeScore}</span>
-                <span className="font-bold">–</span>
+                <span className="text-[0.6em] font-semibold">–</span>
                 <span>{awayScore}</span>
               </>
             ) : (
@@ -156,9 +160,9 @@ export function MatchHeaderCard({ view, strip }: { view: MatchView; strip: Heade
         )}
 
         <Scorers goals={scorers(view.home.id)} side="home" locale={view.locale} />
-        <div className="flex flex-col items-center gap-2 pt-2 md:border-x md:border-border-subtle md:px-8 md:pb-2">
+        <div className="-mt-7 flex flex-col items-center gap-2 md:-mt-7 md:border-x md:border-border-subtle md:px-11 md:pb-1 md:pt-4">
           <span
-            className="inline-flex items-center rounded-full bg-[var(--mp-pill-bg)] px-3 py-1 text-xs font-bold text-[var(--mp-pill-fg)] md:text-sm"
+            className="inline-flex items-center rounded-lg bg-[var(--mp-pill-bg)] px-3.5 py-0.5 text-xs font-semibold text-[var(--mp-pill-fg)] md:px-6 md:py-1 md:text-[17px]"
             suppressHydrationWarning
           >
             {pill.text}
@@ -186,19 +190,19 @@ function TeamHead({ team, side }: { team: TeamView; side: 'home' | 'away' }) {
       countryCode={team.countryCode}
       logoUrl={team.logoUrl}
       isNational={team.isNational}
-      size={88}
+      size={108}
       label={team.name}
-      className="max-md:!h-14 max-md:!w-14"
+      className="max-md:!h-[62px] max-md:!w-[62px]"
     />
   );
   const name = (
-    <span className="text-[15px] font-bold leading-tight text-text-primary md:text-[26px]">
+    <span className="text-base font-bold leading-tight text-text-primary md:-translate-y-1.5 md:text-[31px]">
       {team.name}
     </span>
   );
   return (
     <span
-      className={`flex min-w-0 flex-col items-center gap-2 text-center md:flex-row md:gap-5 md:text-start ${
+      className={`flex min-w-0 flex-col items-center gap-2 text-center md:flex-row md:gap-6 md:text-start ${
         side === 'away' ? 'md:justify-between' : ''
       }`}
     >
@@ -240,16 +244,16 @@ function Scorers({
   if (goals.length === 0) return <span />;
   return (
     <ul
-      className={`flex min-w-0 flex-col items-center gap-0.5 pt-2 text-xs text-text-secondary md:items-start md:text-sm ${
-        side === 'home' ? 'md:ps-[108px]' : ''
+      className={`flex min-w-0 flex-col items-center gap-0.5 pt-1.5 text-xs text-text-primary md:-mt-10 md:items-start md:pt-3 md:text-[17px] ${
+        side === 'home' ? 'md:ps-[132px]' : ''
       }`}
     >
       {goals.map((g) => {
         const k = eventKind(g);
         const player = g.player?.name?.[locale] ?? g.player?.name?.en ?? '—';
         return (
-          <li key={g.id} className="flex items-center gap-1.5">
-            <BallIcon className="size-3.5 text-text-primary" />
+          <li key={g.id} className="flex items-center gap-1.5 md:gap-2">
+            <BallIcon className="size-3.5 text-text-primary md:size-[18px]" />
             <span>
               {player} {minuteLabel(g)}
               {k === 'penaltyGoal' && ` ${goalMarker('penalty', locale)}`}

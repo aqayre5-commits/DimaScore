@@ -99,33 +99,27 @@
 }
 
 /* ─── Match page (redesign) ─── */
-/* Colours only the match page uses. Dark is the default; light matches the mockups. */
+/* Match-page roles, all derived from the site palette above (the mockups' layout, not their
+   colours). Dark is the default; light follows [data-theme='light']. */
 :root {
-  --mp-pill-bg: #3b2c0e;
-  --mp-pill-fg: #ffd28a;
-  --mp-bar-away: #6e788a; /* 3.1:1 vs track, 3.9:1 vs surface */
-  --mp-bar-track: #252d3a;
-  --mp-goal-bg: rgba(0, 217, 166, 0.09);
-  --mp-highlight-bg: rgba(0, 217, 166, 0.1);
-  --mp-on-accent: #04221a;
-  --mp-band: #1e2530;
-  --mp-pitch-a: #2e7d4a;
-  --mp-pitch-b: #2a7344;
-  --mp-shirt-home: #8ecdf5;
+  --mp-pill-bg: color-mix(in srgb, var(--accent-amber) 22%, var(--bg-surface));
+  --mp-pill-fg: var(--text-primary);
+  --mp-bar-away: var(--text-tertiary); /* ≥3:1 vs the track in both themes */
+  --mp-bar-track: var(--bg-surface-3);
+  --mp-goal-bg: color-mix(in srgb, var(--accent-green) 9%, var(--bg-surface));
+  --mp-highlight-bg: color-mix(in srgb, var(--accent-green) 10%, var(--bg-surface));
+  --mp-on-accent: var(--bg-canvas);
+  --mp-band: var(--bg-surface-2);
+  --mp-pitch-a: color-mix(in srgb, var(--accent-emerald) 42%, var(--bg-canvas));
+  --mp-pitch-b: color-mix(in srgb, var(--accent-emerald) 38%, var(--bg-canvas));
+  --mp-shirt-home: color-mix(in srgb, var(--accent-azure) 45%, #ffffff);
   --mp-shirt-away: #ffffff;
-  --mp-shirt-keeper: #3ddc68;
+  --mp-shirt-keeper: var(--accent-emerald-bright);
 }
 [data-theme='light'] {
-  --mp-pill-bg: #fde7b0;
-  --mp-pill-fg: #6b4100;
-  --mp-bar-away: #7d8799; /* 3.0:1 vs track, 3.6:1 vs white (mockup #dbe0e7 is 1.1:1, too faint) */
-  --mp-bar-track: #e6ebf1;
-  --mp-goal-bg: #eaf6f0;
-  --mp-highlight-bg: #e7f5ee;
-  --mp-on-accent: #ffffff;
-  --mp-band: #eef2f6;
-  --mp-pitch-a: #5aa45b;
-  --mp-pitch-b: #559d56;
+  --mp-on-accent: var(--bg-surface);
+  --mp-pitch-a: color-mix(in srgb, var(--accent-emerald) 72%, #ffffff);
+  --mp-pitch-b: color-mix(in srgb, var(--accent-emerald) 78%, #ffffff);
 }
 
 /* Tab panels: every panel stays in the HTML; only the active one is shown. The active id lives on

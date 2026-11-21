@@ -19,18 +19,24 @@ export function KeyStatsCard({ view }: { view: MatchView }) {
   if (rows.length === 0) return null;
   return (
     <Card labelledBy="mp-key-stats">
-      <CardTitle id="mp-key-stats">{t('keyStats')}</CardTitle>
-      <div className="mt-4 flex items-center justify-between gap-2 border-b border-border-subtle pb-3 text-xs font-bold">
-        <span className="flex min-w-0 items-center gap-2 text-accent-green">
-          <TeamBadge team={view.home} size={20} />
+      <CardTitle id="mp-key-stats" size="md">
+        {t('keyStats')}
+      </CardTitle>
+      <div className="mt-3 flex items-center justify-between gap-2 text-[15px] font-bold md:mt-2.5 md:text-sm">
+        <span className="flex min-w-0 items-center gap-2 text-text-primary md:text-accent-green">
+          <span className="md:hidden">
+            <TeamBadge team={view.home} size={26} />
+          </span>
           <span className="truncate">{view.home.name}</span>
         </span>
-        <span className="flex min-w-0 items-center gap-2 text-text-secondary">
+        <span className="flex min-w-0 items-center gap-2 text-text-primary md:text-text-secondary">
           <span className="truncate">{view.away.name}</span>
-          <TeamBadge team={view.away} size={20} />
+          <span className="md:hidden">
+            <TeamBadge team={view.away} size={26} />
+          </span>
         </span>
       </div>
-      <div className="divide-y divide-border-subtle">
+      <div className="mt-1">
         {rows.map((r) => (
           <StatBarRow
             key={r.key}
@@ -60,7 +66,7 @@ export function KeyMomentsCard({ view }: { view: MatchView }) {
   return (
     <Card labelledBy="mp-key-moments">
       <CardTitle id="mp-key-moments">{t('keyMoments')}</CardTitle>
-      <ol className="mt-3 divide-y divide-border-subtle">
+      <ol className="mt-2 divide-y divide-border-subtle">
         {moments.map((e) => (
           <MomentRow key={e.id} event={e} view={view} />
         ))}
@@ -78,30 +84,32 @@ function MomentRow({ event, view }: { event: MatchEvent; view: MatchView }) {
   const assistLine =
     (k === 'goal' || k === 'penaltyGoal') && assist ? t('assist', { name: assist }) : null;
   return (
-    <li className="flex items-center gap-3 py-3">
-      <span className="w-11 shrink-0 text-[15px] font-bold tabular-nums text-text-primary">
+    <li className="flex items-center gap-3 py-2.5 md:gap-4 md:py-3.5">
+      <span className="w-9 shrink-0 text-end text-[15px] font-bold tabular-nums text-text-primary md:w-12 md:text-[19px]">
         {minuteLabel(event)}
       </span>
       <span aria-hidden className="h-8 w-px shrink-0 bg-border-subtle" />
       <EventIcon kind={k} />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-bold text-text-primary">
-          {t(k === 'other' ? 'goal' : k)}
+        <span className="block truncate text-sm text-text-primary md:text-[17px]">
+          <span className="md:font-bold">{t(k === 'other' ? 'goal' : k)}</span>
           {player && ` · ${player}`}
         </span>
         {/* Second line: "Assist: …" when there is one; on desktop the team otherwise. Mobile
             shows the team next to the crest instead (as in the mockup). */}
         {assistLine ? (
-          <span className="block truncate text-xs text-text-secondary">{assistLine}</span>
+          <span className="block truncate text-xs text-text-secondary md:text-[13px]">
+            {assistLine}
+          </span>
         ) : (
-          <span className="block truncate text-xs text-text-secondary max-md:hidden">
+          <span className="block truncate text-[13px] text-text-secondary max-md:hidden">
             {team.name}
           </span>
         )}
       </span>
       <span className="flex shrink-0 items-center gap-2">
-        <TeamBadge team={team} size={22} />
-        <span className="max-w-[6.5rem] truncate text-xs text-text-primary md:hidden">
+        <TeamBadge team={team} size={28} className="max-md:!h-[22px] max-md:!w-[22px]" />
+        <span className="max-w-[6.5rem] truncate text-[13px] text-text-primary md:hidden">
           {team.name}
         </span>
       </span>

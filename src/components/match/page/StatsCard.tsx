@@ -39,7 +39,7 @@ export function StatsCard({ view }: { view: MatchView }) {
       </div>
       {groups.map((g) => (
         <div key={g.id} className="mt-4">
-          <h3 className="rounded-lg bg-[var(--mp-band)] px-4 py-2 text-sm font-bold text-text-primary">
+          <h3 className="rounded-lg bg-[var(--mp-band)] px-4 py-2 text-sm font-bold text-text-primary md:py-1.5 md:text-[17px]">
             {t(GROUP_KEY[g.id])}
           </h3>
           <div className="divide-y divide-border-subtle px-1">

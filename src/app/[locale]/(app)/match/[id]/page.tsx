@@ -10,20 +10,12 @@ import {
   getMatchLineups,
   getMatchStatistics,
   getMatchPlayerStats,
-  getHeadToHead,
+  type MatchLineup,
 } from '@/lib/db/queries/match-detail';
 import { getMatchState, LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { buildMatchMeta, buildMatchH1 } from '@/lib/seo/match-metadata';
 import { isMatchIndexable } from '@/lib/seo/indexable';
-import {
-  buildRecap,
-  buildPreview,
-  buildMatchAnswer,
-  buildLiveNarrative,
-  summarizeH2H,
-} from '@/lib/seo/match-narrative';
 import { qk } from '@/lib/query-keys';
-import { previewFromMatchDetail } from '@/lib/match-header-preview';
 import { getLocalizedCompetitionName } from '@/lib/constants/competition-names-i18n';
 import {
   findEntryByCompetitionId,
@@ -41,17 +33,14 @@ import { OG_SIZE } from '@/lib/og/og-size';
 import { sameAsForTeam, sameAsForCompetition } from '@/lib/constants/entity-links';
 import { formatLongMatchDate, formatShortMatchDate } from '@/lib/match/key-facts';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
-import { getTeamForm, type FormResult } from '@/lib/db/queries/homepage';
 import { getCachedPredictedXI } from '@/lib/db/queries/predicted-lineup';
 import { localizeRound } from '@/lib/i18n/feed-labels';
 import {
   matchSummary,
   matchweekNumber,
-  minuteLabel,
   eventKind,
-  isShootout,
   eventGroup,
-  narrativeScorers,
+  pitchSpots,
   statGroups,
 } from '@/lib/match/match-view';
 import { MatchHeaderCard, type HeaderStrip } from '@/components/match/page/MatchHeaderCard';
@@ -97,24 +86,16 @@ async function getCachedMatchData(fixtureId: number) {
 
   // Server-prefetch the tab data so the client useQuery hydrates with it (no
   // client-fetch "content dump"). Same gate as MatchClientCenter (`!isUpcoming`).
-  const [events, lineups, teamStats, playerStats, h2h, formMap] = await Promise.all([
+  const [events, lineups, teamStats, playerStats] = await Promise.all([
     !isUpcoming ? getMatchEvents(db, fixtureId) : null,
     !isUpcoming ? getMatchLineups(db, fixtureId) : null,
     hasStats ? getMatchStatistics(db, fixtureId) : null,
     hasStats ? getMatchPlayerStats(db, fixtureId) : null,
-    hasTeams ? getHeadToHead(db, homeTeamId, awayTeamId, fixtureId) : [],
-    hasTeams ? getTeamForm(db, [homeTeamId, awayTeamId]) : new Map<number, FormResult[]>(),
   ]);
-  const homeForm = formMap.get(homeTeamId) ?? [];
-  const awayForm = formMap.get(awayTeamId) ?? [];
 
-  // Top of the competition table for the right-rail "Classement" card.
   const fullStandings = hasTeams
     ? await getStandings(db, match.competition.id, match.seasonYear)
     : [];
-  const standings = fullStandings.slice(0, 5);
-  const homeRank = fullStandings.find((s) => s.teamId === homeTeamId)?.rank ?? null;
-  const awayRank = fullStandings.find((s) => s.teamId === awayTeamId)?.rank ?? null;
   // Table tab: the group (or league table) this match's teams are in, ordered by rank. Only the
   // top five plus the match teams' rows are rendered; empty when neither team is in the table.
   const tableGroup = fullStandings.find(
@@ -137,12 +118,6 @@ async function getCachedMatchData(fixtureId: number) {
       teamStats,
       playerStats,
       hasStats,
-      h2h,
-      homeForm,
-      awayForm,
-      standings,
-      homeRank,
-      awayRank,
       tableRows,
     },
   };
@@ -271,8 +246,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
   // the client components useQuery, then dehydrate into the page — so they
   // hydrate with data already present (no client-fetch "content dump").
   const queryClient = new QueryClient();
-  // Seed the preview header so back/forward soft-nav to this match stays warm.
-  queryClient.setQueryData(qk.matchHeader(matchId), previewFromMatchDetail(match));
   if (prefetch.events) queryClient.setQueryData(qk.matchEvents(matchId), prefetch.events);
   if (prefetch.lineups) queryClient.setQueryData(qk.matchLineups(matchId), prefetch.lineups);
   if (prefetch.hasStats) {
@@ -281,107 +254,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
       playerStats: prefetch.playerStats ?? [],
     });
   }
-  // ── SEO editorial layer (Task 15.11): server-rendered prose per state ──
-  const narrativeState =
-    matchState === 'live' ? 'live' : matchState === 'finished' ? 'finished' : 'upcoming';
-  // Shoot-out score, only for a match decided on penalties (so the prose names the winner).
-  const pens =
-    match.statusCode === 'PEN' ? { homePen: match.homeScorePen, awayPen: match.awayScorePen } : {};
-  const scorers = narrativeScorers(prefetch.events ?? [], match.homeTeam?.id, typedLocale);
-  const h2hSummary =
-    match.homeTeam?.id != null && match.awayTeam?.id != null
-      ? summarizeH2H(prefetch.h2h, match.homeTeam.id, match.awayTeam.id)
-      : { played: 0, homeWins: 0, draws: 0, awayWins: 0 };
-  const kickoffLabel = new Intl.DateTimeFormat(
-    typedLocale === 'ar' ? 'ar-MA' : typedLocale === 'en' ? 'en-GB' : 'fr-MA',
-    {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Africa/Casablanca',
-    },
-  ).format(match.kickoffAt);
   const bcp = typedLocale === 'ar' ? 'ar-MA' : typedLocale === 'en' ? 'en-GB' : 'fr-MA';
-  // Date-only label for the answer/preview prose — the exact kickoff time (viewer-local) lives in
-  // the match card + MATCH INFO, so the prose never states a clock that contradicts it.
-  const dateLabel = new Intl.DateTimeFormat(bcp, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    timeZone: 'Africa/Casablanca',
-  }).format(match.kickoffAt);
-  const homeFormStr = prefetch.homeForm.length ? prefetch.homeForm.slice(0, 5).join('') : null;
-  const awayFormStr = prefetch.awayForm.length ? prefetch.awayForm.slice(0, 5).join('') : null;
-  // Recap only for genuinely-played results (FT/AET/PEN). Awarded/walkover/abandoned scores are
-  // administrative — their goal events can contradict the scoreline, so they get no played recap.
-  const isPlayedResult = ['FT', 'AET', 'PEN'].includes(match.statusCode);
-  const recapText =
-    narrativeState === 'finished' &&
-    isPlayedResult &&
-    typeof match.homeScore === 'number' &&
-    typeof match.awayScore === 'number'
-      ? buildRecap({
-          home,
-          away,
-          homeScore: match.homeScore,
-          awayScore: match.awayScore,
-          ...pens,
-          scorers,
-          competition: compName,
-          locale: typedLocale,
-        })
-      : null;
-  // ── Answer-First block (top of page): one-line answer + recap/preview/live + byline ──
-  const answerText = buildMatchAnswer({
-    state: narrativeState,
-    home,
-    away,
-    homeScore: match.homeScore,
-    awayScore: match.awayScore,
-    ...pens,
-    competition: compName,
-    // Upcoming: date only (the card owns the exact kickoff). Live/finished: the full label.
-    kickoffLabel: narrativeState === 'upcoming' ? dateLabel : kickoffLabel,
-    venue: match.venue?.name,
-    minute: match.minute,
-    locale: typedLocale,
-  });
-  const previewText =
-    narrativeState === 'upcoming'
-      ? buildPreview({
-          home,
-          away,
-          competition: compName,
-          dateLabel,
-          venue: match.venue?.name,
-          h2h: h2hSummary,
-          homeRank: prefetch.homeRank,
-          awayRank: prefetch.awayRank,
-          homeForm: homeFormStr,
-          awayForm: awayFormStr,
-          locale: typedLocale,
-        })
-      : null;
-  const stageRecap =
-    narrativeState === 'finished'
-      ? recapText
-      : // Only show the preview paragraph when it adds something beyond the answer one-liner.
-        narrativeState === 'upcoming'
-        ? previewText && previewText !== answerText
-          ? previewText
-          : null
-        : buildLiveNarrative({
-            home,
-            away,
-            homeScore: match.homeScore,
-            awayScore: match.awayScore,
-            scorers,
-            minute: match.minute,
-            competition: compName,
-            locale: typedLocale,
-          });
   // ── Match page view model (serializable; the client cards read live data on top of it) ──
   const teamView = (team: typeof match.homeTeam, id: number, name: string): TeamView => ({
     id,
@@ -441,54 +314,26 @@ export default async function MatchDetailPage({ params }: PageProps) {
     venueLabel: match.venue?.name ?? null,
   };
 
-  // Overview › summary: one paragraph (see summaryText below); stats-based line only when there
-  // is no recap or live narrative.
   const summaryState =
     match.statusCode === 'HT'
       ? 'halfTime'
-      : narrativeState === 'finished'
+      : matchState === 'finished'
         ? 'finished'
-        : narrativeState === 'live'
+        : matchState === 'live'
           ? 'live'
           : 'upcoming';
   const homeStatsRow = prefetch.teamStats?.find((x) => x.teamId === homeTeamId);
   const awayStatsRow = prefetch.teamStats?.find((x) => x.teamId === awayTeamId);
-  const statsLine =
-    stageRecap == null
-      ? matchSummary({
-          state: summaryState,
-          locale: typedLocale,
-          home,
-          away,
-          homeScore: match.homeScore,
-          awayScore: match.awayScore,
-          ...pens,
-          minute: match.minute,
-          goals: (prefetch.events ?? [])
-            .filter((e) => !isShootout(e))
-            .flatMap((e) => {
-              const k = eventKind(e);
-              if (k !== 'goal' && k !== 'penaltyGoal' && k !== 'ownGoal') return [];
-              return [
-                {
-                  name: e.player?.name?.[typedLocale] ?? e.player?.name?.en ?? '—',
-                  minute: minuteLabel(e),
-                  side: (e.teamId === homeTeamId ? 'home' : 'away') as 'home' | 'away',
-                  ownGoal: k === 'ownGoal',
-                },
-              ];
-            }),
-          stats:
-            homeStatsRow && awayStatsRow
-              ? { home: homeStatsRow.stats, away: awayStatsRow.stats }
-              : null,
-        })
-      : null;
-  // One plain paragraph: the recap (finished; also the NewsArticle body), the live narrative, or
-  // the preview / answer line before kick-off. It is also the SportsEvent description, so the
-  // structured data only states what the page shows.
-  const summaryText = stageRecap ?? statsLine ?? answerText;
-  const summaryParagraphs = [summaryText];
+  // The mockup's summary sentence (shot counts); the card is hidden when there is none. It is
+  // also the SportsEvent description, so the structured data only states what the page shows.
+  const summaryText = matchSummary({
+    state: summaryState,
+    locale: typedLocale,
+    home,
+    away,
+    stats:
+      homeStatsRow && awayStatsRow ? { home: homeStatsRow.stats, away: awayStatsRow.stats } : null,
+  });
   const summaryTitle = tMp(
     summaryState === 'halfTime'
       ? 'summaryHalfTime'
@@ -503,7 +348,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
     {
       label: tMp('competition'),
       value: competitionHref ? (
-        <a href={competitionHref} className="text-accent-green hover:underline">
+        <a href={competitionHref} className="hover:underline">
           {compName}
         </a>
       ) : (
@@ -530,8 +375,15 @@ export default async function MatchDetailPage({ params }: PageProps) {
     awayStatsRow &&
     statGroups(homeStatsRow, awayStatsRow).length > 0
   );
+  // Line-ups: a pitch per team (confirmed, else predicted before kick-off), as in the mockup.
+  const onPitch = (l: MatchLineup | null | undefined) =>
+    !!l && pitchSpots(l.starters, l.formation).length > 0;
+  const confirmedHome = prefetch.lineups?.find((l) => l.teamId === homeTeamId);
+  const confirmedAway = prefetch.lineups?.find((l) => l.teamId === awayTeamId);
   const hasLineups =
-    (prefetch.lineups?.length ?? 0) === 2 || !!(predicted?.home && predicted?.away);
+    confirmedHome && confirmedAway
+      ? onPitch(confirmedHome) && onPitch(confirmedAway)
+      : onPitch(predicted?.home) && onPitch(predicted?.away);
   const tabs: MatchTab[] = [
     { id: 'overview', label: tMp('overview') },
     ...(hasEvents ? [{ id: 'events', label: tMp('events') }] : []),
@@ -553,66 +405,66 @@ export default async function MatchDetailPage({ params }: PageProps) {
 
   const pageContent = (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4">
-        <JsonLd
-          graph={buildGraph(
-            buildWebPage({
-              url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
-              name: `${home} - ${away} — ${compName}`,
-              locale: typedLocale,
-              baseUrl: BASE_URL,
-              hasBreadcrumb: false,
-            }),
-            buildSportsEventMatch({
-              url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
-              name: matchH1,
-              locale: typedLocale,
-              description: summaryText,
-              homeName: home,
-              awayName: away,
-              homeUrl: match.homeTeam?.slug
-                ? `${BASE_URL}/${typedLocale}/equipe/${match.homeTeam.slug}`
-                : null,
-              awayUrl: match.awayTeam?.slug
-                ? `${BASE_URL}/${typedLocale}/equipe/${match.awayTeam.slug}`
-                : null,
-              // The 1200×630 share image (og:image) is the event image; crests stay on the teams.
-              image: matchOgImageUrl(BASE_URL, typedLocale, matchSlug),
-              // The image the score header shows (the flag for national teams).
-              homeLogo: match.homeTeam ? flagImageSrc(match.homeTeam) : null,
-              awayLogo: match.awayTeam ? flagImageSrc(match.awayTeam) : null,
-              competitionName: compName,
-              kickoffAt: match.kickoffAt,
-              statusCode: match.statusCode,
-              venueName: match.venue?.name,
-              venueCity: match.venue?.city,
-              homeSameAs: sameAsForTeam(match.homeTeam?.id),
-              awaySameAs: sameAsForTeam(match.awayTeam?.id),
-              competitionSameAs: sameAsForCompetition(match.competition.id),
-            }),
-            // No BreadcrumbList (no visible breadcrumb), no NewsArticle (no visible publish date)
-            // and no VideoObject (no video on the page): structured data only for what is shown.
-          )}
-        />
-      </div>
+      <JsonLd
+        graph={buildGraph(
+          buildWebPage({
+            url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
+            name: `${home} - ${away} — ${compName}`,
+            locale: typedLocale,
+            baseUrl: BASE_URL,
+            hasBreadcrumb: false,
+          }),
+          buildSportsEventMatch({
+            url: `${BASE_URL}/${typedLocale}/match/${matchSlug}`,
+            name: matchH1,
+            locale: typedLocale,
+            description: summaryText,
+            homeName: home,
+            awayName: away,
+            homeUrl: match.homeTeam?.slug
+              ? `${BASE_URL}/${typedLocale}/equipe/${match.homeTeam.slug}`
+              : null,
+            awayUrl: match.awayTeam?.slug
+              ? `${BASE_URL}/${typedLocale}/equipe/${match.awayTeam.slug}`
+              : null,
+            // The 1200×630 share image (og:image) is the event image; crests stay on the teams.
+            image: matchOgImageUrl(BASE_URL, typedLocale, matchSlug),
+            // The image the score header shows (the flag for national teams).
+            homeLogo: match.homeTeam ? flagImageSrc(match.homeTeam) : null,
+            awayLogo: match.awayTeam ? flagImageSrc(match.awayTeam) : null,
+            competitionName: compName,
+            kickoffAt: match.kickoffAt,
+            statusCode: match.statusCode,
+            venueName: match.venue?.name,
+            venueCity: match.venue?.city,
+            homeSameAs: sameAsForTeam(match.homeTeam?.id),
+            awaySameAs: sameAsForTeam(match.awayTeam?.id),
+            competitionSameAs: sameAsForCompetition(match.competition.id),
+          }),
+          // No BreadcrumbList (no visible breadcrumb), no NewsArticle (no visible publish date)
+          // and no VideoObject (no video on the page): structured data only for what is shown.
+        )}
+      />
 
-      <div className="mx-auto w-full max-w-[1280px] px-4 pb-10 pt-3 md:pt-4">
+      <div className="mx-auto w-full max-w-[1280px] px-2 pb-10 md:px-4 md:pt-5">
         <MatchHeaderCard view={view} strip={strip} />
-        <div className="mt-4 md:mt-6">
+        <div className="md:mt-1">
           <MatchTabs tabs={tabs} label={tMp('tabsLabel')}>
             <MatchTabPanel id="overview">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-6">
-                <div className="contents md:block md:space-y-6">
-                  <div className="order-1 min-w-0">
-                    <SummaryCard title={summaryTitle} paragraphs={summaryParagraphs} />
-                  </div>
+              <div className="grid grid-cols-1 gap-2.5 md:grid-cols-[minmax(0,5fr)_minmax(0,3fr)] md:gap-4">
+                <div className="contents md:block md:space-y-4">
+                  {summaryText && (
+                    <div className="order-1 min-w-0">
+                      <SummaryCard title={summaryTitle} paragraphs={[summaryText]} />
+                    </div>
+                  )}
                   {!isUpcoming && (
                     <div className="order-3 min-w-0">
                       <KeyMomentsCard view={view} />
                     </div>
                   )}
                 </div>
-                <div className="contents md:block md:space-y-6">
+                <div className="contents md:block md:space-y-4">
                   {!isUpcoming && (
                     <div className="order-2 min-w-0">
                       <KeyStatsCard view={view} />

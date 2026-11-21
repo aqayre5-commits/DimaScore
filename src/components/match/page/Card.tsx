@@ -15,7 +15,7 @@ export function Card({
   return (
     <Tag
       aria-labelledby={labelledBy}
-      className={`rounded-2xl border border-border-subtle bg-bg-surface p-4 shadow-[0_1px_2px_rgba(15,26,36,0.04)] md:p-6 ${className}`}
+      className={`rounded-xl border border-border-subtle bg-bg-surface p-3 shadow-[0_1px_2px_rgba(15,26,36,0.04)] md:p-5 ${className}`}
     >
       {children}
     </Tag>
@@ -26,15 +26,20 @@ export function CardTitle({
   id,
   children,
   className = '',
+  size = 'lg',
 }: {
   id: string;
   children: ReactNode;
   className?: string;
+  /** The mockups' side-column cards (Key stats, Match details) use a smaller title. */
+  size?: 'lg' | 'md';
 }) {
   return (
     <h2
       id={id}
-      className={`text-lg font-bold leading-tight text-text-primary md:text-2xl lg:text-[28px] ${className}`}
+      className={`text-[17px] font-bold leading-tight text-text-primary ${
+        size === 'lg' ? 'md:text-[26px]' : 'md:text-[21px]'
+      } ${className}`}
     >
       {children}
     </h2>

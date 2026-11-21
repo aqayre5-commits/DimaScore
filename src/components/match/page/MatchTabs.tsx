@@ -106,7 +106,7 @@ export function MatchTabs({
       <div
         role="tablist"
         aria-label={label}
-        className="[scrollbar-width:none] -mx-4 mb-4 flex overflow-x-auto border-b border-border-subtle px-4 md:mx-0 md:mb-6 md:px-0"
+        className="[scrollbar-width:none] -mx-2 mb-2.5 flex gap-1 overflow-x-auto border-b border-border-subtle bg-bg-surface px-1.5 md:mx-0 md:mb-5 md:gap-1 md:bg-transparent md:px-0"
       >
         {tabs.map((t) => (
           <a
@@ -126,7 +126,7 @@ export function MatchTabs({
               select(t.id);
             }}
             onKeyDown={onKeyDown}
-            className="-mb-px shrink-0 whitespace-nowrap border-b-[3px] border-transparent px-3 py-3 text-[15px] font-semibold text-text-secondary transition-colors hover:text-text-primary focus-visible:rounded-t-md focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-green md:px-5 md:text-base"
+            className="-mb-px shrink-0 whitespace-nowrap border-b-[3px] border-transparent px-2 py-3 text-[15px] font-semibold text-text-secondary transition-colors hover:text-text-primary focus-visible:rounded-t-md focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-green md:px-8 md:py-3 md:text-[19px]"
           >
             {t.label}
           </a>
