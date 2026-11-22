@@ -1,9 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useTranslations } from 'next-intl';
 import type { MatchLineup } from '@/lib/db/queries/match-detail';
-import { pitchSpots, shortPlayerName } from '@/lib/match/match-view';
+import {
+  PITCH,
+  PITCH_GK_Y,
+  PITCH_SPAN_Y,
+  pitchSpots,
+  shortPlayerName,
+} from '@/lib/match/match-view';
 import { Card, CardTitle } from './Card';
 import { ChevronIcon } from './icons';
 import { TeamBadge } from './shared';
@@ -47,11 +53,7 @@ export function LineupsCard({
     return null;
 
   return (
-    <Card
-      labelledBy="mp-lineups"
-      pad="pt-1.5 md:px-[19px] md:pb-[17px] md:pt-2.5"
-      className="md:max-w-[886px]"
-    >
+    <Card labelledBy="mp-lineups" pad="pt-1.5 md:px-[19px] md:pb-[17px] md:pt-2.5">
       <CardTitle id="mp-lineups" size="lineups">
         {title}
       </CardTitle>
@@ -147,14 +149,37 @@ function TeamLineup({
   );
 }
 
-/** Box sizes from icon-measurements.xlsx (ink W×H): mobile outfield 42.4×34.5, keeper 43.7×35;
- *  desktop home 54.5×43.4, keeper 54.5×41.4, away (white) 54.5×39.4. The jersey ink spans
- *  46.9×37.8 of the 48×40 viewBox, so box = ink × 48/46.9 wide and × 40/37.8 tall. */
-const SHIRT_BOX = {
-  home: 'h-[36.5px] w-[43.4px] md:h-[45.9px] md:w-[55.8px]',
-  away: 'h-[36.5px] w-[43.4px] md:h-[41.7px] md:w-[55.8px]',
-  keeper: 'h-[37px] w-[44.7px] md:h-[43.8px] md:w-[55.8px]',
+/** Shirt box aspect (height ÷ width) from icon-measurements.xlsx. Ink W×H is desktop home
+ *  54.5×43.4, keeper 54.5×41.4, away 54.5×39.4 (mobile outfield 42.4×34.5, keeper 43.7×35).
+ *  The jersey ink spans 46.9×37.8 of the 48×40 viewBox, so the box is ink × 48/46.9 wide
+ *  and × 40/37.8 tall: 55.8×45.9 / 55.8×43.8 / 55.8×41.7. Width itself is not fixed: it is
+ *  `--mp-shirt-w`, a fraction of the pitch capped by the widest row and the number of
+ *  lines, so shirts fill the available space without overlapping. */
+const SHIRT_ASPECT = {
+  home: 45.9 / 55.8,
+  away: 41.7 / 55.8,
+  keeper: 43.8 / 55.8,
 } as const;
+
+/** Shirt width as a length: min of (70% of pitch/cols, so a 5-across row has a gap),
+ *  (88% of the row spacing ÷ 1.14 stack ratio, so a 5-line 4-2-3-1 does not collide
+ *  vertically; 1.14 = home aspect 0.823 + name-pill ≈ 0.32), and 90% of the space
+ *  below the GK so the name pill stays on the pitch. Row spacing uses the real-pitch
+ *  span (GK at 10m, furthest line on the opposition 18-yard line). */
+const SHIRT_WIDTH = `min(calc(100cqw / var(--mp-cols) * 0.7), calc(${PITCH_SPAN_Y}cqh / (var(--mp-lines) - 1) * 0.88 / 1.14), calc(${(100 - PITCH_GK_Y) * 2 * 0.9}cqh / 1.14))`;
+
+/** Pitch markings in metres, for a 68×105 viewBox (origin = attacking-end left corner). */
+const PA_X = (PITCH.w - PITCH.penaltyAreaW) / 2;
+const GA_X = (PITCH.w - PITCH.goalAreaW) / 2;
+const ARC_DX = Math.sqrt(PITCH.circleR ** 2 - (PITCH.penaltyAreaD - PITCH.penaltySpot) ** 2);
+const CX = PITCH.w / 2;
+const MID_Y = PITCH.l / 2;
+const SPOT_TOP = PITCH.penaltySpot;
+const SPOT_BOT = PITCH.l - PITCH.penaltySpot;
+const PA_BOT_Y = PITCH.l - PITCH.penaltyAreaD;
+const GA_BOT_Y = PITCH.l - PITCH.goalAreaD;
+const ARC_TOP = `M ${CX - ARC_DX} ${PITCH.penaltyAreaD} A ${PITCH.circleR} ${PITCH.circleR} 0 0 1 ${CX + ARC_DX} ${PITCH.penaltyAreaD}`;
+const ARC_BOT = `M ${CX - ARC_DX} ${PA_BOT_Y} A ${PITCH.circleR} ${PITCH.circleR} 0 0 1 ${CX + ARC_DX} ${PA_BOT_Y}`;
 
 function Shirt({
   fill,
@@ -163,14 +188,18 @@ function Shirt({
 }: {
   fill: string;
   number: number;
-  role: keyof typeof SHIRT_BOX;
+  role: keyof typeof SHIRT_ASPECT;
 }) {
   return (
     // Mockup jersey: rounded shoulders, short angled sleeves, curved collar notch, dark outline.
     <svg
       viewBox="0 0 48 40"
       preserveAspectRatio="none"
-      className={`${SHIRT_BOX[role]} drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]`}
+      className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]"
+      style={{
+        width: 'var(--mp-shirt-w)',
+        height: `calc(var(--mp-shirt-w) * ${SHIRT_ASPECT[role]})`,
+      }}
       aria-hidden
     >
       <path
@@ -203,53 +232,82 @@ function Pitch({
   kit: 'home' | 'away';
   label: string;
 }) {
+  const colsInRow = new Map<number, number>();
+  for (const s of spots) colsInRow.set(s.y, (colsInRow.get(s.y) ?? 0) + 1);
+  const maxCols = Math.max(1, ...colsInRow.values());
+  const lines = Math.max(colsInRow.size, 2);
+
+  // Real pitch proportions 68×105 (height = width × 105/68) on mobile and desktop.
+  // Shirts and pills are a fraction of the pitch, capped by the widest row and the line count.
   return (
     <div
       dir="ltr"
       role="img"
       aria-label={label}
-      className="relative aspect-[382/422] w-full overflow-hidden rounded-lg md:aspect-[68/66]"
-      style={{
-        backgroundImage:
-          'repeating-linear-gradient(to bottom, var(--mp-pitch-a) 0 12.5%, var(--mp-pitch-b) 12.5% 25%)',
-      }}
+      data-mp-cols={maxCols}
+      data-mp-lines={lines}
+      className="relative aspect-[68/105] w-full overflow-hidden rounded-lg [container-type:size]"
+      style={
+        {
+          backgroundImage:
+            'repeating-linear-gradient(to bottom, var(--mp-pitch-a) 0 12.5%, var(--mp-pitch-b) 12.5% 25%)',
+          '--mp-cols': maxCols,
+          '--mp-lines': lines,
+          '--mp-shirt-w': SHIRT_WIDTH,
+        } as CSSProperties
+      }
     >
-      <svg
-        viewBox="0 0 68 66"
-        preserveAspectRatio="none"
-        className="absolute inset-0 size-full"
-        aria-hidden
-      >
+      <svg viewBox={`0 0 ${PITCH.w} ${PITCH.l}`} className="absolute inset-0 size-full" aria-hidden>
         <g fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2">
-          <rect x="1" y="1" width="66" height="64" vectorEffect="non-scaling-stroke" />
-          <line x1="1" y1="33" x2="67" y2="33" vectorEffect="non-scaling-stroke" />
-          <rect x="16" y="1" width="36" height="10" vectorEffect="non-scaling-stroke" />
-          <rect x="26" y="1" width="16" height="4" vectorEffect="non-scaling-stroke" />
-          <rect x="16" y="55" width="36" height="10" vectorEffect="non-scaling-stroke" />
-          <rect x="26" y="61" width="16" height="4" vectorEffect="non-scaling-stroke" />
+          <rect x="0" y="0" width={PITCH.w} height={PITCH.l} vectorEffect="non-scaling-stroke" />
+          <line x1="0" y1={MID_Y} x2={PITCH.w} y2={MID_Y} vectorEffect="non-scaling-stroke" />
+          <circle cx={CX} cy={MID_Y} r={PITCH.circleR} vectorEffect="non-scaling-stroke" />
+          <rect
+            x={PA_X}
+            y="0"
+            width={PITCH.penaltyAreaW}
+            height={PITCH.penaltyAreaD}
+            vectorEffect="non-scaling-stroke"
+          />
+          <rect
+            x={GA_X}
+            y="0"
+            width={PITCH.goalAreaW}
+            height={PITCH.goalAreaD}
+            vectorEffect="non-scaling-stroke"
+          />
+          <rect
+            x={PA_X}
+            y={PA_BOT_Y}
+            width={PITCH.penaltyAreaW}
+            height={PITCH.penaltyAreaD}
+            vectorEffect="non-scaling-stroke"
+          />
+          <rect
+            x={GA_X}
+            y={GA_BOT_Y}
+            width={PITCH.goalAreaW}
+            height={PITCH.goalAreaD}
+            vectorEffect="non-scaling-stroke"
+          />
+          <path d={ARC_TOP} vectorEffect="non-scaling-stroke" />
+          <path d={ARC_BOT} vectorEffect="non-scaling-stroke" />
         </g>
-      </svg>
-      {/* Centre circle in its own square box so it stays round at the taller mobile ratio. */}
-      <svg
-        viewBox="0 0 14 14"
-        className="absolute left-1/2 top-1/2 aspect-square w-[20.6%] -translate-x-1/2 -translate-y-1/2 overflow-visible"
-        aria-hidden
-      >
-        <circle
-          cx="7"
-          cy="7"
-          r="7"
-          fill="none"
-          stroke="rgba(255,255,255,0.9)"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-        />
+        <g fill="rgba(255,255,255,0.95)">
+          <circle cx={CX} cy={MID_Y} r="0.6" />
+          <circle cx={CX} cy={SPOT_TOP} r="0.6" />
+          <circle cx={CX} cy={SPOT_BOT} r="0.6" />
+        </g>
       </svg>
       {spots.map((s) => (
         <div
           key={s.player.id}
-          className="absolute flex w-[25%] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[25%]"
-          style={{ left: `${s.x}%`, top: `${s.y}%` }}
+          className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
+          style={{
+            left: `${s.x}%`,
+            top: `${s.y}%`,
+            width: `calc(100% / ${maxCols} * 0.9)`,
+          }}
         >
           <Shirt
             fill={
@@ -262,7 +320,14 @@ function Pitch({
             number={s.player.number}
             role={s.isKeeper ? 'keeper' : kit}
           />
-          <span className="-mt-px max-w-full truncate rounded-[5px] bg-white px-1.5 py-0.5 text-[12.5px] font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)] md:px-2.5 md:text-[13.5px]">
+          <span
+            className="-mt-px max-w-full truncate bg-white font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)]"
+            style={{
+              fontSize: 'calc(var(--mp-shirt-w) * 0.242)',
+              padding: 'calc(var(--mp-shirt-w) * 0.037) calc(var(--mp-shirt-w) * 0.178)',
+              borderRadius: 'calc(var(--mp-shirt-w) * 0.09)',
+            }}
+          >
             {shortPlayerName(s.player.name)}
           </span>
         </div>

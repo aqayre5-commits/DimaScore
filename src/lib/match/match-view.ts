@@ -261,6 +261,27 @@ export function keyStatRows(home: MatchTeamStats, away: MatchTeamStats): StatRow
 
 // ── Line-ups ────────────────────────────────────────────────────────────────
 
+/** Standard senior pitch, metres (Laws of the Game): 68 wide × 105 long, portrait. */
+export const PITCH = {
+  w: 68,
+  l: 105,
+  penaltyAreaW: 40.32,
+  penaltyAreaD: 16.5,
+  goalAreaW: 18.32,
+  goalAreaD: 5.5,
+  penaltySpot: 11,
+  circleR: 9.15,
+  /** Goalkeeper: 10m from the own goal line, inside the 16.5m penalty area. */
+  gkFromGoal: 10,
+} as const;
+
+/** Goalkeeper y, percent from the top (attacking end). */
+export const PITCH_GK_Y = ((PITCH.l - PITCH.gkFromGoal) / PITCH.l) * 100;
+/** Furthest line sits on the opposition penalty-area line (16.5m from that goal). */
+export const PITCH_FWD_Y = (PITCH.penaltyAreaD / PITCH.l) * 100;
+/** Vertical span between the goalkeeper and the furthest line, in percent of pitch height. */
+export const PITCH_SPAN_Y = PITCH_GK_Y - PITCH_FWD_Y;
+
 export interface PitchSpot {
   player: LineupPlayer;
   /** 0..100 from the left edge. */
@@ -307,9 +328,10 @@ export function pitchSpots(starters: LineupPlayer[], formation: string | null): 
   for (const s of placed) colsIn.set(s.line, Math.max(colsIn.get(s.line) ?? 0, s.col));
   return placed.map(({ p, line, col }) => {
     const cols = colsIn.get(line) ?? 1;
-    // As in the mockup: goalkeeper at 91% from the top (inside the box), the furthest line at 12%;
-    // three or more players spread to the touchlines, a pair sits at the thirds.
-    const y = lines > 1 ? 91 - ((line - 1) / (lines - 1)) * 79 : 50;
+    // GK inside the own box (10m from the goal line); other lines evenly spaced up to
+    // the opposition 18-yard line. Three or more players spread to the touchlines, a
+    // pair sits at the thirds.
+    const y = lines > 1 ? PITCH_GK_Y - ((line - 1) / (lines - 1)) * PITCH_SPAN_Y : 50;
     const x = (cols <= 2 ? col / (cols + 1) : (col - 0.5) / cols) * 100;
     return { player: p, x, y, isKeeper: line === 1 };
   });

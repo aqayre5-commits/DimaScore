@@ -10,6 +10,8 @@ import {
   matchweekNumber,
   minuteLabel,
   pitchSpots,
+  PITCH_FWD_Y,
+  PITCH_GK_Y,
   runningScores,
   shortPlayerName,
   statGroups,
@@ -165,9 +167,11 @@ describe('pitchSpots', () => {
     const s = pitchSpots(xi, '2-1');
     const gk = s.find((x) => x.player.id === 1)!;
     expect(gk.isKeeper).toBe(true);
-    expect(gk.y).toBe(91);
+    expect(gk.y).toBeCloseTo(PITCH_GK_Y, 5);
     expect(gk.x).toBe(50);
-    expect(s.find((x) => x.player.id === 4)!.y).toBe(12);
+    expect(s.find((x) => x.player.id === 4)!.y).toBeCloseTo(PITCH_FWD_Y, 5);
+    // GK stays inside the own 16.5m box; the last line is on the opposition 18-yard line.
+    expect(gk.y).toBeGreaterThan(((105 - 16.5) / 105) * 100);
     expect(s.find((x) => x.player.id === 2)!.x).toBeCloseTo(33.33, 1);
   });
 
