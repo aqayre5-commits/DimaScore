@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useTranslations } from 'next-intl';
 import type { MatchLineup } from '@/lib/db/queries/match-detail';
 import { pitchSpots, shortPlayerName } from '@/lib/match/match-view';
@@ -143,18 +143,24 @@ function TeamLineup({
   );
 }
 
-/** Box sizes from icon-measurements.xlsx (ink W×H): mobile outfield 42.4×34.5, keeper 43.7×35;
- *  desktop home 54.5×43.4, keeper 54.5×41.4, away (white) 54.5×39.4. The jersey ink spans
- *  46.9×37.8 of the 48×40 viewBox, so box = ink × 48/46.9 wide and × 40/37.8 tall.
- *  Desktop boxes are that size × 580/398 (~1.457): the pitch now fills the team panel
- *  (580×563 at the 1248px scoreboard width) instead of the old 398×386 cap, and shirts
- *  scale with it so they keep the spreadsheet proportions and do not look tiny. Mobile
- *  sizes are unchanged. */
-const SHIRT_BOX = {
-  home: 'h-[36.5px] w-[43.4px] md:h-[66.9px] md:w-[81.3px]',
-  away: 'h-[36.5px] w-[43.4px] md:h-[60.8px] md:w-[81.3px]',
-  keeper: 'h-[37px] w-[44.7px] md:h-[63.8px] md:w-[81.3px]',
+/** Shirt box aspect (height ÷ width) from icon-measurements.xlsx. Ink W×H is desktop home
+ *  54.5×43.4, keeper 54.5×41.4, away 54.5×39.4 (mobile outfield 42.4×34.5, keeper 43.7×35).
+ *  The jersey ink spans 46.9×37.8 of the 48×40 viewBox, so the box is ink × 48/46.9 wide
+ *  and × 40/37.8 tall: 55.8×45.9 / 55.8×43.8 / 55.8×41.7. Width itself is not fixed: it is
+ *  `--mp-shirt-w`, a fraction of the pitch capped by the widest row and the number of
+ *  lines, so shirts fill the available space without overlapping. */
+const SHIRT_ASPECT = {
+  home: 45.9 / 55.8,
+  away: 41.7 / 55.8,
+  keeper: 43.8 / 55.8,
 } as const;
+
+/** Shirt width as a length: min of (70% of pitch/cols, so a 5-across row has a gap),
+ *  (88% of the row spacing ÷ 1.14 stack ratio, so a 5-line 4-2-3-1 does not collide
+ *  vertically; 1.14 = home aspect 0.823 + name-pill ≈ 0.32), and 18% of pitch height
+ *  so the goalkeeper pill stays inside the 91% box. */
+const SHIRT_WIDTH =
+  'min(calc(100cqw / var(--mp-cols) * 0.7), calc(79cqh / (var(--mp-lines) - 1) * 0.88 / 1.14), calc(18cqh / 1.14))';
 
 function Shirt({
   fill,
@@ -163,14 +169,18 @@ function Shirt({
 }: {
   fill: string;
   number: number;
-  role: keyof typeof SHIRT_BOX;
+  role: keyof typeof SHIRT_ASPECT;
 }) {
   return (
     // Mockup jersey: rounded shoulders, short angled sleeves, curved collar notch, dark outline.
     <svg
       viewBox="0 0 48 40"
       preserveAspectRatio="none"
-      className={`${SHIRT_BOX[role]} drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]`}
+      className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]"
+      style={{
+        width: 'var(--mp-shirt-w)',
+        height: `calc(var(--mp-shirt-w) * ${SHIRT_ASPECT[role]})`,
+      }}
       aria-hidden
     >
       <path
@@ -203,18 +213,31 @@ function Pitch({
   kit: 'home' | 'away';
   label: string;
 }) {
+  const colsInRow = new Map<number, number>();
+  for (const s of spots) colsInRow.set(s.y, (colsInRow.get(s.y) ?? 0) + 1);
+  const maxCols = Math.max(1, ...colsInRow.values());
+  const lines = Math.max(colsInRow.size, 2);
+
   // Desktop: the pitch fills the team-panel width (minus padding) and keeps aspect
-  // 68/66 so height grows with width. Mobile is unchanged (w-full, aspect 382/422).
+  // 68/66 so height grows with width. Mobile keeps aspect 382/422. Shirts and pills
+  // are a fraction of the pitch, capped by the widest row (up to 5) and the line count.
   return (
     <div
       dir="ltr"
       role="img"
       aria-label={label}
-      className="relative aspect-[382/422] w-full overflow-hidden rounded-lg md:aspect-[68/66]"
-      style={{
-        backgroundImage:
-          'repeating-linear-gradient(to bottom, var(--mp-pitch-a) 0 12.5%, var(--mp-pitch-b) 12.5% 25%)',
-      }}
+      data-mp-cols={maxCols}
+      data-mp-lines={lines}
+      className="relative aspect-[382/422] w-full overflow-hidden rounded-lg [container-type:size] md:aspect-[68/66]"
+      style={
+        {
+          backgroundImage:
+            'repeating-linear-gradient(to bottom, var(--mp-pitch-a) 0 12.5%, var(--mp-pitch-b) 12.5% 25%)',
+          '--mp-cols': maxCols,
+          '--mp-lines': lines,
+          '--mp-shirt-w': SHIRT_WIDTH,
+        } as CSSProperties
+      }
     >
       <svg
         viewBox="0 0 68 66"
@@ -250,8 +273,12 @@ function Pitch({
       {spots.map((s) => (
         <div
           key={s.player.id}
-          className="absolute flex w-[25%] -translate-x-1/2 -translate-y-1/2 flex-col items-center md:w-[25%]"
-          style={{ left: `${s.x}%`, top: `${s.y}%` }}
+          className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
+          style={{
+            left: `${s.x}%`,
+            top: `${s.y}%`,
+            width: `calc(100% / ${maxCols} * 0.9)`,
+          }}
         >
           <Shirt
             fill={
@@ -264,7 +291,14 @@ function Pitch({
             number={s.player.number}
             role={s.isKeeper ? 'keeper' : kit}
           />
-          <span className="-mt-px max-w-full truncate rounded-[5px] bg-white px-1.5 py-0.5 text-[12.5px] font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)] md:px-[14.5px] md:py-[3px] md:text-[19.5px] md:rounded-[7px]">
+          <span
+            className="-mt-px max-w-full truncate bg-white font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)]"
+            style={{
+              fontSize: 'calc(var(--mp-shirt-w) * 0.242)',
+              padding: 'calc(var(--mp-shirt-w) * 0.037) calc(var(--mp-shirt-w) * 0.178)',
+              borderRadius: 'calc(var(--mp-shirt-w) * 0.09)',
+            }}
+          >
             {shortPlayerName(s.player.name)}
           </span>
         </div>
