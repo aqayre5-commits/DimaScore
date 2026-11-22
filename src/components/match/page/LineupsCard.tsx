@@ -47,11 +47,7 @@ export function LineupsCard({
     return null;
 
   return (
-    <Card
-      labelledBy="mp-lineups"
-      pad="pt-1.5 md:px-[19px] md:pb-[17px] md:pt-2.5"
-      className="md:max-w-[886px]"
-    >
+    <Card labelledBy="mp-lineups" pad="pt-1.5 md:px-[19px] md:pb-[17px] md:pt-2.5">
       <CardTitle id="mp-lineups" size="lineups">
         {title}
       </CardTitle>
@@ -203,12 +199,15 @@ function Pitch({
   kit: 'home' | 'away';
   label: string;
 }) {
+  // Desktop: the card spans the scoreboard width; cap each pitch at the 886px-card
+  // size (398×386, aspect 68/66) and centre it in the full-width team panel so the
+  // pitch does not grow taller. Mobile is unchanged (w-full, aspect 382/422).
   return (
     <div
       dir="ltr"
       role="img"
       aria-label={label}
-      className="relative aspect-[382/422] w-full overflow-hidden rounded-lg md:aspect-[68/66]"
+      className="relative aspect-[382/422] w-full overflow-hidden rounded-lg md:mx-auto md:max-w-[398px] md:aspect-[68/66]"
       style={{
         backgroundImage:
           'repeating-linear-gradient(to bottom, var(--mp-pitch-a) 0 12.5%, var(--mp-pitch-b) 12.5% 25%)',
