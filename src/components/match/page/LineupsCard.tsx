@@ -3,7 +3,13 @@
 import { useState, type CSSProperties } from 'react';
 import { useTranslations } from 'next-intl';
 import type { MatchLineup } from '@/lib/db/queries/match-detail';
-import { pitchSpots, shortPlayerName } from '@/lib/match/match-view';
+import {
+  PITCH,
+  PITCH_GK_Y,
+  PITCH_SPAN_Y,
+  pitchSpots,
+  shortPlayerName,
+} from '@/lib/match/match-view';
 import { Card, CardTitle } from './Card';
 import { ChevronIcon } from './icons';
 import { TeamBadge } from './shared';
@@ -157,10 +163,23 @@ const SHIRT_ASPECT = {
 
 /** Shirt width as a length: min of (70% of pitch/cols, so a 5-across row has a gap),
  *  (88% of the row spacing ÷ 1.14 stack ratio, so a 5-line 4-2-3-1 does not collide
- *  vertically; 1.14 = home aspect 0.823 + name-pill ≈ 0.32), and 18% of pitch height
- *  so the goalkeeper pill stays inside the 91% box. */
-const SHIRT_WIDTH =
-  'min(calc(100cqw / var(--mp-cols) * 0.7), calc(79cqh / (var(--mp-lines) - 1) * 0.88 / 1.14), calc(18cqh / 1.14))';
+ *  vertically; 1.14 = home aspect 0.823 + name-pill ≈ 0.32), and 90% of the space
+ *  below the GK so the name pill stays on the pitch. Row spacing uses the real-pitch
+ *  span (GK at 10m, furthest line on the opposition 18-yard line). */
+const SHIRT_WIDTH = `min(calc(100cqw / var(--mp-cols) * 0.7), calc(${PITCH_SPAN_Y}cqh / (var(--mp-lines) - 1) * 0.88 / 1.14), calc(${(100 - PITCH_GK_Y) * 2 * 0.9}cqh / 1.14))`;
+
+/** Pitch markings in metres, for a 68×105 viewBox (origin = attacking-end left corner). */
+const PA_X = (PITCH.w - PITCH.penaltyAreaW) / 2;
+const GA_X = (PITCH.w - PITCH.goalAreaW) / 2;
+const ARC_DX = Math.sqrt(PITCH.circleR ** 2 - (PITCH.penaltyAreaD - PITCH.penaltySpot) ** 2);
+const CX = PITCH.w / 2;
+const MID_Y = PITCH.l / 2;
+const SPOT_TOP = PITCH.penaltySpot;
+const SPOT_BOT = PITCH.l - PITCH.penaltySpot;
+const PA_BOT_Y = PITCH.l - PITCH.penaltyAreaD;
+const GA_BOT_Y = PITCH.l - PITCH.goalAreaD;
+const ARC_TOP = `M ${CX - ARC_DX} ${PITCH.penaltyAreaD} A ${PITCH.circleR} ${PITCH.circleR} 0 0 1 ${CX + ARC_DX} ${PITCH.penaltyAreaD}`;
+const ARC_BOT = `M ${CX - ARC_DX} ${PA_BOT_Y} A ${PITCH.circleR} ${PITCH.circleR} 0 0 1 ${CX + ARC_DX} ${PA_BOT_Y}`;
 
 function Shirt({
   fill,
@@ -218,9 +237,8 @@ function Pitch({
   const maxCols = Math.max(1, ...colsInRow.values());
   const lines = Math.max(colsInRow.size, 2);
 
-  // Desktop: the pitch fills the team-panel width (minus padding) and keeps aspect
-  // 68/66 so height grows with width. Mobile keeps aspect 382/422. Shirts and pills
-  // are a fraction of the pitch, capped by the widest row (up to 5) and the line count.
+  // Real pitch proportions 68×105 (height = width × 105/68) on mobile and desktop.
+  // Shirts and pills are a fraction of the pitch, capped by the widest row and the line count.
   return (
     <div
       dir="ltr"
@@ -228,7 +246,7 @@ function Pitch({
       aria-label={label}
       data-mp-cols={maxCols}
       data-mp-lines={lines}
-      className="relative aspect-[382/422] w-full overflow-hidden rounded-lg [container-type:size] md:aspect-[68/66]"
+      className="relative aspect-[68/105] w-full overflow-hidden rounded-lg [container-type:size]"
       style={
         {
           backgroundImage:
@@ -239,36 +257,47 @@ function Pitch({
         } as CSSProperties
       }
     >
-      <svg
-        viewBox="0 0 68 66"
-        preserveAspectRatio="none"
-        className="absolute inset-0 size-full"
-        aria-hidden
-      >
+      <svg viewBox={`0 0 ${PITCH.w} ${PITCH.l}`} className="absolute inset-0 size-full" aria-hidden>
         <g fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2">
-          <rect x="1" y="1" width="66" height="64" vectorEffect="non-scaling-stroke" />
-          <line x1="1" y1="33" x2="67" y2="33" vectorEffect="non-scaling-stroke" />
-          <rect x="16" y="1" width="36" height="10" vectorEffect="non-scaling-stroke" />
-          <rect x="26" y="1" width="16" height="4" vectorEffect="non-scaling-stroke" />
-          <rect x="16" y="55" width="36" height="10" vectorEffect="non-scaling-stroke" />
-          <rect x="26" y="61" width="16" height="4" vectorEffect="non-scaling-stroke" />
+          <rect x="0" y="0" width={PITCH.w} height={PITCH.l} vectorEffect="non-scaling-stroke" />
+          <line x1="0" y1={MID_Y} x2={PITCH.w} y2={MID_Y} vectorEffect="non-scaling-stroke" />
+          <circle cx={CX} cy={MID_Y} r={PITCH.circleR} vectorEffect="non-scaling-stroke" />
+          <rect
+            x={PA_X}
+            y="0"
+            width={PITCH.penaltyAreaW}
+            height={PITCH.penaltyAreaD}
+            vectorEffect="non-scaling-stroke"
+          />
+          <rect
+            x={GA_X}
+            y="0"
+            width={PITCH.goalAreaW}
+            height={PITCH.goalAreaD}
+            vectorEffect="non-scaling-stroke"
+          />
+          <rect
+            x={PA_X}
+            y={PA_BOT_Y}
+            width={PITCH.penaltyAreaW}
+            height={PITCH.penaltyAreaD}
+            vectorEffect="non-scaling-stroke"
+          />
+          <rect
+            x={GA_X}
+            y={GA_BOT_Y}
+            width={PITCH.goalAreaW}
+            height={PITCH.goalAreaD}
+            vectorEffect="non-scaling-stroke"
+          />
+          <path d={ARC_TOP} vectorEffect="non-scaling-stroke" />
+          <path d={ARC_BOT} vectorEffect="non-scaling-stroke" />
         </g>
-      </svg>
-      {/* Centre circle in its own square box so it stays round at the taller mobile ratio. */}
-      <svg
-        viewBox="0 0 14 14"
-        className="absolute left-1/2 top-1/2 aspect-square w-[20.6%] -translate-x-1/2 -translate-y-1/2 overflow-visible"
-        aria-hidden
-      >
-        <circle
-          cx="7"
-          cy="7"
-          r="7"
-          fill="none"
-          stroke="rgba(255,255,255,0.9)"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-        />
+        <g fill="rgba(255,255,255,0.95)">
+          <circle cx={CX} cy={MID_Y} r="0.6" />
+          <circle cx={CX} cy={SPOT_TOP} r="0.6" />
+          <circle cx={CX} cy={SPOT_BOT} r="0.6" />
+        </g>
       </svg>
       {spots.map((s) => (
         <div
