@@ -145,11 +145,15 @@ function TeamLineup({
 
 /** Box sizes from icon-measurements.xlsx (ink W×H): mobile outfield 42.4×34.5, keeper 43.7×35;
  *  desktop home 54.5×43.4, keeper 54.5×41.4, away (white) 54.5×39.4. The jersey ink spans
- *  46.9×37.8 of the 48×40 viewBox, so box = ink × 48/46.9 wide and × 40/37.8 tall. */
+ *  46.9×37.8 of the 48×40 viewBox, so box = ink × 48/46.9 wide and × 40/37.8 tall.
+ *  Desktop boxes are that size × 580/398 (~1.457): the pitch now fills the team panel
+ *  (580×563 at the 1248px scoreboard width) instead of the old 398×386 cap, and shirts
+ *  scale with it so they keep the spreadsheet proportions and do not look tiny. Mobile
+ *  sizes are unchanged. */
 const SHIRT_BOX = {
-  home: 'h-[36.5px] w-[43.4px] md:h-[45.9px] md:w-[55.8px]',
-  away: 'h-[36.5px] w-[43.4px] md:h-[41.7px] md:w-[55.8px]',
-  keeper: 'h-[37px] w-[44.7px] md:h-[43.8px] md:w-[55.8px]',
+  home: 'h-[36.5px] w-[43.4px] md:h-[66.9px] md:w-[81.3px]',
+  away: 'h-[36.5px] w-[43.4px] md:h-[60.8px] md:w-[81.3px]',
+  keeper: 'h-[37px] w-[44.7px] md:h-[63.8px] md:w-[81.3px]',
 } as const;
 
 function Shirt({
@@ -199,15 +203,14 @@ function Pitch({
   kit: 'home' | 'away';
   label: string;
 }) {
-  // Desktop: the card spans the scoreboard width; cap each pitch at the 886px-card
-  // size (398×386, aspect 68/66) and centre it in the full-width team panel so the
-  // pitch does not grow taller. Mobile is unchanged (w-full, aspect 382/422).
+  // Desktop: the pitch fills the team-panel width (minus padding) and keeps aspect
+  // 68/66 so height grows with width. Mobile is unchanged (w-full, aspect 382/422).
   return (
     <div
       dir="ltr"
       role="img"
       aria-label={label}
-      className="relative aspect-[382/422] w-full overflow-hidden rounded-lg md:mx-auto md:max-w-[398px] md:aspect-[68/66]"
+      className="relative aspect-[382/422] w-full overflow-hidden rounded-lg md:aspect-[68/66]"
       style={{
         backgroundImage:
           'repeating-linear-gradient(to bottom, var(--mp-pitch-a) 0 12.5%, var(--mp-pitch-b) 12.5% 25%)',
@@ -261,7 +264,7 @@ function Pitch({
             number={s.player.number}
             role={s.isKeeper ? 'keeper' : kit}
           />
-          <span className="-mt-px max-w-full truncate rounded-[5px] bg-white px-1.5 py-0.5 text-[12.5px] font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)] md:px-2.5 md:text-[13.5px]">
+          <span className="-mt-px max-w-full truncate rounded-[5px] bg-white px-1.5 py-0.5 text-[12.5px] font-semibold leading-tight text-[#0f1a24] shadow-[0_1px_2px_rgba(0,0,0,0.18)] md:px-[14.5px] md:py-[3px] md:text-[19.5px] md:rounded-[7px]">
             {shortPlayerName(s.player.name)}
           </span>
         </div>
