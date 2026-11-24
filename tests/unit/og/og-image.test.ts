@@ -147,7 +147,7 @@ describe('renderOgImage: cache headers and failure paths (never a 500)', () => {
     const res = await renderOgImage(ok(), ok(), { cacheControl: OG_CACHE_FINISHED });
     await expectPng(res);
     expect(res.headers.get('cache-control')).toBe(
-      'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800',
+      'public, max-age=0, must-revalidate, s-maxage=86400, stale-while-revalidate=604800',
     );
   });
 

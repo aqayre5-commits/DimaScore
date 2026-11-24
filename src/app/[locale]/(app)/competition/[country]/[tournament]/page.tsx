@@ -23,6 +23,7 @@ import {
   botolaProCompetitionPageTitle,
 } from '@/lib/seo/botola-classement';
 import { canonicalCompetitionPath } from '@/lib/seo/competition-canonical';
+import { competitionShareMeta } from '@/lib/og/og-urls';
 import { CompetitionContent, resolveEntry } from './competition-content';
 
 interface PageProps {
@@ -106,6 +107,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   let displayName = tournament.replace(/-/g, ' ');
   let description = `${displayName} — DimaScore`;
   let title: string | null = null;
+  let shareName = displayName;
 
   if (entry) {
     const competition = await getCompetitionById(db, entry.competitionId);
@@ -118,6 +120,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         displayName,
       );
       displayName = localName;
+      shareName = localName;
       const { seasonYear } = await resolveCompetitionSeason(competition.id, null);
       const season = seasonYear ? formatSeasonLabel(seasonYear) : '';
       displayName = season ? `${displayName} ${season}` : displayName;
@@ -146,11 +149,34 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   languages['x-default'] = languages[defaultLocale];
   const canonical = languages[typedLocale];
 
+  const pageTitle = title ?? displayName;
+  const share = competitionShareMeta({
+    base: baseUrl,
+    locale,
+    country,
+    tournament,
+    name: shareName,
+    title: pageTitle,
+    description,
+  });
+
   return {
-    title: title ?? displayName,
+    title: pageTitle,
     description,
     alternates: { canonical, languages },
     robots: { index: true, follow: true },
+    // Own og/twitter tags: the layout's were the home page's (og:url, twitter:title, site-default
+    // twitter:image) and the image alt was the route's English one.
+    openGraph: {
+      title: pageTitle,
+      description,
+      url: canonical,
+      siteName: 'DimaScore',
+      locale: typedLocale === 'fr' ? 'fr_FR' : typedLocale === 'ar' ? 'ar_MA' : 'en_US',
+      type: 'website',
+      images: share.images,
+    },
+    twitter: share.twitter,
   };
 }
 

@@ -23,3 +23,64 @@ export function matchOgImageAlt(home: string, away: string, locale: string): str
   const sep = locale === 'fr' ? ' : ' : locale === 'ar' ? ' — ' : ': ';
   return `${matchupLabel(home, away, locale)}${sep}${OG_ALT_SUFFIX[locale] ?? OG_ALT_SUFFIX.en}`;
 }
+
+/** Path segment of the competition opengraph-image route (competition/[country]/[tournament]). */
+export const COMPETITION_OG_SEGMENT = 'opengraph-image-i9zysm';
+
+/**
+ * Absolute URL of a competition's 1200×630 share image. `country` and `tournament` are the decoded
+ * route segments; they are percent-encoded here as Next does for the file route's own og:image.
+ */
+export function competitionOgImageUrl(
+  base: string,
+  locale: string,
+  country: string,
+  tournament: string,
+): string {
+  const seg = (s: string) => encodeURIComponent(s);
+  return `${base}/${locale}/competition/${seg(country)}/${seg(tournament)}/${COMPETITION_OG_SEGMENT}`;
+}
+
+const COMPETITION_ALT_SUFFIX: Record<string, string> = {
+  en: 'competition card, DimaScore',
+  fr: 'fiche de la compétition, DimaScore',
+  ar: 'بطاقة البطولة، DimaScore',
+};
+
+/** og:image:alt / twitter:image:alt for a competition share image, in the page language. */
+export function competitionOgImageAlt(name: string, locale: string): string {
+  const sep = locale === 'fr' ? ' : ' : locale === 'ar' ? ' — ' : ': ';
+  return `${name}${sep}${COMPETITION_ALT_SUFFIX[locale] ?? COMPETITION_ALT_SUFFIX.en}`;
+}
+
+/**
+ * openGraph.images + twitter for a competition page (hub, season, bracket): the competition share
+ * image with a page-language alt. Without this the pages inherited the layout's site-default
+ * twitter:image and the route's English alt.
+ */
+export function competitionShareMeta(args: {
+  base: string;
+  locale: string;
+  country: string;
+  tournament: string;
+  name: string;
+  title: string;
+  description: string;
+}) {
+  const image = {
+    url: competitionOgImageUrl(args.base, args.locale, args.country, args.tournament),
+    width: 1200,
+    height: 630,
+    type: 'image/png',
+    alt: competitionOgImageAlt(args.name, args.locale),
+  };
+  return {
+    images: [image],
+    twitter: {
+      card: 'summary_large_image' as const,
+      title: args.title,
+      description: args.description,
+      images: [{ url: image.url, alt: image.alt }],
+    },
+  };
+}
