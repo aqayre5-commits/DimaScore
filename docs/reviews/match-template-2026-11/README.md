@@ -33,3 +33,25 @@ Screens are from a local production build (`next build && next start`) against a
 
 Site navbar/logo, live ticker, footer and mobile bottom bar are unchanged — the template's top bar (logo, search,
 theme, language, "PL ▾") differs; awaiting a decision.
+
+## Mobile navbar competition picker (Abdilahi, 24 Nov: option a)
+
+The navbar is otherwise unchanged (desktop untouched; mobile keeps the hamburger, logo and search). Below 768px, on
+match and competition pages, a picker sits next to search (template top bar "PL ▾"):
+
+- **Label:** the current competition's short name below 440px (PL, UCL, UWCL, Botola …; Arabic short forms in ar),
+  full name from 440px (as the template). Elsewhere the picker is hidden — the hamburger drawer already lists
+  competitions, and those pages have no competition context. On a competition page without a known competition it
+  reads "Competitions".
+- **Sheet:** a native modal dialog with the desktop rail inside (Overall, Favourites, Tournament editions, pinned,
+  popular, browse tree with search) built from the same props as the rail (`rail-props.ts`). The page behind is inert
+  (focus stays in the sheet), Escape/backdrop/× close it and focus returns to the button. Search closes the sheet and
+  opens the site search.
+- **No CLS:** fixed button width per breakpoint (96px / 128px from 380px / 192px from 440px), fixed label line box;
+  the label fills in when the page registers its competition. Long names truncate with an ellipsis; the accessible
+  name always carries the full name.
+- **Checks:** 360/390/440 en/fr/ar — no wrapping or overlap (≥18px to the logo), 44px targets, axe clean on the
+  button and the open sheet (light/dark), CLS ≤ 0.0012.
+
+Screens: `mobile-picker/` (closed/open, en/fr/ar, 390 and 360, competition page, search from the sheet). The earlier
+mobile screens in `screens/` and `side-by-side/` predate the picker.

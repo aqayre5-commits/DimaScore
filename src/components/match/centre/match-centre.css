@@ -1422,6 +1422,7 @@ html:not([data-theme='light']) .mc .lu-direction {
 }
 /* ── Dialogs (Tournament editions) ── */
 .mc dialog {
+  margin: auto; /* the site's reset zeroes margins; the template centres its dialogs */
   border: 1px solid var(--border);
   border-radius: 12px;
   width: min(480px, calc(100vw - 24px));
@@ -2238,4 +2239,25 @@ html:not([data-theme='light']) .mc .save.on .ic {
   .mc {
     max-width: 480px;
   }
+}
+/* ── Mobile navbar picker sheet (template: the rail inside the dialog) ── */
+.mc.mc-sheet-host {
+  display: contents;
+}
+.mc .dialogbody .railpanel {
+  position: static;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+.mc .dialogbody .railtop {
+  margin-top: 8px;
+}
+.mc .dialogbody .railpanel > .railrow.major:first-child {
+  margin-top: 0;
+}
+.mc .dialogbar .iconbtn,
+.mc .dialogbody .railtop .iconbtn {
+  width: 44px;
+  height: 44px;
 }

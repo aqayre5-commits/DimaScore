@@ -14,7 +14,6 @@ import {
 } from '@/lib/db/queries/match-detail';
 import {
   getCompetitionResults,
-  getRailCompetitionData,
   getUpcomingCompetitionFixtures,
 } from '@/lib/db/queries/match-centre';
 import { getStandings } from '@/lib/db/queries';
@@ -27,13 +26,6 @@ import {
   findEntryByCompetitionId,
   buildCompetitionHref,
 } from '@/lib/constants/competitions-mega-menu';
-import {
-  directoryEntries,
-  directoryTree,
-  POPULAR_ORDER,
-  POPULAR_VISIBLE,
-  TOURNAMENT_IDS,
-} from '@/lib/constants/competition-directory';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { flagImageSrc } from '@/components/shared/Flag';
@@ -50,7 +42,9 @@ import type { Phase, TableBase } from '@/lib/match/match-centre';
 import { localizeRound } from '@/lib/i18n/feed-labels';
 import { MatchLiveUpdater } from '@/components/match/MatchLiveUpdater';
 import { MatchCentre } from '@/components/match/centre/MatchCentre';
-import { CompetitionRail, type RailEntry } from '@/components/match/centre/CompetitionRail';
+import { CompetitionRail } from '@/components/match/centre/CompetitionRail';
+import { getRailProps } from '@/components/match/centre/rail-props';
+import { NavCompetitionRegister } from '@/components/chrome/NavCompetitionRegister';
 import { mcFont } from '@/components/match/centre/font';
 import type { McMatch, McTable, McTeam, McUpcoming } from '@/components/match/centre/types';
 import '@/components/match/centre/match-centre.css';
@@ -143,13 +137,6 @@ async function getCachedMatchData(fixtureId: number) {
   };
 }
 
-async function getCachedRailData() {
-  'use cache';
-  cacheLife('hours');
-  const ids = [...new Set(directoryEntries('en').map((e) => e.competitionId))];
-  return getRailCompetitionData(db, ids);
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale, id: rawId } = await params;
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
@@ -231,7 +218,7 @@ export default async function MatchDetailPage({ params }: PageProps) {
   const fixtureId = parseFixtureId(decodeURIComponent(rawId));
   if (!fixtureId) notFound();
 
-  const [data, rail] = await Promise.all([getCachedMatchData(fixtureId), getCachedRailData()]);
+  const data = await getCachedMatchData(fixtureId);
   if (!data) notFound();
   const { match, coverage, prefetch } = data;
   const typedLocale = locale as Locale;
@@ -276,7 +263,6 @@ export default async function MatchDetailPage({ params }: PageProps) {
   }
 
   const t = await getTranslations({ locale: typedLocale, namespace: 'matchCentre' });
-  const tMenu = await getTranslations({ locale: typedLocale, namespace: 'megaMenu' });
 
   const mw = matchweekNumber(match.round);
   const roundLabel =
@@ -397,30 +383,8 @@ export default async function MatchDetailPage({ params }: PageProps) {
       }
     : null;
 
-  // ── Left rail (template): Overall, Favourites, Tournament editions, Popular, Browse ──
-  const entries = directoryEntries(typedLocale);
-  const railEntry = (e: (typeof entries)[number]): RailEntry => ({
-    id: e.competitionId,
-    label: tMenu(e.labelKey),
-    href: e.href,
-    logo: resolveCompetitionLogo(e.competitionId, rail.logos[e.competitionId] ?? null),
-  });
-  const byId = new Map(entries.map((e) => [e.competitionId, railEntry(e)]));
-  const active = new Set(rail.activeIds);
-  const popular = POPULAR_ORDER.filter((id) => active.has(id) && byId.has(id)).map(
-    (id) => byId.get(id)!,
-  );
-  const zones = directoryTree(entries, typedLocale, t('rail.continental')).map((z) => ({
-    id: z.id,
-    label: t(`rail.zone.${z.id}`),
-    countries: z.countries.map((c) => ({
-      key: c.key,
-      label: c.label,
-      entries: [...c.entries]
-        .map(railEntry)
-        .sort((a, b) => a.label.localeCompare(b.label, typedLocale)),
-    })),
-  }));
+  // ── Left rail (template) and the mobile navbar picker share one set of props ──
+  const { rail, current: railCurrent } = await getRailProps(typedLocale, match.competition.id);
 
   const pageContent = (
     <>
@@ -464,34 +428,11 @@ export default async function MatchDetailPage({ params }: PageProps) {
           // and no VideoObject (no video on the page): structured data only for what is shown.
         )}
       />
+      <NavCompetitionRegister current={railCurrent} rail={rail} />
       <div className={`mc ${mcFont.variable}`}>
         <div className="shell">
           <aside className="rail">
-            <CompetitionRail
-              homeHref={`/${typedLocale}`}
-              favouritesHref={`/${typedLocale}#matches`}
-              currentId={match.competition.id}
-              popular={popular}
-              popularVisible={POPULAR_VISIBLE}
-              all={[...byId.values()]}
-              zones={zones}
-              tournaments={TOURNAMENT_IDS.filter((id) => byId.has(id)).map((id) => byId.get(id)!)}
-              labels={{
-                nav: t('rail.browse'),
-                overall: t('rail.overall'),
-                favourites: t('rail.favourites'),
-                tournaments: t('rail.tournaments'),
-                pinned: t('rail.pinned'),
-                popular: t('rail.popular'),
-                showMore: t.raw('rail.showMore') as string,
-                showFewer: t('rail.showFewer'),
-                browse: t('rail.browse'),
-                find: t('rail.find'),
-                count: t('rail.count', { n: entries.length.toLocaleString(bcp) }),
-                open: t.raw('rail.open') as string,
-                close: t('rail.close'),
-              }}
-            />
+            <CompetitionRail {...rail} />
           </aside>
           <div className="mc-mainarea">
             <MatchCentre match={view} upcoming={upcoming} table={table} />

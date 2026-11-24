@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useFollows } from '@/hooks/useFollows';
 import { NavIcon } from './icons';
@@ -49,6 +49,8 @@ export interface CompetitionRailProps {
   zones: RailZone[];
   tournaments: RailEntry[];
   labels: RailLabels;
+  /** Overrides the built-in search modal (the navbar picker closes its sheet first). */
+  onSearch?: () => void;
 }
 
 const fill = (s: string, n: string | number) => s.replace('{n}', String(n));
@@ -82,6 +84,7 @@ export function CompetitionRail(p: CompetitionRailProps) {
   const [expanded, setExpanded] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   const L = p.labels;
 
   const pinned = p.all.filter((e) => followedComps.has(e.id));
@@ -160,7 +163,7 @@ export function CompetitionRail(p: CompetitionRailProps) {
           type="button"
           className="iconbtn"
           aria-label={L.find}
-          onClick={() => setSearchOpen(true)}
+          onClick={() => (p.onSearch ? p.onSearch() : setSearchOpen(true))}
         >
           <NavIcon name="search" />
         </button>
@@ -208,13 +211,13 @@ export function CompetitionRail(p: CompetitionRailProps) {
 
       <dialog
         ref={dialogRef}
-        aria-labelledby="mc-tournaments-title"
+        aria-labelledby={titleId}
         onClick={(e) => {
           if (e.target === e.currentTarget) e.currentTarget.close();
         }}
       >
         <div className="dialogbar">
-          <h2 id="mc-tournaments-title">{L.tournaments}</h2>
+          <h2 id={titleId}>{L.tournaments}</h2>
           <button
             type="button"
             className="iconbtn"
