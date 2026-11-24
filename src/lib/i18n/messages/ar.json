@@ -1058,7 +1058,11 @@
       "awarded": "نتيجة إدارية",
       "save": "حفظ المباراة",
       "remove": "إزالة من المفضلة",
-      "matchweek": "الجولة {n}"
+      "matchweek": "الجولة {n}",
+      "penaltyShort": "(ر.ج)",
+      "ownGoalShort": "(ع.ك)",
+      "moreScorers": "+{n}",
+      "moreScorersHint": "عدد {n} إضافيين، عرض كل الأحداث"
     },
     "tabs": {
       "overview": "نظرة عامة",

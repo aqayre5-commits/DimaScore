@@ -1058,7 +1058,11 @@
       "awarded": "Awarded",
       "save": "Save match",
       "remove": "Remove favourite",
-      "matchweek": "Matchweek {n}"
+      "matchweek": "Matchweek {n}",
+      "penaltyShort": "(P)",
+      "ownGoalShort": "(OG)",
+      "moreScorers": "+{n}",
+      "moreScorersHint": "{n} more, view all events"
     },
     "tabs": {
       "overview": "Overview",

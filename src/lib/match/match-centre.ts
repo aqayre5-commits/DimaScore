@@ -51,7 +51,8 @@ export interface Incident {
 
 export type IncidentFilter = 'all' | 'goals' | 'cards' | 'sub';
 
-export const isGoal = (k: IncidentKind) => k === 'goal' || k === 'penaltyGoal' || k === 'ownGoal';
+export const isGoal = (k: IncidentKind): k is 'goal' | 'penaltyGoal' | 'ownGoal' =>
+  k === 'goal' || k === 'penaltyGoal' || k === 'ownGoal';
 export const isCard = (k: IncidentKind) => k === 'yellow' || k === 'secondYellow' || k === 'red';
 
 export function incidentFilter(k: IncidentKind): IncidentFilter | null {
@@ -159,6 +160,82 @@ export const minuteText = (i: Pick<Incident, 'minute' | 'extra'>) =>
 /** Goals per side for the header lines under the team names ("Neto 46′"). */
 export function scorers(incidents: Incident[], side: Side): Incident[] {
   return incidents.filter((i) => isGoal(i.kind) && i.side === side);
+}
+
+/** One hero line: a player and the minutes they scored (own goals are a separate line). */
+export interface HeroScorerGoal {
+  key: string;
+  minute: number;
+  extra: number | null;
+  kind: 'goal' | 'penaltyGoal' | 'ownGoal';
+}
+
+export interface HeroScorerLine {
+  key: string;
+  player: string | null;
+  playerId: number | null;
+  ownGoal: boolean;
+  goals: HeroScorerGoal[];
+}
+
+/**
+ * Group a side's goals into hero lines: one line per player, minutes in chronological order,
+ * ordered by each player's first goal. Own goals stay on their own line so they are not mixed
+ * with that player's goals for their own team.
+ */
+export function groupHeroScorers(incidents: Incident[], side: Side): HeroScorerLine[] {
+  const lines: HeroScorerLine[] = [];
+  const index = new Map<string, HeroScorerLine>();
+  for (const g of scorers(incidents, side)) {
+    const ownGoal = g.kind === 'ownGoal';
+    const id =
+      g.playerId != null
+        ? `id:${g.playerId}:${ownGoal ? 'og' : 'g'}`
+        : g.player
+          ? `name:${g.player}:${ownGoal ? 'og' : 'g'}`
+          : `anon:${g.key}`;
+    let line = index.get(id);
+    if (!line) {
+      line = { key: g.key, player: g.player, playerId: g.playerId, ownGoal, goals: [] };
+      index.set(id, line);
+      lines.push(line);
+    }
+    const kind = g.kind;
+    if (!isGoal(kind)) continue;
+    line.goals.push({ key: g.key, minute: g.minute, extra: g.extra, kind });
+  }
+  return lines;
+}
+
+export type HeroScorerTags = { penalty: string; ownGoal: string };
+
+/** Minutes of one line, each mark bound to its minute: "64′ 84′ (P)". Always LTR. */
+export function formatHeroScorerMinutes(line: HeroScorerLine, tags: HeroScorerTags): string {
+  return line.goals
+    .map((g) => {
+      const min = minuteText(g);
+      // NBSP keeps "84′ (P)" together when a long line wraps.
+      if (g.kind === 'penaltyGoal') return `${min} ${tags.penalty}`;
+      if (g.kind === 'ownGoal') return `${min} ${tags.ownGoal}`;
+      return min;
+    })
+    .join(' ');
+}
+
+/** "Jordan Henderson 2′ 70′", "Mbappé 64′ 84′ (P)", "Greaves 56′ (OG)". */
+export function formatHeroScorerLine(line: HeroScorerLine, tags: HeroScorerTags): string {
+  return [line.player ?? '', formatHeroScorerMinutes(line, tags)].filter(Boolean).join(' ');
+}
+
+/** Max scorer lines (players) on the hero card; the rest is a quiet +N that links to Events. */
+export const HERO_SCORER_LIMIT = 5;
+
+export function heroScorers(incidents: Incident[], side: Side) {
+  const all = groupHeroScorers(incidents, side);
+  return {
+    shown: all.slice(0, HERO_SCORER_LIMIT),
+    hidden: Math.max(0, all.length - HERO_SCORER_LIMIT),
+  };
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────────────────

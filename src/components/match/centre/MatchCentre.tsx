@@ -18,7 +18,8 @@ import {
   metric,
   METRIC_GROUPS,
   minuteText,
-  scorers,
+  formatHeroScorerMinutes,
+  heroScorers,
   tableRows,
   type Incident,
   type IncidentFilter,
@@ -151,16 +152,37 @@ function Board({
   const hasScore = phase !== 'upcoming' && live.h != null && live.a != null;
   const team = (side: Side) => {
     const tm = side === 0 ? m.home : m.away;
+    const { shown, hidden } = heroScorers(incidents, side);
     return (
       <div className="mc-team">
         <Mark src={tm.logo} size={112} />
-        <div>
-          <strong>
-            <TeamName team={tm} />
-          </strong>
-          {scorers(incidents, side).map((g) => (
-            <small key={g.key}>{`${g.player ?? ''} ${minuteText(g)}`}</small>
-          ))}
+        <strong>
+          <TeamName team={tm} />
+        </strong>
+        <div className="mc-scorers">
+          {shown.map((line) => {
+            const tags = {
+              penalty: t('board.penaltyShort'),
+              ownGoal: t('board.ownGoalShort'),
+            };
+            return (
+              <small key={line.key} dir="ltr">
+                {line.player ? `${line.player} ` : null}
+                <bdi dir="ltr">{formatHeroScorerMinutes(line, tags)}</bdi>
+              </small>
+            );
+          })}
+          {hidden > 0 && (
+            <small>
+              <a
+                href="#events"
+                className="mc-more-scorers"
+                aria-label={t('board.moreScorersHint', { n: hidden })}
+              >
+                {t('board.moreScorers', { n: hidden })}
+              </a>
+            </small>
+          )}
         </div>
       </div>
     );
@@ -336,7 +358,7 @@ function IncidentRow({ i, m, t }: { i: Incident; m: McMatch; t: T }) {
           </small>
         </span>
         <b />
-        <Mark src={team.logo} />
+        <Mark src={team.logo} size={36} />
       </li>
     );
   }
@@ -362,7 +384,7 @@ function IncidentRow({ i, m, t }: { i: Incident; m: McMatch; t: T }) {
         <small>{`${label} · ${extra}`}</small>
       </span>
       <b className="mc-miniscore">{i.score ? pair(i.score[0], i.score[1]) : null}</b>
-      <Mark src={team.logo} />
+      <Mark src={team.logo} size={36} />
     </li>
   );
 }
@@ -471,7 +493,7 @@ function StatCard({
       <div className="mc-cols">
         {[m.home, m.away].map((tm) => (
           <span key={tm.id}>
-            <Mark src={tm.logo} />
+            <Mark src={tm.logo} size={36} />
             <bdi>{tm.name}</bdi>
           </span>
         ))}
