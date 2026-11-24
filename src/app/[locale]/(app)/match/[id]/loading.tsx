@@ -1,19 +1,15 @@
-function Box({ className }: { className?: string }) {
-  return <div className={`rounded-2xl bg-bg-surface-2 ${className ?? ''}`} />;
-}
-
 /**
- * Match-page loading boundary (soft navigation): blank outlines of the page's own cards (header
- * card, tab row, Overview columns), no text, so nothing from the old layout flashes in.
+ * Match-page loading boundary (soft navigation): blank outlines of the match centre's header card,
+ * tab row and two columns, no text, so nothing from another layout flashes in.
  */
 export default function MatchLoading() {
   return (
-    <div className="mx-auto w-full max-w-[1280px] animate-pulse px-4 pb-10 pt-3 md:pt-4">
-      <Box className="h-[237px] md:h-[232px]" />
-      <Box className="mt-4 h-11 rounded-none md:mt-6" />
-      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-6">
-        <Box className="h-40" />
-        <Box className="h-72" />
+    <div className="mx-auto w-full max-w-[1580px] animate-pulse px-[10px] pb-10 pt-3 md:ps-[calc(clamp(216px,17vw,262px)+2.5rem)] md:pe-8">
+      <div className="h-[208px] rounded-lg bg-bg-surface-2 md:h-[220px]" />
+      <div className="mt-2 h-11 bg-bg-surface-2" />
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,1.62fr)_minmax(0,1fr)]">
+        <div className="h-64 rounded-lg bg-bg-surface-2" />
+        <div className="h-40 rounded-lg bg-bg-surface-2" />
       </div>
     </div>
   );

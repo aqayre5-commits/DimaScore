@@ -17,6 +17,7 @@ import { SearchTrigger } from './SearchTrigger';
 import { LangSwitcher } from './LangSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { MobileDrawer } from './MobileDrawer';
+import { MobileCompetitionPicker } from './MobileCompetitionPicker';
 
 function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void }) {
   const t = useTranslations('megaMenu');
@@ -146,6 +147,8 @@ export function Topbar() {
 
         {/* Right actions */}
         <div className="flex items-center gap-1">
+          {/* Mobile only: competition picker (template top bar "PL ▾"); match/competition pages. */}
+          <MobileCompetitionPicker />
           <SearchTrigger />
           <div className="hidden items-center gap-1 md:flex">
             <LangSwitcher />

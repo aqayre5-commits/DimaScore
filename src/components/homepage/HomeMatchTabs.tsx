@@ -390,7 +390,7 @@ export function HomeMatchTabs({ live, upcoming, results, locale, now: serverNow,
   const [activeTab, setActiveTab] = useState<Tab>('all');
   const [dateOffset, setDateOffset] = useState(0);
   const mounted = useMounted();
-  const { followedTeams, followedComps, toggleComp } = useFollows();
+  const { followedTeams, followedComps, followedMatches, toggleComp } = useFollows();
   const tHome = useTranslations('homepage');
 
   // Selected date in the viewer's local zone (matches the viewer-local labels/separators).
@@ -488,12 +488,13 @@ export function HomeMatchTabs({ live, upcoming, results, locale, now: serverNow,
       labels.all)
     : labels.all;
 
-  // "Your matches" — followed teams'/competitions' fixtures for the selected day, pinned above the
+  // "Your matches" — saved matches and followed teams'/competitions' fixtures for the selected day, pinned above the
   // list on the All tab (no chip filter) and deduped from the main list so nothing appears twice.
   const isYours = (f: HomeFixture) =>
     (f.homeTeamId != null && followedTeams.has(f.homeTeamId)) ||
     (f.awayTeamId != null && followedTeams.has(f.awayTeamId)) ||
-    followedComps.has(f.competition.id);
+    followedComps.has(f.competition.id) ||
+    followedMatches.has(f.id);
   const showYourGroup = mounted && activeTab === 'all' && effectiveComp === null;
   const yourGrouped = showYourGroup
     ? groupByCompetition(dayFixtures.filter(isYours), now, followedComps)

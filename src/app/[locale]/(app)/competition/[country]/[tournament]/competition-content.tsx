@@ -17,6 +17,8 @@ import { getCompetitionById } from '@/lib/db/queries/league';
 import { renderCupPage } from './render-cup-page';
 import { renderLeaguePage } from './render-league-page';
 import { renderGenericCupPage } from './render-generic-cup-page';
+import { NavCompetitionRegister } from '@/components/chrome/NavCompetitionRegister';
+import { getRailProps } from '@/components/match/centre/rail-props';
 
 /** Normalize slug → competition entry. Locale is unused; aliases share one ID. */
 export function resolveEntry(tournament: string, locale?: Locale): MegaMenuEntry | undefined {
@@ -58,7 +60,19 @@ interface CompetitionContentProps {
  * and dispatches. Reads NO request-time dynamic APIs (no searchParams), so the
  * default route (season undefined) prerenders fully static.
  */
-export async function CompetitionContent({
+export async function CompetitionContent(props: CompetitionContentProps) {
+  // The mobile navbar competition picker (template "PL ▾") gets this competition and the rail.
+  const entry = resolveEntry(decodeURIComponent(props.rawTournament));
+  const nav = await getRailProps(props.rawLocale as Locale, entry?.competitionId ?? -1);
+  return (
+    <>
+      <NavCompetitionRegister current={nav.current} rail={nav.rail} />
+      <CompetitionBody {...props} />
+    </>
+  );
+}
+
+async function CompetitionBody({
   rawLocale,
   rawCountry,
   rawTournament,
