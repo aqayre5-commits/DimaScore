@@ -1062,7 +1062,7 @@
       "penaltyShort": "(P)",
       "ownGoalShort": "(OG)",
       "moreScorers": "+{n}",
-      "moreScorersHint": "{n} more goals, view all events"
+      "moreScorersHint": "{n} more, view all events"
     },
     "tabs": {
       "overview": "Overview",

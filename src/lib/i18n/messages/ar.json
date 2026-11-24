@@ -1062,7 +1062,7 @@
       "penaltyShort": "(ر.ج)",
       "ownGoalShort": "(ع.ك)",
       "moreScorers": "+{n}",
-      "moreScorersHint": "عدد {n} أهداف إضافية، عرض كل الأحداث"
+      "moreScorersHint": "عدد {n} إضافيين، عرض كل الأحداث"
     },
     "tabs": {
       "overview": "نظرة عامة",

@@ -18,6 +18,7 @@ import {
   metric,
   METRIC_GROUPS,
   minuteText,
+  formatHeroScorerMinutes,
   heroScorers,
   tableRows,
   type Incident,
@@ -159,16 +160,15 @@ function Board({
           <TeamName team={tm} />
         </strong>
         <div className="mc-scorers">
-          {shown.map((g) => {
-            const tag =
-              g.kind === 'penaltyGoal'
-                ? t('board.penaltyShort')
-                : g.kind === 'ownGoal'
-                  ? t('board.ownGoalShort')
-                  : '';
+          {shown.map((line) => {
+            const tags = {
+              penalty: t('board.penaltyShort'),
+              ownGoal: t('board.ownGoalShort'),
+            };
             return (
-              <small key={g.key}>
-                {[g.player ?? '', minuteText(g), tag].filter(Boolean).join(' ')}
+              <small key={line.key} dir="ltr">
+                {line.player ? `${line.player} ` : null}
+                <bdi dir="ltr">{formatHeroScorerMinutes(line, tags)}</bdi>
               </small>
             );
           })}

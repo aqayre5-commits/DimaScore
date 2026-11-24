@@ -19,3 +19,17 @@ New `--event-crest` token (Upcoming cards keep `--coming-crest` unchanged):
 | Phone (≤767px) | 21px | **28px** |
 
 Hero crests are unchanged from #61 (107px at 1440, 74px at 1000, 64px at 390/360, 56px under 360).
+
+## Hero scorers: one line per player
+
+Repeat scorers are grouped: one line, minutes listed horizontally in chronological order, lines ordered by each player's first goal. The cap of 5 counts player lines; +N is hidden players.
+
+Format (confirmed): the (P)/(OG) mark sits only after that minute, with a non-breaking space so it does not wrap away from it.
+
+- `Jordan Henderson 2′ 70′`
+- `João Pedro 46′ 67′`
+- `Bruno Fernandes 40′ 61′ (P) 68′` (goal + penalty + goal)
+- `Jacob Greaves 56′ (OG)`
+- Own goals stay on a separate line from the same player's normal goals.
+
+Minutes are an LTR run in every locale (en/fr/ar). Western digits and the prime mark are unchanged from the rest of the site. Long minute lists wrap between minutes without overflowing.

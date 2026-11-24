@@ -1062,7 +1062,7 @@
       "penaltyShort": "(P)",
       "ownGoalShort": "(csc)",
       "moreScorers": "+{n}",
-      "moreScorersHint": "{n} buts de plus, voir tous les événements"
+      "moreScorersHint": "{n} de plus, voir tous les événements"
     },
     "tabs": {
       "overview": "Aperçu",
