@@ -12,9 +12,10 @@
   "tsconfig": "tsconfig.json",
   "observability": { "enabled": true },
   "vars": {
-    // shadow = read API-Football + Neon, log what it WOULD write/push; off = stop ticking.
+    // off = stop; shadow = read-only compare; live = write + Pusher (requires DB_READ_ONLY != "1").
     "POLLER_MODE": "shadow",
     // Every Neon query runs in a READ ONLY transaction (src/lib/db/neon-ro.ts): Postgres rejects writes.
+    // Must be unset or "0" before POLLER_MODE=live (live tick refuses to run otherwise).
     "DB_READ_ONLY": "1"
   },
   "durable_objects": { "bindings": [{ "name": "POLLER", "class_name": "LivePoller" }] },

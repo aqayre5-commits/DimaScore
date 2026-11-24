@@ -1,20 +1,26 @@
 /**
- * dimascore-poller — Cloudflare replacement for the Railway live poller, step 1 = SHADOW only.
- * One Durable Object instance runs an alarm loop with Railway's cadence: next tick in 15 s while a
- * tracked match is live, else 60 s, so at most 4 API-Football calls/minute (one per tick).
- * The cron is a watchdog that only re-arms a missing alarm. POLLER_MODE=off stops all ticking.
+ * dimascore-poller — Cloudflare replacement for the Railway live poller.
+ * POLLER_MODE=off | shadow | live
+ *   off:    alarm not re-armed; watchdog deletes it.
+ *   shadow: read API-Football + Neon, log what it WOULD write/push (DB_READ_ONLY=1).
+ *   live:   same DB upserts and Pusher events as workers/live-poller; DB_READ_ONLY must not be "1".
+ * Cadence: 15 s while a tracked match is live, else 60 s; on API-Football 429s, back off to 60 s
+ * then recover to 15 s on the next clean tick with tracked matches.
  */
 import { DurableObject } from 'cloudflare:workers';
 import { shadowTick } from './shadow';
+import { liveTick } from './live';
+import { isApiFootballRateLimit } from './rate-limit';
 
 interface Env {
   POLLER: DurableObjectNamespace;
   POLLER_MODE: string;
+  DB_READ_ONLY?: string;
 }
 
 const LIVE_INTERVAL_MS = 15_000;
 const IDLE_INTERVAL_MS = 60_000;
-const MIN_SPACING_MS = 14_500; // never two ticks (= API calls) closer than this
+const MIN_SPACING_MS = 14_500; // never two ticks (= live-all calls) closer than this
 const TICK_TIMEOUT_MS = 30_000;
 
 interface State {
@@ -23,6 +29,10 @@ interface State {
   totalCalls: number;
   lastEventSync: Record<string, number>;
   last?: unknown;
+}
+
+function isRunningMode(mode: string | undefined): mode is 'shadow' | 'live' {
+  return mode === 'shadow' || mode === 'live';
 }
 
 async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
@@ -54,14 +64,14 @@ export class LivePoller extends DurableObject<Env> {
   async ensureAlarm() {
     const mode = this.env.POLLER_MODE;
     let alarmAt = await this.ctx.storage.getAlarm();
-    if (mode !== 'shadow') {
+    if (!isRunningMode(mode)) {
       if (alarmAt) await this.ctx.storage.deleteAlarm();
       return { armed: false, alarmAt: null, mode };
     }
     if (!alarmAt) {
       alarmAt = Date.now() + 1_000;
       await this.ctx.storage.setAlarm(alarmAt);
-      console.log(`[shadow] watchdog armed alarm at ${new Date(alarmAt).toISOString()}`);
+      console.log(`[${mode}] watchdog armed alarm at ${new Date(alarmAt).toISOString()}`);
     }
     return { armed: true, alarmAt, mode };
   }
@@ -70,6 +80,7 @@ export class LivePoller extends DurableObject<Env> {
     const s = await this.load();
     return {
       mode: this.env.POLLER_MODE,
+      dbReadOnly: this.env.DB_READ_ONLY ?? '',
       alarmAt: await this.ctx.storage.getAlarm(),
       ...s,
       lastEventSync: undefined,
@@ -77,7 +88,8 @@ export class LivePoller extends DurableObject<Env> {
   }
 
   async alarm() {
-    if (this.env.POLLER_MODE !== 'shadow') return; // off: do not re-arm
+    const mode = this.env.POLLER_MODE;
+    if (!isRunningMode(mode)) return; // off: do not re-arm
     const s = await this.load();
     const now = Date.now();
     let next = IDLE_INTERVAL_MS;
@@ -94,27 +106,45 @@ export class LivePoller extends DurableObject<Env> {
       s.lastTickAt = now;
       const lines: string[] = [];
       try {
-        const r = await withTimeout(
-          shadowTick(s.lastEventSync, (l) => lines.push(l)),
-          TICK_TIMEOUT_MS,
-        );
-        s.totalCalls += r.apiCalls;
-        next = r.trackedCount > 0 ? LIVE_INTERVAL_MS : IDLE_INTERVAL_MS;
-        s.last = { at: new Date(now).toISOString(), ...r, ms: Date.now() - now };
-        console.log(
-          `[${new Date(now).toISOString()}] [shadow] live=${r.liveCount} tracked=${r.trackedCount} would_update=${r.wouldUpdate} would_details=${r.wouldDetails} api_calls=${r.apiCalls} total_calls=${s.totalCalls} next_tick=${next / 1000}s ms=${Date.now() - now} writes=0 pushes=0`,
-        );
+        if (mode === 'shadow') {
+          const r = await withTimeout(shadowTick(s.lastEventSync, (l) => lines.push(l)), TICK_TIMEOUT_MS);
+          s.totalCalls += r.apiCalls;
+          next = r.trackedCount > 0 ? LIVE_INTERVAL_MS : IDLE_INTERVAL_MS;
+          s.last = { at: new Date(now).toISOString(), ...r, ms: Date.now() - now };
+          console.log(
+            `[${new Date(now).toISOString()}] [shadow] live=${r.liveCount} tracked=${r.trackedCount} would_update=${r.wouldUpdate} would_details=${r.wouldDetails} api_calls=${r.apiCalls} total_calls=${s.totalCalls} next_tick=${next / 1000}s ms=${Date.now() - now} writes=0 pushes=0`,
+          );
+        } else {
+          if (this.env.DB_READ_ONLY === '1') {
+            throw new Error('POLLER_MODE=live but DB_READ_ONLY=1 — refusing to tick (would skip writes)');
+          }
+          const r = await withTimeout(liveTick(s.lastEventSync, (l) => lines.push(l)), TICK_TIMEOUT_MS);
+          s.totalCalls += r.apiCalls;
+          if (r.rateLimited) {
+            next = IDLE_INTERVAL_MS;
+            console.warn(
+              `[${new Date(now).toISOString()}] [live] rate-limited — backing off next_tick=60s api_calls=${r.apiCalls} total_calls=${s.totalCalls}`,
+            );
+          } else {
+            next = r.trackedCount > 0 ? LIVE_INTERVAL_MS : IDLE_INTERVAL_MS;
+          }
+          s.last = { at: new Date(now).toISOString(), ...r, ms: Date.now() - now };
+          console.log(
+            `[${new Date(now).toISOString()}] [live] live=${r.liveCount} tracked=${r.trackedCount} updated=${r.updatedCount} details=${r.detailsCount} api_calls=${r.apiCalls} total_calls=${s.totalCalls} next_tick=${next / 1000}s ms=${Date.now() - now} writes=${r.updatedCount} pushes=${r.pushes}${r.rateLimited ? ' rate_limited=1' : ''}`,
+          );
+        }
         for (const l of lines) console.log(l);
       } catch (err) {
-        // Count the attempted call; retry on the live cadence like Railway's catch branch.
         s.totalCalls += 1;
-        next = LIVE_INTERVAL_MS;
+        const rateLimited = isApiFootballRateLimit(err);
+        next = rateLimited ? IDLE_INTERVAL_MS : LIVE_INTERVAL_MS;
         s.last = {
           at: new Date(now).toISOString(),
           error: err instanceof Error ? err.message : String(err),
+          rateLimited,
         };
         console.error(
-          `[${new Date(now).toISOString()}] [shadow] poll error: ${err instanceof Error ? err.message : err} total_calls=${s.totalCalls}`,
+          `[${new Date(now).toISOString()}] [${mode}] poll error: ${err instanceof Error ? err.message : err} total_calls=${s.totalCalls}${rateLimited ? ' — backing off next_tick=60s' : ''}`,
         );
       }
     } finally {
