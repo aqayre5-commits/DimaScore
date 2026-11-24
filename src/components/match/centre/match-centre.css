@@ -45,7 +45,6 @@
 .mc .mc-kicker,
 .mc .mc-league,
 .mc .mc-meta,
-.mc .mc-team,
 .mc .mc-cols,
 .mc .mc-cols > span {
   display: flex;
@@ -85,40 +84,76 @@
 }
 .mc .mc-scoreline {
   display: grid;
-  align-items: center;
+  align-items: start; /* names + crests stay level; scorer lists grow downward */
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: clamp(12px, 3vw, 46px);
   padding: 12px 2% 21px;
   direction: ltr;
 }
 .mc .mc-team {
+  display: grid;
+  grid-template-columns: auto minmax(0, auto);
+  grid-template-rows: auto auto;
   justify-content: center;
-  gap: clamp(12px, 1.5vw, 22px);
+  justify-items: start;
+  column-gap: clamp(12px, 1.5vw, 22px);
+  row-gap: 4px;
   text-align: start;
   min-width: 0;
 }
 .mc .mc-team:last-child {
-  flex-direction: row-reverse;
+  grid-template-columns: minmax(0, auto) auto;
+  justify-items: end;
   text-align: end;
 }
 /* Hero crests in proportion to the score (69px) and names (32px): 72px → 112px (106px at 1440). */
 .mc .mc-team > .mark {
-  width: clamp(72px, 7.4vw, 112px);
-  height: clamp(72px, 7.4vw, 112px);
+  width: var(--hero-crest);
+  height: var(--hero-crest);
   object-fit: contain;
   flex: none;
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  align-self: start;
 }
-.mc .mc-team > div {
-  min-width: 0;
+.mc .mc-team:last-child > .mark {
+  grid-column: 2;
 }
-.mc .mc-team strong {
+.mc .mc-team > strong {
   display: block;
+  grid-row: 1;
+  grid-column: 2;
+  align-self: start;
+  /* Start the name on a shared baseline, optically centred with the crest. Scorers follow immediately. */
+  padding-top: calc((var(--hero-crest) - 1.12em) / 2);
+  min-width: 0;
   overflow-wrap: anywhere;
   hyphens: auto;
   font-size: clamp(22px, 2.05vw, 32px);
   font-weight: 750;
   letter-spacing: -0.045em;
   line-height: 1.12;
+}
+.mc .mc-team:last-child > strong,
+.mc .mc-team:last-child > .mc-scorers {
+  grid-column: 1;
+}
+.mc .mc-scorers {
+  grid-row: 2;
+  grid-column: 2;
+  min-width: 0;
+}
+.mc .mc-more-scorers {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 650;
+}
+.mc .mc-more-scorers:hover {
+  text-decoration: underline;
 }
 .mc .mc-team small {
   display: block;
@@ -129,8 +164,10 @@
   display: flex;
   align-items: center;
   flex-direction: column;
+  justify-content: center;
   gap: 3px;
   text-align: center;
+  min-height: var(--hero-crest);
 }
 .mc .mc-phase {
   font-size: 13px;
@@ -199,7 +236,7 @@
 }
 .mc .mc-incident {
   display: grid;
-  grid-template-columns: 38px 23px minmax(0, 1fr) auto var(--coming-crest);
+  grid-template-columns: 38px 23px minmax(0, 1fr) auto var(--event-crest);
   align-items: center;
   padding: 9px var(--card-inset, 14px);
   gap: 10px;
@@ -210,11 +247,13 @@
 .mc .mc-statcard h3 {
   border-top: 1px solid var(--divider);
 }
-/* Team crests in event rows, key moments and key stats: the Upcoming matches card size. */
+/* Team crests in event rows, key moments and key stats — slightly larger than Upcoming cards. */
 .mc .mc-incident > .mark,
 .mc .mc-cols .mark {
-  width: var(--coming-crest);
-  height: var(--coming-crest);
+  width: var(--event-crest);
+  height: var(--event-crest);
+  object-fit: contain;
+  flex: none;
 }
 .mc .mc-event-name strong {
   font-size: 16px;
@@ -420,6 +459,8 @@
   --rail-crest: 32px;
   --list-crest: 38px;
   --coming-crest: 28px;
+  --hero-crest: clamp(72px, 7.4vw, 112px);
+  --event-crest: 36px;
   --icon: 22px;
   --hit: 44px;
   --rail: clamp(216px, 17vw, 262px);
@@ -729,6 +770,7 @@
     --edge: 10px;
     --title-size: 19px;
     --crest: 48px;
+    --hero-crest: 56px;
   }
   .mc .sooncard {
     padding-inline: 6px;
@@ -744,6 +786,7 @@
     --crest: 70px;
     --row-crest: 19px;
     --coming-crest: 20px;
+    --event-crest: 28px;
     --list-crest: 24px;
   }
   .mc .cardtop {
@@ -1069,6 +1112,7 @@
 @media (max-width: 767px) {
   .mc {
     --ds-period-size: 13px;
+    --hero-crest: 64px;
   }
   .mc .mc-page {
     --pitch-height: clamp(380px, 58svh, 464px);
@@ -1097,14 +1141,23 @@
   }
   .mc .mc-team,
   .mc .mc-team:last-child {
+    display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
     gap: 4px;
     text-align: center;
-    align-self: start; /* crests line up even when only one side lists scorers */
+    align-self: start; /* crests and names stay at the top; scorers grow down */
+    --hero-crest: 64px;
   }
-  .mc .mc-team > .mark {
-    width: 64px;
-    height: 64px;
+  .mc .mc-team > .mark,
+  .mc .mc-team:last-child > .mark {
+    width: var(--hero-crest);
+    height: var(--hero-crest);
+  }
+  .mc .mc-team > strong,
+  .mc .mc-team:last-child > strong {
+    padding-top: 0;
   }
   .mc .mc-team strong {
     font-size: 17px;
@@ -1112,6 +1165,9 @@
   .mc .mc-team small {
     font-size: 11px;
     margin-top: 2px;
+  }
+  .mc .mc-score {
+    min-height: calc(var(--hero-crest) + 4px + 20px);
   }
   .mc .mc-score strong {
     font-size: 39px;
@@ -1135,7 +1191,7 @@
   .mc .mc-incident {
     padding: 8px 9px;
     gap: 6px;
-    grid-template-columns: 29px 22px minmax(0, 1fr) auto var(--coming-crest);
+    grid-template-columns: 29px 22px minmax(0, 1fr) auto var(--event-crest);
   }
   .mc .mc-event-name strong {
     font-size: 14px;
@@ -1174,6 +1230,7 @@
     --crest: 56px;
     --row-crest: 17px;
     --coming-crest: 21px;
+    --event-crest: 28px;
     --list-crest: 28px;
     --rail-crest: 26px;
     --icon: 19px;
@@ -2269,8 +2326,7 @@ html:not([data-theme='light']) .mc .save.on .ic {
   height: 44px;
 }
 @media (max-width: 359px) {
-  .mc .mc-team > .mark {
-    width: 56px;
-    height: 56px;
+  .mc {
+    --hero-crest: 56px;
   }
 }

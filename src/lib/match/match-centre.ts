@@ -161,6 +161,17 @@ export function scorers(incidents: Incident[], side: Side): Incident[] {
   return incidents.filter((i) => isGoal(i.kind) && i.side === side);
 }
 
+/** Max scorer lines on the hero card; the rest is a quiet +N that links to Events. */
+export const HERO_SCORER_LIMIT = 5;
+
+export function heroScorers(incidents: Incident[], side: Side) {
+  const all = scorers(incidents, side);
+  return {
+    shown: all.slice(0, HERO_SCORER_LIMIT),
+    hidden: Math.max(0, all.length - HERO_SCORER_LIMIT),
+  };
+}
+
 // ── Stats ─────────────────────────────────────────────────────────────────────────────────
 
 export type MetricKey =

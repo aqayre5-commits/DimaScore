@@ -1058,7 +1058,11 @@
       "awarded": "Sur tapis vert",
       "save": "Ajouter aux favoris",
       "remove": "Retirer des favoris",
-      "matchweek": "Journée {n}"
+      "matchweek": "Journée {n}",
+      "penaltyShort": "(P)",
+      "ownGoalShort": "(csc)",
+      "moreScorers": "+{n}",
+      "moreScorersHint": "{n} buts de plus, voir tous les événements"
     },
     "tabs": {
       "overview": "Aperçu",
