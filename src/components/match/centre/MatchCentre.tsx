@@ -58,10 +58,27 @@ function phaseOf(code: string, server: Phase): Phase {
 
 type T = ReturnType<typeof useTranslations<'matchCentre'>>;
 
-const Mark = ({ src, className = 'mark' }: { src: string | null; className?: string }) =>
+const Mark = ({
+  src,
+  className = 'mark',
+  size,
+}: {
+  src: string | null;
+  className?: string;
+  /** Intrinsic box (width/height attributes) for above-the-fold crests; CSS sets the shown size. */
+  size?: number;
+}) =>
   src ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img className={className} src={src} alt="" loading="lazy" decoding="async" />
+    <img
+      className={className}
+      src={src}
+      alt=""
+      width={size}
+      height={size}
+      loading={size ? 'eager' : 'lazy'}
+      decoding="async"
+    />
   ) : (
     <span className={`${className} fallback`} aria-hidden="true" />
   );
@@ -136,7 +153,7 @@ function Board({
     const tm = side === 0 ? m.home : m.away;
     return (
       <div className="mc-team">
-        <Mark src={tm.logo} />
+        <Mark src={tm.logo} size={112} />
         <div>
           <strong>
             <TeamName team={tm} />
@@ -411,6 +428,20 @@ function fullFeed(
 
 // ── Stats ────────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Comparison bar: the side with the higher value is green, the other grey; a tie is grey on both
+ * sides (no leader). Home is the first segment, so it sits on the right in Arabic.
+ */
+function Bar({ share }: { share: number }) {
+  const lead = share > 50 ? 'home' : share < 50 ? 'away' : 'tie';
+  return (
+    <div className="mc-bar" data-lead={lead} aria-hidden="true">
+      {share > 0 && <i className="mc-bar-home" style={{ width: `${share}%` }} />}
+      {share < 100 && <i className="mc-bar-away" />}
+    </div>
+  );
+}
+
 function MetricRow({ row, t }: { row: Metric; t: T }) {
   return (
     <div className="mc-metric">
@@ -419,11 +450,7 @@ function MetricRow({ row, t }: { row: Metric; t: T }) {
         <span>{t(`stats.${row.key}`)}</span>
         <bdi>{row.awayText}</bdi>
       </div>
-      {row.share != null && (
-        <div className="mc-bar" aria-hidden="true">
-          <i style={{ width: `${row.share}%` }} />
-        </div>
-      )}
+      {row.share != null && <Bar share={row.share} />}
     </div>
   );
 }

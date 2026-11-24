@@ -61,8 +61,13 @@ export function incidentFilter(k: IncidentKind): IncidentFilter | null {
   return null;
 }
 
-const nameOf = (n: { name: Record<string, string> } | null, locale: string) =>
-  n ? (n.name[locale] ?? n.name.en ?? Object.values(n.name)[0] ?? null) : null;
+// Defensive: the events feed can carry a player whose name map is missing (unknown player row,
+// or an older cached API response), and one bad row must not take the whole match centre down.
+const nameOf = (n: { name: Record<string, string> | null } | null, locale: string) => {
+  const names = n?.name;
+  if (!names || typeof names !== 'object') return null;
+  return names[locale] || names.en || Object.values(names).find((v) => !!v) || null;
+};
 
 /**
  * Events in chronological order as incidents. The substitution feed is not consistent about which

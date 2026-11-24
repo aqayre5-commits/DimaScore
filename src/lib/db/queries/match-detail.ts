@@ -207,13 +207,15 @@ export async function getMatchEvents(
     detail: r.detail,
     comments: r.comments,
     teamId: r.teamId != null ? Number(r.teamId) : null,
+    // LEFT JOIN: an event can name a player the players table does not have yet (name NULL).
+    // Keep the id and an empty name map so consumers never index into null.
     player:
       r.playerId != null
-        ? { id: Number(r.playerId), name: r.playerName as Record<string, string> }
+        ? { id: Number(r.playerId), name: (r.playerName ?? {}) as Record<string, string> }
         : null,
     assist:
       r.assistPlayerId != null
-        ? { id: Number(r.assistPlayerId), name: r.assistName as Record<string, string> }
+        ? { id: Number(r.assistPlayerId), name: (r.assistName ?? {}) as Record<string, string> }
         : null,
   }));
 }

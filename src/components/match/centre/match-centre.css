@@ -101,13 +101,20 @@
   flex-direction: row-reverse;
   text-align: end;
 }
+/* Hero crests in proportion to the score (69px) and names (32px): 72px → 112px (106px at 1440). */
 .mc .mc-team > .mark {
-  width: clamp(56px, 5.6vw, 84px);
-  height: clamp(56px, 5.6vw, 84px);
+  width: clamp(72px, 7.4vw, 112px);
+  height: clamp(72px, 7.4vw, 112px);
   object-fit: contain;
   flex: none;
 }
+.mc .mc-team > div {
+  min-width: 0;
+}
 .mc .mc-team strong {
+  display: block;
+  overflow-wrap: anywhere;
+  hyphens: auto;
   font-size: clamp(22px, 2.05vw, 32px);
   font-weight: 750;
   letter-spacing: -0.045em;
@@ -192,19 +199,22 @@
 }
 .mc .mc-incident {
   display: grid;
-  grid-template-columns: 38px 23px minmax(0, 1fr) auto 23px;
+  grid-template-columns: 38px 23px minmax(0, 1fr) auto var(--coming-crest);
   align-items: center;
   padding: 9px var(--card-inset, 14px);
   gap: 10px;
   font-size: 15px;
 }
 .mc .mc-feed li + li,
-.mc .mc-metric + .mc-metric {
-  border-top: 1px solid var(--line);
+.mc .mc-metric + .mc-metric,
+.mc .mc-statcard h3 {
+  border-top: 1px solid var(--divider);
 }
-.mc .mc-incident > .mark {
-  width: 22px;
-  height: 22px;
+/* Team crests in event rows, key moments and key stats: the Upcoming matches card size. */
+.mc .mc-incident > .mark,
+.mc .mc-cols .mark {
+  width: var(--coming-crest);
+  height: var(--coming-crest);
 }
 .mc .mc-event-name strong {
   font-size: 16px;
@@ -235,15 +245,11 @@
   justify-content: space-between;
   padding: 13px var(--card-inset);
   gap: 8px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--divider);
   font-weight: 700;
 }
 .mc .mc-cols > span {
   gap: 8px;
-}
-.mc .mc-cols .mark {
-  width: 22px;
-  height: 22px;
 }
 .mc .mc-statcard h3 {
   padding: 7px var(--card-inset);
@@ -264,17 +270,24 @@
   font-weight: 710;
 }
 .mc .mc-bar {
-  margin-top: 6px;
-  border-radius: 4px;
-  overflow: hidden;
-  height: 4px;
-  background: #a9b1b6;
+  margin-top: 7px;
+  height: 6px;
   display: flex;
+  gap: 2px;
 }
 .mc .mc-bar i {
   display: block;
   height: 100%;
-  background: #427d9f;
+  border-radius: 3px;
+  background: var(--bar-rest);
+}
+.mc .mc-bar .mc-bar-away {
+  flex: 1;
+}
+/* Leading side green, other side grey; a tie stays grey on both sides. */
+.mc .mc-bar[data-lead='home'] .mc-bar-home,
+.mc .mc-bar[data-lead='away'] .mc-bar-away {
+  background: var(--green);
 }
 .mc .mc-choices {
   display: flex;
@@ -389,6 +402,9 @@
   --mint: #e2f4e7;
   --muted: #52605b;
   --line: #cdd5d2;
+  /* Row dividers inside cards (events, key moments, stats) and the grey bar segment. */
+  --divider: var(--light);
+  --bar-rest: var(--border);
   --light: #e8ecea;
   --hover: #f4f8f5;
   --border: #a4b3ac;
@@ -1084,10 +1100,11 @@
     flex-direction: column;
     gap: 4px;
     text-align: center;
+    align-self: start; /* crests line up even when only one side lists scorers */
   }
   .mc .mc-team > .mark {
-    width: 46px;
-    height: 46px;
+    width: 64px;
+    height: 64px;
   }
   .mc .mc-team strong {
     font-size: 17px;
@@ -1118,11 +1135,7 @@
   .mc .mc-incident {
     padding: 8px 9px;
     gap: 6px;
-    grid-template-columns: 29px 22px minmax(0, 1fr) auto 18px;
-  }
-  .mc .mc-incident > .mark {
-    width: 17px;
-    height: 17px;
+    grid-template-columns: 29px 22px minmax(0, 1fr) auto var(--coming-crest);
   }
   .mc .mc-event-name strong {
     font-size: 14px;
@@ -1361,12 +1374,6 @@ html:not([data-theme='light']) .mc .railpanel {
 }
 html:not([data-theme='light']) .mc .mc-phase.playing {
   color: #ff91a2;
-}
-html:not([data-theme='light']) .mc .mc-bar {
-  background: #56605b;
-}
-html:not([data-theme='light']) .mc .mc-bar i {
-  background: #7fb6d6;
 }
 html:not([data-theme='light']) .mc .fallback {
   color: #d4ded8;
@@ -2260,4 +2267,10 @@ html:not([data-theme='light']) .mc .save.on .ic {
 .mc .dialogbody .railtop .iconbtn {
   width: 44px;
   height: 44px;
+}
+@media (max-width: 359px) {
+  .mc .mc-team > .mark {
+    width: 56px;
+    height: 56px;
+  }
 }
