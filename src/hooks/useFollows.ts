@@ -3,16 +3,17 @@ import { useCallback, useSyncExternalStore } from 'react';
 /**
  * Client-only "follow" store (no auth) backed by localStorage, exposed via useSyncExternalStore so
  * it's SSR-safe (server snapshot is empty) and hydration-safe with no setState-in-effect. Tracks
- * followed team + competition ids and syncs across tabs via the `storage` event.
+ * followed team, competition and match ids (matches: the match-centre star) and syncs across tabs via the `storage` event.
  */
 const STORAGE_KEY = 'dimascore:follows';
 
 interface Follows {
   teams: number[];
   comps: number[];
+  matches: number[];
 }
 
-const EMPTY: Follows = { teams: [], comps: [] };
+const EMPTY: Follows = { teams: [], comps: [], matches: [] };
 
 // Snapshot cache: getSnapshot must return a stable reference while localStorage is unchanged,
 // otherwise useSyncExternalStore re-renders forever.
@@ -25,7 +26,7 @@ function parse(raw: string | null): Follows {
     const p = JSON.parse(raw);
     const nums = (v: unknown): number[] =>
       Array.isArray(v) ? v.filter((n): n is number => typeof n === 'number') : [];
-    return { teams: nums(p?.teams), comps: nums(p?.comps) };
+    return { teams: nums(p?.teams), comps: nums(p?.comps), matches: nums(p?.matches) };
   } catch {
     return EMPTY;
   }
@@ -85,10 +86,21 @@ export function useFollows() {
     setFollows({ ...cur, comps: has ? cur.comps.filter((x) => x !== id) : [...cur.comps, id] });
   }, []);
 
+  const toggleMatch = useCallback((id: number) => {
+    const cur = getSnapshot();
+    const has = cur.matches.includes(id);
+    setFollows({
+      ...cur,
+      matches: has ? cur.matches.filter((x) => x !== id) : [...cur.matches, id],
+    });
+  }, []);
+
   return {
     followedTeams: new Set(follows.teams),
     followedComps: new Set(follows.comps),
+    followedMatches: new Set(follows.matches),
     toggleTeam,
     toggleComp,
+    toggleMatch,
   };
 }
