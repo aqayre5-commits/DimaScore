@@ -578,6 +578,11 @@
   },
   "leaguePage": {
     "standings": "Standings",
+    "noStatsData": "Statistics not available for this competition",
+    "cleanSheets": "Clean Sheets",
+    "playersMeta": "{n} players",
+    "throughDate": "Through {date}",
+    "emptyCleanSheets": "No clean-sheet data for this season.",
     "fixtures": "Matches",
     "stats": "Stats",
     "details": "Details",

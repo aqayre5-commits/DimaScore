@@ -578,6 +578,11 @@
   },
   "leaguePage": {
     "standings": "الترتيب",
+    "noStatsData": "الإحصائيات غير متوفرة لهذه المسابقة",
+    "cleanSheets": "شباك نظيفة",
+    "playersMeta": "{n} لاعبًا",
+    "throughDate": "حتى {date}",
+    "emptyCleanSheets": "لا تتوفر بيانات الشباك النظيفة لهذا الموسم.",
     "fixtures": "المباريات",
     "stats": "الإحصائيات",
     "details": "التفاصيل",

@@ -344,6 +344,26 @@ export interface TopPlayerRow {
   assists: number;
 }
 
+/** Prefer firstname + lastname; then a non-abbreviated i18n name; then the stats-feed name. */
+export function officialPlayerDisplayName(opts: {
+  firstname?: string | null;
+  lastname?: string | null;
+  nameI18n?: Record<string, string> | null;
+  locale: string;
+  fallback?: string | null;
+}): string {
+  const full = [opts.firstname, opts.lastname]
+    .filter((s): s is string => !!s && s.trim().length > 0)
+    .join(' ')
+    .trim();
+  if (full) return full;
+  const i18n = opts.nameI18n;
+  const fromJson = (i18n?.[opts.locale] || i18n?.en || Object.values(i18n ?? {})[0] || '').trim();
+  // "E. Haaland" / "M. Salah" — initial plus surname from the feed.
+  if (fromJson && !/^[\p{L}]\.?\s+\S/u.test(fromJson)) return fromJson;
+  return (opts.fallback || fromJson || '').trim();
+}
+
 export async function getTopScorersForLeague(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number,
@@ -355,9 +375,13 @@ export async function getTopScorersForLeague(
     .select({
       playerId: schema.playerSeasonStats.playerId,
       playerSlug: schema.players.slug,
+      firstname: schema.players.firstname,
+      lastname: schema.players.lastname,
+      nameI18n: schema.players.name,
       stats: schema.playerSeasonStats.stats,
       teamId: schema.teams.id,
       teamNameI18n: schema.teams.name,
+      teamLogoUrl: schema.teams.logoUrl,
       teamCountryCode: schema.teams.countryCode,
       teamIsNational: schema.teams.isNational,
     })
@@ -378,7 +402,13 @@ export async function getTopScorersForLeague(
     return {
       playerId: r.playerId,
       playerSlug: r.playerSlug,
-      playerName: (s.playerName as string) ?? '',
+      playerName: officialPlayerDisplayName({
+        firstname: r.firstname,
+        lastname: r.lastname,
+        nameI18n: r.nameI18n as Record<string, string> | null,
+        locale,
+        fallback: (s.playerName as string) ?? '',
+      }),
       playerPhoto: (s.playerPhoto as string) ?? null,
       // The stats JSON carries the feed's English team name; prefer the localised teams row.
       teamName: teamLabel(
@@ -393,7 +423,7 @@ export async function getTopScorersForLeague(
         locale,
         (s.teamName as string) ?? '',
       ),
-      teamLogo: (s.teamLogo as string) ?? null,
+      teamLogo: r.teamLogoUrl ?? (s.teamLogo as string) ?? null,
       goals: Number(s.goals) || 0,
       assists: Number(s.assists) || 0,
     };
@@ -411,9 +441,13 @@ export async function getTopAssistsForLeague(
     .select({
       playerId: schema.playerSeasonStats.playerId,
       playerSlug: schema.players.slug,
+      firstname: schema.players.firstname,
+      lastname: schema.players.lastname,
+      nameI18n: schema.players.name,
       stats: schema.playerSeasonStats.stats,
       teamId: schema.teams.id,
       teamNameI18n: schema.teams.name,
+      teamLogoUrl: schema.teams.logoUrl,
       teamCountryCode: schema.teams.countryCode,
       teamIsNational: schema.teams.isNational,
     })
@@ -434,7 +468,13 @@ export async function getTopAssistsForLeague(
     return {
       playerId: r.playerId,
       playerSlug: r.playerSlug,
-      playerName: (s.playerName as string) ?? '',
+      playerName: officialPlayerDisplayName({
+        firstname: r.firstname,
+        lastname: r.lastname,
+        nameI18n: r.nameI18n as Record<string, string> | null,
+        locale,
+        fallback: (s.playerName as string) ?? '',
+      }),
       playerPhoto: (s.playerPhoto as string) ?? null,
       // The stats JSON carries the feed's English team name; prefer the localised teams row.
       teamName: teamLabel(
@@ -449,7 +489,7 @@ export async function getTopAssistsForLeague(
         locale,
         (s.teamName as string) ?? '',
       ),
-      teamLogo: (s.teamLogo as string) ?? null,
+      teamLogo: r.teamLogoUrl ?? (s.teamLogo as string) ?? null,
       goals: Number(s.goals) || 0,
       assists: Number(s.assists) || 0,
     };
@@ -472,7 +512,10 @@ export async function getEditionTopScorers(
 ): Promise<TopPlayerRow[]> {
   const res = await db.execute(sql`
     SELECT p.id AS player_id, p.slug AS player_slug,
-           COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
+           COALESCE(
+             NULLIF(TRIM(CONCAT(COALESCE(p.firstname, ''), ' ', COALESCE(p.lastname, ''))), ''),
+             COALESCE(p.name->>${locale}, p.name->>'en')
+           ) AS player_name,
            p.photo_url AS player_photo,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
            COALESCE(t.logo_url, tp.logo_url) AS team_logo,
@@ -513,7 +556,10 @@ export async function getEditionTopAssists(
 ): Promise<TopPlayerRow[]> {
   const res = await db.execute(sql`
     SELECT p.id AS player_id, p.slug AS player_slug,
-           COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
+           COALESCE(
+             NULLIF(TRIM(CONCAT(COALESCE(p.firstname, ''), ' ', COALESCE(p.lastname, ''))), ''),
+             COALESCE(p.name->>${locale}, p.name->>'en')
+           ) AS player_name,
            p.photo_url AS player_photo,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
            COALESCE(t.logo_url, tp.logo_url) AS team_logo,
@@ -607,9 +653,13 @@ export async function getTopCardsForLeague(
     .select({
       playerId: schema.playerSeasonStats.playerId,
       playerSlug: schema.players.slug,
+      firstname: schema.players.firstname,
+      lastname: schema.players.lastname,
+      nameI18n: schema.players.name,
       stats: schema.playerSeasonStats.stats,
       teamId: schema.teams.id,
       teamNameI18n: schema.teams.name,
+      teamLogoUrl: schema.teams.logoUrl,
       teamCountryCode: schema.teams.countryCode,
       teamIsNational: schema.teams.isNational,
     })
@@ -630,7 +680,13 @@ export async function getTopCardsForLeague(
     return {
       playerId: r.playerId,
       playerSlug: r.playerSlug,
-      playerName: (s.playerName as string) ?? '',
+      playerName: officialPlayerDisplayName({
+        firstname: r.firstname,
+        lastname: r.lastname,
+        nameI18n: r.nameI18n as Record<string, string> | null,
+        locale,
+        fallback: (s.playerName as string) ?? '',
+      }),
       playerPhoto: (s.playerPhoto as string) ?? null,
       // The stats JSON carries the feed's English team name; prefer the localised teams row.
       teamName: teamLabel(
@@ -645,11 +701,50 @@ export async function getTopCardsForLeague(
         locale,
         (s.teamName as string) ?? '',
       ),
-      teamLogo: (s.teamLogo as string) ?? null,
+      teamLogo: r.teamLogoUrl ?? (s.teamLogo as string) ?? null,
       yellowCards: Number(s.yellowCards) || 0,
       redCards: Number(s.redCards) || 0,
     };
   });
+}
+
+/** Real player count and last finished-match date for the Stats meta row. Never invented. */
+export async function getLeagueStatsMeta(
+  db: NeonHttpDatabase<typeof schema>,
+  competitionId: number,
+  seasonYear: number,
+): Promise<{ playerCount: number; throughAt: string | null }> {
+  const [countRes, dateRes, eventCountRes] = await Promise.all([
+    db.execute(sql`
+      SELECT COUNT(DISTINCT player_id)::int AS n
+      FROM player_season_stats
+      WHERE competition_id = ${competitionId} AND season_year = ${seasonYear}
+    `),
+    db.execute(sql`
+      SELECT MAX(kickoff_at) AS last
+      FROM fixtures
+      WHERE competition_id = ${competitionId}
+        AND season_year = ${seasonYear}
+        AND status_code IN ('FT', 'AET', 'PEN', 'WO', 'AWD')
+    `),
+    db.execute(sql`
+      SELECT COUNT(DISTINCT e.player_id)::int AS n
+      FROM fixture_events e
+      JOIN fixtures f ON f.id = e.fixture_id
+      WHERE f.competition_id = ${competitionId}
+        AND f.season_year = ${seasonYear}
+        AND e.player_id IS NOT NULL
+    `),
+  ]);
+  const official = Number((countRes.rows[0] as { n?: number } | undefined)?.n) || 0;
+  const fromEvents = Number((eventCountRes.rows[0] as { n?: number } | undefined)?.n) || 0;
+  const playerCount = official > 0 ? official : fromEvents;
+  const last = (dateRes.rows[0] as { last?: string | Date | null } | undefined)?.last ?? null;
+  const through = last ? new Date(last) : null;
+  return {
+    playerCount,
+    throughAt: through && !Number.isNaN(through.getTime()) ? through.toISOString() : null,
+  };
 }
 
 /**

@@ -27,11 +27,11 @@ import {
   CompetitionMatchRow,
   StandingsTable,
   PlayerRanking,
+  StatsBoard,
   ClubDetails,
   PeriodSelect,
   mapScorers,
   mapAssists,
-  mapCards,
   usePatchedFixtures,
 } from './CompetitionBits';
 import '../competition-page.css';
@@ -69,6 +69,8 @@ export interface CompetitionPageProps {
   clubs: { id: number; slug: string; name: string; logoUrl: string | null }[];
   tableCaption?: string;
   todayKey: string;
+  statsPlayerCount?: number;
+  statsThroughLabel?: string | null;
 }
 
 const TAB_KEYS = ['overview', 'fixtures', 'standings', 'stats', 'teams'] as const;
@@ -130,6 +132,8 @@ export function CompetitionPage({
   clubs,
   tableCaption,
   todayKey,
+  statsPlayerCount = 0,
+  statsThroughLabel = null,
 }: CompetitionPageProps) {
   const t = useTranslations('leaguePage');
   const rootRef = useRef<HTMLDivElement>(null);
@@ -154,8 +158,11 @@ export function CompetitionPage({
 
   const matchweeks = useMemo(
     () =>
-      buildMatchweekOptions(patched, rounds, locale, (n, label) =>
-        localizeRound(label, locale) || t('roundNumber', { n }),
+      buildMatchweekOptions(
+        patched,
+        rounds,
+        locale,
+        (n, label) => localizeRound(label, locale) || t('roundNumber', { n }),
       ),
     [patched, rounds, locale, t],
   );
@@ -167,7 +174,10 @@ export function CompetitionPage({
   );
   const weekFixtures = useMemo(() => {
     const ids = new Set(currentWeek?.fixtureIds ?? []);
-    const inWeek = ids.size > 0 ? patched.filter((f) => ids.has(f.id)) : patched.filter((f) => f.roundNumber === round);
+    const inWeek =
+      ids.size > 0
+        ? patched.filter((f) => ids.has(f.id))
+        : patched.filter((f) => f.roundNumber === round);
     return filterFixtures(inWeek, filter, now);
   }, [patched, currentWeek, round, filter, now]);
   const weekGroups = useMemo(() => groupFixturesByDay(weekFixtures), [weekFixtures]);
@@ -208,7 +218,7 @@ export function CompetitionPage({
 
   const visibleTabs: { key: TabKey; hash: string; label: string }[] = [
     { key: 'overview', hash: hashes.overview, label: t('overviewTab') },
-    { key: 'fixtures', hash: hashes.fixtures, label: t('fixtures') },
+    { key: 'fixtures', hash: hashes.fixtures, label: t('viewFixtures') },
     { key: 'standings', hash: hashes.standings, label: t('tableTab') },
     { key: 'stats', hash: hashes.stats, label: t('stats') },
   ];
@@ -299,15 +309,14 @@ export function CompetitionPage({
               {dayFixtures.length === 0 ? (
                 <p className="pl-empty">{t('noFixturesOnDay')}</p>
               ) : (
-                dayFixtures.map((f) => <CompetitionMatchRow key={f.id} fixture={f} locale={locale} />)
+                dayFixtures.map((f) => (
+                  <CompetitionMatchRow key={f.id} fixture={f} locale={locale} />
+                ))
               )}
             </section>
             <section className="pl-summary">
               <div className="pl-head">
                 <h2>{t('standings')}</h2>
-                <a className="link" href={`#${hashes.standings}`} onClick={(e) => { e.preventDefault(); select('standings'); }}>
-                  {t('viewStandings')}
-                </a>
               </div>
               {standings.length > 0 ? (
                 <StandingsTable
@@ -324,7 +333,14 @@ export function CompetitionPage({
             <section className="pl-leaders">
               <div className="pl-head">
                 <h2>{t('topScorers')}</h2>
-                <a className="link" href={`#${hashes.stats}`} onClick={(e) => { e.preventDefault(); select('stats'); }}>
+                <a
+                  className="link"
+                  href={`#${hashes.stats}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    select('stats');
+                  }}
+                >
                   {t('allStats')}
                 </a>
               </div>
@@ -421,12 +437,14 @@ export function CompetitionPage({
               {topScorers.length + topAssists.length + topCards.length === 0 ? (
                 <p className="pl-empty">{t('comingSoon')}</p>
               ) : (
-                <>
-                  <PlayerRanking title={t('goals')} players={mapScorers(topScorers)} locale={locale} />
-                  <PlayerRanking title={t('assists')} players={mapAssists(topAssists)} locale={locale} />
-                  <PlayerRanking title={t('yellowCards')} players={mapCards(topCards, 'yellow')} locale={locale} />
-                  <PlayerRanking title={t('redCards')} players={mapCards(topCards, 'red')} locale={locale} />
-                </>
+                <StatsBoard
+                  scorers={mapScorers(topScorers)}
+                  assists={mapAssists(topAssists)}
+                  cards={topCards}
+                  locale={locale}
+                  playerCount={statsPlayerCount}
+                  throughLabel={statsThroughLabel}
+                />
               )}
             </div>
             <aside className="pl-side pl-aux-desktop">{rail}</aside>
@@ -446,4 +464,3 @@ export function CompetitionPage({
     </div>
   );
 }
-
