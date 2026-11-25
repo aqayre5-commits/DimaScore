@@ -8,6 +8,7 @@ import { getFifaRankingTop, type ResolvedFifaRankingRow } from '@/lib/constants/
 import { timedQuery } from '@/lib/db/timing';
 import type { Locale } from '@/lib/i18n/config';
 import { arabicTeamName } from '@/lib/i18n/localized-names';
+import { usableLogoUrl } from '@/lib/logos/status';
 
 /**
  * Leagues whose standings appear in the homepage rail (Botola first).
@@ -84,11 +85,12 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
   const result = await db.execute(sql`
     SELECT fps.player_id, p.slug AS player_slug,
            COALESCE(p.name->>${locale}, p.name->>'en') AS player_name,
-           p.photo_url,
+           p.photo_url, p.photo_status,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
            t.id AS team_id, t.name AS team_name_json, t.country_code AS team_country,
            t.is_national AS team_is_national,
            COALESCE(t.logo_url, tp.logo_url) AS team_logo,
+           COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
            fps.position, fps.rating
     FROM fixture_player_stats fps
     JOIN fixtures f ON f.id = fps.fixture_id
@@ -107,6 +109,8 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
     player_slug: string;
     player_name: string | null;
     photo_url: string | null;
+    photo_status: string | null;
+    team_logo_status: string | null;
     team_name: string | null;
     team_id: number | string | null;
     team_name_json: Record<string, string> | null;
@@ -127,7 +131,10 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
       playerId: id,
       playerSlug: r.player_slug,
       playerName: r.player_name ?? '',
-      playerPhoto: r.photo_url,
+      playerPhoto: usableLogoUrl(
+        r.photo_url,
+        (r.photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+      ),
       teamName:
         arabicTeamName(
           {
@@ -140,7 +147,10 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
         ) ??
         r.team_name ??
         '',
-      teamLogo: r.team_logo,
+      teamLogo: usableLogoUrl(
+        r.team_logo,
+        (r.team_logo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+      ),
       position: r.position,
       rating: Number(r.rating),
     });

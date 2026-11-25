@@ -8,6 +8,7 @@ import {
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { TEAM_IDS } from '@/lib/constants/canonical-ids';
 import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { usableLogoUrl } from '@/lib/logos/status';
 
 export interface LionsAbroadFixture {
   id: number;
@@ -46,6 +47,7 @@ async function loadLionsAbroadFixtures(locale: string): Promise<LionsAbroadFixtu
         COALESCE(p.name->>${locale}, p.name->>'en', p.name->>'fr') AS player_name,
         p.slug AS player_slug,
         p.photo_url,
+        p.photo_status,
         p.current_team_id AS club_id,
         COALESCE(club.name->>${locale}, club.name->>'en', 'Unknown') AS club_name
       FROM players p
@@ -75,6 +77,7 @@ async function loadLionsAbroadFixtures(locale: string): Promise<LionsAbroadFixtu
       l.player_name,
       l.player_slug,
       l.photo_url,
+      l.photo_status,
       l.club_name
     FROM fixtures f
     JOIN lions l ON l.club_id IN (f.home_team_id, f.away_team_id)
@@ -121,7 +124,10 @@ async function loadLionsAbroadFixtures(locale: string): Promise<LionsAbroadFixtu
       playerId: Number(row.player_id),
       playerName: String(row.player_name),
       playerSlug: String(row.player_slug),
-      photoUrl: (row.photo_url as string | null) ?? null,
+      photoUrl: usableLogoUrl(
+        (row.photo_url as string | null) ?? null,
+        (row.photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+      ),
       clubName: String(row.club_name),
     });
   }

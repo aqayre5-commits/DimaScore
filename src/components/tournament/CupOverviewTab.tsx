@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { FixtureWithTeams, StandingRow } from '@/lib/db/queries';
@@ -8,6 +7,8 @@ import type { Locale } from '@/lib/i18n/config';
 import { CupFixturesTab } from './CupFixturesTab';
 import { Flag } from '@/components/shared/Flag';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface CupOverviewTabProps {
   fixtures: FixtureWithTeams[];
@@ -173,33 +174,24 @@ function TopPlayerList({
             className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-accent-azure/5"
           >
             <span className="w-5 text-center text-xs font-medium text-text-tertiary">{i + 1}</span>
-            {player.playerPhoto ? (
-              <Image
-                src={player.playerPhoto}
-                alt={player.playerName}
-                width={32}
-                height={32}
-                className="size-8 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex size-8 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-medium text-text-tertiary">
-                {player.playerName.charAt(0)}
-              </div>
-            )}
+            <PlayerPhoto
+              src={player.playerPhoto}
+              name={player.playerName}
+              alt={player.playerName}
+              size={32}
+              className="size-8 rounded-full object-cover"
+            />
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium text-text-primary">
                 {player.playerName}
               </div>
               <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
-                {player.teamLogo && (
-                  <Image
-                    src={player.teamLogo}
-                    alt=""
-                    width={12}
-                    height={12}
-                    className="size-3 object-contain"
-                  />
-                )}
+                <TeamLogo
+                  src={player.teamLogo}
+                  name={player.teamName}
+                  size={12}
+                  className="size-3 object-contain"
+                />
                 <span className="truncate">{player.teamName}</span>
               </div>
             </div>

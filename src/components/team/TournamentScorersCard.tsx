@@ -1,8 +1,9 @@
-import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import type { TournamentScorers, TournamentScorerRow } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
 import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface TournamentScorersCardProps {
   data: TournamentScorers | null;
@@ -20,27 +21,19 @@ function ScorerSection({ title, rows }: { title: string; rows: TournamentScorerR
         {rows.map((r, i) => (
           <li key={`${r.playerId ?? r.name}-${i}`} className="flex items-center gap-2 px-4 py-1.5">
             <span className="w-4 text-center text-xs tabular-nums text-text-tertiary">{i + 1}</span>
-            {r.photo ? (
-              <Image
-                src={r.photo}
-                alt=""
-                width={24}
-                height={24}
-                className="size-6 shrink-0 rounded-full bg-bg-surface-2 object-cover"
-              />
-            ) : (
-              <div className="size-6 shrink-0 rounded-full bg-bg-surface-2" />
-            )}
+            <PlayerPhoto
+              src={r.photo}
+              name={r.name}
+              size={24}
+              className="size-6 shrink-0 rounded-full bg-bg-surface-2 object-cover"
+            />
             <span className="min-w-0 flex-1 truncate text-sm text-text-primary">{r.name}</span>
-            {r.teamLogo && (
-              <Image
-                src={r.teamLogo}
-                alt=""
-                width={14}
-                height={14}
-                className="size-3.5 shrink-0 object-contain"
-              />
-            )}
+            <TeamLogo
+              src={r.teamLogo}
+              name={r.teamName}
+              size={14}
+              className="size-3.5 shrink-0 object-contain"
+            />
             <span className="w-6 text-end text-sm font-bold tabular-nums text-text-primary">
               {r.value}
             </span>

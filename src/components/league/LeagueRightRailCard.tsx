@@ -1,6 +1,5 @@
 import { getScoreCardLabel } from '@/lib/utils/team-name';
 import Link from 'next/link';
-import Image from 'next/image';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTranslations } from 'next-intl/server';
@@ -14,6 +13,8 @@ import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { TopPlayerRow } from '@/lib/db/queries/league';
 import type { Locale } from '@/lib/i18n/config';
 import { matchHref } from '@/lib/seo/match-slug';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface LeagueRightRailCardProps {
   featuredMatches: FixtureWithTeams[];
@@ -114,33 +115,24 @@ export async function LeagueRightRailCard({
                 <span className="w-5 shrink-0 text-center text-xs font-bold text-text-tertiary">
                   {idx + 1}
                 </span>
-                {scorer.playerPhoto ? (
-                  <Image
-                    src={scorer.playerPhoto}
-                    alt={scorer.playerName}
-                    width={36}
-                    height={36}
-                    className="size-9 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex size-9 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-semibold text-text-tertiary">
-                    {scorer.playerName.charAt(0)}
-                  </div>
-                )}
+                <PlayerPhoto
+                  src={scorer.playerPhoto}
+                  name={scorer.playerName}
+                  alt={scorer.playerName}
+                  size={36}
+                  className="size-9 rounded-full object-cover"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold text-text-primary">
                     {scorer.playerName}
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
-                    {scorer.teamLogo && (
-                      <Image
-                        src={scorer.teamLogo}
-                        alt=""
-                        width={14}
-                        height={14}
-                        className="size-3.5 object-contain"
-                      />
-                    )}
+                    <TeamLogo
+                      src={scorer.teamLogo}
+                      name={scorer.teamName}
+                      size={14}
+                      className="size-3.5 object-contain"
+                    />
                     <span className="truncate">{stripWomenSuffix(scorer.teamName)}</span>
                   </div>
                 </div>

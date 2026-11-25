@@ -7,6 +7,7 @@ import * as schema from '../schema';
 import type { FixtureWithTeams } from '../queries';
 import { hydrateFixtures } from '../queries-hydrate';
 import { parseTrailingId } from '@/lib/seo/entity-slug';
+import { usableLogoUrl } from '@/lib/logos/status';
 
 // ── Types ──
 
@@ -19,6 +20,7 @@ export interface PlayerDetail {
   position: string | null;
   shirtNumber: number | null;
   photoUrl: string | null;
+  photoStatus?: import('@/lib/logos/status').LogoStatus | null;
   birthDate: string | null;
   birthPlace: string | null;
   nationalityCode: string | null;
@@ -86,6 +88,7 @@ async function getPlayerBySlugImpl(
       position: schema.players.position,
       shirtNumber: schema.players.shirtNumber,
       photoUrl: schema.players.photoUrl,
+      photoStatus: schema.players.photoStatus,
       birthDate: schema.players.birthDate,
       birthPlace: schema.players.birthPlace,
       nationalityCode: schema.players.nationalityCode,
@@ -112,6 +115,9 @@ async function getPlayerBySlugImpl(
           shortName: schema.teams.shortName,
           code: schema.teams.code,
           logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${ctParent.logoUrl})`,
+          logoStatus: sql<
+            import('@/lib/logos/status').LogoStatus | null
+          >`COALESCE(${schema.teams.logoStatus}, ${ctParent.logoStatus})`,
           countryCode: schema.teams.countryCode,
         })
         .from(schema.teams)
@@ -129,7 +135,8 @@ async function getPlayerBySlugImpl(
     lastname: player.lastname,
     position: player.position,
     shirtNumber: player.shirtNumber,
-    photoUrl: player.photoUrl,
+    photoUrl: usableLogoUrl(player.photoUrl, player.photoStatus ?? null),
+    photoStatus: player.photoStatus ?? null,
     birthDate: player.birthDate,
     birthPlace: player.birthPlace,
     nationalityCode: player.nationalityCode,
@@ -137,7 +144,12 @@ async function getPlayerBySlugImpl(
     height: player.height,
     weight: player.weight,
     injured: player.injured,
-    currentTeam,
+    currentTeam: currentTeam
+      ? {
+          ...currentTeam,
+          logoUrl: usableLogoUrl(currentTeam.logoUrl, currentTeam.logoStatus ?? null),
+        }
+      : null,
   };
 }
 
