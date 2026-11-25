@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { PlayerRatingBadge } from '@/components/match/PlayerRatingBadge';
 import { TeamLogo } from '@/components/shared/Logo';
 import type { TopPerformance } from '@/lib/db/queries/home-rail';
 import type { Locale } from '@/lib/i18n/config';
 import { localizePosition } from '@/lib/i18n/feed-labels';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
 
 interface Props {
   performances: TopPerformance[];
@@ -33,25 +33,21 @@ export function HomeTopPerformances({ performances, locale, labels }: Props) {
             className="flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-bg-surface-2"
           >
             <span className="w-4 shrink-0 text-xs tabular-nums text-text-tertiary">{i + 1}</span>
-            {p.playerPhoto ? (
-              <Image
-                src={p.playerPhoto}
-                alt=""
-                className="size-6 shrink-0 rounded-full object-cover"
-                width={24}
-                height={24}
-              />
-            ) : (
-              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-[10px] font-bold text-text-tertiary">
-                {p.playerName.charAt(0)}
-              </div>
-            )}
+            <PlayerPhoto
+              src={p.playerPhoto}
+              name={p.playerName}
+              size={24}
+              className="size-6 shrink-0 rounded-full object-cover"
+            />
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-text-primary">{p.playerName}</p>
               <div className="flex items-center gap-1">
-                {p.teamLogo && (
-                  <TeamLogo src={p.teamLogo} size={12} className="size-3 object-contain" />
-                )}
+                <TeamLogo
+                  src={p.teamLogo}
+                  name={p.teamName}
+                  size={12}
+                  className="size-3 object-contain"
+                />
                 <span className="truncate text-[10px] text-text-tertiary">
                   {p.position
                     ? `${localizePosition(p.position, locale)} · ${p.teamName}`

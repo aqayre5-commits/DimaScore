@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils';
 import type { SearchResults } from '@/lib/db/queries/search';
 import { buildCompetitionHrefById } from '@/lib/constants/competitions-mega-menu';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
 import { Flag } from '@/components/shared/Flag';
 import { arabicCompetitionName, arabicTeamName } from '@/lib/i18n/localized-names';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
+import { CompetitionLogo } from '@/components/shared/Logo';
 
 interface SearchModalProps {
   open: boolean;
@@ -248,17 +249,14 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       active={idx === activeIndex}
                       onClick={() => navigate(`/${locale}/joueur/${player.slug}`)}
                     >
-                      {player.photoUrl ? (
-                        <Image
-                          src={player.photoUrl}
-                          alt=""
-                          className="size-6 rounded-full object-cover"
-                          width={24}
-                          height={24}
-                        />
-                      ) : (
-                        <div className="size-6 rounded-full bg-bg-surface-2" />
-                      )}
+                      <PlayerPhoto
+                        src={player.photoUrl}
+                        name={name}
+                        firstname={player.firstname}
+                        lastname={player.lastname}
+                        size={24}
+                        className="size-6 rounded-full object-cover"
+                      />
                       <span className="text-sm font-medium text-text-primary">{name}</span>
                       {teamName && <span className="text-xs text-text-tertiary">{teamName}</span>}
                     </ResultRow>
@@ -287,17 +285,12 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       active={idx === activeIndex}
                       onClick={() => navigate(href)}
                     >
-                      {comp.logoUrl ? (
-                        <Image
-                          src={comp.logoUrl}
-                          alt=""
-                          className="size-6 object-contain"
-                          width={24}
-                          height={24}
-                        />
-                      ) : (
-                        <div className="size-6 rounded bg-bg-surface-2" />
-                      )}
+                      <CompetitionLogo
+                        src={comp.logoUrl}
+                        name={name}
+                        size={24}
+                        className="size-6 object-contain"
+                      />
                       <span className="text-sm font-medium text-text-primary">{name}</span>
                     </ResultRow>
                   );

@@ -1,39 +1,28 @@
-import Image from 'next/image';
+import { PlayerPhoto, type PlayerPhotoProps } from './PlayerPhoto';
 
 interface Props {
   src: string | null | undefined;
-  /** Used for the initial-letter fallback when src is missing. */
+  /** Used for the initials fallback when src is missing or a placeholder. */
   name: string;
+  status?: PlayerPhotoProps['status'];
   /** Two sizes are in use across the app — 'sm' = 24px, 'md' = 28px. */
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | number;
+  className?: string;
 }
 
 const CONFIG = {
-  sm: { className: 'size-6', px: 24 },
-  md: { className: 'size-7', px: 28 },
+  sm: { className: 'size-6 rounded-full object-cover', px: 24 },
+  md: { className: 'size-7 rounded-full object-cover', px: 28 },
 } as const;
 
 /**
- * Circular player avatar with consistent initial-letter fallback. Replaces ~5 inline copies
- * of the same `{photo ? <Image /> : <initial-circle />}` pattern across right-rail widgets
- * and league stats tables.
+ * Circular player avatar with a consistent initials fallback.
+ * Delegates to {@link PlayerPhoto} so placeholder/broken photos never render
+ * the API-Sports silhouette.
  */
-export function PlayerPhotoCircle({ src, name, size = 'md' }: Props) {
-  const { className, px } = CONFIG[size];
-  if (src) {
-    return (
-      <Image
-        src={src}
-        alt=""
-        width={px}
-        height={px}
-        className={`${className} rounded-full object-cover`}
-      />
-    );
-  }
-  return (
-    <div className={`flex ${className} items-center justify-center rounded-full bg-bg-surface-2`}>
-      <span className="text-[10px] text-text-tertiary">{name.charAt(0)}</span>
-    </div>
-  );
+export function PlayerPhotoCircle({ src, name, status, size = 'md', className }: Props) {
+  const preset = typeof size === 'number' ? null : CONFIG[size];
+  const px = typeof size === 'number' ? size : preset!.px;
+  const cls = [preset?.className, className].filter(Boolean).join(' ') || undefined;
+  return <PlayerPhoto src={src} status={status} name={name} size={px} className={cls} />;
 }

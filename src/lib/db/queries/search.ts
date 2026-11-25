@@ -4,6 +4,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { escapeLikePattern } from '@/lib/utils/sql';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
+import { usableLogoUrl } from '@/lib/logos/status';
 
 // ── Types ──
 
@@ -69,6 +70,9 @@ export async function searchAll(
         name: schema.teams.name,
         code: schema.teams.code,
         logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${teamParent.logoUrl})`,
+        logoStatus: sql<
+          import('@/lib/logos/status').LogoStatus | null
+        >`COALESCE(${schema.teams.logoStatus}, ${teamParent.logoStatus})`,
         isNational: schema.teams.isNational,
         countryCode: schema.teams.countryCode,
       })
@@ -97,6 +101,7 @@ export async function searchAll(
         lastname: schema.players.lastname,
         position: schema.players.position,
         photoUrl: schema.players.photoUrl,
+        photoStatus: schema.players.photoStatus,
         currentTeamId: schema.players.currentTeamId,
       })
       .from(schema.players)
@@ -135,7 +140,14 @@ export async function searchAll(
   const teamIds = [
     ...new Set(players.map((p) => p.currentTeamId).filter((id): id is number => id != null)),
   ];
-  const teamMap = new Map<number, { name: Record<string, string>; logoUrl: string | null }>();
+  const teamMap = new Map<
+    number,
+    {
+      name: Record<string, string>;
+      logoUrl: string | null;
+      logoStatus?: import('@/lib/logos/status').LogoStatus | null;
+    }
+  >();
 
   if (teamIds.length > 0) {
     const teamRows = await db
@@ -143,29 +155,37 @@ export async function searchAll(
         id: schema.teams.id,
         name: schema.teams.name,
         logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${teamParent.logoUrl})`,
+        logoStatus: sql<
+          import('@/lib/logos/status').LogoStatus | null
+        >`COALESCE(${schema.teams.logoStatus}, ${teamParent.logoStatus})`,
       })
       .from(schema.teams)
       .leftJoin(teamParent, eq(schema.teams.parentTeamId, teamParent.id))
       .where(inArray(schema.teams.id, teamIds));
 
-    for (const t of teamRows) teamMap.set(t.id, { name: t.name, logoUrl: t.logoUrl });
+    for (const t of teamRows)
+      teamMap.set(t.id, { name: t.name, logoUrl: t.logoUrl, logoStatus: t.logoStatus });
   }
 
   return {
-    teams: teams.map((t) => ({ type: 'team', ...t })),
+    teams: teams.map((t) => ({
+      type: 'team' as const,
+      ...t,
+      logoUrl: usableLogoUrl(t.logoUrl, t.logoStatus ?? null),
+    })),
     players: players.map((p) => {
       const team = p.currentTeamId ? teamMap.get(p.currentTeamId) : null;
       return {
-        type: 'player',
+        type: 'player' as const,
         id: p.id,
         slug: p.slug,
         name: p.name,
         firstname: p.firstname,
         lastname: p.lastname,
         position: p.position,
-        photoUrl: p.photoUrl,
+        photoUrl: usableLogoUrl(p.photoUrl, p.photoStatus ?? null),
         currentTeamName: team?.name ?? null,
-        currentTeamLogoUrl: team?.logoUrl ?? null,
+        currentTeamLogoUrl: usableLogoUrl(team?.logoUrl ?? null, team?.logoStatus ?? null),
       };
     }),
     competitions: competitions.map((c) => ({

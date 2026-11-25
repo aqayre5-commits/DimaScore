@@ -5,6 +5,13 @@ import {
   classifyLogoBytes,
   TEAM_PLACEHOLDER_SHA256,
   TEAM_LOGO_SOON_SHA256,
+  TEAM_CAMERA_DARK_SHA256,
+  TEAM_SHIELD_OUTLINE_SHA256,
+  PLAYER_SILHOUETTE_SHA256,
+  COACH_NO_PHOTO_SHA256,
+  COACH_SHIELD_OUTLINE_SHA256,
+  isKnownPhotoPlaceholderHash,
+  isKnownPlaceholderHash,
   usableLogoUrl,
 } from '@/lib/logos/status';
 
@@ -71,5 +78,40 @@ describe('fallbackPalette', () => {
   it('classifies the official-logo-soon disc hash as placeholder', () => {
     const r = classifyLogoBytes(200, new Uint8Array(6746), TEAM_LOGO_SOON_SHA256);
     expect(r.status).toBe('placeholder');
+  });
+
+  it('classifies the black-background camera hash as a team placeholder', () => {
+    const r = classifyLogoBytes(200, new Uint8Array(90381), TEAM_CAMERA_DARK_SHA256);
+    expect(r.status).toBe('placeholder');
+  });
+
+  it('classifies the empty outline-shield hash as a team placeholder', () => {
+    const r = classifyLogoBytes(200, new Uint8Array(90381), TEAM_SHIELD_OUTLINE_SHA256);
+    expect(r.status).toBe('placeholder');
+  });
+
+  it('treats the grey player silhouette as a photo placeholder, not a team crest hash', () => {
+    expect(isKnownPhotoPlaceholderHash(PLAYER_SILHOUETTE_SHA256)).toBe(true);
+    expect(isKnownPlaceholderHash(PLAYER_SILHOUETTE_SHA256)).toBe(false);
+    const asLogo = classifyLogoBytes(200, new Uint8Array(5192), PLAYER_SILHOUETTE_SHA256);
+    expect(asLogo.status).toBe('ok');
+    const asPhoto =
+      asLogo.status === 'ok' && isKnownPhotoPlaceholderHash(PLAYER_SILHOUETTE_SHA256)
+        ? 'placeholder'
+        : asLogo.status;
+    expect(asPhoto).toBe('placeholder');
+  });
+
+  it('classifies the coach “NO PHOTO YET” and outline-shield graphics as photo placeholders', () => {
+    expect(isKnownPhotoPlaceholderHash(COACH_NO_PHOTO_SHA256)).toBe(true);
+    expect(isKnownPhotoPlaceholderHash(COACH_SHIELD_OUTLINE_SHA256)).toBe(true);
+    expect(isKnownPlaceholderHash(COACH_NO_PHOTO_SHA256)).toBe(false);
+  });
+});
+
+describe('player initials', () => {
+  it('turns abbreviated scorer names into two-letter avatars (Y. Zraa → YZ)', () => {
+    expect(logoInitials({ name: 'Y. Zraa' })).toEqual({ initials: 'YZ', source: 'name-latin' });
+    expect(logoInitials({ name: 'Z. Essalhi' })).toEqual({ initials: 'ZE', source: 'name-latin' });
   });
 });

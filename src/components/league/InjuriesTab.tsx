@@ -2,7 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import type { InjuryRow } from '@/lib/db/queries/injuries';
-import Image from 'next/image';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface InjuriesTabProps {
   injuries: InjuryRow[];
@@ -39,33 +40,23 @@ export function InjuriesTab({ injuries }: InjuriesTabProps) {
             >
               <td className="px-3 py-2">
                 <div className="flex items-center gap-2">
-                  {row.playerPhoto ? (
-                    <Image
-                      src={row.playerPhoto}
-                      alt=""
-                      className="size-6 rounded-full object-cover"
-                      width={24}
-                      height={24}
-                    />
-                  ) : (
-                    <div className="size-6 rounded-full bg-bg-surface-2" />
-                  )}
+                  <PlayerPhoto
+                    src={row.playerPhoto}
+                    name={row.playerName}
+                    size={24}
+                    className="size-6 rounded-full object-cover"
+                  />
                   <span className="truncate font-medium text-text-primary">{row.playerName}</span>
                 </div>
               </td>
               <td className="px-3 py-2">
                 <div className="flex items-center gap-2">
-                  {row.teamLogo ? (
-                    <Image
-                      src={row.teamLogo}
-                      alt=""
-                      className="size-4 object-contain"
-                      width={16}
-                      height={16}
-                    />
-                  ) : (
-                    <div className="size-4 rounded bg-bg-surface-2" />
-                  )}
+                  <TeamLogo
+                    src={row.teamLogo}
+                    name={row.teamName}
+                    size={16}
+                    className="size-4 object-contain"
+                  />
                   <span className="truncate text-text-secondary">{row.teamName}</span>
                 </div>
               </td>

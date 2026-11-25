@@ -4,6 +4,7 @@ import { cacheLife } from 'next/cache';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import type { MatchLineup, LineupPlayer } from './match-detail';
+import { usableLogoUrl } from '@/lib/logos/status';
 
 const RECENT_N = 6;
 
@@ -15,12 +16,14 @@ interface Row {
   minutes_played: number | null;
   name: Record<string, string>;
   photo_url: string | null;
+  photo_status: string | null;
 }
 
 interface SquadRow {
   id: string;
   name: Record<string, string>;
   photo_url: string | null;
+  photo_status: string | null;
   position: string | null;
   shirt_number: number | null;
 }
@@ -70,7 +73,7 @@ export async function getPredictedLineup(
       LIMIT ${RECENT_N}
     )
     SELECT p.fixture_id, p.player_id, p.position, p.substitute, p.minutes_played,
-           pl.name, pl.photo_url
+           pl.name, pl.photo_url, pl.photo_status
     FROM fixture_player_stats p
     JOIN recent r ON r.id = p.fixture_id
     JOIN players pl ON pl.id = p.player_id
@@ -97,7 +100,10 @@ export async function getPredictedLineup(
       minutes: 0,
       posCount: {},
       name: r.name,
-      photo: r.photo_url,
+      photo: usableLogoUrl(
+        r.photo_url,
+        (r.photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+      ),
     };
     if (isStarter(r)) e.starts++;
     e.minutes += r.minutes_played ?? 0;
@@ -202,7 +208,7 @@ export async function getPredictedLineup(
   let squadRows: SquadRow[] = [];
   if (isNational) {
     const tsRes = await db.execute(sql`
-      SELECT pl.id::bigint AS id, pl.name, pl.photo_url, pl.position, pl.shirt_number
+      SELECT pl.id::bigint AS id, pl.name, pl.photo_url, pl.photo_status, pl.position, pl.shirt_number
       FROM tournament_squads ts
       JOIN players pl ON pl.id = ts.player_id
       WHERE ts.team_id = ${teamId}
@@ -216,7 +222,7 @@ export async function getPredictedLineup(
     squadRows = tsRes.rows as unknown as SquadRow[];
     if (squadRows.length === 0) {
       const smRes = await db.execute(sql`
-        SELECT pl.id::bigint AS id, pl.name, pl.photo_url, pl.position, pl.shirt_number
+        SELECT pl.id::bigint AS id, pl.name, pl.photo_url, pl.photo_status, pl.position, pl.shirt_number
         FROM squad_members sm
         JOIN players pl ON pl.id = sm.player_id
         WHERE sm.team_id = ${teamId}
@@ -235,7 +241,10 @@ export async function getPredictedLineup(
         starts: form?.starts ?? 0,
         minutes: form?.minutes ?? 0,
         name: sp.name,
-        photo: sp.photo_url,
+        photo: usableLogoUrl(
+          sp.photo_url,
+          (sp.photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+        ),
         number: sp.shirt_number,
       };
     });

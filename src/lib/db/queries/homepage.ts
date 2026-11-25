@@ -13,6 +13,7 @@ import {
 import { resolveContextLabel } from './right-rail';
 import { toSiteDateKey } from '@/lib/utils/date';
 import { computeMagnitude, isDerby, knockoutBoost } from '@/lib/constants/match-magnitude';
+import { usableLogoUrl } from '@/lib/logos/status';
 
 export interface HomeFixture {
   id: number;
@@ -422,14 +423,16 @@ export async function getTrendingPlayers(
           pss.player_id,
           p.name AS player_name,
           p.photo_url,
+          p.photo_status,
           t.name AS team_name,
           t.logo_url AS team_logo_url,
+          t.logo_status AS team_logo_status,
           SUM((pss.stats->'goals'->>'total')::int) AS goals
         FROM player_season_stats pss
         JOIN players p ON p.id = pss.player_id
         LEFT JOIN teams t ON t.id = p.current_team_id
         WHERE (pss.stats->'goals'->>'total')::int > 0
-        GROUP BY pss.player_id, p.name, p.photo_url, t.name, t.logo_url
+        GROUP BY pss.player_id, p.name, p.photo_url, p.photo_status, t.name, t.logo_url, t.logo_status
         ORDER BY goals DESC
         LIMIT ${limit}`,
   );
@@ -439,16 +442,18 @@ export async function getTrendingPlayers(
       player_id: string;
       player_name: Record<string, string> | null;
       photo_url: string | null;
+      photo_status: import('@/lib/logos/status').LogoStatus | null;
       team_name: Record<string, string> | null;
       team_logo_url: string | null;
+      team_logo_status: import('@/lib/logos/status').LogoStatus | null;
       goals: string;
     }[]
   ).map((r) => ({
     playerId: Number(r.player_id),
     playerName: r.player_name ?? {},
-    photoUrl: r.photo_url,
+    photoUrl: usableLogoUrl(r.photo_url, r.photo_status ?? null),
     teamName: r.team_name ?? {},
-    teamLogoUrl: r.team_logo_url,
+    teamLogoUrl: usableLogoUrl(r.team_logo_url, r.team_logo_status ?? null),
     goals: Number(r.goals),
   }));
 }

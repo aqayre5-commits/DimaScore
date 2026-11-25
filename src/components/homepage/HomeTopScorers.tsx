@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import type { TopScorerEntry } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
 import { TeamLogo } from '@/components/shared/Logo';
 import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
 
 interface Props {
   competitionName: Record<string, string>;
@@ -41,24 +41,22 @@ export function HomeTopScorers({ competitionName, scorers, locale, labels }: Pro
             className="flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-bg-surface-2"
           >
             <span className="w-4 shrink-0 text-xs tabular-nums text-text-tertiary">{i + 1}</span>
-            {s.photoUrl ? (
-              <Image
-                src={s.photoUrl}
-                alt=""
-                className="size-6 shrink-0 rounded-full object-cover"
-                width={24}
-                height={24}
-              />
-            ) : (
-              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-[10px] font-bold text-text-tertiary">
-                {s.playerName.charAt(0)}
-              </div>
-            )}
+            <PlayerPhoto
+              src={s.photoUrl}
+              name={s.playerName}
+              size={24}
+              className="size-6 shrink-0 rounded-full object-cover"
+            />
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-medium text-text-primary">{s.playerName}</p>
               <div className="flex items-center gap-1">
                 {s.teamLogoUrl && (
-                  <TeamLogo src={s.teamLogoUrl} size={12} className="size-3 object-contain" />
+                  <TeamLogo
+                    src={s.teamLogoUrl}
+                    name={s.teamName}
+                    size={12}
+                    className="size-3 object-contain"
+                  />
                 )}
                 <span className="truncate text-[10px] text-text-tertiary">{s.teamName}</span>
               </div>

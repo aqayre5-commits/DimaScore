@@ -3,8 +3,9 @@ import { useTranslations } from 'next-intl';
 import { Flag } from '@/components/shared/Flag';
 import type { CoachDetail } from '@/lib/db/queries/coach';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
 import { teamLabel } from '@/lib/i18n/localized-names';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface CoachPageHeaderProps {
   coach: CoachDetail;
@@ -40,20 +41,15 @@ export function CoachPageHeader({ coach, locale }: CoachPageHeaderProps) {
       <div className="flex items-start gap-5">
         {/* Photo */}
         <div className="size-[100px] shrink-0 overflow-hidden rounded-full border-[3px] border-border-subtle bg-bg-surface-2">
-          {coach.photoUrl ? (
-            <Image
-              src={coach.photoUrl}
-              alt={displayName}
-              width={100}
-              height={100}
-              className="size-full object-cover"
-              priority
-            />
-          ) : (
-            <div className="flex size-full items-center justify-center text-3xl text-text-tertiary">
-              &#128100;
-            </div>
-          )}
+          <PlayerPhoto
+            src={coach.photoUrl}
+            name={displayName}
+            firstname={coach.firstname}
+            lastname={coach.lastname}
+            alt={displayName}
+            size={100}
+            className="size-full object-cover"
+          />
         </div>
 
         {/* Identity */}
@@ -82,15 +78,12 @@ export function CoachPageHeader({ coach, locale }: CoachPageHeaderProps) {
 
           {coach.currentTeam && (
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-bg-surface-2 px-2.5 py-1 text-[13px] font-medium text-text-primary">
-              {coach.currentTeam.logoUrl && (
-                <Image
-                  src={coach.currentTeam.logoUrl}
-                  alt=""
-                  className="size-4 object-contain"
-                  width={16}
-                  height={16}
-                />
-              )}
+              <TeamLogo
+                src={coach.currentTeam.logoUrl}
+                name={teamName}
+                size={16}
+                className="size-4 object-contain"
+              />
               <Link href={`/${locale}/equipe/${coach.currentTeam.id}`} className="hover:underline">
                 {teamName}
               </Link>

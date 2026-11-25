@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { MoroccanPerformance } from '@/lib/db/queries/right-rail';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
 
 interface Props {
   performances: MoroccanPerformance[];
@@ -49,19 +49,12 @@ export function HomeLionsAbroad({ performances, locale, labels }: Props) {
               className="flex items-start gap-2.5 px-4 py-2.5 transition-colors hover:bg-bg-surface-2"
             >
               {/* Player photo */}
-              {p.photoUrl ? (
-                <Image
-                  src={p.photoUrl}
-                  alt=""
-                  className="size-8 shrink-0 rounded-full object-cover"
-                  width={32}
-                  height={32}
-                />
-              ) : (
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-bg-surface-2 text-xs font-bold text-text-tertiary">
-                  {p.playerName.charAt(0)}
-                </div>
-              )}
+              <PlayerPhoto
+                src={p.photoUrl}
+                name={p.playerName}
+                size={32}
+                className="size-8 shrink-0 rounded-full object-cover"
+              />
 
               {/* Info */}
               <div className="min-w-0 flex-1">

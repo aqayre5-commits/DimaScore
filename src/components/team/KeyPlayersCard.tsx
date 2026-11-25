@@ -1,7 +1,8 @@
-import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import type { KeyPlayer } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface KeyPlayersCardProps {
   players: KeyPlayer[];
@@ -43,31 +44,25 @@ export async function KeyPlayersCard({ players, locale }: KeyPlayersCardProps) {
           const pk = positionKey(p.position);
           return (
             <li key={p.id} className="flex items-center gap-3 px-4 py-2.5">
-              {p.photoUrl ? (
-                <Image
-                  src={p.photoUrl}
-                  alt=""
-                  width={36}
-                  height={36}
-                  className="size-9 shrink-0 rounded-full bg-bg-surface-2 object-cover"
-                />
-              ) : (
-                <div className="size-9 shrink-0 rounded-full bg-bg-surface-2" />
-              )}
+              <PlayerPhoto
+                src={p.photoUrl}
+                status={p.photoStatus}
+                name={name}
+                size={36}
+                className="size-9 shrink-0 rounded-full bg-bg-surface-2 object-cover"
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-text-primary">{name}</p>
                 <p className="flex items-center gap-1 truncate text-xs text-text-tertiary">
                   {pk && <span>{t(pk)}</span>}
                   {pk && club && <span aria-hidden>·</span>}
-                  {p.clubLogoUrl && (
-                    <Image
-                      src={p.clubLogoUrl}
-                      alt=""
-                      width={12}
-                      height={12}
-                      className="size-3 shrink-0 object-contain"
-                    />
-                  )}
+                  <TeamLogo
+                    src={p.clubLogoUrl}
+                    status={p.clubLogoStatus}
+                    name={club}
+                    size={12}
+                    className="size-3 shrink-0 object-contain"
+                  />
                   {club && <span className="truncate">{club}</span>}
                 </p>
               </div>

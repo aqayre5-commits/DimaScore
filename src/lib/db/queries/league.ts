@@ -8,7 +8,6 @@ import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { selectDefaultRound } from '@/lib/competitions/select-default-round';
 import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
 import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
-import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
 
 // ── Types ──
 
@@ -526,8 +525,10 @@ export async function getEditionTopScorers(
              COALESCE(p.name->>${locale}, p.name->>'en')
            ) AS player_name,
            p.photo_url AS player_photo,
+           p.photo_status AS player_photo_status,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
            COALESCE(t.logo_url, tp.logo_url) AS team_logo,
+           COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
            COUNT(*)::int AS goals
     FROM fixture_events e
     JOIN fixtures f ON f.id = e.fixture_id
@@ -539,7 +540,7 @@ export async function getEditionTopScorers(
       AND e.type = 'Goal'
       AND e.detail IN ('Normal Goal', 'Penalty')
       AND e.comments IS DISTINCT FROM 'Penalty Shootout'
-    GROUP BY p.id, t.id, tp.logo_url
+    GROUP BY p.id, t.id, tp.logo_url, tp.logo_status
     ORDER BY goals DESC, p.slug
     LIMIT ${limit}
   `);
@@ -547,9 +548,15 @@ export async function getEditionTopScorers(
     playerId: Number(r.player_id),
     playerSlug: r.player_slug as string,
     playerName: (r.player_name as string) ?? '',
-    playerPhoto: (r.player_photo as string) ?? null,
+    playerPhoto: usableLogoUrl(
+      (r.player_photo as string) ?? null,
+      (r.player_photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+    ),
     teamName: (r.team_name as string) ?? '',
-    teamLogo: (r.team_logo as string) ?? null,
+    teamLogo: usableLogoUrl(
+      (r.team_logo as string) ?? null,
+      (r.team_logo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+    ),
     goals: Number(r.goals) || 0,
     assists: 0,
   }));
@@ -570,8 +577,10 @@ export async function getEditionTopAssists(
              COALESCE(p.name->>${locale}, p.name->>'en')
            ) AS player_name,
            p.photo_url AS player_photo,
+           p.photo_status AS player_photo_status,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
            COALESCE(t.logo_url, tp.logo_url) AS team_logo,
+           COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
            COUNT(*)::int AS assists
     FROM fixture_events e
     JOIN fixtures f ON f.id = e.fixture_id
@@ -584,7 +593,7 @@ export async function getEditionTopAssists(
       AND e.detail IN ('Normal Goal', 'Penalty')
       AND e.comments IS DISTINCT FROM 'Penalty Shootout'
       AND e.assist_player_id IS NOT NULL
-    GROUP BY p.id, t.id, tp.logo_url
+    GROUP BY p.id, t.id, tp.logo_url, tp.logo_status
     ORDER BY assists DESC, p.slug
     LIMIT ${limit}
   `);
@@ -592,9 +601,15 @@ export async function getEditionTopAssists(
     playerId: Number(r.player_id),
     playerSlug: r.player_slug as string,
     playerName: (r.player_name as string) ?? '',
-    playerPhoto: (r.player_photo as string) ?? null,
+    playerPhoto: usableLogoUrl(
+      (r.player_photo as string) ?? null,
+      (r.player_photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+    ),
     teamName: (r.team_name as string) ?? '',
-    teamLogo: (r.team_logo as string) ?? null,
+    teamLogo: usableLogoUrl(
+      (r.team_logo as string) ?? null,
+      (r.team_logo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+    ),
     goals: 0,
     assists: Number(r.assists) || 0,
   }));
