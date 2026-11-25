@@ -64,12 +64,24 @@ function Crest({
   sizeVar?: string;
   invert?: boolean;
 }) {
+  const [failed, setFailed] = useState(false);
   const style = sizeVar ? ({ ['--m' as string]: sizeVar } as React.CSSProperties) : undefined;
-  if (!src) return <span className="mark fallback" aria-hidden="true" style={style} />;
+  if (!src || failed) return <span className="mark fallback" aria-hidden="true" style={style} />;
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img className={`mark${invert ? ' logo-invert' : ''}`} src={src} alt="" style={style} />
+    <img
+      className={`mark${invert ? ' logo-invert' : ''}`}
+      src={src}
+      alt=""
+      style={style}
+      onError={() => setFailed(true)}
+    />
   );
+}
+
+function formatSigned(n: number): string {
+  if (n === 0) return '0';
+  return `${n > 0 ? '+' : '\u2212'}${Math.abs(n)}`;
 }
 
 export function PeriodSelect({
@@ -91,11 +103,7 @@ export function PeriodSelect({
       <svg viewBox="0 0 12 12" aria-hidden="true">
         <path d="M2.5 4.5L6 8l3.5-3.5" />
       </svg>
-      <select
-        aria-labelledby={labelledBy}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      >
+      <select aria-labelledby={labelledBy} value={value} onChange={(e) => onChange(e.target.value)}>
         {children}
       </select>
     </label>
@@ -184,7 +192,7 @@ export function CompetitionIdentity({
                 aria-pressed={s.year === seasonYear}
                 onClick={(e) => {
                   goToSeason(s.year);
-                  const details = (e.currentTarget.closest('details') as HTMLDetailsElement | null);
+                  const details = e.currentTarget.closest('details') as HTMLDetailsElement | null;
                   if (details) details.open = false;
                 }}
               >
@@ -223,7 +231,13 @@ export function UpcomingCard({ fixture, locale }: { fixture: FixtureWithTeams; l
     kickoffAt: asDate(fixture.kickoffAt),
   });
   return (
-    <MatchLink matchId={String(fixture.id)} href={href} preview={preview} prefetchIntent className="sooncard">
+    <MatchLink
+      matchId={String(fixture.id)}
+      href={href}
+      preview={preview}
+      prefetchIntent
+      className="sooncard"
+    >
       <div className="cardtop">{day}</div>
       <div className="upcoming-match">
         <div className="pair">
@@ -258,10 +272,7 @@ function todayWord(locale: Locale): string {
   return locale === 'fr' ? "Aujourd'hui" : locale === 'ar' ? 'اليوم' : 'Today';
 }
 
-function teamName(
-  team: FixtureWithTeams['homeTeam'],
-  locale: Locale,
-): string {
+function teamName(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
   return team ? getTeamDisplayName(team, locale) : '—';
 }
 
@@ -325,9 +336,15 @@ export function FeaturedMatch({
           </strong>
         </div>
         <div className="pl-score">
-          {phase ? <span className={`pl-phase${state === 'live' ? ' playing' : ''}`}>{phase}</span> : null}
+          {phase ? (
+            <span className={`pl-phase${state === 'live' ? ' playing' : ''}`}>{phase}</span>
+          ) : null}
           <span className="bigscore">
-            {hasScore ? `${fixture.homeScore}–${fixture.awayScore}` : <LocalTime date={asDate(fixture.kickoffAt)} locale={locale} format="time" />}
+            {hasScore ? (
+              `${fixture.homeScore}–${fixture.awayScore}`
+            ) : (
+              <LocalTime date={asDate(fixture.kickoffAt)} locale={locale} format="time" />
+            )}
           </span>
         </div>
         <div className="heroteam">
@@ -345,7 +362,13 @@ export function FeaturedMatch({
   );
 }
 
-export function CompetitionMatchRow({ fixture, locale }: { fixture: FixtureWithTeams; locale: Locale }) {
+export function CompetitionMatchRow({
+  fixture,
+  locale,
+}: {
+  fixture: FixtureWithTeams;
+  locale: Locale;
+}) {
   const t = useTranslations('matchDetail');
   const tL = useTranslations('leaguePage');
   const { followedMatches, toggleMatch } = useFollows();
@@ -399,14 +422,22 @@ export function CompetitionMatchRow({ fixture, locale }: { fixture: FixtureWithT
             <span className="teamname">
               <bdi>{teamName(fixture.homeTeam, locale)}</bdi>
             </span>
-            {hasScore ? <span className="points">{fixture.homeScore}</span> : <span className="points" />}
+            {hasScore ? (
+              <span className="points">{fixture.homeScore}</span>
+            ) : (
+              <span className="points" />
+            )}
           </div>
           <div className={`teamline${homeWon ? ' is-loser' : ''}`}>
             <Crest src={fixture.awayTeam?.logoUrl} />
             <span className="teamname">
               <bdi>{teamName(fixture.awayTeam, locale)}</bdi>
             </span>
-            {hasScore ? <span className="points">{fixture.awayScore}</span> : <span className="points" />}
+            {hasScore ? (
+              <span className="points">{fixture.awayScore}</span>
+            ) : (
+              <span className="points" />
+            )}
           </div>
         </div>
       </MatchLink>
@@ -415,7 +446,9 @@ export function CompetitionMatchRow({ fixture, locale }: { fixture: FixtureWithT
           type="button"
           className="save"
           aria-pressed={saved}
-          aria-label={saved ? tL('unstarFixture', { match: names }) : tL('starFixture', { match: names })}
+          aria-label={
+            saved ? tL('unstarFixture', { match: names }) : tL('starFixture', { match: names })
+          }
           onClick={() => toggleMatch(fixture.id)}
         >
           <StarIcon />
@@ -501,15 +534,29 @@ export function StandingsTable({
           </PeriodSelect>
         </div>
       )}
-      <table className="stand-table">
-        {caption ? <caption className="sr-only">{caption}</caption> : null}
+      <table className="stand-table" aria-label={caption || undefined}>
+        <colgroup>
+          <col className="stand-pos" />
+          <col className="stand-team" />
+          <col className="stand-num" />
+          <col className="stand-num" />
+          <col className="stand-num" />
+        </colgroup>
         <thead>
           <tr>
-            <th scope="col">{t('colRankFull')}</th>
+            <th scope="col" className="stand-pos">
+              <abbr title={t('colRankFull')}>#</abbr>
+            </th>
             <th scope="col">{t('team')}</th>
-            <th scope="col">{t('colPlayed')}</th>
-            <th scope="col">{t('colGoalDiff')}</th>
-            <th scope="col">{t('colPoints')}</th>
+            <th scope="col" className="stand-num">
+              <abbr title={t('colPlayedFull')}>{t('colPlayed')}</abbr>
+            </th>
+            <th scope="col" className="stand-num">
+              <abbr title={t('colGoalDiffFull')}>{t('colGoalDiff')}</abbr>
+            </th>
+            <th scope="col" className="stand-num">
+              <abbr title={t('colPointsFull')}>{t('colPoints')}</abbr>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -520,32 +567,33 @@ export function StandingsTable({
                 : null;
             const href = row.team?.slug ? `/${locale}/equipe/${row.team.slug}` : undefined;
             const color = zoneColor(row.description);
+            const team = (
+              <>
+                <Crest src={row.team?.logoUrl} />
+                <bdi>{row.team ? getTeamDisplayName(row.team, locale) : '—'}</bdi>
+                {live ? <span className="standing-live">{live}</span> : null}
+              </>
+            );
             return (
               <tr key={`${row.groupLabel}-${row.teamId}`}>
-                <td>
-                  {color ? (
-                    <i className="zone" style={{ background: color, display: 'inline-block', width: 6, height: 12, marginInlineEnd: 4, borderRadius: 1 }} />
-                  ) : null}
-                  {row.rank}
+                <td className="stand-pos">
+                  <span className="standing-pos">
+                    <i className="zone" style={color ? { background: color } : undefined} />
+                    <span className="pos-n">{row.rank}</span>
+                  </span>
                 </td>
                 <td>
                   {href ? (
                     <a className="standing-team" href={href}>
-                      <Crest src={row.team?.logoUrl} />
-                      <bdi>{row.team ? getTeamDisplayName(row.team, locale) : '—'}</bdi>
-                      {live ? <span className="standing-live">{live}</span> : null}
+                      {team}
                     </a>
                   ) : (
-                    <span className="standing-team">
-                      <Crest src={row.team?.logoUrl} />
-                      <bdi>{row.team ? getTeamDisplayName(row.team, locale) : '—'}</bdi>
-                      {live ? <span className="standing-live">{live}</span> : null}
-                    </span>
+                    <span className="standing-team">{team}</span>
                   )}
                 </td>
-                <td>{row.played}</td>
-                <td>{row.goalDiff ?? 0}</td>
-                <td>{row.points}</td>
+                <td className="stand-num">{row.played}</td>
+                <td className="stand-num">{formatSigned(row.goalDiff ?? 0)}</td>
+                <td className="stand-num">{row.points}</td>
               </tr>
             );
           })}
@@ -577,60 +625,98 @@ function zoneColor(description: string | null): string | null {
 
 export function PlayerRanking({
   title,
+  valueLabel,
   players,
   locale,
   cutoff,
+  hideTitle,
+  emptyMessage,
 }: {
   title: string;
-  players: { id: number; slug: string; name: string; team: string; teamLogo: string | null; value: number }[];
+  valueLabel?: string;
+  players: {
+    id: number;
+    slug: string;
+    name: string;
+    team: string;
+    teamLogo: string | null;
+    value: number;
+  }[];
   locale: Locale;
   cutoff?: string | null;
+  hideTitle?: boolean;
+  emptyMessage?: string;
 }) {
   const t = useTranslations('leaguePage');
   const [open, setOpen] = useState(false);
-  if (players.length === 0) return null;
-  // Preserve ties: same value shares the previous rank.
-  let lastValue: number | null = null;
-  let lastRank = 0;
-  const ranked = players.map((p, i) => {
-    if (lastValue == null || p.value !== lastValue) {
-      lastRank = i + 1;
-      lastValue = p.value;
-    }
-    return { ...p, rank: lastRank };
-  });
+  const metric = valueLabel ?? title;
+  if (players.length === 0) {
+    if (!emptyMessage) return null;
+    return (
+      <section className="player-ranking">
+        {!hideTitle ? (
+          <div className="pl-head">
+            <h2>{title}</h2>
+          </div>
+        ) : null}
+        <p className="pl-empty pl-stats-empty">{emptyMessage}</p>
+      </section>
+    );
+  }
+  // Preserve ties: same value shares the previous rank (1,2,3,3,5).
+  const ranked = players.reduce<
+    {
+      id: number;
+      slug: string;
+      name: string;
+      team: string;
+      teamLogo: string | null;
+      value: number;
+      rank: number;
+    }[]
+  >((acc, p, i) => {
+    const rank =
+      acc.length === 0 || acc[acc.length - 1].value !== p.value ? i + 1 : acc[acc.length - 1].rank;
+    acc.push({ ...p, rank });
+    return acc;
+  }, []);
   const canToggle = ranked.length > 20;
   return (
     <section className="player-ranking" data-open={open ? 'true' : 'false'}>
-      <div className="pl-head">
-        <h2>{title}</h2>
-      </div>
+      {!hideTitle ? (
+        <div className="pl-head">
+          <h2>{title}</h2>
+        </div>
+      ) : null}
       {cutoff ? <p className="pl-stats-date">{cutoff}</p> : null}
-      <table className="pl-ranking">
+      <table className="pl-ranking" aria-label={metric}>
+        <colgroup>
+          <col className="stand-pos" />
+          <col className="stand-team" />
+          <col className="stand-num" />
+        </colgroup>
         <thead>
           <tr>
-            <th scope="col">{t('colRankFull')}</th>
+            <th scope="col" className="stand-pos">
+              <abbr title={t('colRankFull')}>#</abbr>
+            </th>
             <th scope="col">{t('colPlayer')}</th>
-            <th scope="col">{t('colTeam')}</th>
-            <th scope="col">{title}</th>
+            <th scope="col" className="stand-num">
+              {metric}
+            </th>
           </tr>
         </thead>
         <tbody>
           {ranked.map((p, i) => (
             <tr key={`${p.id}-${p.team}-${i}`}>
-              <td>{p.rank}</td>
+              <td className="stand-pos">{p.rank}</td>
               <td>
-                <a href={`/${locale}/joueur/${p.slug}`}>
+                <a className="player-cell" href={`/${locale}/joueur/${p.slug}`}>
+                  <Crest src={p.teamLogo} />
                   <bdi>{p.name}</bdi>
                 </a>
               </td>
-              <td>
-                <span className="standing-team">
-                  <Crest src={p.teamLogo} />
-                  <bdi>{p.team}</bdi>
-                </span>
-              </td>
-              <td>{p.value}</td>
+              <td className="stand-num">{p.value}</td>
             </tr>
           ))}
         </tbody>
@@ -642,6 +728,143 @@ export function PlayerRanking({
         </button>
       )}
     </section>
+  );
+}
+
+type StatsSub = 'scorers' | 'assists' | 'cleanSheets' | 'yellow' | 'red';
+
+export function StatsBoard({
+  scorers,
+  assists,
+  cards,
+  locale,
+  playerCount,
+  throughLabel,
+}: {
+  scorers: {
+    id: number;
+    slug: string;
+    name: string;
+    team: string;
+    teamLogo: string | null;
+    value: number;
+  }[];
+  assists: {
+    id: number;
+    slug: string;
+    name: string;
+    team: string;
+    teamLogo: string | null;
+    value: number;
+  }[];
+  cards: TopCardRow[];
+  locale: Locale;
+  playerCount: number;
+  throughLabel: string | null;
+}) {
+  const t = useTranslations('leaguePage');
+  const moreLabel = useTranslations('topbar')('more');
+  const [tab, setTab] = useState<StatsSub>('scorers');
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreActive = tab === 'yellow' || tab === 'red';
+
+  function pick(next: StatsSub) {
+    setTab(next);
+    setMoreOpen(false);
+  }
+
+  const valueLabel =
+    tab === 'scorers'
+      ? t('goals')
+      : tab === 'assists'
+        ? t('assists')
+        : tab === 'yellow'
+          ? t('yellowCards')
+          : tab === 'red'
+            ? t('redCards')
+            : t('cleanSheets');
+
+  const players =
+    tab === 'scorers'
+      ? scorers
+      : tab === 'assists'
+        ? assists
+        : tab === 'yellow'
+          ? mapCards(cards, 'yellow')
+          : tab === 'red'
+            ? mapCards(cards, 'red')
+            : [];
+
+  return (
+    <div className="pl-stats-board">
+      <div className="pl-stats-subs" role="tablist" aria-label={t('stats')}>
+        <button
+          type="button"
+          role="tab"
+          className="pl-stats-sub"
+          aria-selected={tab === 'scorers'}
+          onClick={() => pick('scorers')}
+        >
+          {t('topScorers')}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className="pl-stats-sub"
+          aria-selected={tab === 'assists'}
+          onClick={() => pick('assists')}
+        >
+          {t('assists')}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          className="pl-stats-sub"
+          aria-selected={tab === 'cleanSheets'}
+          onClick={() => pick('cleanSheets')}
+        >
+          {t('cleanSheets')}
+        </button>
+        <div className="pl-stats-more">
+          <button
+            type="button"
+            role="tab"
+            className="pl-stats-sub"
+            aria-selected={moreActive}
+            aria-haspopup="menu"
+            aria-expanded={moreOpen}
+            onClick={() => setMoreOpen((v) => !v)}
+          >
+            {moreLabel}
+            <Chevron />
+          </button>
+          {moreOpen ? (
+            <div className="pl-stats-more-menu" role="menu">
+              <button type="button" role="menuitem" onClick={() => pick('yellow')}>
+                {t('yellowCards')}
+              </button>
+              <button type="button" role="menuitem" onClick={() => pick('red')}>
+                {t('redCards')}
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+      {(playerCount > 0 || throughLabel) && (
+        <div className="pl-stats-meta">
+          {playerCount > 0 ? <span>{t('playersMeta', { n: playerCount })}</span> : <span />}
+          {throughLabel ? <span>{t('throughDate', { date: throughLabel })}</span> : null}
+        </div>
+      )}
+      <PlayerRanking
+        title={valueLabel}
+        valueLabel={valueLabel}
+        players={players}
+        locale={locale}
+        hideTitle
+        emptyMessage={tab === 'cleanSheets' ? t('emptyCleanSheets') : t('noStatsData')}
+      />
+    </div>
   );
 }
 
@@ -679,7 +902,16 @@ export function ClubDetails({
   );
 }
 
-export function mapScorers(rows: TopPlayerRow[]): { id: number; slug: string; name: string; team: string; teamLogo: string | null; value: number }[] {
+export function mapScorers(
+  rows: TopPlayerRow[],
+): {
+  id: number;
+  slug: string;
+  name: string;
+  team: string;
+  teamLogo: string | null;
+  value: number;
+}[] {
   return rows.map((p) => ({
     id: p.playerId,
     slug: p.playerSlug,

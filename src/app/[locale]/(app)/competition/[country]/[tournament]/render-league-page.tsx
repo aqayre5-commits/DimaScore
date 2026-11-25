@@ -23,10 +23,11 @@ import {
   getResolvedTopAssists,
   getTopCardsForLeague,
   getCompetitionTeams,
+  getLeagueStatsMeta,
 } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
-import { toSiteDateKey } from '@/lib/utils/date';
+import { toSiteDateKey, INTL_LOCALE, SITE_TZ } from '@/lib/utils/date';
 import { competitionDisplayName, competitionHeading } from '@/lib/competitions/display-name';
 import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-content';
 import { teamLabel } from '@/lib/i18n/localized-names';
@@ -40,17 +41,27 @@ import '@/components/match/centre/match-centre.css';
 async function getCachedLeagueData(competitionId: number, seasonYear: number, locale: Locale) {
   'use cache';
   cacheLife('minutes');
-  const [standings, rounds, currentRound, fixtures, topScorers, topAssists, topCards, competitionTeams] =
-    await Promise.all([
-      getStandings(db, competitionId, seasonYear),
-      getLeagueRounds(db, competitionId, seasonYear),
-      getCurrentRound(db, competitionId, seasonYear),
-      getLeagueFixtures(db, competitionId, seasonYear),
-      getResolvedTopScorers(db, competitionId, seasonYear, locale, 200),
-      getResolvedTopAssists(db, competitionId, seasonYear, locale, 200),
-      getTopCardsForLeague(db, competitionId, seasonYear, 200, locale),
-      getCompetitionTeams(db, competitionId, seasonYear),
-    ]);
+  const [
+    standings,
+    rounds,
+    currentRound,
+    fixtures,
+    topScorers,
+    topAssists,
+    topCards,
+    competitionTeams,
+    statsMeta,
+  ] = await Promise.all([
+    getStandings(db, competitionId, seasonYear),
+    getLeagueRounds(db, competitionId, seasonYear),
+    getCurrentRound(db, competitionId, seasonYear),
+    getLeagueFixtures(db, competitionId, seasonYear),
+    getResolvedTopScorers(db, competitionId, seasonYear, locale, 200),
+    getResolvedTopAssists(db, competitionId, seasonYear, locale, 200),
+    getTopCardsForLeague(db, competitionId, seasonYear, 200, locale),
+    getCompetitionTeams(db, competitionId, seasonYear),
+    getLeagueStatsMeta(db, competitionId, seasonYear),
+  ]);
   return {
     standings,
     rounds,
@@ -60,6 +71,7 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number, lo
     topAssists,
     topCards,
     competitionTeams,
+    statsMeta,
   };
 }
 
@@ -136,8 +148,25 @@ export async function renderLeaguePage(
     );
   }
 
-  const { standings, rounds, currentRound, fixtures, topScorers, topAssists, topCards, competitionTeams } =
-    await getCachedLeagueData(competition.id, seasonYear, locale);
+  const {
+    standings,
+    rounds,
+    currentRound,
+    fixtures,
+    topScorers,
+    topAssists,
+    topCards,
+    competitionTeams,
+    statsMeta,
+  } = await getCachedLeagueData(competition.id, seasonYear, locale);
+  const statsThroughLabel = statsMeta.throughAt
+    ? new Intl.DateTimeFormat(INTL_LOCALE[locale], {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: SITE_TZ,
+      }).format(new Date(statsMeta.throughAt))
+    : null;
   const todayKey = await getSiteTodayKey();
   const { rail, current: railCurrent } = await getRailProps(locale, competition.id);
 
@@ -240,8 +269,13 @@ export async function renderLeaguePage(
               topAssists={topAssists}
               topCards={topCards}
               clubs={clubs}
-              tableCaption={tL('tableCaption', { competition: competitionName, season: seasonLabel })}
+              tableCaption={tL('tableCaption', {
+                competition: competitionName,
+                season: seasonLabel,
+              })}
               todayKey={todayKey}
+              statsPlayerCount={statsMeta.playerCount}
+              statsThroughLabel={statsThroughLabel}
             />
           </div>
         </div>
