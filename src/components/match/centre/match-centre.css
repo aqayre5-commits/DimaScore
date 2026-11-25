@@ -978,7 +978,13 @@
   margin-top: 0;
 }
 .mc .soon .sooncard .cardtop {
-  margin-bottom: 7px;
+  /* Date is a quiet label: teams lead, then kickoff time, then the day. */
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 .mc .upcoming-match {
   display: grid;
@@ -1318,6 +1324,9 @@
   }
   .mc .cardtop {
     font-size: 15px;
+  }
+  .mc .soon .sooncard .cardtop {
+    font-size: 13px;
   }
   .mc .pair {
     margin-top: 5px;
