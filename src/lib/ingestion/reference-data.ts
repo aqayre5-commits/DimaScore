@@ -6,6 +6,7 @@ import * as schema from '@/lib/db/schema';
 import { runWrites } from '@/lib/db/client';
 import type { SyncStats, CompetitionMeta } from './types';
 import { slugify } from './slug';
+import { classifyLogoUrl, type ClassifyCache } from '@/lib/logos/classify';
 
 // ─── Mappers (exported for testing) ───
 
@@ -120,13 +121,22 @@ export async function syncCompetitionsWithSeasons(
     leagueData.push({ league: leagues[0], meta });
   }
 
+  const logoCache: ClassifyCache = new Map();
+  const logoByComp = new Map<number, Awaited<ReturnType<typeof classifyLogoUrl>>>();
+  for (const { league, meta } of leagueData) {
+    const row = mapCompetitionToInsert(league, meta);
+    logoByComp.set(row.id, await classifyLogoUrl(row.logoUrl, { cache: logoCache }));
+  }
+
   await runWrites(async (tx) => {
     for (const { league, meta } of leagueData) {
       // Upsert competition
       const compRow = mapCompetitionToInsert(league, meta);
+      const logo = logoByComp.get(compRow.id);
+      const compValues = { ...compRow, logoStatus: logo?.status ?? 'missing' };
       await tx
         .insert(schema.competitions)
-        .values(compRow)
+        .values(compValues)
         .onConflictDoUpdate({
           target: schema.competitions.id,
           set: {
@@ -138,6 +148,7 @@ export async function syncCompetitionsWithSeasons(
             tier: compRow.tier,
             isWomen: compRow.isWomen,
             logoUrl: compRow.logoUrl,
+            logoStatus: logo?.status ?? 'missing',
             isFeatured: compRow.isFeatured,
             isMoroccoFocus: compRow.isMoroccoFocus,
             displayPriority: compRow.displayPriority,

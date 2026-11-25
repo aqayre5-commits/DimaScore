@@ -41,7 +41,8 @@
 }
 
 .pl .mark,
-.pl img.mark {
+.pl img.mark,
+.pl svg.mark {
   width: var(--m, 24px);
   height: var(--m, 24px);
   object-fit: contain;
@@ -922,12 +923,13 @@ html:not([data-theme='light']) .pl .matchrow .clock.is-live {
 }
 
 .pl .mark.fallback {
-  border-radius: 50%;
-  background: var(--light);
-  display: inline-block;
+  background: none;
+  border-radius: 0;
+  display: block;
   width: var(--m, 21px);
   height: var(--m, 21px);
   flex: 0 0 var(--m, 21px);
+  overflow: visible;
 }
 
 .pl .standing-team .mark,

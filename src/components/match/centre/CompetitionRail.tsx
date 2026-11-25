@@ -4,6 +4,7 @@ import { useId, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useFollows } from '@/hooks/useFollows';
 import { NavIcon } from './icons';
+import { TeamMark } from '@/components/shared/TeamMark';
 
 const SearchModal = dynamic(
   () => import('@/components/chrome/SearchModal').then((m) => m.SearchModal),
@@ -63,12 +64,7 @@ function Row({ e, current, open }: { e: RailEntry; current: boolean; open: strin
       aria-label={open.replace('{name}', e.label)}
       aria-current={current ? 'true' : undefined}
     >
-      {e.logo ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img className="mark" src={e.logo} alt="" loading="lazy" decoding="async" />
-      ) : (
-        <span className="mark fallback" aria-hidden="true" />
-      )}
+      <TeamMark className="mark" src={e.logo} name={e.label} variant="competition" />
       <bdi>{e.label}</bdi>
     </a>
   );
@@ -193,12 +189,12 @@ export function CompetitionRail(p: CompetitionRailProps) {
                       href={e.href}
                       className={`leaf${e.id === p.currentId ? ' current' : ''}`}
                     >
-                      {e.logo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img className="mark" src={e.logo} alt="" loading="lazy" decoding="async" />
-                      ) : (
-                        <span className="mark fallback" aria-hidden="true" />
-                      )}
+                      <TeamMark
+                        className="mark"
+                        src={e.logo}
+                        name={e.label}
+                        variant="competition"
+                      />
                       <bdi>{e.label}</bdi>
                     </a>
                   ))}
@@ -231,12 +227,7 @@ export function CompetitionRail(p: CompetitionRailProps) {
           <nav className="tournament-list" aria-label={L.tournaments}>
             {p.tournaments.map((e) => (
               <a key={e.id} href={e.href} className="tournament-option">
-                {e.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img className="mark" src={e.logo} alt="" loading="lazy" decoding="async" />
-                ) : (
-                  <span className="mark fallback" aria-hidden="true" />
-                )}
+                <TeamMark className="mark" src={e.logo} name={e.label} variant="competition" />
                 <bdi>{e.label}</bdi>
                 <span />
                 <NavIcon name="right" />

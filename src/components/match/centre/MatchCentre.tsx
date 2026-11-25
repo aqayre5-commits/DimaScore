@@ -34,6 +34,8 @@ import { EventIcon, NavIcon } from './icons';
 import { Lineups } from './Lineups';
 import { useCentreData } from './useCentreData';
 import type { McMatch, McTable, McTeam, McUpcoming } from './types';
+import { TeamMark } from '@/components/shared/TeamMark';
+import type { LogoStatus } from '@/lib/logos/status';
 
 const LIVE = new Set<string>(LIVE_CODES_ARRAY);
 const FINISHED = new Set<string>(FINISHED_CODES_ARRAY);
@@ -63,26 +65,36 @@ const Mark = ({
   src,
   className = 'mark',
   size,
+  name,
+  code,
+  primary,
+  secondary,
+  status,
+  variant = 'team',
 }: {
   src: string | null;
   className?: string;
   /** Intrinsic box (width/height attributes) for above-the-fold crests; CSS sets the shown size. */
   size?: number;
-}) =>
-  src ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      className={className}
-      src={src}
-      alt=""
-      width={size}
-      height={size}
-      loading={size ? 'eager' : 'lazy'}
-      decoding="async"
-    />
-  ) : (
-    <span className={`${className} fallback`} aria-hidden="true" />
-  );
+  name?: string | null;
+  code?: string | null;
+  primary?: string | null;
+  secondary?: string | null;
+  status?: LogoStatus | null;
+  variant?: 'team' | 'competition';
+}) => (
+  <TeamMark
+    className={className}
+    src={src}
+    status={status}
+    size={size}
+    name={name}
+    code={code}
+    primary={primary}
+    secondary={secondary}
+    variant={variant}
+  />
+);
 
 const TeamName = ({ team }: { team: McTeam }) =>
   team.href ? <a href={team.href}>{team.name}</a> : <>{team.name}</>;
@@ -155,7 +167,15 @@ function Board({
     const { shown, hidden } = heroScorers(incidents, side);
     return (
       <div className="mc-team">
-        <Mark src={tm.logo} size={112} />
+        <Mark
+          src={tm.logo}
+          size={112}
+          name={tm.name}
+          code={tm.code}
+          primary={tm.primary}
+          secondary={tm.secondary}
+          status={tm.logoStatus}
+        />
         <strong>
           <TeamName team={tm} />
         </strong>
@@ -192,12 +212,12 @@ function Board({
       <div className="mc-kicker">
         {m.competition.href ? (
           <a href={m.competition.href} className="mc-league">
-            <Mark src={m.competition.logo} />
+            <Mark src={m.competition.logo} name={m.competition.name} variant="competition" />
             <span>{m.competition.name}</span>
           </a>
         ) : (
           <span className="mc-league">
-            <Mark src={m.competition.logo} />
+            <Mark src={m.competition.logo} name={m.competition.name} variant="competition" />
             <span>{m.competition.name}</span>
           </span>
         )}
@@ -294,7 +314,14 @@ function Upcoming({ cards, label }: { cards: McUpcoming[]; label: string }) {
               <div className="pair">
                 {[c.home, c.away].map((tm, i) => (
                   <div key={i} className="teamline">
-                    <Mark src={tm.logo} />
+                    <Mark
+                      src={tm.logo}
+                      name={tm.name}
+                      code={tm.code}
+                      primary={tm.primary}
+                      secondary={tm.secondary}
+                      status={tm.logoStatus}
+                    />
                     <bdi>{tm.name}</bdi>
                   </div>
                 ))}
@@ -362,7 +389,14 @@ function IncidentRow({ i, m, t }: { i: Incident; m: McMatch; t: T }) {
           </small>
         </span>
         <b />
-        <Mark src={team.logo} size={36} />
+        <Mark
+          src={team.logo}
+          size={36}
+          name={team.name}
+          code={'code' in team ? team.code : undefined}
+          primary={'primary' in team ? team.primary : undefined}
+          secondary={'secondary' in team ? team.secondary : undefined}
+        />
       </li>
     );
   }
@@ -388,7 +422,14 @@ function IncidentRow({ i, m, t }: { i: Incident; m: McMatch; t: T }) {
         <small>{`${label} · ${extra}`}</small>
       </span>
       <b className="mc-miniscore">{i.score ? pair(i.score[0], i.score[1]) : null}</b>
-      <Mark src={team.logo} size={36} />
+      <Mark
+        src={team.logo}
+        size={36}
+        name={team.name}
+        code={'code' in team ? team.code : undefined}
+        primary={'primary' in team ? team.primary : undefined}
+        secondary={'secondary' in team ? team.secondary : undefined}
+      />
     </li>
   );
 }
@@ -497,7 +538,15 @@ function StatCard({
       <div className="mc-cols">
         {[m.home, m.away].map((tm) => (
           <span key={tm.id}>
-            <Mark src={tm.logo} size={36} />
+            <Mark
+              src={tm.logo}
+              size={36}
+              name={tm.name}
+              code={tm.code}
+              primary={tm.primary}
+              secondary={tm.secondary}
+              status={tm.logoStatus}
+            />
             <bdi>{tm.name}</bdi>
           </span>
         ))}
@@ -576,7 +625,7 @@ function Standings({
               <td>{i + 1}</td>
               <th scope="row">
                 <span className="standing-team">
-                  <Mark src={r.logo} />
+                  <Mark src={r.logo} name={r.name} />
                   <bdi className="standing-name">
                     {r.href ? <a href={r.href}>{r.name}</a> : r.name}
                   </bdi>
@@ -850,7 +899,14 @@ export function MatchCentre({ match: m, upcoming, table }: MatchCentreProps) {
                         [m.away, awayLineup],
                       ].map(([tm, l]) => (
                         <span key={(tm as McTeam).id}>
-                          <Mark src={(tm as McTeam).logo} />
+                          <Mark
+                            src={(tm as McTeam).logo}
+                            name={(tm as McTeam).name}
+                            code={(tm as McTeam).code}
+                            primary={(tm as McTeam).primary}
+                            secondary={(tm as McTeam).secondary}
+                            status={(tm as McTeam).logoStatus}
+                          />
                           {(tm as McTeam).name} <bdi>{(l as MatchLineup).formation ?? ''}</bdi>
                         </span>
                       ))}

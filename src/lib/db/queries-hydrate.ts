@@ -2,11 +2,12 @@
  * Shared batch hydration helpers for fixtures.
  * Extracted so multiple query modules can reuse without duplication.
  */
-import { inArray, eq, sql } from 'drizzle-orm';
+import { inArray, eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 import type { FixtureWithTeams } from './queries';
+import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
 
 export type TeamSnapshot = {
   id: number;
@@ -16,6 +17,9 @@ export type TeamSnapshot = {
   code: string | null;
   countryCode: string | null;
   logoUrl: string | null;
+  logoStatus?: LogoStatus | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
   isNational: boolean | null;
 };
 
@@ -85,8 +89,14 @@ export async function getTeamsMap(
       shortName: schema.teams.shortName,
       code: schema.teams.code,
       countryCode: schema.teams.countryCode,
-      // Crest resolution: own logo ?? parent club's logo (Phase 16 · Task G).
-      logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${parent.logoUrl})`,
+      logoUrl: schema.teams.logoUrl,
+      logoStatus: schema.teams.logoStatus,
+      parentLogoUrl: parent.logoUrl,
+      parentLogoStatus: parent.logoStatus,
+      primaryColor: schema.teams.primaryColor,
+      secondaryColor: schema.teams.secondaryColor,
+      parentPrimary: parent.primaryColor,
+      parentSecondary: parent.secondaryColor,
       isNational: schema.teams.isNational,
     })
     .from(schema.teams)
@@ -94,7 +104,33 @@ export async function getTeamsMap(
     .where(inArray(schema.teams.id, teamIds));
 
   const map = new Map<number, TeamSnapshot>();
-  for (const t of teams) map.set(t.id, t);
+  for (const t of teams) {
+    const own = usableLogoUrl(t.logoUrl, t.logoStatus);
+    const par = usableLogoUrl(t.parentLogoUrl, t.parentLogoStatus);
+    const logoUrl = own ?? par;
+    const logoStatus: LogoStatus | null = own
+      ? (t.logoStatus ?? 'ok')
+      : par
+        ? (t.parentLogoStatus ?? 'ok')
+        : (t.logoStatus ?? (t.logoUrl || t.parentLogoUrl ? 'ok' : 'missing'));
+    map.set(t.id, {
+      id: t.id,
+      slug: t.slug,
+      name: t.name,
+      shortName: t.shortName,
+      code: t.code,
+      countryCode: t.countryCode,
+      logoUrl,
+      logoStatus: logoUrl
+        ? logoStatus === 'missing' || logoStatus === 'placeholder'
+          ? 'ok'
+          : logoStatus
+        : logoStatus,
+      primaryColor: t.primaryColor ?? t.parentPrimary ?? null,
+      secondaryColor: t.secondaryColor ?? t.parentSecondary ?? null,
+      isNational: t.isNational,
+    });
+  }
   return map;
 }
 

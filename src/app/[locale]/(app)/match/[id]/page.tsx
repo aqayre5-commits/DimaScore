@@ -306,7 +306,11 @@ export default async function MatchDetailPage({ params }: PageProps) {
     id,
     name,
     href: teamHref(tm?.slug),
-    logo: tm ? flagImageSrc(tm) : null,
+    logo: tm ? flagImageSrc({ ...tm, logoStatus: tm.logoStatus }) : null,
+    logoStatus: tm?.logoStatus ?? null,
+    code: tm?.code ?? null,
+    primary: tm?.primaryColor ?? null,
+    secondary: tm?.secondaryColor ?? null,
   });
   const view: McMatch = {
     id: fixtureId,
@@ -332,7 +336,11 @@ export default async function MatchDetailPage({ params }: PageProps) {
       id: match.competition.id,
       name: compName,
       href: competitionHref,
-      logo: resolveCompetitionLogo(match.competition.id, match.competition.logoUrl),
+      logo: resolveCompetitionLogo(
+        match.competition.id,
+        match.competition.logoUrl,
+        match.competition.logoStatus,
+      ),
     },
     roundLabel,
     home: team(match.homeTeam, homeTeamId, home),

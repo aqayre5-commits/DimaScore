@@ -1,3 +1,4 @@
+import type { LogoStatus } from '@/lib/logos/status';
 import type { Locale } from '@/lib/i18n/config';
 import type { MatchCoverage } from '@/lib/db/queries/match-detail';
 import type { LiveFixture, Phase, TableBase, TableResult } from '@/lib/match/match-centre';
@@ -7,6 +8,10 @@ export interface McTeam {
   name: string;
   href: string | null;
   logo: string | null;
+  logoStatus?: LogoStatus | null;
+  code?: string | null;
+  primary?: string | null;
+  secondary?: string | null;
 }
 
 /** Serializable match view the server hands to the client match centre. */
@@ -46,8 +51,22 @@ export interface McUpcoming {
   dayLabel: string;
   iso: string;
   time: string;
-  home: { name: string; logo: string | null };
-  away: { name: string; logo: string | null };
+  home: {
+    name: string;
+    logo: string | null;
+    logoStatus?: LogoStatus | null;
+    code?: string | null;
+    primary?: string | null;
+    secondary?: string | null;
+  };
+  away: {
+    name: string;
+    logo: string | null;
+    logoStatus?: LogoStatus | null;
+    code?: string | null;
+    primary?: string | null;
+    secondary?: string | null;
+  };
 }
 
 export interface McTable {

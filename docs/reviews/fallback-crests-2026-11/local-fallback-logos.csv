@@ -1,0 +1,4 @@
+kind,id,name,slug,reason,status,httpStatus,bytes,sha256,url
+team,3458,"Widad Témara","widad-temara-3458","placeholder:78e6132b4b25",placeholder,200,6746,78e6132b4b2566fbab177137480d0f883aee9c2370bd9a668787263c1a2d9138,"https://media.api-sports.io/football/teams/3458.png"
+team,17716,"USM Oujda","usm-oujda-17716","placeholder:78e6132b4b25",placeholder,200,6746,78e6132b4b2566fbab177137480d0f883aee9c2370bd9a668787263c1a2d9138,"https://media.api-sports.io/football/teams/17716.png"
+team,18753,"Amal Tiznit","amal-tiznit-18753","placeholder:72f0bbb253ab",placeholder,200,29416,72f0bbb253ab54961cd5d66148e55aceb3e6bc9823da43e57a6e0812e5427430,"https://media.api-sports.io/football/teams/18753.png"

@@ -66,7 +66,16 @@ export interface CompetitionPageProps {
   topScorers: TopPlayerRow[];
   topAssists: TopPlayerRow[];
   topCards: TopCardRow[];
-  clubs: { id: number; slug: string; name: string; logoUrl: string | null }[];
+  clubs: {
+    id: number;
+    slug: string;
+    name: string;
+    logoUrl: string | null;
+    logoStatus?: import('@/lib/logos/status').LogoStatus | null;
+    code?: string | null;
+    primaryColor?: string | null;
+    secondaryColor?: string | null;
+  }[];
   tableCaption?: string;
   todayKey: string;
   statsPlayerCount?: number;

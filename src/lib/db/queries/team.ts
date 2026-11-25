@@ -7,6 +7,7 @@ import * as schema from '../schema';
 import type { FixtureWithTeams, StandingRow } from '../queries';
 import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
+import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
 import { parseTrailingId } from '@/lib/seo/entity-slug';
 
 // ── Types ──
@@ -20,6 +21,9 @@ export interface TeamDetail {
   countryCode: string | null;
   founded: number | null;
   logoUrl: string | null;
+  logoStatus: LogoStatus | null;
+  primaryColor: string | null;
+  secondaryColor: string | null;
   isNational: boolean | null;
   isWomen: boolean | null;
   venue: { id: number; name: string | null; city: string | null; capacity: number | null } | null;
@@ -61,8 +65,12 @@ async function getTeamBySlugImpl(
       code: schema.teams.code,
       countryCode: schema.teams.countryCode,
       founded: schema.teams.founded,
-      // Crest resolution: own logo ?? parent club's logo (Phase 16 · Task G).
-      logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${teamParent.logoUrl})`,
+      logoUrl: schema.teams.logoUrl,
+      logoStatus: schema.teams.logoStatus,
+      parentLogoUrl: teamParent.logoUrl,
+      parentLogoStatus: teamParent.logoStatus,
+      primaryColor: schema.teams.primaryColor,
+      secondaryColor: schema.teams.secondaryColor,
       isNational: schema.teams.isNational,
       isWomen: schema.teams.isWomen,
       venueId: schema.teams.venueId,
@@ -110,7 +118,16 @@ async function getTeamBySlugImpl(
     code: team.code,
     countryCode: team.countryCode,
     founded: team.founded,
-    logoUrl: team.logoUrl,
+    logoUrl:
+      usableLogoUrl(team.logoUrl, team.logoStatus) ??
+      usableLogoUrl(team.parentLogoUrl, team.parentLogoStatus),
+    logoStatus: usableLogoUrl(team.logoUrl, team.logoStatus)
+      ? (team.logoStatus ?? 'ok')
+      : usableLogoUrl(team.parentLogoUrl, team.parentLogoStatus)
+        ? (team.parentLogoStatus ?? 'ok')
+        : (team.logoStatus ?? 'missing'),
+    primaryColor: team.primaryColor ?? null,
+    secondaryColor: team.secondaryColor ?? null,
     isNational: team.isNational,
     isWomen: team.isWomen,
     venue,

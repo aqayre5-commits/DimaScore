@@ -3,6 +3,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { TeamMark } from '@/components/shared/TeamMark';
+import type { LogoStatus } from '@/lib/logos/status';
 import { useFollows } from '@/hooks/useFollows';
 import { useLiveFixtures } from '@/hooks/useLiveFixtures';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
@@ -57,24 +59,40 @@ function StarIcon() {
 
 function Crest({
   src,
+  status,
   sizeVar,
   invert,
+  name,
+  shortName,
+  code,
+  primary,
+  secondary,
+  variant = 'team',
 }: {
   src: string | null | undefined;
+  status?: LogoStatus | null;
   sizeVar?: string;
   invert?: boolean;
+  name?: string | Record<string, string> | null;
+  shortName?: string | Record<string, string> | null;
+  code?: string | null;
+  primary?: string | null;
+  secondary?: string | null;
+  variant?: 'team' | 'competition';
 }) {
-  const [failed, setFailed] = useState(false);
-  const style = sizeVar ? ({ ['--m' as string]: sizeVar } as React.CSSProperties) : undefined;
-  if (!src || failed) return <span className="mark fallback" aria-hidden="true" style={style} />;
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <TeamMark
       className={`mark${invert ? ' logo-invert' : ''}`}
       src={src}
-      alt=""
-      style={style}
-      onError={() => setFailed(true)}
+      status={status}
+      sizeVar={sizeVar}
+      invert={invert}
+      name={name}
+      shortName={shortName}
+      code={code}
+      primary={primary}
+      secondary={secondary}
+      variant={variant}
     />
   );
 }
@@ -156,18 +174,7 @@ export function CompetitionIdentity({
 
   return (
     <div className="pl-identity">
-      {logoSrc ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          className={`mark${invertLogo ? ' logo-invert' : ''}`}
-          src={logoSrc}
-          alt=""
-          width={128}
-          height={128}
-        />
-      ) : (
-        <span className="mark fallback" aria-hidden="true" />
-      )}
+      <Crest src={logoSrc} invert={invertLogo} name={name} variant="competition" />
       <div>
         <h1>{name}</h1>
         {countryName && (
@@ -242,11 +249,27 @@ export function UpcomingCard({ fixture, locale }: { fixture: FixtureWithTeams; l
       <div className="upcoming-match">
         <div className="pair">
           <div className="teamline">
-            <Crest src={fixture.homeTeam?.logoUrl} />
+            <Crest
+              src={fixture.homeTeam?.logoUrl}
+              status={fixture.homeTeam?.logoStatus}
+              name={fixture.homeTeam?.name}
+              shortName={fixture.homeTeam?.shortName}
+              code={fixture.homeTeam?.code}
+              primary={fixture.homeTeam?.primaryColor}
+              secondary={fixture.homeTeam?.secondaryColor}
+            />
             <bdi>{teamName(fixture.homeTeam, locale)}</bdi>
           </div>
           <div className="teamline">
-            <Crest src={fixture.awayTeam?.logoUrl} />
+            <Crest
+              src={fixture.awayTeam?.logoUrl}
+              status={fixture.awayTeam?.logoStatus}
+              name={fixture.awayTeam?.name}
+              shortName={fixture.awayTeam?.shortName}
+              code={fixture.awayTeam?.code}
+              primary={fixture.awayTeam?.primaryColor}
+              secondary={fixture.awayTeam?.secondaryColor}
+            />
             <bdi>{teamName(fixture.awayTeam, locale)}</bdi>
           </div>
         </div>
@@ -330,7 +353,16 @@ export function FeaturedMatch({
     >
       <div className="herocore">
         <div className="heroteam">
-          <Crest src={fixture.homeTeam?.logoUrl} sizeVar="clamp(56px, 6vw, 88px)" />
+          <Crest
+            src={fixture.homeTeam?.logoUrl}
+            status={fixture.homeTeam?.logoStatus}
+            name={fixture.homeTeam?.name}
+            shortName={fixture.homeTeam?.shortName}
+            code={fixture.homeTeam?.code}
+            primary={fixture.homeTeam?.primaryColor}
+            secondary={fixture.homeTeam?.secondaryColor}
+            sizeVar="clamp(56px, 6vw, 88px)"
+          />
           <strong>
             <bdi>{teamName(fixture.homeTeam, locale)}</bdi>
           </strong>
@@ -348,7 +380,16 @@ export function FeaturedMatch({
           </span>
         </div>
         <div className="heroteam">
-          <Crest src={fixture.awayTeam?.logoUrl} sizeVar="clamp(56px, 6vw, 88px)" />
+          <Crest
+            src={fixture.awayTeam?.logoUrl}
+            status={fixture.awayTeam?.logoStatus}
+            name={fixture.awayTeam?.name}
+            shortName={fixture.awayTeam?.shortName}
+            code={fixture.awayTeam?.code}
+            primary={fixture.awayTeam?.primaryColor}
+            secondary={fixture.awayTeam?.secondaryColor}
+            sizeVar="clamp(56px, 6vw, 88px)"
+          />
           <strong>
             <bdi>{teamName(fixture.awayTeam, locale)}</bdi>
           </strong>
@@ -418,7 +459,15 @@ export function CompetitionMatchRow({
         <div className={`clock${live ? ' is-live' : ''}`}>{clock}</div>
         <div className="duo">
           <div className={`teamline${awayWon ? ' is-loser' : ''}`}>
-            <Crest src={fixture.homeTeam?.logoUrl} />
+            <Crest
+              src={fixture.homeTeam?.logoUrl}
+              status={fixture.homeTeam?.logoStatus}
+              name={fixture.homeTeam?.name}
+              shortName={fixture.homeTeam?.shortName}
+              code={fixture.homeTeam?.code}
+              primary={fixture.homeTeam?.primaryColor}
+              secondary={fixture.homeTeam?.secondaryColor}
+            />
             <span className="teamname">
               <bdi>{teamName(fixture.homeTeam, locale)}</bdi>
             </span>
@@ -429,7 +478,15 @@ export function CompetitionMatchRow({
             )}
           </div>
           <div className={`teamline${homeWon ? ' is-loser' : ''}`}>
-            <Crest src={fixture.awayTeam?.logoUrl} />
+            <Crest
+              src={fixture.awayTeam?.logoUrl}
+              status={fixture.awayTeam?.logoStatus}
+              name={fixture.awayTeam?.name}
+              shortName={fixture.awayTeam?.shortName}
+              code={fixture.awayTeam?.code}
+              primary={fixture.awayTeam?.primaryColor}
+              secondary={fixture.awayTeam?.secondaryColor}
+            />
             <span className="teamname">
               <bdi>{teamName(fixture.awayTeam, locale)}</bdi>
             </span>
@@ -569,7 +626,15 @@ export function StandingsTable({
             const color = zoneColor(row.description);
             const team = (
               <>
-                <Crest src={row.team?.logoUrl} />
+                <Crest
+                  src={row.team?.logoUrl}
+                  status={row.team?.logoStatus}
+                  name={row.team?.name}
+                  shortName={row.team?.shortName}
+                  code={row.team?.code}
+                  primary={row.team?.primaryColor}
+                  secondary={row.team?.secondaryColor}
+                />
                 <bdi>{row.team ? getTeamDisplayName(row.team, locale) : '—'}</bdi>
                 {live ? <span className="standing-live">{live}</span> : null}
               </>
@@ -712,7 +777,7 @@ export function PlayerRanking({
               <td className="stand-pos">{p.rank}</td>
               <td>
                 <a className="player-cell" href={`/${locale}/joueur/${p.slug}`}>
-                  <Crest src={p.teamLogo} />
+                  <Crest src={p.teamLogo} name={p.team} />
                   <bdi>{p.name}</bdi>
                 </a>
               </td>
@@ -873,7 +938,16 @@ export function ClubDetails({
   intro,
   locale,
 }: {
-  teams: { id: number; slug: string; name: string; logoUrl: string | null }[];
+  teams: {
+    id: number;
+    slug: string;
+    name: string;
+    logoUrl: string | null;
+    logoStatus?: import('@/lib/logos/status').LogoStatus | null;
+    code?: string | null;
+    primaryColor?: string | null;
+    secondaryColor?: string | null;
+  }[];
   intro: string | null;
   locale: Locale;
 }) {
@@ -890,7 +964,14 @@ export function ClubDetails({
         <ul>
           {teams.map((team) => (
             <li key={team.id}>
-              <Crest src={team.logoUrl} />
+              <Crest
+                src={team.logoUrl}
+                status={team.logoStatus}
+                name={team.name}
+                code={team.code}
+                primary={team.primaryColor}
+                secondary={team.secondaryColor}
+              />
               <a href={`/${locale}/equipe/${team.slug}`}>
                 <bdi>{team.name}</bdi>
               </a>
@@ -902,9 +983,7 @@ export function ClubDetails({
   );
 }
 
-export function mapScorers(
-  rows: TopPlayerRow[],
-): {
+export function mapScorers(rows: TopPlayerRow[]): {
   id: number;
   slug: string;
   name: string;
