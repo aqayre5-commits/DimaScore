@@ -8,6 +8,8 @@ import { getTeamsMap, type TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { resolveGroupLabel } from './right-rail';
 import type { ResolvedKitPalette } from '@/lib/match/kit-colours';
+import { applyStoredSeasonFallback } from '@/lib/match/season-kits';
+import { loadFixtureKitContext } from '@/lib/match/season-kit-db';
 
 // ── Match detail ──
 
@@ -322,11 +324,15 @@ export async function getMatchLineups(
       hydrateMap.set(pr.id, { photoUrl: pr.photoUrl, birthDate: pr.birthDate });
   }
 
+  const kitCtx = await loadFixtureKitContext(db, fixtureId);
+
   return parsed.map((r) => ({
     teamId: r.teamId,
     formation: r.formation,
     coach: r.coachId != null && r.coachName != null ? { id: r.coachId, name: r.coachName } : null,
-    colors: r.colors ?? null,
+    colors: kitCtx
+      ? applyStoredSeasonFallback(kitCtx, r.teamId, r.colors ?? null)
+      : (r.colors ?? null),
     starters: r.rawStarters.map((s) => ({
       id: s.id,
       name: s.name,

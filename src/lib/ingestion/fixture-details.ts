@@ -11,6 +11,8 @@ import * as schema from '@/lib/db/schema';
 import { runWrites } from '@/lib/db/client';
 import { resolveTeamKits } from '@/lib/match/kit-colours';
 import { KIT_CORRECTIONS } from '@/lib/match/kit-corrections';
+import { resolveTeamKitsWithSeason, type FixtureKitContext } from '@/lib/match/season-kits';
+import { loadFixtureKitContext } from '@/lib/match/season-kit-db';
 
 // ── Events ──
 
@@ -30,10 +32,16 @@ function mapEvent(fixtureId: number, e: NormalizedFixtureEvent) {
 
 // ── Lineups ──
 
-function mapLineup(fixtureId: number, l: NormalizedFixtureLineup) {
-  const kits = resolveTeamKits(fixtureId, l.team.id, l.team.colors, {
-    corrections: KIT_CORRECTIONS,
-  });
+function mapLineup(
+  fixtureId: number,
+  l: NormalizedFixtureLineup,
+  kitCtx?: FixtureKitContext | null,
+) {
+  const kits = kitCtx
+    ? resolveTeamKitsWithSeason(kitCtx, l.team.id, l.team.colors)
+    : resolveTeamKits(fixtureId, l.team.id, l.team.colors, {
+        corrections: KIT_CORRECTIONS,
+      });
   return {
     fixtureId,
     teamId: l.team.id,
@@ -99,6 +107,8 @@ export async function syncFixtureDetails(
   let statisticsCount = 0;
   let playerStatsCount = 0;
 
+  const kitCtx = lineups.length > 0 ? await loadFixtureKitContext(db, fixtureId) : null;
+
   await runWrites(async (tx) => {
     // Events: delete existing + batch insert fresh
     if (events.length > 0) {
@@ -110,7 +120,7 @@ export async function syncFixtureDetails(
 
     // Lineups: upsert per team
     for (const l of lineups) {
-      const row = mapLineup(fixtureId, l);
+      const row = mapLineup(fixtureId, l, kitCtx);
       await tx
         .insert(schema.fixtureLineups)
         .values(row)
@@ -216,6 +226,8 @@ export async function syncLiveFixtureDetails(
   let lineupsCount = 0;
   let statisticsCount = 0;
 
+  const kitCtx = lineups.length > 0 ? await loadFixtureKitContext(db, fixtureId) : null;
+
   await runWrites(async (tx) => {
     if (want.events && events.length > 0) {
       const eventRows = events.map((e) => mapEvent(fixtureId, e));
@@ -225,7 +237,7 @@ export async function syncLiveFixtureDetails(
     }
 
     for (const l of lineups) {
-      const row = mapLineup(fixtureId, l);
+      const row = mapLineup(fixtureId, l, kitCtx);
       await tx
         .insert(schema.fixtureLineups)
         .values(row)
