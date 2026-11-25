@@ -2,6 +2,7 @@ FROM node:22-alpine AS base
 RUN corepack enable && corepack prepare pnpm@11.13.1 --activate
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
+COPY vendor ./vendor
 ENV HUSKY=0
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
