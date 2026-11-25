@@ -2,6 +2,7 @@ import { cacheLife } from 'next/cache';
 import { db } from '@/lib/db/client';
 import { getAvailableSeasons, getCurrentSeasonYear } from '@/lib/db/queries/league';
 import { resolveLeagueSeason, type ResolvedLeagueSeason } from '@/lib/competitions/league-season';
+import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
 
 /**
  * Cached by competition ID only — every Botola slug alias (AR Unicode, EN, mixed)
@@ -23,5 +24,6 @@ export async function resolveCompetitionSeason(
   requestedYear: number | null = null,
 ): Promise<ResolvedLeagueSeason> {
   const { availableSeasons, currentSeasonYear } = await getLeagueSeasonSnapshot(competitionId);
-  return resolveLeagueSeason(availableSeasons, currentSeasonYear, requestedYear);
+  const allowed = allowedSeasons(competitionId, availableSeasons);
+  return resolveLeagueSeason(availableSeasons, currentSeasonYear, requestedYear, allowed);
 }

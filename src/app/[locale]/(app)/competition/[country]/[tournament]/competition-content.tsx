@@ -17,6 +17,8 @@ import { getCompetitionById } from '@/lib/db/queries/league';
 import { renderCupPage } from './render-cup-page';
 import { renderLeaguePage } from './render-league-page';
 import { renderGenericCupPage } from './render-generic-cup-page';
+import { renderDomesticCupPage } from './render-domestic-cup-page';
+import { getCompetitionFormat } from '@/lib/competitions/formats';
 import { NavCompetitionRegister } from '@/components/chrome/NavCompetitionRegister';
 import { getRailProps } from '@/components/match/centre/rail-props';
 
@@ -52,6 +54,8 @@ interface CompetitionContentProps {
   rawTournament: string;
   /** Explicit season from the /[season] route; undefined = current season. */
   season?: number;
+  /** Round slug from the /round/[round] route. */
+  roundSlug?: string;
 }
 
 /**
@@ -77,6 +81,7 @@ async function CompetitionBody({
   rawCountry,
   rawTournament,
   season,
+  roundSlug,
 }: CompetitionContentProps) {
   const typedLocale = rawLocale as Locale;
   const tournament = decodeURIComponent(rawTournament);
@@ -135,6 +140,19 @@ async function CompetitionBody({
   const competitionLogos = await getLeftRailLogos();
 
   if (competition.type === 'Cup') {
+    const format = getCompetitionFormat(competition.id);
+    if (format?.kind === 'domestic-cup') {
+      return renderDomesticCupPage(
+        competition,
+        entry,
+        typedLocale,
+        rawLocale,
+        rawCountry,
+        rawTournament,
+        seasonParam,
+        roundSlug,
+      );
+    }
     return renderGenericCupPage(
       competition,
       entry,

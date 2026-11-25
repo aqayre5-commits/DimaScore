@@ -1209,5 +1209,25 @@
       "today": "Today",
       "tomorrow": "Tomorrow"
     }
+  },
+  "domesticCup": {
+    "stagesTab": "Stages",
+    "todaysMatches": "Today's matches",
+    "tomorrow": "Tomorrow",
+    "fullTime": "FT",
+    "matchCentre": "Match centre",
+    "firstLeg": "First leg",
+    "secondLeg": "Second leg",
+    "leg1": "Leg 1",
+    "leg2": "Leg 2",
+    "agg": "Agg.",
+    "aggregate": "Aggregate",
+    "replay": "Replay",
+    "earlierRounds": "Earlier rounds",
+    "rounds": "Rounds",
+    "matchesCount": "{n} matches",
+    "clubs": "Clubs",
+    "recordsFrom": "Player records from {round}",
+    "noStats": "Statistics are not available for this competition."
   }
 }

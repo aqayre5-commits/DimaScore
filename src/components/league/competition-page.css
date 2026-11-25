@@ -91,8 +91,8 @@
 .mc .pl-identity h1 {
   margin: 0;
   font-size: clamp(25px, 2.15vw, 36px);
-  font-weight: 750;
-  letter-spacing: -0.03em;
+  font-weight: 780;
+  letter-spacing: -0.044em;
   line-height: 1.16;
   overflow-wrap: break-word;
   color: var(--ink);
@@ -307,8 +307,8 @@
   margin: 0;
   font-size: var(--title-size);
   line-height: 1.16;
-  letter-spacing: -0.042em;
-  font-weight: 750;
+  letter-spacing: -0.044em;
+  font-weight: 780;
   color: var(--ink);
 }
 

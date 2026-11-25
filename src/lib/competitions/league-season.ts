@@ -20,6 +20,7 @@ export function resolveLeagueSeason(
   available: SeasonOption[],
   currentSeasonYear: number | null,
   requestedYear: number | null = null,
+  allowedYears?: number[] | null,
 ): ResolvedLeagueSeason {
   const byYear = new Map<number, SeasonOption>();
   for (const row of available) {
@@ -37,9 +38,17 @@ export function resolveLeagueSeason(
     });
   }
 
-  const seasons = [...byYear.values()].sort((a, b) => b.year - a.year);
+  let seasons = [...byYear.values()].sort((a, b) => b.year - a.year);
+  if (allowedYears && allowedYears.length > 0) {
+    const allow = new Set(allowedYears);
+    seasons = seasons.filter((s) => allow.has(s.year));
+  }
+  const allowed = new Set(seasons.map((s) => s.year));
   const requestedOk =
-    requestedYear != null && Number.isFinite(requestedYear) && byYear.has(requestedYear);
+    requestedYear != null &&
+    Number.isFinite(requestedYear) &&
+    byYear.has(requestedYear) &&
+    (allowed.size === 0 || allowed.has(requestedYear));
 
   return {
     seasonYear: requestedOk ? requestedYear : currentSeasonYear,
