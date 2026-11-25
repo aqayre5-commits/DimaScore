@@ -1,0 +1,786 @@
+[
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 42,
+  "slug": "arsenal",
+  "name": "Arsenal"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 51,
+  "slug": "brighton",
+  "name": "Brighton"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 50,
+  "slug": "manchester-city",
+  "name": "Manchester City"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 40,
+  "slug": "liverpool",
+  "name": "Liverpool"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 35,
+  "slug": "bournemouth",
+  "name": "Bournemouth"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 55,
+  "slug": "brentford",
+  "name": "Brentford"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 63,
+  "slug": "leeds",
+  "name": "Leeds"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 49,
+  "slug": "chelsea",
+  "name": "Chelsea"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 45,
+  "slug": "everton",
+  "name": "Everton"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 47,
+  "slug": "tottenham",
+  "name": "Tottenham"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 64,
+  "slug": "hull-city",
+  "name": "Hull City"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 66,
+  "slug": "aston-villa",
+  "name": "Aston Villa"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 34,
+  "slug": "newcastle",
+  "name": "Newcastle"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 1346,
+  "slug": "coventry",
+  "name": "Coventry"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 36,
+  "slug": "fulham",
+  "name": "Fulham"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 57,
+  "slug": "ipswich",
+  "name": "Ipswich"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 65,
+  "slug": "nottingham-forest",
+  "name": "Nottingham Forest"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 746,
+  "slug": "sunderland",
+  "name": "Sunderland"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 33,
+  "slug": "manchester-united",
+  "name": "Manchester United"
+ },
+ {
+  "league": "premier-league",
+  "competition_id": 39,
+  "team_id": 52,
+  "slug": "crystal-palace",
+  "name": "Crystal Palace"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 529,
+  "slug": "barcelona",
+  "name": "Barcelona"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 541,
+  "slug": "real-madrid",
+  "name": "Real Madrid"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 530,
+  "slug": "atletico-madrid",
+  "name": "Atletico Madrid"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 543,
+  "slug": "real-betis",
+  "name": "Real Betis"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 548,
+  "slug": "real-sociedad",
+  "name": "Real Sociedad"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 536,
+  "slug": "sevilla",
+  "name": "Sevilla"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 4665,
+  "slug": "racing-santander",
+  "name": "Racing Santander"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 531,
+  "slug": "athletic-club",
+  "name": "Athletic Club"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 542,
+  "slug": "alaves",
+  "name": "Alaves"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 533,
+  "slug": "villarreal",
+  "name": "Villarreal"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 540,
+  "slug": "espanyol",
+  "name": "Espanyol"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 544,
+  "slug": "deportivo-la-coruna",
+  "name": "Deportivo La Coruna"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 727,
+  "slug": "osasuna",
+  "name": "Osasuna"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 538,
+  "slug": "celta-vigo",
+  "name": "Celta Vigo"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 539,
+  "slug": "levante",
+  "name": "Levante"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 728,
+  "slug": "rayo-vallecano",
+  "name": "Rayo Vallecano"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 532,
+  "slug": "valencia",
+  "name": "Valencia"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 546,
+  "slug": "getafe",
+  "name": "Getafe"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 797,
+  "slug": "elche",
+  "name": "Elche"
+ },
+ {
+  "league": "la-liga",
+  "competition_id": 140,
+  "team_id": 535,
+  "slug": "malaga",
+  "name": "Malaga"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 487,
+  "slug": "lazio",
+  "name": "Lazio"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 497,
+  "slug": "as-roma",
+  "name": "AS Roma"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 505,
+  "slug": "inter",
+  "name": "Inter"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 489,
+  "slug": "ac-milan",
+  "name": "AC Milan"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 895,
+  "slug": "como",
+  "name": "Como"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 496,
+  "slug": "juventus",
+  "name": "Juventus"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 512,
+  "slug": "frosinone",
+  "name": "Frosinone"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 492,
+  "slug": "napoli",
+  "name": "Napoli"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 500,
+  "slug": "bologna",
+  "name": "Bologna"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 495,
+  "slug": "genoa",
+  "name": "Genoa"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 490,
+  "slug": "cagliari",
+  "name": "Cagliari"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 499,
+  "slug": "atalanta",
+  "name": "Atalanta"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 503,
+  "slug": "torino",
+  "name": "Torino"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 1579,
+  "slug": "monza",
+  "name": "Monza"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 867,
+  "slug": "lecce",
+  "name": "Lecce"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 502,
+  "slug": "fiorentina",
+  "name": "Fiorentina"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 523,
+  "slug": "parma",
+  "name": "Parma"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 488,
+  "slug": "sassuolo",
+  "name": "Sassuolo"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 494,
+  "slug": "udinese",
+  "name": "Udinese"
+ },
+ {
+  "league": "serie-a",
+  "competition_id": 135,
+  "team_id": 517,
+  "slug": "venezia",
+  "name": "Venezia"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 165,
+  "slug": "borussia-dortmund",
+  "name": "Borussia Dortmund"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 157,
+  "slug": "bayern-munchen",
+  "name": "Bayern München"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 160,
+  "slug": "sc-freiburg",
+  "name": "SC Freiburg"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 173,
+  "slug": "rb-leipzig",
+  "name": "RB Leipzig"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 168,
+  "slug": "bayer-leverkusen",
+  "name": "Bayer Leverkusen"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 162,
+  "slug": "werder-bremen",
+  "name": "Werder Bremen"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 169,
+  "slug": "eintracht-frankfurt",
+  "name": "Eintracht Frankfurt"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 172,
+  "slug": "vfb-stuttgart",
+  "name": "VfB Stuttgart"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 1660,
+  "slug": "sv-elversberg",
+  "name": "SV Elversberg"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 170,
+  "slug": "fc-augsburg",
+  "name": "FC Augsburg"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 167,
+  "slug": "1899-hoffenheim",
+  "name": "1899 Hoffenheim"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 175,
+  "slug": "hamburger-sv",
+  "name": "Hamburger SV"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 164,
+  "slug": "fsv-mainz-05",
+  "name": "FSV Mainz 05"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 192,
+  "slug": "1-fc-koln",
+  "name": "1. FC Köln"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 185,
+  "slug": "sc-paderborn-07",
+  "name": "SC Paderborn 07"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 174,
+  "slug": "fc-schalke-04",
+  "name": "FC Schalke 04"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 182,
+  "slug": "union-berlin",
+  "name": "Union Berlin"
+ },
+ {
+  "league": "bundesliga",
+  "competition_id": 78,
+  "team_id": 163,
+  "slug": "borussia-monchengladbach",
+  "name": "Borussia Mönchengladbach"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 85,
+  "slug": "paris-saint-germain",
+  "name": "Paris Saint Germain"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 114,
+  "slug": "paris-fc",
+  "name": "Paris FC"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 79,
+  "slug": "lille",
+  "name": "Lille"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 80,
+  "slug": "lyon",
+  "name": "Lyon"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 81,
+  "slug": "marseille",
+  "name": "Marseille"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 106,
+  "slug": "stade-brestois-29",
+  "name": "Stade Brestois 29"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 84,
+  "slug": "nice",
+  "name": "Nice"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 91,
+  "slug": "monaco",
+  "name": "Monaco"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 94,
+  "slug": "rennes",
+  "name": "Rennes"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 97,
+  "slug": "lorient",
+  "name": "Lorient"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 116,
+  "slug": "lens",
+  "name": "Lens"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 96,
+  "slug": "toulouse",
+  "name": "Toulouse"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 1298,
+  "slug": "le-mans",
+  "name": "Le Mans"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 110,
+  "slug": "estac-troyes",
+  "name": "Estac Troyes"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 108,
+  "slug": "auxerre",
+  "name": "Auxerre"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 95,
+  "slug": "strasbourg",
+  "name": "Strasbourg"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 77,
+  "slug": "angers",
+  "name": "Angers"
+ },
+ {
+  "league": "ligue-1",
+  "competition_id": 61,
+  "team_id": 111,
+  "slug": "le-havre",
+  "name": "Le Havre"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 971,
+  "slug": "kawkab-marrakech",
+  "name": "Kawkab Marrakech"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 22218,
+  "slug": "codm-meknes",
+  "name": "CODM Meknès"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 976,
+  "slug": "raja-casablanca",
+  "name": "Raja Casablanca"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 969,
+  "slug": "far-rabat",
+  "name": "FAR Rabat"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 968,
+  "slug": "wydad-ac",
+  "name": "Wydad AC"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 3453,
+  "slug": "maghreb-fes",
+  "name": "Maghreb Fès"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 974,
+  "slug": "ittihad-tanger",
+  "name": "Ittihad Tanger"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 973,
+  "slug": "hassania-agadir",
+  "name": "Hassania Agadir"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 962,
+  "slug": "renaissance-berkane",
+  "name": "Renaissance Berkane"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 977,
+  "slug": "fus-rabat",
+  "name": "FUS Rabat"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 964,
+  "slug": "difaa-el-jadida",
+  "name": "Difaa EL Jadida"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 14806,
+  "slug": "uts-rabat",
+  "name": "UTS Rabat"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 18753,
+  "slug": "amal-tiznit",
+  "name": "Amal Tiznit"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 3458,
+  "slug": "widad-temara",
+  "name": "Widad Témara"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 965,
+  "slug": "moghreb-tetouan",
+  "name": "Moghreb Tetouan"
+ },
+ {
+  "league": "botola-pro",
+  "competition_id": 200,
+  "team_id": 3449,
+  "slug": "cr-khemis-zemamra",
+  "name": "CR Khemis Zemamra"
+ }
+]

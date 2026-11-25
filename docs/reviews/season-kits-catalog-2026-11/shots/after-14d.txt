@@ -1,0 +1,28 @@
+◇ injected env (0) from .env.local // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+[dry-run-season-kit-fallback] === DRY RUN (read-only, days=14) ===
+[dry-run-season-kit-fallback] Line-up rows in the window: 18
+[dry-run-season-kit-fallback] Rows currently missing a complete kit (null or source=neutral): 18
+[dry-run-season-kit-fallback] Would move from grey to a kit: 3
+[dry-run-season-kit-fallback] Would stay grey: 15
+[dry-run-season-kit-fallback] By team (team_id, grey, would_move, stay_grey):
+[dry-run-season-kit-fallback]   1860	1	0	1
+[dry-run-season-kit-fallback]   17575	1	0	1
+[dry-run-season-kit-fallback]   1676	1	0	1
+[dry-run-season-kit-fallback]   13982	1	0	1
+[dry-run-season-kit-fallback]   1674	1	0	1
+[dry-run-season-kit-fallback]   1850	1	0	1
+[dry-run-season-kit-fallback]   1918	1	0	1
+[dry-run-season-kit-fallback]   15548	1	0	1
+[dry-run-season-kit-fallback]   1892	1	0	1
+[dry-run-season-kit-fallback]   15495	1	0	1
+[dry-run-season-kit-fallback]   2869	1	0	1
+[dry-run-season-kit-fallback]   2872	1	0	1
+[dry-run-season-kit-fallback]   2865	1	0	1
+[dry-run-season-kit-fallback]   2873	1	0	1
+[dry-run-season-kit-fallback]   197	1	0	1
+[dry-run-season-kit-fallback]   541	1	1	0
+[dry-run-season-kit-fallback]   968	1	1	0
+[dry-run-season-kit-fallback]   969	1	1	0
+[dry-run-season-kit-fallback] Stay-grey reasons:
+[dry-run-season-kit-fallback]   no-kit-for-team-season: 15
+[dry-run-season-kit-fallback] No rows were written.

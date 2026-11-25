@@ -26,16 +26,16 @@ describe('catalog', () => {
     const fulham = catalogSeasonKits(36, 2026);
     expect(city?.sourceUrl).toMatch(/wikipedia\.org/);
     expect(fulham?.sourceUrl).toMatch(/wikipedia\.org/);
-    expect(city?.player.home.primary).toBe('#98c6eb');
-    expect(fulham?.player.home.primary).toBe('#ffffff');
-    expect(fulham?.player.away.primary).toBe('#000000');
+    expect(city?.player.home?.primary).toBe('#98c6eb');
+    expect(fulham?.player.home?.primary).toBe('#ffffff');
+    expect(fulham?.player.away?.primary).toBe('#000000');
   });
 
   it('stores contrast-safe numbers (AA 4.5:1) on every curated shirt', () => {
     for (const set of SEASON_KITS) {
       for (const role of ['player', 'goalkeeper'] as const) {
         for (const slot of ['home', 'away', 'third'] as const) {
-          const pal = set[role][slot];
+          const pal = set[role]?.[slot];
           if (!pal) continue;
           expect(contrastRatio(pal.primary, pal.number)).toBeGreaterThanOrEqual(4.5);
         }
@@ -57,7 +57,9 @@ describe('worn-kit convention', () => {
   it('gives the home team its home kit and the away team its away kit', () => {
     const city = catalogSeasonKits(50, 2026)!;
     const fulham = catalogSeasonKits(36, 2026)!;
-    expect(pickWornSlot({ fixtureId: 1, teamId: 50, isHome: true, kits: city.player })).toMatchObject({
+    expect(
+      pickWornSlot({ fixtureId: 1, teamId: 50, isHome: true, kits: city.player }),
+    ).toMatchObject({
       slot: 'home',
       basis: 'convention',
     });
@@ -67,7 +69,7 @@ describe('worn-kit convention', () => {
         teamId: 36,
         isHome: false,
         kits: fulham.player,
-        opponentPrimary: city.player.home.primary,
+        opponentPrimary: city.player.home?.primary,
       }),
     ).toMatchObject({ slot: 'away', basis: 'convention' });
   });
@@ -119,7 +121,9 @@ describe('resolveTeamKitsWithSeason', () => {
   });
 
   it('looks up by team.id, not by home/away array order', () => {
-    const [awayFirst, homeSecond] = [36, 50].map((id) => resolveTeamKitsWithSeason(CITY_FULHAM, id, null));
+    const [awayFirst, homeSecond] = [36, 50].map((id) =>
+      resolveTeamKitsWithSeason(CITY_FULHAM, id, null),
+    );
     expect(awayFirst.teamId).toBe(36);
     expect(awayFirst.player.primary).toBe('#000000');
     expect(homeSecond.teamId).toBe(50);
@@ -171,7 +175,7 @@ describe('inferSeasonKitsFromApiSamples', () => {
         goalkeeper: { primary: '#00aa00', number: '#111111', border: '#111111' },
       },
     ]);
-    expect(inferred?.player.home.primary).toBe('#aa0000');
-    expect(inferred?.player.away.primary).toBe('#0000aa');
+    expect(inferred?.player.home?.primary).toBe('#aa0000');
+    expect(inferred?.player.away?.primary).toBe('#0000aa');
   });
 });

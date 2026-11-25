@@ -1,0 +1,996 @@
+{
+ "club": {
+  "42": "Arsenal F.C.",
+  "51": "Brighton & Hove Albion F.C.",
+  "50": "Manchester City F.C.",
+  "40": "Liverpool F.C.",
+  "35": "AFC Bournemouth",
+  "55": "Brentford F.C.",
+  "63": "Leeds United F.C.",
+  "49": "Chelsea F.C.",
+  "45": "Everton F.C.",
+  "47": "Tottenham Hotspur F.C.",
+  "64": "Hull City A.F.C.",
+  "66": "Aston Villa F.C.",
+  "34": "Newcastle United F.C.",
+  "1346": "Coventry City F.C.",
+  "36": "Fulham F.C.",
+  "57": "Ipswich Town F.C.",
+  "65": "Nottingham Forest F.C.",
+  "746": "Sunderland A.F.C.",
+  "33": "Manchester United F.C.",
+  "52": "Crystal Palace F.C.",
+  "529": "FC Barcelona",
+  "541": "Real Madrid CF",
+  "530": "Atlético Madrid",
+  "543": "Real Betis",
+  "548": "Real Sociedad",
+  "536": "Sevilla FC",
+  "4665": "Racing de Santander",
+  "531": "Athletic Bilbao",
+  "542": "Deportivo Alavés",
+  "533": "Villarreal CF",
+  "540": "RCD Espanyol",
+  "544": "Deportivo de A Coruña",
+  "727": "CA Osasuna",
+  "538": "RC Celta de Vigo",
+  "539": "Levante UD",
+  "728": "Rayo Vallecano",
+  "532": "Valencia CF",
+  "546": "Getafe CF",
+  "797": "Elche CF",
+  "535": "Málaga CF",
+  "487": "SS Lazio",
+  "497": "AS Roma",
+  "505": "Inter Milan",
+  "489": "AC Milan",
+  "895": "Como 1907",
+  "496": "Juventus FC",
+  "512": "Frosinone Calcio",
+  "492": "SSC Napoli",
+  "500": "Bologna FC 1909",
+  "495": "Genoa CFC",
+  "490": "Cagliari Calcio",
+  "499": "Atalanta BC",
+  "503": "Torino FC",
+  "1579": "AC Monza",
+  "867": "US Lecce",
+  "502": "ACF Fiorentina",
+  "523": "Parma Calcio 1913",
+  "488": "US Sassuolo Calcio",
+  "494": "Udinese Calcio",
+  "517": "Venezia FC",
+  "165": "Borussia Dortmund",
+  "157": "FC Bayern Munich",
+  "160": "SC Freiburg",
+  "173": "RB Leipzig",
+  "168": "Bayer 04 Leverkusen",
+  "162": "SV Werder Bremen",
+  "169": "Eintracht Frankfurt",
+  "172": "VfB Stuttgart",
+  "1660": "SV Elversberg",
+  "170": "FC Augsburg",
+  "167": "TSG 1899 Hoffenheim",
+  "175": "Hamburger SV",
+  "164": "1. FSV Mainz 05",
+  "192": "1. FC Köln",
+  "185": "SC Paderborn 07",
+  "174": "FC Schalke 04",
+  "182": "1. FC Union Berlin",
+  "163": "Borussia Mönchengladbach",
+  "85": "Paris Saint-Germain FC",
+  "114": "Paris FC",
+  "79": "Lille OSC",
+  "80": "Olympique Lyonnais",
+  "81": "Olympique de Marseille",
+  "106": "Stade Brestois 29",
+  "84": "OGC Nice",
+  "91": "AS Monaco FC",
+  "94": "Stade Rennais FC",
+  "97": "FC Lorient",
+  "116": "RC Lens",
+  "96": "Toulouse FC",
+  "1298": "Le Mans FC",
+  "110": "ES Troyes AC",
+  "108": "AJ Auxerre",
+  "95": "RC Strasbourg Alsace",
+  "77": "Angers SCO",
+  "111": "Le Havre AC",
+  "976": "Raja CA",
+  "974": "IR Tanger",
+  "968": "Wydad AC",
+  "969": "AS FAR",
+  "962": "RS Berkane",
+  "971": "KAC Marrakech",
+  "973": "Hassania Agadir",
+  "977": "Fath Union Sport",
+  "964": "Difaâ Hassani El Jadidi",
+  "965": "MA Tétouan",
+  "3453": "Maghreb Fez",
+  "14806": "US Touarga",
+  "18753": "Amal Tiznit",
+  "3458": "WS Témara",
+  "3449": "RCA Zemamra",
+  "22218": "COD Meknès"
+ },
+ "season": {
+  "42": "2026–27 Arsenal F.C. season",
+  "51": "2026–27 Brighton & Hove Albion F.C. season",
+  "50": "2026–27 Manchester City F.C. season",
+  "40": "2026–27 Liverpool F.C. season",
+  "35": "2026–27 AFC Bournemouth season",
+  "55": "2026–27 Brentford F.C. season",
+  "63": "2026–27 Leeds United F.C. season",
+  "49": "2026–27 Chelsea F.C. season",
+  "45": "2026–27 Everton F.C. season",
+  "47": "2026–27 Tottenham Hotspur F.C. season",
+  "64": "2026–27 Hull City A.F.C. season",
+  "66": "2026–27 Aston Villa F.C. season",
+  "34": "2026–27 Newcastle United F.C. season",
+  "1346": "2026–27 Coventry City F.C. season",
+  "36": "2026–27 Fulham F.C. season",
+  "57": "2026–27 Ipswich Town F.C. season",
+  "65": "2026–27 Nottingham Forest F.C. season",
+  "746": "2026–27 Sunderland A.F.C. season",
+  "33": "2026–27 Manchester United F.C. season",
+  "52": "2026–27 Crystal Palace F.C. season",
+  "529": "2026–27 FC Barcelona season",
+  "541": "2026–27 Real Madrid CF season",
+  "530": "2026–27 Atlético Madrid season",
+  "543": "2026–27 Real Betis season",
+  "548": "2026–27 Real Sociedad season",
+  "536": "2026–27 Sevilla FC season",
+  "4665": "2026–27 Racing de Santander season",
+  "531": "2026–27 Athletic Bilbao season",
+  "542": "2026–27 Deportivo Alavés season",
+  "533": "2026–27 Villarreal CF season",
+  "540": "2026–27 RCD Espanyol season",
+  "544": "2026–27 Deportivo de A Coruña season",
+  "727": "2026–27 CA Osasuna season",
+  "538": "2026–27 RC Celta de Vigo season",
+  "539": "2026–27 Levante UD season",
+  "728": "2026–27 Rayo Vallecano season",
+  "532": "2026–27 Valencia CF season",
+  "546": "2026–27 Getafe CF season",
+  "797": "2026–27 Elche CF season",
+  "535": "2026–27 Málaga CF season",
+  "487": "2026–27 SS Lazio season",
+  "497": "2026–27 AS Roma season",
+  "505": "2026–27 Inter Milan season",
+  "489": "2026–27 AC Milan season",
+  "895": "2026–27 Como 1907 season",
+  "496": "2026–27 Juventus FC season",
+  "512": null,
+  "492": "2026–27 SSC Napoli season",
+  "500": "2026–27 Bologna FC 1909 season",
+  "495": "2026–27 Genoa CFC season",
+  "490": null,
+  "499": "2026–27 Atalanta BC season",
+  "503": null,
+  "1579": "2026–27 AC Monza season",
+  "867": null,
+  "502": "2026–27 ACF Fiorentina season",
+  "523": null,
+  "488": null,
+  "494": null,
+  "517": "2026–27 Venezia FC season",
+  "165": "2026–27 Borussia Dortmund season",
+  "157": "2026–27 FC Bayern Munich season",
+  "160": "2026–27 SC Freiburg season",
+  "173": "2026–27 RB Leipzig season",
+  "168": "2026–27 Bayer 04 Leverkusen season",
+  "162": "2026–27 SV Werder Bremen season",
+  "169": "2026–27 Eintracht Frankfurt season",
+  "172": "2026–27 VfB Stuttgart season",
+  "1660": "2026–27 SV Elversberg season",
+  "170": "2026–27 FC Augsburg season",
+  "167": "2026–27 TSG 1899 Hoffenheim season",
+  "175": "2026–27 Hamburger SV season",
+  "164": "2026–27 1. FSV Mainz 05 season",
+  "192": "2026–27 1. FC Köln season",
+  "185": "2026–27 SC Paderborn 07 season",
+  "174": "2026–27 FC Schalke 04 season",
+  "182": "2026–27 1. FC Union Berlin season",
+  "163": "2026–27 Borussia Mönchengladbach season",
+  "85": "2026–27 Paris Saint-Germain FC season",
+  "114": "2026–27 Paris FC season",
+  "79": "2026–27 Lille OSC season",
+  "80": "2026–27 Olympique Lyonnais season",
+  "81": "2026–27 Olympique de Marseille season",
+  "106": null,
+  "84": null,
+  "91": "2026–27 AS Monaco FC season",
+  "94": "2026–27 Stade Rennais FC season",
+  "97": null,
+  "116": null,
+  "96": null,
+  "1298": null,
+  "110": null,
+  "108": null,
+  "95": "2026–27 RC Strasbourg Alsace season",
+  "77": null,
+  "111": "2026–27 Le Havre AC season",
+  "976": "2026–27 Raja CA season",
+  "974": "2026–27 IR Tanger season",
+  "968": null,
+  "969": null,
+  "962": null,
+  "971": null,
+  "973": null,
+  "977": null,
+  "964": null,
+  "965": null,
+  "3453": null,
+  "14806": null,
+  "18753": null,
+  "3458": null,
+  "3449": null,
+  "22218": null
+ },
+ "rev": {
+  "1. FC Köln": {
+   "revid": 1385969724,
+   "ts": "2026-11-16T04:59:01Z"
+  },
+  "1. FC Union Berlin": {
+   "revid": 1386056698,
+   "ts": "2026-11-16T17:44:32Z"
+  },
+  "1. FSV Mainz 05": {
+   "revid": 1387540862,
+   "ts": "2026-11-24T12:23:20Z"
+  },
+  "2026–27 1. FC Köln season": {
+   "revid": 1384605039,
+   "ts": "2026-11-09T02:34:55Z"
+  },
+  "2026–27 1. FC Union Berlin season": {
+   "revid": 1386950318,
+   "ts": "2026-11-21T17:30:47Z"
+  },
+  "2026–27 1. FSV Mainz 05 season": {
+   "revid": 1387146523,
+   "ts": "2026-11-22T19:50:52Z"
+  },
+  "2026–27 ACF Fiorentina season": {
+   "revid": 1386326960,
+   "ts": "2026-11-17T23:22:18Z"
+  },
+  "2026–27 AC Milan season": {
+   "revid": 1387594159,
+   "ts": "2026-11-24T18:51:19Z"
+  },
+  "2026–27 AC Monza season": {
+   "revid": 1387552436,
+   "ts": "2026-11-24T13:59:28Z"
+  },
+  "2026–27 AFC Bournemouth season": {
+   "revid": 1387421265,
+   "ts": "2026-11-23T21:53:22Z"
+  },
+  "2026–27 AS Monaco FC season": {
+   "revid": 1386994201,
+   "ts": "2026-11-21T22:18:38Z"
+  },
+  "2026–27 AS Roma season": {
+   "revid": 1387478476,
+   "ts": "2026-11-24T03:10:32Z"
+  },
+  "2026–27 Arsenal F.C. season": {
+   "revid": 1387635589,
+   "ts": "2026-11-24T22:51:25Z"
+  },
+  "2026–27 Aston Villa F.C. season": {
+   "revid": 1387632933,
+   "ts": "2026-11-24T22:36:38Z"
+  },
+  "2026–27 Atalanta BC season": {
+   "revid": 1387197249,
+   "ts": "2026-11-23T00:23:17Z"
+  },
+  "2026–27 Athletic Bilbao season": {
+   "revid": 1387555754,
+   "ts": "2026-11-24T14:25:55Z"
+  },
+  "2026–27 Atlético Madrid season": {
+   "revid": 1387201776,
+   "ts": "2026-11-23T00:46:10Z"
+  },
+  "2026–27 Bayer 04 Leverkusen season": {
+   "revid": 1387481010,
+   "ts": "2026-11-24T03:28:03Z"
+  },
+  "2026–27 Bologna FC 1909 season": {
+   "revid": 1387121161,
+   "ts": "2026-11-22T17:25:44Z"
+  },
+  "2026–27 Borussia Dortmund season": {
+   "revid": 1387635570,
+   "ts": "2026-11-24T22:51:20Z"
+  },
+  "2026–27 Borussia Mönchengladbach season": {
+   "revid": 1386949510,
+   "ts": "2026-11-21T17:26:35Z"
+  },
+  "2026–27 Brentford F.C. season": {
+   "revid": 1387568640,
+   "ts": "2026-11-24T16:02:03Z"
+  },
+  "2026–27 Brighton & Hove Albion F.C. season": {
+   "revid": 1387204566,
+   "ts": "2026-11-23T00:58:52Z"
+  },
+  "2026–27 CA Osasuna season": {
+   "revid": 1387661615,
+   "ts": "2026-11-25T01:01:10Z"
+  },
+  "2026–27 Chelsea F.C. season": {
+   "revid": 1387565886,
+   "ts": "2026-11-24T15:44:09Z"
+  },
+  "2026–27 Como 1907 season": {
+   "revid": 1387632154,
+   "ts": "2026-11-24T22:32:31Z"
+  },
+  "2026–27 Coventry City F.C. season": {
+   "revid": 1387565005,
+   "ts": "2026-11-24T15:38:39Z"
+  },
+  "2026–27 Crystal Palace F.C. season": {
+   "revid": 1387564624,
+   "ts": "2026-11-24T15:36:17Z"
+  },
+  "2026–27 Deportivo Alavés season": {
+   "revid": 1387660326,
+   "ts": "2026-11-25T00:54:30Z"
+  },
+  "2026–27 Deportivo de A Coruña season": {
+   "revid": 1387660753,
+   "ts": "2026-11-25T00:56:40Z"
+  },
+  "2026–27 Eintracht Frankfurt season": {
+   "revid": 1387595951,
+   "ts": "2026-11-24T19:02:08Z"
+  },
+  "2026–27 Elche CF season": {
+   "revid": 1387554901,
+   "ts": "2026-11-24T14:20:03Z"
+  },
+  "2026–27 Everton F.C. season": {
+   "revid": 1387437018,
+   "ts": "2026-11-23T23:08:34Z"
+  },
+  "2026–27 FC Augsburg season": {
+   "revid": 1387146256,
+   "ts": "2026-11-22T19:49:42Z"
+  },
+  "2026–27 FC Barcelona season": {
+   "revid": 1387431025,
+   "ts": "2026-11-23T22:35:56Z"
+  },
+  "2026–27 FC Bayern Munich season": {
+   "revid": 1386839691,
+   "ts": "2026-11-20T23:12:11Z"
+  },
+  "2026–27 FC Schalke 04 season": {
+   "revid": 1387503564,
+   "ts": "2026-11-24T06:50:18Z"
+  },
+  "2026–27 Fulham F.C. season": {
+   "revid": 1387608174,
+   "ts": "2026-11-24T20:18:23Z"
+  },
+  "2026–27 Genoa CFC season": {
+   "revid": 1385776263,
+   "ts": "2026-11-15T04:19:38Z"
+  },
+  "2026–27 Getafe CF season": {
+   "revid": 1387657162,
+   "ts": "2026-11-25T00:40:00Z"
+  },
+  "2026–27 Hamburger SV season": {
+   "revid": 1387137478,
+   "ts": "2026-11-22T19:04:50Z"
+  },
+  "2026–27 Hull City A.F.C. season": {
+   "revid": 1387567036,
+   "ts": "2026-11-24T15:51:25Z"
+  },
+  "2026–27 IR Tanger season": {
+   "revid": 1387392223,
+   "ts": "2026-11-23T19:30:15Z"
+  },
+  "2026–27 Inter Milan season": {
+   "revid": 1387196928,
+   "ts": "2026-11-23T00:21:40Z"
+  },
+  "2026–27 Ipswich Town F.C. season": {
+   "revid": 1387450071,
+   "ts": "2026-11-24T00:23:09Z"
+  },
+  "2026–27 Juventus FC season": {
+   "revid": 1387199638,
+   "ts": "2026-11-23T00:35:24Z"
+  },
+  "2026–27 Le Havre AC season": {
+   "revid": 1386548887,
+   "ts": "2026-11-19T03:17:39Z"
+  },
+  "2026–27 Leeds United F.C. season": {
+   "revid": 1387566091,
+   "ts": "2026-11-24T15:45:28Z"
+  },
+  "2026–27 Levante UD season": {
+   "revid": 1386357797,
+   "ts": "2026-11-18T03:01:40Z"
+  },
+  "2026–27 Lille OSC season": {
+   "revid": 1386995742,
+   "ts": "2026-11-21T22:27:41Z"
+  },
+  "2026–27 Liverpool F.C. season": {
+   "revid": 1387654075,
+   "ts": "2026-11-25T00:25:36Z"
+  },
+  "2026–27 Manchester City F.C. season": {
+   "revid": 1387635092,
+   "ts": "2026-11-24T22:48:57Z"
+  },
+  "2026–27 Manchester United F.C. season": {
+   "revid": 1387520429,
+   "ts": "2026-11-24T09:32:18Z"
+  },
+  "2026–27 Málaga CF season": {
+   "revid": 1387661523,
+   "ts": "2026-11-25T01:00:45Z"
+  },
+  "2026–27 Newcastle United F.C. season": {
+   "revid": 1387554184,
+   "ts": "2026-11-24T14:15:04Z"
+  },
+  "2026–27 Nottingham Forest F.C. season": {
+   "revid": 1387562432,
+   "ts": "2026-11-24T15:20:52Z"
+  },
+  "2026–27 Olympique Lyonnais season": {
+   "revid": 1386995436,
+   "ts": "2026-11-21T22:25:50Z"
+  },
+  "2026–27 Olympique de Marseille season": {
+   "revid": 1387170072,
+   "ts": "2026-11-22T22:00:07Z"
+  },
+  "2026–27 Paris FC season": {
+   "revid": 1387115856,
+   "ts": "2026-11-22T16:53:52Z"
+  },
+  "2026–27 Paris Saint-Germain FC season": {
+   "revid": 1387432244,
+   "ts": "2026-11-23T22:41:25Z"
+  },
+  "2026–27 RB Leipzig season": {
+   "revid": 1387634586,
+   "ts": "2026-11-24T22:46:24Z"
+  },
+  "2026–27 RCD Espanyol season": {
+   "revid": 1386933537,
+   "ts": "2026-11-21T15:07:16Z"
+  },
+  "2026–27 RC Celta de Vigo season": {
+   "revid": 1386993769,
+   "ts": "2026-11-21T22:15:38Z"
+  },
+  "2026–27 Racing de Santander season": {
+   "revid": 1387663786,
+   "ts": "2026-11-25T01:11:25Z"
+  },
+  "2026–27 Raja CA season": {
+   "revid": 1386701020,
+   "ts": "2026-11-20T01:42:27Z"
+  },
+  "2026–27 Rayo Vallecano season": {
+   "revid": 1387662375,
+   "ts": "2026-11-25T01:05:10Z"
+  },
+  "2026–27 Real Betis season": {
+   "revid": 1387633586,
+   "ts": "2026-11-24T22:40:33Z"
+  },
+  "2026–27 Real Madrid CF season": {
+   "revid": 1387634523,
+   "ts": "2026-11-24T22:46:03Z"
+  },
+  "2026–27 Real Sociedad season": {
+   "revid": 1387663335,
+   "ts": "2026-11-25T01:09:32Z"
+  },
+  "2026–27 SC Freiburg season": {
+   "revid": 1386953384,
+   "ts": "2026-11-21T17:51:53Z"
+  },
+  "2026–27 SC Paderborn 07 season": {
+   "revid": 1386941800,
+   "ts": "2026-11-21T16:31:24Z"
+  },
+  "2026–27 SSC Napoli season": {
+   "revid": 1387635201,
+   "ts": "2026-11-24T22:49:26Z"
+  },
+  "2026–27 SS Lazio season": {
+   "revid": 1387198996,
+   "ts": "2026-11-23T00:31:59Z"
+  },
+  "2026–27 SV Elversberg season": {
+   "revid": 1387455684,
+   "ts": "2026-11-24T00:53:25Z"
+  },
+  "2026–27 SV Werder Bremen season": {
+   "revid": 1387596374,
+   "ts": "2026-11-24T19:04:31Z"
+  },
+  "2026–27 Sevilla FC season": {
+   "revid": 1387343349,
+   "ts": "2026-11-23T14:27:07Z"
+  },
+  "2026–27 Stade Rennais FC season": {
+   "revid": 1385356769,
+   "ts": "2026-11-12T23:34:21Z"
+  },
+  "2026–27 Sunderland A.F.C. season": {
+   "revid": 1387581767,
+   "ts": "2026-11-24T17:29:46Z"
+  },
+  "2026–27 TSG 1899 Hoffenheim season": {
+   "revid": 1386957450,
+   "ts": "2026-11-21T18:19:32Z"
+  },
+  "RC Strasbourg Alsace": {
+   "revid": 1386667033,
+   "ts": "2026-11-19T21:06:49Z"
+  },
+  "2026–27 Tottenham Hotspur F.C. season": {
+   "revid": 1387597470,
+   "ts": "2026-11-24T19:11:37Z"
+  },
+  "2026–27 Valencia CF season": {
+   "revid": 1387658702,
+   "ts": "2026-11-25T00:46:51Z"
+  },
+  "2026–27 Venezia FC season": {
+   "revid": 1383419112,
+   "ts": "2026-11-02T16:00:48Z"
+  },
+  "2026–27 VfB Stuttgart season": {
+   "revid": 1387160277,
+   "ts": "2026-11-22T21:00:37Z"
+  },
+  "2026–27 Villarreal CF season": {
+   "revid": 1387121639,
+   "ts": "2026-11-22T17:27:47Z"
+  },
+  "ACF Fiorentina": {
+   "revid": 1386326909,
+   "ts": "2026-11-17T23:21:48Z"
+  },
+  "AC Milan": {
+   "revid": 1384637689,
+   "ts": "2026-11-09T07:34:46Z"
+  },
+  "AC Monza": {
+   "revid": 1385854579,
+   "ts": "2026-11-15T16:00:24Z"
+  },
+  "AFC Bournemouth": {
+   "revid": 1386948696,
+   "ts": "2026-11-21T17:21:50Z"
+  },
+  "AJ Auxerre": {
+   "revid": 1387681212,
+   "ts": "2026-11-25T02:39:03Z"
+  },
+  "AS FAR": {
+   "revid": 1381330243,
+   "ts": "2026-10-21T17:42:40Z"
+  },
+  "AS Monaco FC": {
+   "revid": 1384303490,
+   "ts": "2026-11-07T16:52:26Z"
+  },
+  "AS Roma": {
+   "revid": 1386422769,
+   "ts": "2026-11-18T12:57:03Z"
+  },
+  "Angers SCO": {
+   "revid": 1384982411,
+   "ts": "2026-11-11T05:39:05Z"
+  },
+  "Arsenal F.C.": {
+   "revid": 1387509270,
+   "ts": "2026-11-24T07:52:34Z"
+  },
+  "Aston Villa F.C.": {
+   "revid": 1387411079,
+   "ts": "2026-11-23T21:01:10Z"
+  },
+  "Atalanta BC": {
+   "revid": 1386881081,
+   "ts": "2026-11-21T04:49:16Z"
+  },
+  "Athletic Bilbao": {
+   "revid": 1387349437,
+   "ts": "2026-11-23T15:14:30Z"
+  },
+  "Atlético Madrid": {
+   "revid": 1385603471,
+   "ts": "2026-11-14T04:24:24Z"
+  },
+  "Bayer 04 Leverkusen": {
+   "revid": 1386059004,
+   "ts": "2026-11-16T18:01:21Z"
+  },
+  "Bologna FC 1909": {
+   "revid": 1380845587,
+   "ts": "2026-10-18T08:43:47Z"
+  },
+  "Borussia Dortmund": {
+   "revid": 1386510813,
+   "ts": "2026-11-18T23:18:27Z"
+  },
+  "Borussia Mönchengladbach": {
+   "revid": 1386102097,
+   "ts": "2026-11-16T23:17:46Z"
+  },
+  "Brentford F.C.": {
+   "revid": 1386879872,
+   "ts": "2026-11-21T04:40:05Z"
+  },
+  "Brighton & Hove Albion F.C.": {
+   "revid": 1386971176,
+   "ts": "2026-11-21T19:49:20Z"
+  },
+  "CA Osasuna": {
+   "revid": 1386006428,
+   "ts": "2026-11-16T10:01:28Z"
+  },
+  "COD Meknès": {
+   "revid": 1376905590,
+   "ts": "2026-09-26T22:27:38Z"
+  },
+  "Cagliari Calcio": {
+   "revid": 1384110279,
+   "ts": "2026-11-06T17:15:27Z"
+  },
+  "Chelsea F.C.": {
+   "revid": 1386697594,
+   "ts": "2026-11-20T01:18:53Z"
+  },
+  "Como 1907": {
+   "revid": 1385601039,
+   "ts": "2026-11-14T04:02:06Z"
+  },
+  "Coventry City F.C.": {
+   "revid": 1385458115,
+   "ts": "2026-11-13T10:37:05Z"
+  },
+  "Crystal Palace F.C.": {
+   "revid": 1387548614,
+   "ts": "2026-11-24T13:23:58Z"
+  },
+  "Deportivo Alavés": {
+   "revid": 1383820000,
+   "ts": "2026-11-05T01:15:33Z"
+  },
+  "Deportivo de A Coruña": {
+   "revid": 1384588682,
+   "ts": "2026-11-09T00:55:20Z"
+  },
+  "Difaâ Hassani El Jadidi": {
+   "revid": 1380661352,
+   "ts": "2026-10-17T03:24:55Z"
+  },
+  "ES Troyes AC": {
+   "revid": 1377254275,
+   "ts": "2026-09-28T14:55:30Z"
+  },
+  "Eintracht Frankfurt": {
+   "revid": 1386829684,
+   "ts": "2026-11-20T21:31:40Z"
+  },
+  "Elche CF": {
+   "revid": 1387065968,
+   "ts": "2026-11-22T08:05:44Z"
+  },
+  "Everton F.C.": {
+   "revid": 1385498207,
+   "ts": "2026-11-13T15:55:25Z"
+  },
+  "FC Augsburg": {
+   "revid": 1385030171,
+   "ts": "2026-11-11T14:11:51Z"
+  },
+  "FC Barcelona": {
+   "revid": 1386716225,
+   "ts": "2026-11-20T03:35:07Z"
+  },
+  "FC Bayern Munich": {
+   "revid": 1387638886,
+   "ts": "2026-11-24T23:09:32Z"
+  },
+  "FC Lorient": {
+   "revid": 1382369539,
+   "ts": "2026-10-28T10:08:01Z"
+  },
+  "FC Schalke 04": {
+   "revid": 1386392910,
+   "ts": "2026-11-18T07:22:20Z"
+  },
+  "Fath Union Sport": {
+   "revid": 1378051059,
+   "ts": "2026-10-02T17:45:21Z"
+  },
+  "Frosinone Calcio": {
+   "revid": 1385784378,
+   "ts": "2026-11-15T05:12:16Z"
+  },
+  "Fulham F.C.": {
+   "revid": 1387071342,
+   "ts": "2026-11-22T09:09:00Z"
+  },
+  "Genoa CFC": {
+   "revid": 1385815450,
+   "ts": "2026-11-15T09:42:38Z"
+  },
+  "Getafe CF": {
+   "revid": 1386953550,
+   "ts": "2026-11-21T17:53:01Z"
+  },
+  "Hamburger SV": {
+   "revid": 1386701863,
+   "ts": "2026-11-20T01:50:07Z"
+  },
+  "Hassania Agadir": {
+   "revid": 1379707560,
+   "ts": "2026-10-11T13:25:31Z"
+  },
+  "Hull City A.F.C.": {
+   "revid": 1387496407,
+   "ts": "2026-11-24T05:35:06Z"
+  },
+  "IR Tanger": {
+   "revid": 1382521111,
+   "ts": "2026-10-29T02:28:55Z"
+  },
+  "Inter Milan": {
+   "revid": 1387500598,
+   "ts": "2026-11-24T06:13:09Z"
+  },
+  "Ipswich Town F.C.": {
+   "revid": 1386956541,
+   "ts": "2026-11-21T18:13:09Z"
+  },
+  "Juventus FC": {
+   "revid": 1387411780,
+   "ts": "2026-11-23T21:04:16Z"
+  },
+  "KAC Marrakech": {
+   "revid": 1378049527,
+   "ts": "2026-10-02T17:33:22Z"
+  },
+  "Le Havre AC": {
+   "revid": 1386346572,
+   "ts": "2026-11-18T01:46:54Z"
+  },
+  "Le Mans FC": {
+   "revid": 1376910711,
+   "ts": "2026-09-26T23:13:04Z"
+  },
+  "Leeds United F.C.": {
+   "revid": 1387642720,
+   "ts": "2026-11-24T23:30:03Z"
+  },
+  "Levante UD": {
+   "revid": 1385674431,
+   "ts": "2026-11-14T17:11:52Z"
+  },
+  "Lille OSC": {
+   "revid": 1386706600,
+   "ts": "2026-11-20T02:20:51Z"
+  },
+  "Liverpool F.C.": {
+   "revid": 1387532653,
+   "ts": "2026-11-24T11:23:14Z"
+  },
+  "MA Tétouan": {
+   "revid": 1385838468,
+   "ts": "2026-11-15T13:22:08Z"
+  },
+  "Maghreb Fez": {
+   "revid": 1386336091,
+   "ts": "2026-11-18T00:33:22Z"
+  },
+  "Manchester City F.C.": {
+   "revid": 1387071597,
+   "ts": "2026-11-22T09:13:15Z"
+  },
+  "Manchester United F.C.": {
+   "revid": 1387312060,
+   "ts": "2026-11-23T10:33:24Z"
+  },
+  "Málaga CF": {
+   "revid": 1386964986,
+   "ts": "2026-11-21T19:10:45Z"
+  },
+  "Newcastle United F.C.": {
+   "revid": 1386780888,
+   "ts": "2026-11-20T15:14:14Z"
+  },
+  "Nottingham Forest F.C.": {
+   "revid": 1386959795,
+   "ts": "2026-11-21T18:35:41Z"
+  },
+  "OGC Nice": {
+   "revid": 1383445272,
+   "ts": "2026-11-02T18:51:41Z"
+  },
+  "Olympique Lyonnais": {
+   "revid": 1384819447,
+   "ts": "2026-11-10T05:06:42Z"
+  },
+  "Olympique de Marseille": {
+   "revid": 1387163725,
+   "ts": "2026-11-22T21:24:15Z"
+  },
+  "Paris FC": {
+   "revid": 1387370568,
+   "ts": "2026-11-23T17:35:34Z"
+  },
+  "Paris Saint-Germain FC": {
+   "revid": 1387432815,
+   "ts": "2026-11-23T22:44:36Z"
+  },
+  "Parma Calcio 1913": {
+   "revid": 1386959983,
+   "ts": "2026-11-21T18:37:05Z"
+  },
+  "RB Leipzig": {
+   "revid": 1386636287,
+   "ts": "2026-11-19T17:01:48Z"
+  },
+  "RC Celta de Vigo": {
+   "revid": 1386990163,
+   "ts": "2026-11-21T21:51:56Z"
+  },
+  "RC Lens": {
+   "revid": 1385688145,
+   "ts": "2026-11-14T18:54:42Z"
+  },
+  "RCA Zemamra": {
+   "revid": 1383472421,
+   "ts": "2026-11-02T21:43:48Z"
+  },
+  "RCD Espanyol": {
+   "revid": 1387466404,
+   "ts": "2026-11-24T01:57:54Z"
+  },
+  "RS Berkane": {
+   "revid": 1384821331,
+   "ts": "2026-11-10T05:21:02Z"
+  },
+  "Racing de Santander": {
+   "revid": 1384175421,
+   "ts": "2026-11-07T00:13:57Z"
+  },
+  "Raja CA": {
+   "revid": 1387040554,
+   "ts": "2026-11-22T03:44:07Z"
+  },
+  "Rayo Vallecano": {
+   "revid": 1385794120,
+   "ts": "2026-11-15T06:24:33Z"
+  },
+  "Real Betis": {
+   "revid": 1386711476,
+   "ts": "2026-11-20T02:57:12Z"
+  },
+  "Real Madrid CF": {
+   "revid": 1387569935,
+   "ts": "2026-11-24T16:10:06Z"
+  },
+  "Real Sociedad": {
+   "revid": 1383840546,
+   "ts": "2026-11-05T02:58:38Z"
+  },
+  "SC Freiburg": {
+   "revid": 1384178853,
+   "ts": "2026-11-07T00:39:17Z"
+  },
+  "SC Paderborn 07": {
+   "revid": 1386415255,
+   "ts": "2026-11-18T11:40:07Z"
+  },
+  "SSC Napoli": {
+   "revid": 1387500886,
+   "ts": "2026-11-24T06:16:44Z"
+  },
+  "SS Lazio": {
+   "revid": 1387182766,
+   "ts": "2026-11-22T23:08:14Z"
+  },
+  "SV Elversberg": {
+   "revid": 1383333899,
+   "ts": "2026-11-02T04:18:51Z"
+  },
+  "SV Werder Bremen": {
+   "revid": 1386075379,
+   "ts": "2026-11-16T19:52:25Z"
+  },
+  "Sevilla FC": {
+   "revid": 1385490242,
+   "ts": "2026-11-13T15:00:21Z"
+  },
+  "Stade Brestois 29": {
+   "revid": 1387260863,
+   "ts": "2026-11-23T05:23:21Z"
+  },
+  "Stade Rennais FC": {
+   "revid": 1382144991,
+   "ts": "2026-10-26T21:59:47Z"
+  },
+  "Sunderland A.F.C.": {
+   "revid": 1386714607,
+   "ts": "2026-11-20T03:18:27Z"
+  },
+  "TSG 1899 Hoffenheim": {
+   "revid": 1383481756,
+   "ts": "2026-11-02T22:37:51Z"
+  },
+  "Torino FC": {
+   "revid": 1387597263,
+   "ts": "2026-11-24T19:10:04Z"
+  },
+  "Tottenham Hotspur F.C.": {
+   "revid": 1387561557,
+   "ts": "2026-11-24T15:12:03Z"
+  },
+  "Toulouse FC": {
+   "revid": 1384012119,
+   "ts": "2026-11-06T03:36:12Z"
+  },
+  "US Lecce": {
+   "revid": 1384110187,
+   "ts": "2026-11-06T17:14:45Z"
+  },
+  "US Sassuolo Calcio": {
+   "revid": 1387184126,
+   "ts": "2026-11-22T23:16:05Z"
+  },
+  "Udinese Calcio": {
+   "revid": 1387109816,
+   "ts": "2026-11-22T16:12:19Z"
+  },
+  "Valencia CF": {
+   "revid": 1386917540,
+   "ts": "2026-11-21T11:47:54Z"
+  },
+  "Venezia FC": {
+   "revid": 1387544935,
+   "ts": "2026-11-24T12:53:41Z"
+  },
+  "VfB Stuttgart": {
+   "revid": 1383645356,
+   "ts": "2026-11-03T22:36:00Z"
+  },
+  "Villarreal CF": {
+   "revid": 1387093971,
+   "ts": "2026-11-22T13:33:36Z"
+  },
+  "WS Témara": {
+   "revid": 1376994976,
+   "ts": "2026-09-27T09:20:56Z"
+  },
+  "Wydad AC": {
+   "revid": 1387122412,
+   "ts": "2026-11-22T17:32:12Z"
+  }
+ }
+}
