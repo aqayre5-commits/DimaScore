@@ -1137,39 +1137,86 @@
   .mc .mc-round:before {
     padding-inline-end: 7px;
   }
+  .mc {
+    --hero-stack-gap: 6px;
+    --hero-score-gap: 8px;
+  }
   .mc .mc-scoreline {
-    padding: 5px 0 12px;
-    gap: 5px;
+    padding: var(--hero-stack-gap) 0 var(--hero-score-gap);
+    column-gap: var(--hero-score-gap);
+    row-gap: 0;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    justify-items: stretch;
+    align-items: start;
   }
   .mc .mc-team,
   .mc .mc-team:last-child {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: subgrid;
+    grid-row: 1 / span 3;
+    justify-items: center;
+    justify-content: start;
+    align-items: start;
+    gap: 0;
     text-align: center;
-    align-self: start; /* crests and names stay at the top; scorers grow down */
+    align-self: start;
+    width: 100%;
+    min-width: 0;
     --hero-crest: 64px;
   }
   .mc .mc-team > .mark,
   .mc .mc-team:last-child > .mark {
     width: var(--hero-crest);
     height: var(--hero-crest);
+    align-self: start;
+    justify-self: center;
+    flex: none;
+    grid-column: 1;
+    grid-row: 1;
   }
   .mc .mc-team > strong,
   .mc .mc-team:last-child > strong {
-    padding-top: 0;
+    align-self: start;
+    justify-self: center;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    text-align: center;
+    padding-top: var(--hero-stack-gap);
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .mc .mc-team > .mc-scorers,
+  .mc .mc-team:last-child > .mc-scorers {
+    align-self: start;
+    justify-self: center;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    text-align: center;
+    padding-top: var(--hero-stack-gap);
+    grid-column: 1;
+    grid-row: 3;
   }
   .mc .mc-team strong {
     font-size: 17px;
   }
   .mc .mc-team small {
     font-size: 11px;
-    margin-top: 2px;
+    margin-top: 0;
+    text-align: center;
   }
+  .mc .mc-scorers:empty {
+    display: none;
+  }
+  /* Status + score sit in the crest band, centred between the two crests. */
   .mc .mc-score {
-    min-height: calc(var(--hero-crest) + 4px + 20px);
+    grid-row: 1;
+    align-self: start;
+    min-height: var(--hero-crest);
+    justify-content: center;
   }
   .mc .mc-score strong {
     font-size: 39px;
@@ -1180,6 +1227,7 @@
   .mc .mc-meta {
     font-size: 11px;
     min-height: 30px;
+    padding-block: var(--hero-score-gap);
   }
   .mc .mc-grid,
   .mc .mc-tactics {
@@ -2051,10 +2099,13 @@ html:not([data-theme='light']) .mc dialog::backdrop {
     font-size: 11px;
   }
   .mc .lu-pitch {
-    width: min(100%, calc(clamp(380px, 58svh, 464px) * 68 / 105));
+    width: 100%;
   }
   .mc .lu-kit-wrap {
-    width: clamp(36px, 14.6cqw, 47px);
+    width: clamp(36px, 14.6cqw, 54px);
+  }
+  .mc .lu-pitch-wrap {
+    padding-inline: 0;
   }
   .mc .lu-card-head {
     padding: 9px 12px;
@@ -2064,9 +2115,6 @@ html:not([data-theme='light']) .mc dialog::backdrop {
   }
   .mc .lu-player-row {
     min-height: 32px;
-  }
-  .mc .lu-pitch-wrap {
-    padding: 0 8px;
   }
   .mc .lu-pair .lu-who {
     font-size: 14px;
@@ -2085,11 +2133,14 @@ html:not([data-theme='light']) .mc dialog::backdrop {
 }
 @media (max-width: 767px) {
   .mc .lu-team {
-    --field-cap: clamp(380px, 58svh, 464px);
+    --field-cap: 100%;
   }
   .mc .lu-team .lu-card-head,
   .mc .lu-team .lu-bench {
-    width: min(calc(100% - 16px), calc(var(--field-cap) * 68 / 105));
+    width: auto;
+    max-width: none;
+    margin-inline: 0;
+    padding-inline: 12px;
   }
 }
 .mc .lu-panel {
@@ -2199,10 +2250,13 @@ html:not([data-theme='light']) .mc .lu-direction {
     font-size: 11px;
   }
   .mc .lu-pitch {
-    width: min(100%, calc(clamp(380px, 58svh, 464px) * 68 / 105));
+    width: 100%;
   }
   .mc .lu-kit-wrap {
-    width: clamp(36px, 14.6cqw, 47px);
+    width: clamp(36px, 14.6cqw, 54px);
+  }
+  .mc .lu-pitch-wrap {
+    padding-inline: 0;
   }
   .mc .lu-card-head {
     padding: 9px 12px;
@@ -2213,18 +2267,18 @@ html:not([data-theme='light']) .mc .lu-direction {
   .mc .lu-player-row {
     min-height: 32px;
   }
-  .mc .lu-pitch-wrap {
-    padding: 0 8px;
-  }
   .mc .lu-pair .lu-who {
     font-size: 14px;
   }
   .mc .lu-team {
-    --field-cap: clamp(380px, 58svh, 464px);
+    --field-cap: 100%;
   }
   .mc .lu-team .lu-card-head,
   .mc .lu-team .lu-bench {
-    width: min(calc(100% - 16px), calc(var(--field-cap) * 68 / 105));
+    width: auto;
+    max-width: none;
+    margin-inline: 0;
+    padding-inline: 12px;
   }
 }
 
