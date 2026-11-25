@@ -32,6 +32,12 @@ import {
   type TeamKits,
 } from './kit-colours';
 import { KIT_CORRECTIONS } from './kit-corrections';
+import { BOTOLA_PRO_KITS } from './season-kits/botola-pro';
+import { BUNDESLIGA_KITS } from './season-kits/bundesliga';
+import { LA_LIGA_KITS } from './season-kits/la-liga';
+import { LIGUE_1_KITS } from './season-kits/ligue-1';
+import { PREMIER_LEAGUE_KITS } from './season-kits/premier-league';
+import { SERIE_A_KITS } from './season-kits/serie-a';
 
 export type KitSlot = 'home' | 'away' | 'third';
 export type WornKitBasis = 'verified' | 'convention' | 'unknown';
@@ -42,9 +48,13 @@ export interface WornKitDecision {
   reason: string;
 }
 
+/**
+ * Palettes per slot. A slot is present only when a source confirms that kit for the season
+ * and gives a base colour; a missing slot means "stay grey" for a team that wore it.
+ */
 export interface SeasonRoleKits {
-  home: KitPalette;
-  away: KitPalette;
+  home?: KitPalette;
+  away?: KitPalette;
   third?: KitPalette;
 }
 
@@ -56,7 +66,8 @@ export interface SeasonKitSet {
   sourceUrl: string;
   notes?: string;
   player: SeasonRoleKits;
-  goalkeeper: SeasonRoleKits;
+  /** Omitted when no source confirms a goalkeeper kit; the API or neutral grey is used then. */
+  goalkeeper?: SeasonRoleKits;
 }
 
 /** Verified worn-kit slot, keyed by `${fixtureId}:${teamId}`. Empty unless confirmed. */
@@ -100,10 +111,11 @@ function palette(primary: string, number?: string, border?: string): KitPalette 
 }
 
 /**
- * Curated 2026/27 kits, cited per entry. Flat primaries only — patterns
- * described in the notes are not drawn.
+ * Hand-curated 2026/27 kits (#67): Manchester City and Fulham, with goalkeeper shirts sampled
+ * from official product photos. Cited per entry. Flat primaries only — patterns described in
+ * the notes are not drawn.
  */
-export const SEASON_KITS: readonly SeasonKitSet[] = [
+const HAND_CURATED_KITS: readonly SeasonKitSet[] = [
   {
     teamId: 50, // Manchester City
     season: 2026,
@@ -147,6 +159,21 @@ export const SEASON_KITS: readonly SeasonKitSet[] = [
   },
 ];
 
+/**
+ * Every catalogued season kit: the hand-curated entries above plus one file per league in
+ * ./season-kits/ (Premier League, LaLiga, Serie A, Bundesliga, Ligue 1, Botola Pro). Coverage
+ * and the teams left out are listed in ./season-kits/coverage.ts.
+ */
+export const SEASON_KITS: readonly SeasonKitSet[] = [
+  ...HAND_CURATED_KITS,
+  ...PREMIER_LEAGUE_KITS,
+  ...LA_LIGA_KITS,
+  ...SERIE_A_KITS,
+  ...BUNDESLIGA_KITS,
+  ...LIGUE_1_KITS,
+  ...BOTOLA_PRO_KITS,
+];
+
 const catalogByTeamSeason = new Map<string, SeasonKitSet>();
 for (const row of SEASON_KITS) {
   catalogByTeamSeason.set(`${row.teamId}:${row.season}`, row);
@@ -187,12 +214,7 @@ export function pickWornSlot(opts: {
   }
   const away = opts.kits.away;
   const third = opts.kits.third;
-  if (
-    opts.opponentPrimary &&
-    away &&
-    third &&
-    shirtsClash(away.primary, opts.opponentPrimary)
-  ) {
+  if (opts.opponentPrimary && away && third && shirtsClash(away.primary, opts.opponentPrimary)) {
     return {
       slot: 'third',
       basis: 'convention',
@@ -251,10 +273,15 @@ export function inferSeasonKitsFromApiSamples(
   const awayP = mode(atAway, 'player');
   const thirdP =
     awayP && awayP.primary !== homeP.primary
-      ? mine
+      ? (mine
           .map((s) => s.player)
-          .find((p) => p && parseHex(p.primary) && p.primary !== homeP.primary && p.primary !== awayP.primary) ??
-        undefined
+          .find(
+            (p) =>
+              p &&
+              parseHex(p.primary) &&
+              p.primary !== homeP.primary &&
+              p.primary !== awayP.primary,
+          ) ?? undefined)
       : undefined;
 
   const homeGk = mode(atHome, 'goalkeeper') ?? mode(mine, 'goalkeeper');
@@ -263,9 +290,11 @@ export function inferSeasonKitsFromApiSamples(
   return {
     teamId,
     season,
-    sourceName: 'Inferred from this team’s API-Football palettes in other fixtures of the same season',
+    sourceName:
+      'Inferred from this team’s API-Football palettes in other fixtures of the same season',
     sourceUrl: '',
-    notes: 'Colours are verified-from-API; the worn slot for a fixture without colours still uses the convention unless KIT_WORN_SLOTS has a row.',
+    notes:
+      'Colours are verified-from-API; the worn slot for a fixture without colours still uses the convention unless KIT_WORN_SLOTS has a row.',
     player: {
       home: homeP,
       away: awayP && awayP.primary !== homeP.primary ? awayP : homeP,
@@ -289,14 +318,14 @@ export function mergeSeasonKits(
   return {
     ...catalog,
     player: {
-      home: catalog.player.home,
-      away: catalog.player.away,
+      home: catalog.player.home ?? inferred.player.home,
+      away: catalog.player.away ?? inferred.player.away,
       third: catalog.player.third ?? inferred.player.third,
     },
     goalkeeper: {
-      home: catalog.goalkeeper.home,
-      away: catalog.goalkeeper.away ?? inferred.goalkeeper.away,
-      third: catalog.goalkeeper.third ?? inferred.goalkeeper.third,
+      home: catalog.goalkeeper?.home ?? inferred.goalkeeper?.home,
+      away: catalog.goalkeeper?.away ?? inferred.goalkeeper?.away,
+      third: catalog.goalkeeper?.third ?? inferred.goalkeeper?.third,
     },
   };
 }
@@ -340,7 +369,9 @@ export function resolveTeamKitsWithSeason(
       isHome: !isHome,
       kits: opponentSet.player,
     });
-    opponentPrimary = oppSlot.slot ? slotPalette(opponentSet.player, oppSlot.slot)?.primary ?? null : null;
+    opponentPrimary = oppSlot.slot
+      ? (slotPalette(opponentSet.player, oppSlot.slot)?.primary ?? null)
+      : null;
   }
   const worn = pickWornSlot({
     fixtureId: ctx.fixtureId,
@@ -353,7 +384,9 @@ export function resolveTeamKitsWithSeason(
     set && worn.slot
       ? {
           player: slotPalette(set.player, worn.slot),
-          goalkeeper: slotPalette(set.goalkeeper, worn.slot) ?? set.goalkeeper.home,
+          goalkeeper: set.goalkeeper
+            ? (slotPalette(set.goalkeeper, worn.slot) ?? set.goalkeeper.home ?? null)
+            : null,
         }
       : undefined;
 
@@ -373,10 +406,12 @@ export function applyStoredSeasonFallback(
   if (stored && !kitsNeedRefresh(stored)) return stored;
   const resolved = resolveTeamKitsWithSeason(ctx, teamId, null);
   if (resolved.player.source === 'neutral' && resolved.goalkeeper.source === 'neutral') {
-    return stored ?? {
-      player: resolved.player,
-      goalkeeper: resolved.goalkeeper,
-    };
+    return (
+      stored ?? {
+        player: resolved.player,
+        goalkeeper: resolved.goalkeeper,
+      }
+    );
   }
   // Prefer a newly resolved season/correction palette on a role that was grey.
   if (!stored) {

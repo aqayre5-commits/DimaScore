@@ -1,0 +1,54 @@
+[
+  {
+    "file": "before-wydad-far-en-start-d1440.png",
+    "loc": "en",
+    "vp": "d1440",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      }
+    ]
+  },
+  {
+    "file": "before-wydad-far-en-start-m390.png",
+    "loc": "en",
+    "vp": "m390",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      }
+    ]
+  },
+  {
+    "file": "before-wydad-far-ar-start-d1440.png",
+    "loc": "ar",
+    "vp": "d1440",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      }
+    ]
+  },
+  {
+    "file": "before-wydad-far-ar-start-m390.png",
+    "loc": "ar",
+    "vp": "m390",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      }
+    ]
+  }
+]

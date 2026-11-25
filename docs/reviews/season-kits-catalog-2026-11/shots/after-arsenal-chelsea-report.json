@@ -1,0 +1,114 @@
+[
+  {
+    "file": "after-arsenal-chelsea-en-start-d1440.png",
+    "loc": "en",
+    "vp": "d1440",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#ffffff",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#f00000",
+        "number": "#000000",
+        "edge": "#000000"
+      },
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#000000",
+        "number": "#f0d104",
+        "edge": "#f0d104"
+      }
+    ]
+  },
+  {
+    "file": "after-arsenal-chelsea-en-start-m390.png",
+    "loc": "en",
+    "vp": "m390",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#ffffff",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#f00000",
+        "number": "#000000",
+        "edge": "#000000"
+      },
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#000000",
+        "number": "#f0d104",
+        "edge": "#f0d104"
+      }
+    ]
+  },
+  {
+    "file": "after-arsenal-chelsea-ar-start-d1440.png",
+    "loc": "ar",
+    "vp": "d1440",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#ffffff",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#f00000",
+        "number": "#000000",
+        "edge": "#000000"
+      },
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#000000",
+        "number": "#f0d104",
+        "edge": "#f0d104"
+      }
+    ]
+  },
+  {
+    "file": "after-arsenal-chelsea-ar-start-m390.png",
+    "loc": "ar",
+    "vp": "m390",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#ffffff",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#f00000",
+        "number": "#000000",
+        "edge": "#000000"
+      },
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#000000",
+        "number": "#f0d104",
+        "edge": "#f0d104"
+      }
+    ]
+  }
+]

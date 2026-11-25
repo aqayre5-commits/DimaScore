@@ -1,0 +1,48 @@
+[
+  {
+    "file": "after-real-madrid-psv-en-start-d1440.png",
+    "loc": "en",
+    "vp": "d1440",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#fb8345",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#ffffff",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      }
+    ]
+  },
+  {
+    "file": "after-real-madrid-psv-en-start-m390.png",
+    "loc": "en",
+    "vp": "m390",
+    "shirtCount": 24,
+    "uniquePalettes": [
+      {
+        "kit": "#fb8345",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#ffffff",
+        "number": "#111111",
+        "edge": "#111111"
+      },
+      {
+        "kit": "#c8cdd1",
+        "number": "#111111",
+        "edge": "#111111"
+      }
+    ]
+  }
+]

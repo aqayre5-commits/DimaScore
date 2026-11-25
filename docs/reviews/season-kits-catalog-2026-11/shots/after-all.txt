@@ -1,0 +1,87 @@
+◇ injected env (0) from .env.local // tip: ⌁ auth for agents [www.vestauth.com]
+[dry-run-season-kit-fallback] === DRY RUN (read-only, all stored line-ups) ===
+[dry-run-season-kit-fallback] Line-up rows in the window: 232
+[dry-run-season-kit-fallback] Rows currently missing a complete kit (null or source=neutral): 232
+[dry-run-season-kit-fallback] Would move from grey to a kit: 139
+[dry-run-season-kit-fallback] Would stay grey: 93
+[dry-run-season-kit-fallback] By team (team_id, grey, would_move, stay_grey):
+[dry-run-season-kit-fallback]   31	13	0	13
+[dry-run-season-kit-fallback]   57	8	8	0
+[dry-run-season-kit-fallback]   65	8	8	0
+[dry-run-season-kit-fallback]   1346	7	7	0
+[dry-run-season-kit-fallback]   42	7	7	0
+[dry-run-season-kit-fallback]   33	7	7	0
+[dry-run-season-kit-fallback]   64	7	7	0
+[dry-run-season-kit-fallback]   63	7	0	7
+[dry-run-season-kit-fallback]   746	7	7	0
+[dry-run-season-kit-fallback]   45	7	7	0
+[dry-run-season-kit-fallback]   52	7	7	0
+[dry-run-season-kit-fallback]   35	7	7	0
+[dry-run-season-kit-fallback]   50	7	7	0
+[dry-run-season-kit-fallback]   51	7	7	0
+[dry-run-season-kit-fallback]   66	7	7	0
+[dry-run-season-kit-fallback]   34	7	7	0
+[dry-run-season-kit-fallback]   40	7	7	0
+[dry-run-season-kit-fallback]   36	7	7	0
+[dry-run-season-kit-fallback]   49	7	7	0
+[dry-run-season-kit-fallback]   47	6	6	0
+[dry-run-season-kit-fallback]   55	6	6	0
+[dry-run-season-kit-fallback]   2	4	0	4
+[dry-run-season-kit-fallback]   9	4	0	4
+[dry-run-season-kit-fallback]   26	4	0	4
+[dry-run-season-kit-fallback]   32	4	0	4
+[dry-run-season-kit-fallback]   10	3	0	3
+[dry-run-season-kit-fallback]   13	3	0	3
+[dry-run-season-kit-fallback]   19	3	0	3
+[dry-run-season-kit-fallback]   968	2	2	0
+[dry-run-season-kit-fallback]   969	2	2	0
+[dry-run-season-kit-fallback]   15	2	0	2
+[dry-run-season-kit-fallback]   1501	2	0	2
+[dry-run-season-kit-fallback]   1532	2	0	2
+[dry-run-season-kit-fallback]   1860	1	0	1
+[dry-run-season-kit-fallback]   17575	1	0	1
+[dry-run-season-kit-fallback]   1676	1	0	1
+[dry-run-season-kit-fallback]   13982	1	0	1
+[dry-run-season-kit-fallback]   1674	1	0	1
+[dry-run-season-kit-fallback]   1850	1	0	1
+[dry-run-season-kit-fallback]   1918	1	0	1
+[dry-run-season-kit-fallback]   15548	1	0	1
+[dry-run-season-kit-fallback]   1892	1	0	1
+[dry-run-season-kit-fallback]   15495	1	0	1
+[dry-run-season-kit-fallback]   2869	1	0	1
+[dry-run-season-kit-fallback]   2872	1	0	1
+[dry-run-season-kit-fallback]   2865	1	0	1
+[dry-run-season-kit-fallback]   2873	1	0	1
+[dry-run-season-kit-fallback]   962	1	0	1
+[dry-run-season-kit-fallback]   973	1	0	1
+[dry-run-season-kit-fallback]   14806	1	0	1
+[dry-run-season-kit-fallback]   18753	1	0	1
+[dry-run-season-kit-fallback]   971	1	0	1
+[dry-run-season-kit-fallback]   977	1	0	1
+[dry-run-season-kit-fallback]   3453	1	0	1
+[dry-run-season-kit-fallback]   965	1	0	1
+[dry-run-season-kit-fallback]   22218	1	0	1
+[dry-run-season-kit-fallback]   3449	1	0	1
+[dry-run-season-kit-fallback]   3458	1	0	1
+[dry-run-season-kit-fallback]   964	1	0	1
+[dry-run-season-kit-fallback]   974	1	1	0
+[dry-run-season-kit-fallback]   976	1	0	1
+[dry-run-season-kit-fallback]   5529	1	0	1
+[dry-run-season-kit-fallback]   1118	1	0	1
+[dry-run-season-kit-fallback]   2386	1	0	1
+[dry-run-season-kit-fallback]   1108	1	0	1
+[dry-run-season-kit-fallback]   6	1	0	1
+[dry-run-season-kit-fallback]   3	1	0	1
+[dry-run-season-kit-fallback]   27	1	0	1
+[dry-run-season-kit-fallback]   1090	1	0	1
+[dry-run-season-kit-fallback]   1	1	0	1
+[dry-run-season-kit-fallback]   8	1	0	1
+[dry-run-season-kit-fallback]   1530	1	0	1
+[dry-run-season-kit-fallback]   1500	1	0	1
+[dry-run-season-kit-fallback]   1502	1	0	1
+[dry-run-season-kit-fallback]   1508	1	0	1
+[dry-run-season-kit-fallback]   197	1	0	1
+[dry-run-season-kit-fallback]   541	1	1	0
+[dry-run-season-kit-fallback] Stay-grey reasons:
+[dry-run-season-kit-fallback]   no-kit-for-team-season: 93
+[dry-run-season-kit-fallback] No rows were written.
