@@ -4,10 +4,8 @@ import { FormDots } from '@/components/shared/FormSparkline';
 import type { TeamDetail, FormResult } from '@/lib/db/queries/team';
 import { TeamFollowButton } from '@/components/team/TeamFollowButton';
 import type { Locale } from '@/lib/i18n/config';
-import { codeToFlag } from '@/lib/flags';
 import { slugify } from '@/lib/ingestion/slug';
-import Image from 'next/image';
-import { getTeamFlagUrl } from '@/lib/team-display';
+import { TeamMark } from '@/components/shared/TeamMark';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 
 interface TeamPageHeaderProps {
@@ -24,16 +22,6 @@ function resolveTeamName(team: TeamDetail, locale: Locale): string {
 export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProps) {
   const t = useTranslations('teamPage');
   const name = resolveTeamName(team, locale);
-  const flag = team.isNational && team.countryCode ? codeToFlag(team.countryCode) : null;
-  // Initials monogram for logo-less clubs (consistent with the shared Flag fallback).
-  const initials =
-    name
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((w) => w[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || '—';
   // National teams have no single home stadium — the API's "default venue" is misleading,
   // so suppress venue/capacity for them (founded year still shows). Audit P2-3.
   const headerVenue = team.isNational ? null : team.venue;
@@ -41,40 +29,36 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
   return (
     <div className="h-full overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15">
       <div className="flex h-full items-stretch gap-5 p-2">
-        {/* Team logo — fills vertical space */}
-        {getTeamFlagUrl(team) ? (
-          <Image
-            src={getTeamFlagUrl(team)!}
-            alt={name}
-            className="hidden h-full max-h-[140px] w-auto shrink-0 object-contain object-center md:block"
-            width={140}
-            height={140}
-            priority
-          />
-        ) : flag ? (
-          <span className="hidden text-6xl md:flex md:items-center">{flag}</span>
-        ) : (
-          <div className="hidden size-24 shrink-0 items-center justify-center rounded-lg bg-bg-surface-2 font-bold uppercase text-text-tertiary md:flex">
-            <span className="text-3xl">{initials}</span>
-          </div>
-        )}
-        {/* Mobile-only logo — fills card height */}
-        {getTeamFlagUrl(team) ? (
-          <Image
-            src={getTeamFlagUrl(team)!}
-            alt={name}
-            className="h-full max-h-[104px] w-auto shrink-0 self-stretch object-contain object-center md:hidden"
-            width={104}
-            height={104}
-            priority
-          />
-        ) : flag ? (
-          <span className="flex items-center self-stretch text-5xl md:hidden">{flag}</span>
-        ) : (
-          <div className="flex size-20 shrink-0 items-center justify-center self-center rounded-lg bg-bg-surface-2 text-2xl font-bold uppercase text-text-tertiary md:hidden">
-            {initials}
-          </div>
-        )}
+        {/* Team logo — fills vertical space. TeamMark uses the crest, the country
+            flag for national sides, or the inline fallback shield. */}
+        <TeamMark
+          src={team.logoUrl}
+          status={team.logoStatus}
+          isNational={team.isNational}
+          countryCode={team.countryCode}
+          name={team.name}
+          shortName={team.shortName}
+          code={team.code}
+          primary={team.primaryColor}
+          secondary={team.secondaryColor}
+          alt={name}
+          className="hidden max-h-[140px] w-auto shrink-0 object-contain object-center md:block"
+          size={140}
+        />
+        <TeamMark
+          src={team.logoUrl}
+          status={team.logoStatus}
+          isNational={team.isNational}
+          countryCode={team.countryCode}
+          name={team.name}
+          shortName={team.shortName}
+          code={team.code}
+          primary={team.primaryColor}
+          secondary={team.secondaryColor}
+          alt={name}
+          className="max-h-[104px] w-auto shrink-0 self-stretch object-contain object-center md:hidden"
+          size={104}
+        />
 
         {/* Identity */}
         <div className="flex min-w-0 flex-1 flex-col py-1">

@@ -6,6 +6,7 @@ import type { FixtureWithTeams } from '../queries';
 import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { selectDefaultRound } from '@/lib/competitions/select-default-round';
+import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
 
 // ── Types ──
 
@@ -16,6 +17,7 @@ export interface CompetitionRecord {
   countryCode: string | null;
   type: string;
   logoUrl: string | null;
+  logoStatus: LogoStatus | null;
 }
 
 export interface LeagueCoverageRecord {
@@ -50,6 +52,7 @@ export async function getCompetitionById(
       countryCode: schema.competitions.countryCode,
       type: schema.competitions.type,
       logoUrl: schema.competitions.logoUrl,
+      logoStatus: schema.competitions.logoStatus,
     })
     .from(schema.competitions)
     .where(eq(schema.competitions.id, id))
@@ -382,6 +385,7 @@ export async function getTopScorersForLeague(
       teamId: schema.teams.id,
       teamNameI18n: schema.teams.name,
       teamLogoUrl: schema.teams.logoUrl,
+      teamLogoStatus: schema.teams.logoStatus,
       teamCountryCode: schema.teams.countryCode,
       teamIsNational: schema.teams.isNational,
     })
@@ -423,7 +427,7 @@ export async function getTopScorersForLeague(
         locale,
         (s.teamName as string) ?? '',
       ),
-      teamLogo: r.teamLogoUrl ?? (s.teamLogo as string) ?? null,
+      teamLogo: usableLogoUrl(r.teamLogoUrl, r.teamLogoStatus),
       goals: Number(s.goals) || 0,
       assists: Number(s.assists) || 0,
     };
@@ -448,6 +452,7 @@ export async function getTopAssistsForLeague(
       teamId: schema.teams.id,
       teamNameI18n: schema.teams.name,
       teamLogoUrl: schema.teams.logoUrl,
+      teamLogoStatus: schema.teams.logoStatus,
       teamCountryCode: schema.teams.countryCode,
       teamIsNational: schema.teams.isNational,
     })
@@ -489,7 +494,7 @@ export async function getTopAssistsForLeague(
         locale,
         (s.teamName as string) ?? '',
       ),
-      teamLogo: r.teamLogoUrl ?? (s.teamLogo as string) ?? null,
+      teamLogo: usableLogoUrl(r.teamLogoUrl, r.teamLogoStatus),
       goals: Number(s.goals) || 0,
       assists: Number(s.assists) || 0,
     };
@@ -660,6 +665,7 @@ export async function getTopCardsForLeague(
       teamId: schema.teams.id,
       teamNameI18n: schema.teams.name,
       teamLogoUrl: schema.teams.logoUrl,
+      teamLogoStatus: schema.teams.logoStatus,
       teamCountryCode: schema.teams.countryCode,
       teamIsNational: schema.teams.isNational,
     })
@@ -701,7 +707,7 @@ export async function getTopCardsForLeague(
         locale,
         (s.teamName as string) ?? '',
       ),
-      teamLogo: r.teamLogoUrl ?? (s.teamLogo as string) ?? null,
+      teamLogo: usableLogoUrl(r.teamLogoUrl, r.teamLogoStatus),
       yellowCards: Number(s.yellowCards) || 0,
       redCards: Number(s.redCards) || 0,
     };

@@ -1,3 +1,4 @@
+import { usableLogoUrl } from '@/lib/logos/status';
 import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
@@ -195,7 +196,8 @@ export async function renderLeaguePage(
   ];
 
   const hashes = LEAGUE_TAB_HASHES[locale];
-  const logoSrc = CURATED_LOGOS[competition.id] ?? competition.logoUrl;
+  const logoSrc =
+    CURATED_LOGOS[competition.id] ?? usableLogoUrl(competition.logoUrl, competition.logoStatus);
   const invertLogo = DARK_LOGOS.has(competition.id);
   const flag = countryFlag(competition.countryCode);
   const basePath = `/${rawLocale}/competition/${rawCountry}/${rawTournament}`;

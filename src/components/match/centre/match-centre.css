@@ -1731,7 +1731,8 @@ html:not([data-theme='light']) .mc dialog::backdrop {
 .mc .lu-card-club {
   gap: 8px;
 }
-.mc .lu-card-club img {
+.mc .lu-card-club img,
+.mc .lu-card-club svg {
   width: 26px;
   height: 26px;
   object-fit: contain;
@@ -2351,9 +2352,11 @@ html:not([data-theme='light']) .mc .save.on .ic {
 .mc .tournament-option:focus-visible {
   background: var(--hover);
 }
-.mc .mark.fallback {
-  border-radius: 50%;
-  background: var(--light);
+.mc .mark.fallback,
+html:not([data-theme='light']) .mc .mark.fallback {
+  border-radius: 0;
+  background: none;
+  color: inherit;
 }
 .mc .mc-team strong a:hover,
 .mc .standing-name a:hover {

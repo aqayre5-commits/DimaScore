@@ -7,6 +7,7 @@ import { runWrites } from '@/lib/db/client';
 import type { SyncStats } from './types';
 import { slugify } from './slug';
 import { buildCountryLookup, resolveCountryCode } from './country-lookup';
+import { classifyLogoUrl, type ClassifyCache } from '@/lib/logos/classify';
 
 // ─── Mappers (exported for testing) ───
 
@@ -53,6 +54,7 @@ export async function syncTeams(
   const inserted = 0;
   let updated = 0;
 
+  const logoCache: ClassifyCache = new Map();
   await runWrites(async (tx) => {
     for (const t of teams) {
       // Upsert venue first (side-effect) — skip if venue id is null
@@ -75,9 +77,11 @@ export async function syncTeams(
 
       // Upsert team
       const teamRow = mapTeamToInsert(t, params.isWomen, countryLookup);
+      const logo = await classifyLogoUrl(teamRow.logoUrl, { cache: logoCache });
+      const teamValues = { ...teamRow, logoStatus: logo.status };
       await tx
         .insert(schema.teams)
-        .values(teamRow)
+        .values(teamValues)
         .onConflictDoUpdate({
           target: schema.teams.id,
           set: {
@@ -90,6 +94,7 @@ export async function syncTeams(
             countryCode: teamRow.countryCode,
             founded: teamRow.founded,
             logoUrl: teamRow.logoUrl,
+            logoStatus: logo.status,
             venueId: teamRow.venueId,
             isNational: teamRow.isNational,
             isWomen: teamRow.isWomen,

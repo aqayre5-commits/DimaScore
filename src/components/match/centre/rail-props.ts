@@ -48,7 +48,11 @@ export async function getRailProps(
     id: e.competitionId,
     label: tMenu(e.labelKey),
     href: e.href,
-    logo: resolveCompetitionLogo(e.competitionId, data.logos[e.competitionId] ?? null),
+    logo: resolveCompetitionLogo(
+      e.competitionId,
+      data.logos[e.competitionId] ?? null,
+      data.logoStatus[e.competitionId] ?? null,
+    ),
   });
   const byId = new Map(entries.map((e) => [e.competitionId, railEntry(e)]));
   const active = new Set(data.activeIds);

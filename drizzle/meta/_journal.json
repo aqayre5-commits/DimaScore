@@ -64,6 +64,13 @@
       "when": 1795566728140,
       "tag": "0008_national_team_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795620000000,
+      "tag": "0009_logo_status",
+      "breakpoints": true
     }
   ]
 }

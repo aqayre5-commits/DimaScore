@@ -3,7 +3,11 @@ import { sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
-import type { TeamSnapshot, VenueSnapshot } from './queries-hydrate';
+import {
+  getTeamsMap as loadTeamsMap,
+  type TeamSnapshot,
+  type VenueSnapshot,
+} from './queries-hydrate';
 import { applyComputedStandings } from '@/lib/standings/compute';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { isDisplayableFixture } from './queries/homepage';
@@ -210,30 +214,7 @@ async function getTeamsMap(
   db: NeonHttpDatabase<typeof schema>,
   teamIds: number[],
 ): Promise<Map<number, TeamSnapshot>> {
-  if (teamIds.length === 0) return new Map();
-
-  const parent = alias(schema.teams, 'parent_team');
-  const teams = await db
-    .select({
-      id: schema.teams.id,
-      slug: schema.teams.slug,
-      name: schema.teams.name,
-      shortName: schema.teams.shortName,
-      code: schema.teams.code,
-      countryCode: schema.teams.countryCode,
-      // Crest resolution: own logo ?? parent club's logo (Phase 16 · Task G).
-      logoUrl: sql<string | null>`COALESCE(${schema.teams.logoUrl}, ${parent.logoUrl})`,
-      isNational: schema.teams.isNational,
-    })
-    .from(schema.teams)
-    .leftJoin(parent, eq(schema.teams.parentTeamId, parent.id))
-    .where(inArray(schema.teams.id, teamIds));
-
-  const map = new Map<number, TeamSnapshot>();
-  for (const t of teams) {
-    map.set(t.id, t);
-  }
-  return map;
+  return loadTeamsMap(db, teamIds);
 }
 
 async function getVenuesMap(

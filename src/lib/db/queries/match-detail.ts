@@ -41,6 +41,7 @@ export interface MatchDetail {
     name: Record<string, string>;
     countryCode: string | null;
     logoUrl: string | null;
+    logoStatus?: import('@/lib/logos/status').LogoStatus | null;
   };
   venue: {
     id: number;
@@ -84,6 +85,7 @@ export const getMatchDetail = cache(async function getMatchDetail(
       compName: schema.competitions.name,
       compCountryCode: schema.competitions.countryCode,
       compLogoUrl: schema.competitions.logoUrl,
+      compLogoStatus: schema.competitions.logoStatus,
       venueId: schema.venues.id,
       venueName: schema.venues.name,
       venueCity: schema.venues.city,
@@ -156,7 +158,8 @@ export const getMatchDetail = cache(async function getMatchDetail(
       slug: row.compSlug,
       name: row.compName,
       countryCode: row.compCountryCode,
-      logoUrl: resolveCompetitionLogo(row.compId, row.compLogoUrl),
+      logoUrl: resolveCompetitionLogo(row.compId, row.compLogoUrl, row.compLogoStatus),
+      logoStatus: row.compLogoStatus ?? null,
     },
     venue,
     seasonYear: row.seasonYear,

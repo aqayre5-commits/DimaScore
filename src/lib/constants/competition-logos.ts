@@ -1,3 +1,4 @@
+import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
 /**
  * Competition logo overrides. api-sports serves a generic placeholder shield for some competitions
  * (e.g. World Cup id 1), so we ship custom trophy assets under /public/competitions and prefer them
@@ -13,9 +14,10 @@ export const COMPETITION_LOGO_OVERRIDES: Record<number, string> = {
 export function resolveCompetitionLogo(
   competitionId: number | null | undefined,
   dbLogoUrl: string | null,
+  logoStatus?: LogoStatus | null,
 ): string | null {
   if (competitionId != null && COMPETITION_LOGO_OVERRIDES[competitionId]) {
     return COMPETITION_LOGO_OVERRIDES[competitionId];
   }
-  return dbLogoUrl;
+  return usableLogoUrl(dbLogoUrl, logoStatus);
 }

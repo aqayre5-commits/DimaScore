@@ -18,6 +18,7 @@ import {
 import { EventIcon, type EventArt } from './icons';
 import type { McMatch, McTeam } from './types';
 import { isGoalkeeperPos, kitCssVars, type KitPalette } from '@/lib/match/kit-colours';
+import { TeamMark } from '@/components/shared/TeamMark';
 
 type Status = 'sent' | 'off' | 'starter' | 'ready' | 'live' | 'finished';
 
@@ -275,10 +276,15 @@ export function Lineups({
       >
         <header className="lu-card-head">
           <div className="lu-card-club">
-            {team.logo && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={team.logo} alt="" loading="lazy" decoding="async" />
-            )}
+            <TeamMark
+              src={team.logo}
+              status={team.logoStatus}
+              name={team.name}
+              code={team.code}
+              primary={team.primary}
+              secondary={team.secondary}
+              size={26}
+            />
             <h2 dir="auto">{team.name}</h2>
           </div>
           <bdi className="lu-shape">{side.formation}</bdi>

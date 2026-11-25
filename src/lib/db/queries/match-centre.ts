@@ -115,10 +115,11 @@ export interface RailCompetitionData {
   activeIds: number[];
   /** DB logo per competition id. */
   logos: Record<number, string | null>;
+  logoStatus: Record<number, import('@/lib/logos/status').LogoStatus | null>;
 }
 
 export async function getRailCompetitionData(db: Db, ids: number[]): Promise<RailCompetitionData> {
-  if (ids.length === 0) return { activeIds: [], logos: {} };
+  if (ids.length === 0) return { activeIds: [], logos: {}, logoStatus: {} };
   const idList = sql.join(
     ids.map((i) => sql`${i}`),
     sql`, `,
@@ -130,14 +131,24 @@ export async function getRailCompetitionData(db: Db, ids: number[]): Promise<Rai
       WHERE f.competition_id IN (${idList})
         AND f.kickoff_at BETWEEN NOW() - INTERVAL '10 days' AND NOW() + INTERVAL '10 days'
     `),
-    db.execute(sql`SELECT c.id, c.logo_url FROM competitions c WHERE c.id IN (${idList})`),
+    db.execute(
+      sql`SELECT c.id, c.logo_url, c.logo_status FROM competitions c WHERE c.id IN (${idList})`,
+    ),
   ]);
   return {
     activeIds: (active.rows as { id: unknown }[]).map((r) => Number(r.id)),
     logos: Object.fromEntries(
-      (logos.rows as { id: unknown; logo_url: unknown }[]).map((r) => [
+      (logos.rows as { id: unknown; logo_url: unknown; logo_status: unknown }[]).map((r) => [
         Number(r.id),
         r.logo_url == null ? null : String(r.logo_url),
+      ]),
+    ),
+    logoStatus: Object.fromEntries(
+      (logos.rows as { id: unknown; logo_status: unknown }[]).map((r) => [
+        Number(r.id),
+        r.logo_status == null
+          ? null
+          : (String(r.logo_status) as import('@/lib/logos/status').LogoStatus),
       ]),
     ),
   };

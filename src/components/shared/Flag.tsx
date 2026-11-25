@@ -1,12 +1,15 @@
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { flagImageSrc } from '@/lib/logos/flag-src';
+import type { LogoStatus } from '@/lib/logos/status';
+import { TeamMark } from './TeamMark';
 
 export interface FlagProps {
   /** ISO-3166 alpha-2 code (e.g. 'MA') — renders the country flag for national teams / nationalities. */
   countryCode?: string | null;
   /** Club crest URL. Used only for non-national teams. Prefer `teamId` to avoid inlining URLs. */
   logoUrl?: string | null;
-  /** Reconstructs the api-sports crest when `logoUrl` is omitted. */
+  logoStatus?: LogoStatus | null;
+  /** Reconstructs the api-sports crest when `logoUrl` is omitted. Unused: a bare id 200s the placeholder. */
   teamId?: number | null;
   /** National team / country flag. When true (or when only a countryCode is given), the 4:3 flag wins. */
   isNational?: boolean | null;
@@ -14,84 +17,75 @@ export interface FlagProps {
   size?: number;
   /** Fallback initials/code shown when no image resolves. */
   label?: string | null;
+  name?: string | Record<string, string> | null;
+  shortName?: string | Record<string, string> | null;
+  code?: string | null;
+  primary?: string | null;
+  secondary?: string | null;
   /** Image alt text. Empty (decorative) by default, for badges next to the visible name. */
   alt?: string;
   className?: string;
 }
 
-/** The image URL Flag shows for these props (null when it falls back to initials). Kept in one
- *  place so structured data can point at the same image the page shows. */
-export function flagImageSrc({
-  countryCode,
-  logoUrl,
-  isNational,
-}: Pick<FlagProps, 'countryCode' | 'logoUrl' | 'isNational'>): string | null {
-  const cc = countryCode?.trim().toLowerCase();
-  const crest = logoUrl ?? null;
-  const asFlag = !!cc && (isNational === true || (isNational == null && !crest));
-  return asFlag ? `https://media.api-sports.io/flags/${cc}.svg` : crest;
-}
+export { flagImageSrc };
 
 /**
  * Unified team/country flag. National teams and bare country codes render the api-sports
  * country flag (`flags/{cc}.svg`, all 640×480 = 4:3) in a 4:3 box; clubs render their square
- * crest; otherwise a consistent initials box. Competition/league logos are NOT flags — use
- * `CompetitionLogo` for those.
+ * crest; otherwise the inline fallback shield. Competition/league logos are NOT flags — use
+ * `CompetitionLogo` / `TeamMark variant="competition"` for those.
  */
 export function Flag({
   countryCode,
   logoUrl,
+  logoStatus,
   teamId,
   isNational,
   size = 16,
   label,
+  name,
+  shortName,
+  code,
+  primary,
+  secondary,
   alt = '',
   className,
 }: FlagProps) {
-  const cc = countryCode?.trim().toLowerCase();
-  // Use only a real stored logo — NOT teamCrestUrl(id), which 200s with API-Football's grey
-  // placeholder for logo-less teams. A null logo_url means no real logo → fall through to the
-  // initials monogram below (national teams still render their flag via `asFlag`).
   void teamId;
-  const crest = logoUrl ?? null;
-  // Flag only for: an explicit national team (isNational === true), OR a bare nationality badge
-  // (isNational not provided and no crest). A CLUB (isNational === false) must NEVER render the
-  // country flag even when it has a country code and no logo — it falls through to initials.
-  const asFlag = !!cc && (isNational === true || (isNational == null && !crest));
-  // Flags are width-driven at 4:3 (api-sports SVGs are 640×480): width = size so a flag occupies the
-  // same width as a square crest — names stay aligned and flags never read "too wide". Height is the
-  // shorter 4:3 side; crests stay square. `size` is the badge's width footprint.
+  const cc = countryCode?.trim().toLowerCase();
+  const crestReady = flagImageSrc({ countryCode, logoUrl, isNational, logoStatus });
+  const asFlag =
+    !!cc &&
+    (isNational === true ||
+      (isNational == null &&
+        !flagImageSrc({ logoUrl, logoStatus, isNational: false, countryCode: null })));
   const width = size;
   const height = asFlag ? Math.round((size * 3) / 4) : size;
-  const src = flagImageSrc({ countryCode, logoUrl, isNational });
-
-  if (src) {
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        width={asFlag ? 96 : 72}
-        height={72}
-        style={{ width, height }}
-        className={cn(
-          'shrink-0 object-contain',
-          asFlag && 'rounded-sm ring-1 ring-border-subtle/40',
-          className,
-        )}
-      />
-    );
-  }
 
   return (
-    <span
-      aria-hidden
-      style={{ width, height, fontSize: Math.max(8, Math.round(size * 0.46)) }}
-      className={cn(
-        'flex shrink-0 items-center justify-center rounded-sm bg-bg-surface-2 font-semibold uppercase leading-none text-text-tertiary',
-        className,
-      )}
-    >
-      {(label ?? '').slice(0, 2)}
+    <span style={{ width, height, display: 'inline-flex' }} className={cn('shrink-0', className)}>
+      <TeamMark
+        src={logoUrl}
+        status={logoStatus}
+        countryCode={countryCode}
+        isNational={isNational}
+        size={size}
+        alt={alt}
+        className={cn(
+          'h-full w-full object-contain',
+          asFlag && 'rounded-sm ring-1 ring-border-subtle/40',
+        )}
+        name={name}
+        shortName={shortName}
+        code={code ?? (label && label.length <= 3 ? label : null)}
+        primary={primary}
+        secondary={secondary}
+        style={{ width: '100%', height: '100%' }}
+      />
+      {/* Keep a visually hidden hint when we only have a raw label and no name. */}
+      {!crestReady && !name && label && label.length > 3 ? (
+        <span className="sr-only">{label}</span>
+      ) : null}
     </span>
   );
 }
