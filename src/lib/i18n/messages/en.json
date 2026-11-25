@@ -661,7 +661,20 @@
     "colGoalDiffFull": "Goal difference",
     "colGoalsFull": "Goals for and against",
     "colPointsFull": "Points",
-    "colRankFull": "Position"
+    "colRankFull": "Position",
+    "overviewTab": "Overview",
+    "tableTab": "Table",
+    "viewMore": "View more",
+    "showFewer": "Show fewer",
+    "noFixturesOnDay": "No league fixtures on the selected day.",
+    "pinCompetition": "Pin {name}",
+    "unpinCompetition": "Unpin {name}",
+    "starFixture": "Save {match}",
+    "unstarFixture": "Remove {match} from saved matches",
+    "allStats": "All stats",
+    "overall": "Overall",
+    "today": "Today",
+    "roundNumber": "Matchweek {n}"
   },
   "shared": {
     "share": "Share",

@@ -1,9 +1,8 @@
-import Link from 'next/link';
 import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
-import { InnerPageShell } from '@/components/layout/InnerPageShell';
-import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import { CompetitionPage } from '@/components/league/template/CompetitionPage';
+import { CURATED_LOGOS, DARK_LOGOS, countryFlag } from '@/lib/competitions/artwork';
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
   buildGraph,
@@ -12,21 +11,13 @@ import {
   buildFixtureItemList,
 } from '@/lib/seo/jsonld';
 import { BASE_URL } from '@/lib/constants/site';
-import {
-  getRelatedCompetitionIds,
-  type MegaMenuEntry,
-} from '@/lib/constants/competitions-mega-menu';
-import { RelatedCompetitions } from '@/components/tournament/RelatedCompetitions';
-import { CompetitionMediaSection } from '@/components/tournament/CompetitionMediaSection';
-import { CenterTabs } from '@/components/tournament/CenterTabs';
+import { type MegaMenuEntry } from '@/lib/constants/competitions-mega-menu';
 import { db } from '@/lib/db/client';
 import { getStandings } from '@/lib/db/queries';
 import {
   getCompetitionById,
-  getLeagueCoverage,
   getLeagueRounds,
   getCurrentRound,
-  getLeagueFeaturedMatches,
   getLeagueFixtures,
   getResolvedTopScorers,
   getResolvedTopAssists,
@@ -35,72 +26,47 @@ import {
 } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
+import { toSiteDateKey } from '@/lib/utils/date';
 import { competitionDisplayName, competitionHeading } from '@/lib/competitions/display-name';
-import { getInjuriesForCompetition } from '@/lib/db/queries/injuries';
-import { InjuriesTab } from '@/components/league/InjuriesTab';
-import { LeagueAboutCard } from '@/components/league/LeagueAboutCard';
-import { LeaguePageHeader } from '@/components/league/LeaguePageHeader';
-import { LeagueStandingsTab } from '@/components/league/LeagueStandingsTab';
-import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
-import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
-import { LeagueOverviewTab } from '@/components/league/LeagueOverviewTab';
-import { LeagueFixturesTab } from '@/components/league/LeagueFixturesTab';
-import { LeaguePlayersTab } from '@/components/league/LeaguePlayersTab';
-import { LeagueTeamsTab } from '@/components/league/LeagueTeamsTab';
 import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-content';
-import {
-  BOTOLA_2_COMPETITION_ID,
-  botola2AboutTeamsValue,
-  botola2HeaderTeamsCount,
-} from '@/lib/seo/botola-2-classement';
-import { BOTOLA_PRO_COMPETITION_ID, botolaClassementPath } from '@/lib/seo/botola-classement';
-import { botolaMatchsPath } from '@/lib/seo/botola-matchs';
-import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
-import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
-import { MOROCCO_HUB_COMPETITION_IDS, hubKeyForCompetition } from '@/lib/constants/morocco-hubs';
 import { teamLabel } from '@/lib/i18n/localized-names';
+import { CompetitionRail } from '@/components/match/centre/CompetitionRail';
+import { getRailProps } from '@/components/match/centre/rail-props';
+import { NavCompetitionRegister } from '@/components/chrome/NavCompetitionRegister';
+import { mcFont } from '@/components/match/centre/font';
+import type { BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import '@/components/match/centre/match-centre.css';
 
 async function getCachedLeagueData(competitionId: number, seasonYear: number, locale: Locale) {
   'use cache';
   cacheLife('minutes');
-  const [
-    coverage,
-    standings,
-    rounds,
-    currentRound,
-    featuredMatches,
-    fixtures,
-    topScorers,
-    topAssists,
-    topCards,
-    injuries,
-    competitionTeams,
-  ] = await Promise.all([
-    getLeagueCoverage(db, competitionId, seasonYear),
-    getStandings(db, competitionId, seasonYear),
-    getLeagueRounds(db, competitionId, seasonYear),
-    getCurrentRound(db, competitionId, seasonYear),
-    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
-    getLeagueFixtures(db, competitionId, seasonYear),
-    getResolvedTopScorers(db, competitionId, seasonYear, locale),
-    getResolvedTopAssists(db, competitionId, seasonYear, locale),
-    getTopCardsForLeague(db, competitionId, seasonYear, 10, locale),
-    getInjuriesForCompetition(db, competitionId, seasonYear, 30, locale),
-    getCompetitionTeams(db, competitionId, seasonYear),
-  ]);
+  const [standings, rounds, currentRound, fixtures, topScorers, topAssists, topCards, competitionTeams] =
+    await Promise.all([
+      getStandings(db, competitionId, seasonYear),
+      getLeagueRounds(db, competitionId, seasonYear),
+      getCurrentRound(db, competitionId, seasonYear),
+      getLeagueFixtures(db, competitionId, seasonYear),
+      getResolvedTopScorers(db, competitionId, seasonYear, locale, 200),
+      getResolvedTopAssists(db, competitionId, seasonYear, locale, 200),
+      getTopCardsForLeague(db, competitionId, seasonYear, 200, locale),
+      getCompetitionTeams(db, competitionId, seasonYear),
+    ]);
   return {
-    coverage,
     standings,
     rounds,
     currentRound,
-    featuredMatches,
     fixtures,
     topScorers,
     topAssists,
     topCards,
-    injuries,
     competitionTeams,
   };
+}
+
+async function getSiteTodayKey() {
+  'use cache';
+  cacheLife('minutes');
+  return toSiteDateKey(new Date());
 }
 
 const LEAGUE_TAB_HASHES: Record<
@@ -138,15 +104,10 @@ export async function renderLeaguePage(
   rawCountry: string,
   rawTournament: string,
   seasonParam?: string,
-  competitionLogos?: Record<number, string | null>,
 ) {
   const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
   const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
   const tMenu = await getTranslations({ locale: rawLocale, namespace: 'megaMenu' });
-  const tLandings =
-    competition.id === BOTOLA_PRO_COMPETITION_ID
-      ? await getTranslations({ locale: rawLocale, namespace: 'botolaMatchs' })
-      : null;
 
   const requestedYear = seasonParam ? Number(seasonParam) : null;
   const {
@@ -159,8 +120,6 @@ export async function renderLeaguePage(
   );
 
   if (!seasonYear) {
-    // No season data — show coming soon
-    // Same translated name as the populated hub (AR/FR coming-soon pages got the English name).
     const name = competitionDisplayName(
       competition.name,
       locale,
@@ -177,22 +136,11 @@ export async function renderLeaguePage(
     );
   }
 
-  // Cached parallel data fetch
-  const {
-    coverage,
-    standings,
-    rounds,
-    currentRound,
-    featuredMatches,
-    fixtures,
-    topScorers,
-    topAssists,
-    topCards,
-    injuries,
-    competitionTeams,
-  } = await getCachedLeagueData(competition.id, seasonYear, locale);
+  const { standings, rounds, currentRound, fixtures, topScorers, topAssists, topCards, competitionTeams } =
+    await getCachedLeagueData(competition.id, seasonYear, locale);
+  const todayKey = await getSiteTodayKey();
+  const { rail, current: railCurrent } = await getRailProps(locale, competition.id);
 
-  // Translated name (e.g. "الدوري الإنجليزي الممتاز") when the provider only stored English.
   const competitionName = competitionDisplayName(
     competition.name,
     locale,
@@ -203,11 +151,10 @@ export async function renderLeaguePage(
   const countryName = getLeagueCountryName(competition.countryCode, locale);
   const introText = getLeagueIntro(competition.id, locale);
 
-  // Breadcrumbs
+  // Kept in JSON-LD only (the visible old-page breadcrumb is gone). Morocco still
+  // has a linked country crumb in the graph so the landing URL is not dropped from structured data.
   const breadcrumbs: BreadcrumbSegment[] = [
     { label: tBc('football'), href: `/${rawLocale}` },
-    // Morocco links to its landing page so the crumb is clickable + present in the JSON-LD;
-    // other countries have no landing, so they stay a plain (non-linked) label.
     ...(countryName
       ? [
           competition.countryCode === 'MA'
@@ -218,219 +165,87 @@ export async function renderLeaguePage(
     { label: competitionName },
   ];
 
-  // Center tabs — Overview / Matches / Standings / Stats / Teams
   const hashes = LEAGUE_TAB_HASHES[locale];
-  const tabs = [
-    {
-      key: 'overview',
-      hash: hashes.overview,
-      labelKey: 'overview',
-      icon: 'home',
-      content: (
-        <LeagueOverviewTab
-          standings={standings}
-          fixtures={fixtures}
-          rounds={rounds}
-          defaultRound={currentRound ?? 1}
-          topScorers={topScorers}
-          topAssists={topAssists}
-          topCards={topCards}
-          coverage={coverage}
-          locale={locale}
-          competitionName={competitionName}
-          seasonLabel={seasonLabel}
-        />
-      ),
-    },
-    {
-      key: 'fixtures',
-      hash: hashes.fixtures,
-      labelKey: 'fixtures',
-      icon: 'calendar',
-      content: (
-        <LeagueFixturesTab
-          fixtures={fixtures}
-          rounds={rounds}
-          defaultRound={currentRound ?? 1}
-          locale={locale}
-        />
-      ),
-    },
-    {
-      key: 'standings',
-      hash: hashes.standings,
-      hashAliases: hashes.standings === 'standings' ? undefined : ['standings'],
-      labelKey: 'standings',
-      icon: 'table',
-      content:
-        standings.length > 0 ? (
-          <LeagueStandingsTab
-            standings={standings}
-            locale={locale}
-            caption={tL('tableCaption', { competition: competitionName, season: seasonLabel })}
-          />
-        ) : (
-          <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-8 text-center">
-            <p className="text-sm text-text-tertiary">{tL('comingSoon')}</p>
-          </div>
-        ),
-    },
-    {
-      key: 'stats',
-      hash: hashes.stats,
-      labelKey: 'stats',
-      icon: 'chart',
-      content: (
-        <LeaguePlayersTab
-          coverage={coverage}
-          topScorers={topScorers}
-          topAssists={topAssists}
-          topCards={topCards}
-          locale={locale}
-        />
-      ),
-    },
-    {
-      key: 'teams',
-      hash: hashes.teams,
-      labelKey: 'teams',
-      icon: 'shield',
-      content: <LeagueTeamsTab teams={competitionTeams} standings={standings} locale={locale} />,
-    },
-  ];
+  const logoSrc = CURATED_LOGOS[competition.id] ?? competition.logoUrl;
+  const invertLogo = DARK_LOGOS.has(competition.id);
+  const flag = countryFlag(competition.countryCode);
+  const basePath = `/${rawLocale}/competition/${rawCountry}/${rawTournament}`;
+  const clubs = competitionTeams.map((team) => ({
+    id: team.id,
+    slug: team.slug,
+    name: teamLabel(team, locale),
+    logoUrl: team.logoUrl,
+  }));
+  const pageUrl = `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`;
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
-        <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
-        <JsonLd
-          graph={buildGraph(
-            buildWebPage({
-              url: `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`,
-              // Matches the H1 and <title>: "Premier League 2026/27".
-              name: competitionHeading(competitionName, seasonLabel),
-              locale,
-              baseUrl: BASE_URL,
-              type: 'CollectionPage',
-              hasBreadcrumb: true,
-              mainEntityId: `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}#fixtures`,
-            }),
-            buildBreadcrumbList(
-              breadcrumbs,
-              `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`,
-              BASE_URL,
-            ),
-            buildFixtureItemList({
-              fixtures: fixtures
-                .filter((f) => f.homeTeam && f.awayTeam)
-                .map((f) => ({
-                  id: f.id,
-                  kickoffAt: f.kickoffAt,
-                  statusCode: f.statusCode,
-                  homeName: teamLabel(f.homeTeam, locale),
-                  awayName: teamLabel(f.awayTeam, locale),
-                  homeSlug: f.homeTeam!.slug,
-                  awaySlug: f.awayTeam!.slug,
-                })),
-              locale,
-              baseUrl: BASE_URL,
-              pageUrl: `${BASE_URL}/${locale}/competition/${rawCountry}/${rawTournament}`,
-            }),
-          )}
-        />
-        {tLandings && (
-          <nav className="mt-2 mb-1 flex flex-wrap gap-3 text-sm">
-            <Link href={botolaMatchsPath(locale)} className="text-accent-azure hover:underline">
-              {tLandings('ctaFixtures')}
-            </Link>
-            <Link href={botolaClassementPath(locale)} className="text-accent-azure hover:underline">
-              {tLandings('ctaClassementLanding')}
-            </Link>
-            <Link
-              href={botolaSeasonOpenerPath(locale)}
-              className="text-accent-azure hover:underline"
-            >
-              {tLandings('ctaCalendar')}
-            </Link>
-          </nav>
+      <JsonLd
+        graph={buildGraph(
+          buildWebPage({
+            url: pageUrl,
+            name: competitionHeading(competitionName, seasonLabel),
+            locale,
+            baseUrl: BASE_URL,
+            type: 'CollectionPage',
+            hasBreadcrumb: true,
+            mainEntityId: `${pageUrl}#fixtures`,
+          }),
+          buildBreadcrumbList(breadcrumbs, pageUrl, BASE_URL),
+          buildFixtureItemList({
+            fixtures: fixtures
+              .filter((f) => f.homeTeam && f.awayTeam)
+              .map((f) => ({
+                id: f.id,
+                kickoffAt: f.kickoffAt,
+                statusCode: f.statusCode,
+                homeName: teamLabel(f.homeTeam, locale),
+                awayName: teamLabel(f.awayTeam, locale),
+                homeSlug: f.homeTeam!.slug,
+                awaySlug: f.awayTeam!.slug,
+              })),
+            locale,
+            baseUrl: BASE_URL,
+            pageUrl,
+          }),
         )}
-      </div>
-
-      <InnerPageShell
-        pageHeader={
-          <LeaguePageHeader
-            competition={competition}
-            displayName={competitionName}
-            seasonYear={seasonYear}
-            locale={locale}
-            countryName={countryName}
-            introText={introText}
-            availableSeasons={availableSeasons}
-            currentSeasonYear={currentSeasonYear}
-            teamsCount={
-              competition.id === BOTOLA_2_COMPETITION_ID
-                ? botola2HeaderTeamsCount(
-                    standings.map((row) => row.teamId),
-                    botola2AboutTeamsValue(),
-                  )
-                : competitionTeams.length
-            }
-            matchesCount={fixtures.length}
-            totalRounds={rounds.length}
-            currentRound={currentRound}
-          />
-        }
-        leftRail={
-          <LeagueLeftRail
-            locale={locale}
-            activeCompetitionId={competition.id}
-            competitionLogos={competitionLogos}
-          />
-        }
-        center={<CenterTabs tabs={tabs} />}
-        rightRailTop={
-          featuredMatches.length > 0 ? (
-            <LeagueRightRailCard
-              featuredMatches={featuredMatches.slice(0, 1)}
-              locale={locale}
-              competitionName={competitionName}
-              stretch
-            />
-          ) : undefined
-        }
-        rightRail={
-          <LeagueRightRailCard
-            featuredMatches={featuredMatches.slice(1)}
-            topScorers={topScorers.slice(0, 3)}
-            locale={locale}
-            competitionName={competitionName}
-          />
-        }
-        belowCenter={
-          <>
-            {/* Mobile-only: surface the right-rail featured matches (hidden xl:block rail). */}
-            {featuredMatches.length > 0 && (
-              <div className="lg:hidden">
-                <LeagueRightRailCard
-                  featuredMatches={featuredMatches}
-                  locale={locale}
-                  competitionName={competitionName}
-                />
-              </div>
-            )}
-            <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
-            {coverage?.injuries && <InjuriesTab injuries={injuries} />}
-            <RelatedCompetitions
-              competitionIds={getRelatedCompetitionIds(competition.id)}
-              locale={locale}
-            />
-            <CompetitionMediaSection competitionId={competition.id} locale={locale} />
-          </>
-        }
       />
-      {MOROCCO_HUB_COMPETITION_IDS.has(competition.id) && (
-        <MoroccoHubLinks locale={locale} current={hubKeyForCompetition(competition.id)} />
-      )}
+      <NavCompetitionRegister current={railCurrent} rail={rail} />
+      <div className={`mc ${mcFont.variable}`}>
+        <div className="shell">
+          <aside className="rail">
+            <CompetitionRail {...rail} />
+          </aside>
+          <div className="mc-mainarea">
+            <CompetitionPage
+              locale={locale}
+              competitionId={competition.id}
+              competitionName={competitionName}
+              logoSrc={logoSrc}
+              invertLogo={invertLogo}
+              countryName={countryName}
+              countryFlag={flag}
+              introText={introText}
+              seasonYear={seasonYear}
+              seasonLabel={seasonLabel}
+              availableSeasons={availableSeasons}
+              currentSeasonYear={currentSeasonYear}
+              basePath={basePath}
+              hashes={hashes}
+              fixtures={fixtures}
+              standings={standings}
+              rounds={rounds}
+              defaultRound={currentRound ?? 1}
+              topScorers={topScorers}
+              topAssists={topAssists}
+              topCards={topCards}
+              clubs={clubs}
+              tableCaption={tL('tableCaption', { competition: competitionName, season: seasonLabel })}
+              todayKey={todayKey}
+            />
+          </div>
+        </div>
+      </div>
     </>
   );
 }

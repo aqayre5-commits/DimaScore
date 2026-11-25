@@ -120,8 +120,6 @@ async function CompetitionBody({
     return <ComingSoon locale={rawLocale} tournament={tournament} />;
   }
 
-  const competitionLogos = await getLeftRailLogos();
-
   if (competition.type === 'League') {
     return renderLeaguePage(
       competition,
@@ -131,9 +129,10 @@ async function CompetitionBody({
       rawCountry,
       rawTournament,
       seasonParam,
-      competitionLogos,
     );
   }
+
+  const competitionLogos = await getLeftRailLogos();
 
   if (competition.type === 'Cup') {
     return renderGenericCupPage(

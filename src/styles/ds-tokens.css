@@ -1,0 +1,152 @@
+/*
+ * Shared DimaScore template tokens (match centre + competition page).
+ *
+ * These are the values already used by `.mc` (the match-page redesign). They are
+ * declared on `:is(.mc, .pl)` so both templates share one type and colour system
+ * without changing the navbar, ticker or footer (those stay on the site face).
+ *
+ * Light is `html[data-theme="light"]`. The site defaults to dark, which is
+ * `html:not([data-theme="light"])` — the same mapping as match-centre.css.
+ */
+
+:is(.mc, .pl) {
+  --ink: #101512;
+  --green: #006b47;
+  --green-dark: #00563f;
+  --mint: #e2f4e7;
+  --muted: #52605b;
+  --line: #cdd5d2;
+  --divider: var(--light);
+  --bar-rest: var(--border);
+  --light: #e8ecea;
+  --hover: #f4f8f5;
+  --border: #a4b3ac;
+  --font: var(--mc-font), Arial, sans-serif;
+  --space: 4px;
+  --edge: clamp(20px, 2vw, 32px);
+  --gutter: clamp(16px, 1.6vw, 26px);
+  --section: clamp(24px, 2vw, 31px);
+  --row-size: clamp(16px, 1.22vw, 19px);
+  --title-size: clamp(23px, 1.93vw, 30px);
+  --crest: clamp(82px, 7.1vw, 110px);
+  --row-crest: 24px;
+  --rail-crest: 32px;
+  --list-crest: 38px;
+  --coming-crest: 28px;
+  --hero-crest: clamp(72px, 7.4vw, 112px);
+  --event-crest: 36px;
+  --icon: 22px;
+  --hit: 44px;
+  --rail: clamp(216px, 17vw, 262px);
+  --ds-body: var(--font);
+  --ds-body-size: 16px;
+  --ds-page: 36px;
+  --ds-page-lh: 1.12;
+  --ds-h2: 24px;
+  --ds-h2-lh: 1.2;
+  --ds-ink: var(--ink);
+  --ds-muted: var(--muted);
+  --ds-line: var(--line);
+  --ds-green: var(--green);
+  --ds-aside: 30%;
+  --ds-gap: 24px;
+  --ds-numeric: var(--font);
+  --ds-period-size: 15px;
+  --surface: #fff;
+  --field: #fff;
+  --focus: #176b51;
+  --card-radius: 8px;
+  --card-inset: 16px;
+  --fixture-gap: 8px;
+  --fixture-clock: 64px;
+  --fixture-star: 44px;
+  --fixture-track-gap: 12px;
+  --table-gutter: 32px;
+  --table-stack: 24px;
+  --table-rule: #d6d8da;
+  --live-ink: #ab2037;
+  --competition-header-size: 128px;
+  --competition-nav-size: 46px;
+  --competition-choice-size: 34px;
+  --dashboard-columns: minmax(0, 1.64fr) minmax(0, 1fr);
+  color-scheme: light;
+}
+
+[dir='rtl'] :is(.mc, .pl) {
+  --font: var(--mc-font), var(--font-ibm-plex-arabic), Arial, sans-serif;
+}
+
+@media (max-width: 359px) {
+  :is(.mc, .pl) {
+    --edge: 10px;
+    --title-size: 19px;
+    --crest: 48px;
+    --hero-crest: 56px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  :is(.mc, .pl) {
+    --edge: 16px;
+    --rail: 180px;
+    --section: 20px;
+    --title-size: 22px;
+    --row-size: 15px;
+    --crest: 70px;
+    --row-crest: 19px;
+    --coming-crest: 20px;
+    --event-crest: 28px;
+    --list-crest: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  :is(.mc, .pl) {
+    --edge: 14px;
+    --gutter: 12px;
+    --section: 19px;
+    --row-size: 15px;
+    --title-size: 21px;
+    --crest: 56px;
+    --row-crest: 17px;
+    --coming-crest: 21px;
+    --event-crest: 28px;
+    --list-crest: 28px;
+    --rail-crest: 26px;
+    --icon: 19px;
+    --ds-page: 28px;
+    --ds-h2: 21px;
+    --card-inset: 12px;
+    --fixture-clock: 46px;
+    --fixture-track-gap: 6px;
+    --competition-header-size: 84px;
+    --competition-nav-size: 38px;
+    --competition-choice-size: 30px;
+    --ds-period-size: 13px;
+  }
+}
+
+html:not([data-theme='light']) :is(.mc, .pl) {
+  color-scheme: dark;
+  --surface: #131817;
+  --field: #1b2120;
+  --ink: #f0f3f1;
+  --muted: #afbab5;
+  --line: #404946;
+  --border: #67746d;
+  --light: #333d38;
+  --hover: #242f29;
+  --mint: #233d30;
+  --green: #71dbab;
+  --green-dark: #81dfb7;
+  --focus: #8be3ba;
+  --table-rule: #414847;
+}
+
+html:not([data-theme='light']) :is(.mc, .pl) .standings,
+html:not([data-theme='light']) :is(.mc, .pl) .pl-ranking {
+  color: var(--ink);
+  --muted: #afb7b5;
+  --line: #414847;
+  --border: #66706e;
+}
