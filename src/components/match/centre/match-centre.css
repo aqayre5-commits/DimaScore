@@ -149,6 +149,19 @@
   grid-column: 2;
   min-width: 0;
 }
+/* Crests stay at the card edges. Names and scorers stretch in the free
+   column and align toward the score so both sides share the same gap,
+   regardless of name length. ≤767px overrides keep text-align: center. */
+.mc .mc-team > strong,
+.mc .mc-team > .mc-scorers {
+  justify-self: stretch;
+  width: 100%;
+  text-align: end;
+}
+.mc .mc-team:last-child > strong,
+.mc .mc-team:last-child > .mc-scorers {
+  text-align: start;
+}
 .mc .mc-more-scorers {
   display: inline-flex;
   align-items: center;
@@ -1195,26 +1208,32 @@
   .mc .mc-team > strong,
   .mc .mc-team:last-child > strong {
     align-self: start;
-    justify-self: center;
+    justify-self: stretch;
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    text-align: center;
+    text-align: end;
     padding-top: var(--hero-stack-gap);
     grid-column: 1;
     grid-row: 2;
   }
+  .mc .mc-team:last-child > strong {
+    text-align: start;
+  }
   .mc .mc-team > .mc-scorers,
   .mc .mc-team:last-child > .mc-scorers {
     align-self: start;
-    justify-self: center;
+    justify-self: stretch;
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    text-align: center;
+    text-align: end;
     padding-top: var(--hero-stack-gap);
     grid-column: 1;
     grid-row: 3;
+  }
+  .mc .mc-team:last-child > .mc-scorers {
+    text-align: start;
   }
   .mc .mc-team strong {
     font-size: 17px;
@@ -1222,7 +1241,7 @@
   .mc .mc-team small {
     font-size: 12px;
     margin-top: 0;
-    text-align: center;
+    text-align: inherit;
     overflow-wrap: anywhere;
     line-height: 1.25;
   }
