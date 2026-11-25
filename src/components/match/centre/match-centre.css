@@ -1131,11 +1131,9 @@
     width: 24px;
     height: 24px;
   }
+  /* Hide the round (and its · separator) so the competition name can sit on one line. */
   .mc .mc-round {
-    font-size: 12px;
-  }
-  .mc .mc-round:before {
-    padding-inline-end: 7px;
+    display: none;
   }
   .mc {
     --hero-stack-gap: 6px;

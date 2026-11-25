@@ -79,3 +79,15 @@ scorer type stays 14px.
 The kicker wrap (“UEFA Champions League” / “League Stage - 5”) is already
 present on the before-390 shot and is not a #64 regression, so it was left
 alone.
+
+## Follow-up: hide the mobile round label (2026-11-25 01:36 GMT / Europe/London)
+
+Abdilahi: “remove that so champions league can take one line.” On viewports
+≤767px, `.mc-round` (and its `·` separator) is `display: none`, so “UEFA
+Champions League” sits on one line next to the logo and star at 390 and 360.
+The span stays in the HTML. Desktop is unchanged (1440 hero/line-ups are
+pixel-identical to the previous after shots).
+
+The round label does not feed JSON-LD (`buildSportsEventMatch` has no round
+field). On the match page, the hero kicker is the only visible place for it;
+it still shows at 768px and up.
