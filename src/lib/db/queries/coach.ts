@@ -3,6 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
+import { usableLogoUrl } from '@/lib/logos/status';
 
 export interface CareerEntry {
   team: { id: number; name: string; logo: string | null };
@@ -43,6 +44,7 @@ async function getCoachByIdImpl(
       birthDate: schema.coaches.birthDate,
       nationalityCode: schema.coaches.nationalityCode,
       photoUrl: schema.coaches.photoUrl,
+      photoStatus: schema.coaches.photoStatus,
       currentTeamId: schema.coaches.currentTeamId,
       career: schema.coaches.career,
       teamId: schema.teams.id,
@@ -51,6 +53,9 @@ async function getCoachByIdImpl(
       teamLogoUrl: sql<
         string | null
       >`COALESCE(${schema.teams.logoUrl}, ${coachTeamParent.logoUrl})`,
+      teamLogoStatus: sql<
+        import('@/lib/logos/status').LogoStatus | null
+      >`COALESCE(${schema.teams.logoStatus}, ${coachTeamParent.logoStatus})`,
     })
     .from(schema.coaches)
     .leftJoin(schema.teams, eq(schema.coaches.currentTeamId, schema.teams.id))
@@ -70,14 +75,14 @@ async function getCoachByIdImpl(
     lastname: row.lastname,
     birthDate: row.birthDate,
     nationalityCode: row.nationalityCode,
-    photoUrl: row.photoUrl,
+    photoUrl: usableLogoUrl(row.photoUrl, row.photoStatus ?? null),
     currentTeamId: row.currentTeamId,
     career: rawCareer,
     currentTeam: row.teamId
       ? {
           id: row.teamId,
           name: row.teamName as Record<string, string>,
-          logoUrl: row.teamLogoUrl,
+          logoUrl: usableLogoUrl(row.teamLogoUrl, row.teamLogoStatus ?? null),
         }
       : null,
   };

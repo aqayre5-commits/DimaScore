@@ -1,5 +1,10 @@
 import { createHash } from 'node:crypto';
-import { classifyLogoBytes, type LogoClassification, usableLogoUrl } from './status';
+import {
+  classifyLogoBytes,
+  isKnownPhotoPlaceholderHash,
+  type LogoClassification,
+  usableLogoUrl,
+} from './status';
 
 export type ClassifyCache = Map<string, LogoClassification>;
 
@@ -74,4 +79,16 @@ async function fetchAndHash(
       contentType: null,
     };
   }
+}
+
+/** Same fetch + hash as logos, but compared against the player-photo placeholder set. */
+export async function classifyPhotoUrl(
+  url: string | null | undefined,
+  opts?: { timeoutMs?: number; cache?: ClassifyCache; userAgent?: string },
+): Promise<LogoClassification> {
+  const result = await classifyLogoUrl(url, opts);
+  if (result.status === 'ok' && isKnownPhotoPlaceholderHash(result.sha256)) {
+    return { ...result, status: 'placeholder' };
+  }
+  return result;
 }

@@ -39,9 +39,19 @@ export interface SquadPlayer {
   position: string | null;
   shirtNumber: number | null;
   photoUrl: string | null;
+  photoStatus?: import('@/lib/logos/status').LogoStatus | null;
   birthDate: string | null;
   nationalityCode: string | null;
   injured: boolean | null;
+}
+
+function sanitizeSquadPlayers<
+  T extends {
+    photoUrl: string | null;
+    photoStatus?: import('@/lib/logos/status').LogoStatus | null;
+  },
+>(rows: T[]): T[] {
+  return rows.map((r) => ({ ...r, photoUrl: usableLogoUrl(r.photoUrl, r.photoStatus ?? null) }));
 }
 
 // ── Q1: Team by slug ──
@@ -227,6 +237,7 @@ export async function getTeamSquad(
       position: schema.players.position,
       shirtNumber: schema.players.shirtNumber,
       photoUrl: schema.players.photoUrl,
+      photoStatus: schema.players.photoStatus,
       birthDate: schema.players.birthDate,
       nationalityCode: schema.players.nationalityCode,
       injured: schema.players.injured,
@@ -245,35 +256,38 @@ export async function getTeamSquad(
       asc(schema.players.shirtNumber),
     );
 
-  if (memberRows.length > 0) return memberRows;
+  if (memberRows.length > 0) return sanitizeSquadPlayers(memberRows);
 
   // Fallback for teams not yet synced to squad_members
-  return db
-    .select({
-      id: schema.players.id,
-      slug: schema.players.slug,
-      name: schema.players.name,
-      firstname: schema.players.firstname,
-      lastname: schema.players.lastname,
-      position: schema.players.position,
-      shirtNumber: schema.players.shirtNumber,
-      photoUrl: schema.players.photoUrl,
-      birthDate: schema.players.birthDate,
-      nationalityCode: schema.players.nationalityCode,
-      injured: schema.players.injured,
-    })
-    .from(schema.players)
-    .where(eq(schema.players.currentTeamId, teamId))
-    .orderBy(
-      sql`CASE position
+  return sanitizeSquadPlayers(
+    await db
+      .select({
+        id: schema.players.id,
+        slug: schema.players.slug,
+        name: schema.players.name,
+        firstname: schema.players.firstname,
+        lastname: schema.players.lastname,
+        position: schema.players.position,
+        shirtNumber: schema.players.shirtNumber,
+        photoUrl: schema.players.photoUrl,
+        photoStatus: schema.players.photoStatus,
+        birthDate: schema.players.birthDate,
+        nationalityCode: schema.players.nationalityCode,
+        injured: schema.players.injured,
+      })
+      .from(schema.players)
+      .where(eq(schema.players.currentTeamId, teamId))
+      .orderBy(
+        sql`CASE position
         WHEN 'Goalkeeper' THEN 1
         WHEN 'Defender' THEN 2
         WHEN 'Midfielder' THEN 3
         WHEN 'Attacker' THEN 4
         ELSE 5
       END`,
-      asc(schema.players.shirtNumber),
-    );
+        asc(schema.players.shirtNumber),
+      ),
+  );
 }
 
 // ── Curated tournament squad (e.g. official World Cup 2026 roster) ──
@@ -302,7 +316,7 @@ export async function getTeamTournamentSquad(
   if (latest.length === 0) return null;
   const { competitionId, seasonYear } = latest[0];
 
-  const players = await db
+  const playersRaw = await db
     .select({
       id: schema.players.id,
       slug: schema.players.slug,
@@ -312,6 +326,7 @@ export async function getTeamTournamentSquad(
       position: schema.players.position,
       shirtNumber: schema.players.shirtNumber,
       photoUrl: schema.players.photoUrl,
+      photoStatus: schema.players.photoStatus,
       birthDate: schema.players.birthDate,
       nationalityCode: schema.players.nationalityCode,
       injured: schema.players.injured,
@@ -335,6 +350,7 @@ export async function getTeamTournamentSquad(
       END`,
       asc(schema.players.shirtNumber),
     );
+  const players = sanitizeSquadPlayers(playersRaw);
 
   if (players.length === 0) return null;
 
@@ -358,8 +374,10 @@ export interface KeyPlayer {
   name: Record<string, string>;
   position: string | null;
   photoUrl: string | null;
+  photoStatus?: import('@/lib/logos/status').LogoStatus | null;
   clubName: Record<string, string> | null;
   clubLogoUrl: string | null;
+  clubLogoStatus?: import('@/lib/logos/status').LogoStatus | null;
   goals: number;
   assists: number;
 }
@@ -378,8 +396,9 @@ export async function getTeamKeyPlayers(
   const cutoff = maxSeason - 1;
 
   const rows = await db.execute(
-    sql`SELECT p.id, p.name, p.position, p.photo_url AS "photoUrl",
+    sql`SELECT p.id, p.name, p.position, p.photo_url AS "photoUrl", p.photo_status AS "photoStatus",
                ct.name AS "clubName", COALESCE(ct.logo_url, ctp.logo_url) AS "clubLogoUrl",
+               COALESCE(ct.logo_status, ctp.logo_status) AS "clubLogoStatus",
                SUM(COALESCE((pss.stats->>'goals')::int, 0)) AS goals,
                SUM(COALESCE((pss.stats->>'assists')::int, 0)) AS assists
         FROM player_season_stats pss
@@ -388,7 +407,7 @@ export async function getTeamKeyPlayers(
         LEFT JOIN teams ct ON ct.id = p.current_team_id
         LEFT JOIN teams ctp ON ctp.id = ct.parent_team_id
         WHERE pss.team_id = ${teamId} AND pss.season_year >= ${cutoff}
-        GROUP BY p.id, p.name, p.position, p.photo_url, ct.name, ct.logo_url, ctp.logo_url
+        GROUP BY p.id, p.name, p.position, p.photo_url, p.photo_status, ct.name, ct.logo_url, ct.logo_status, ctp.logo_url, ctp.logo_status
         HAVING SUM(COALESCE((pss.stats->>'goals')::int, 0))
              + SUM(COALESCE((pss.stats->>'assists')::int, 0)) > 0
         ORDER BY (SUM(COALESCE((pss.stats->>'goals')::int, 0))
@@ -403,8 +422,10 @@ export async function getTeamKeyPlayers(
       name: Record<string, string>;
       position: string | null;
       photoUrl: string | null;
+      photoStatus: import('@/lib/logos/status').LogoStatus | null;
       clubName: Record<string, string> | null;
       clubLogoUrl: string | null;
+      clubLogoStatus: import('@/lib/logos/status').LogoStatus | null;
       goals: string;
       assists: string;
     }[]
@@ -412,9 +433,11 @@ export async function getTeamKeyPlayers(
     id: Number(r.id),
     name: r.name,
     position: r.position,
-    photoUrl: r.photoUrl,
+    photoUrl: usableLogoUrl(r.photoUrl, r.photoStatus),
+    photoStatus: r.photoStatus ?? null,
     clubName: r.clubName,
-    clubLogoUrl: r.clubLogoUrl,
+    clubLogoUrl: usableLogoUrl(r.clubLogoUrl, r.clubLogoStatus),
+    clubLogoStatus: r.clubLogoStatus ?? null,
     goals: Number(r.goals),
     assists: Number(r.assists),
   }));
@@ -442,17 +465,25 @@ function mapScorerRows(
     player_id: string | null;
     name: string | null;
     photo: string | null;
+    photo_status: string | null;
     team_name: string | null;
     team_logo: string | null;
+    team_logo_status: string | null;
     value: string;
   }[],
 ): TournamentScorerRow[] {
   return rows.map((r) => ({
     playerId: r.player_id != null ? Number(r.player_id) : null,
     name: r.name ?? '—',
-    photo: r.photo,
+    photo: usableLogoUrl(
+      r.photo,
+      (r.photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+    ),
     teamName: r.team_name,
-    teamLogo: r.team_logo,
+    teamLogo: usableLogoUrl(
+      r.team_logo,
+      (r.team_logo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+    ),
     value: Number(r.value),
   }));
 }
@@ -521,10 +552,11 @@ export async function getTeamTournamentScorers(
   // competition page uses (getEditionTopScorers/getEditionTopAssists), scoped to this team.
   // Own goals excluded; penalties count. Names/teams come from the localized players/teams tables.
   const scorerRows = await db.execute(
-    sql`SELECT p.id AS player_id, p.photo_url AS photo,
+    sql`SELECT p.id AS player_id, p.photo_url AS photo, p.photo_status,
                COALESCE(p.name->>${locale}, p.name->>'en') AS name,
                COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
                COALESCE(t.logo_url, tp.logo_url) AS team_logo,
+               COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
                COUNT(*)::int AS value
         FROM fixture_events e
         JOIN fixtures f ON f.id = e.fixture_id
@@ -534,15 +566,16 @@ export async function getTeamTournamentScorers(
         WHERE f.competition_id = ${compId} AND f.season_year = ${season} AND e.team_id = ${teamId}
           AND e.type = 'Goal' AND e.detail IN ('Normal Goal', 'Penalty')
           AND e.comments IS DISTINCT FROM 'Penalty Shootout'
-        GROUP BY p.id, t.id, tp.logo_url
+        GROUP BY p.id, t.id, tp.logo_url, tp.logo_status
         ORDER BY value DESC, p.slug
         LIMIT ${limit}`,
   );
   const assistRows = await db.execute(
-    sql`SELECT p.id AS player_id, p.photo_url AS photo,
+    sql`SELECT p.id AS player_id, p.photo_url AS photo, p.photo_status,
                COALESCE(p.name->>${locale}, p.name->>'en') AS name,
                COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
                COALESCE(t.logo_url, tp.logo_url) AS team_logo,
+               COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
                COUNT(*)::int AS value
         FROM fixture_events e
         JOIN fixtures f ON f.id = e.fixture_id
@@ -553,7 +586,7 @@ export async function getTeamTournamentScorers(
           AND e.type = 'Goal' AND e.detail IN ('Normal Goal', 'Penalty')
           AND e.comments IS DISTINCT FROM 'Penalty Shootout'
           AND e.assist_player_id IS NOT NULL
-        GROUP BY p.id, t.id, tp.logo_url
+        GROUP BY p.id, t.id, tp.logo_url, tp.logo_status
         ORDER BY value DESC, p.slug
         LIMIT ${limit}`,
   );

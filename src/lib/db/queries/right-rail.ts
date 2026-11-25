@@ -9,6 +9,7 @@ import { TEAM_IDS } from '@/lib/constants/canonical-ids';
 import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY, SCORED_STATUSES_ARRAY } from '@/lib/match-status';
 import { toSiteDateKey } from '@/lib/utils/date';
+import { usableLogoUrl } from '@/lib/logos/status';
 
 // ── Status code sets ──
 
@@ -784,6 +785,7 @@ export async function getMoroccanPlayerPerformances(
             COALESCE(p.name->>${locale}, p.name->>'en', p.name->>'fr') AS player_name,
             p.slug AS player_slug,
             p.photo_url,
+            p.photo_status,
             p.position,
             fps.fixture_id,
             COALESCE((fps.stats->>'minutes')::int, 0) AS minutes_played,
@@ -826,6 +828,7 @@ export async function getMoroccanPlayerPerformances(
       player_name: string;
       player_slug: string;
       photo_url: string | null;
+      photo_status: string | null;
       fixture_id: string;
       home_team_name: string;
       away_team_name: string;
@@ -841,7 +844,10 @@ export async function getMoroccanPlayerPerformances(
     playerId: Number(r.player_id),
     playerName: r.player_name,
     playerSlug: r.player_slug,
-    photoUrl: r.photo_url,
+    photoUrl: usableLogoUrl(
+      r.photo_url,
+      (r.photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+    ),
     fixtureId: Number(r.fixture_id),
     homeTeamName: r.home_team_name,
     awayTeamName: r.away_team_name,
@@ -882,8 +888,10 @@ export async function getRightRailTopScorers(
                  COALESCE(p.name->>${locale}, p.name->>'en', p.name->>'fr') AS player_name,
                  p.slug AS player_slug,
                  p.photo_url,
+                 p.photo_status,
                  COALESCE(t.name->>${locale}, t.name->>'en', 'Unknown') AS team_name,
                  COALESCE(t.logo_url, tp.logo_url) AS team_logo_url,
+                 COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
                  (pss.stats->>'goals')::int AS goals,
                  c.name AS comp_name,
                  ROW_NUMBER() OVER (
@@ -908,8 +916,10 @@ export async function getRightRailTopScorers(
                  COALESCE(p.name->>${locale}, p.name->>'en', p.name->>'fr') AS player_name,
                  p.slug AS player_slug,
                  p.photo_url,
+                 p.photo_status,
                  COALESCE(t.name->>${locale}, t.name->>'en', 'Unknown') AS team_name,
                  COALESCE(t.logo_url, tp.logo_url) AS team_logo_url,
+                 COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
                  COUNT(*)::int AS goals,
                  c.name AS comp_name,
                  ROW_NUMBER() OVER (
@@ -929,7 +939,7 @@ export async function getRightRailTopScorers(
             AND e.type = 'Goal'
             AND e.detail IN ('Normal Goal', 'Penalty')
             AND e.comments IS DISTINCT FROM 'Penalty Shootout'
-          GROUP BY f.competition_id, e.player_id, p.name, p.slug, p.photo_url, t.id, t.name, t.logo_url, tp.logo_url, c.name
+          GROUP BY f.competition_id, e.player_id, p.name, p.slug, p.photo_url, p.photo_status, t.id, t.name, t.logo_url, t.logo_status, tp.logo_url, tp.logo_status, c.name
         )
         SELECT * FROM pss_top WHERE rn <= ${limit}
         UNION ALL
@@ -946,8 +956,10 @@ export async function getRightRailTopScorers(
     player_name: string;
     player_slug: string;
     photo_url: string | null;
+    photo_status: string | null;
     team_name: string;
     team_logo_url: string | null;
+    team_logo_status: string | null;
     goals: string;
     comp_name: Record<string, string>;
     rn: string;
@@ -987,9 +999,15 @@ export async function getRightRailTopScorers(
         playerId: Number(r.player_id),
         playerName: r.player_name,
         playerSlug: r.player_slug,
-        photoUrl: r.photo_url,
+        photoUrl: usableLogoUrl(
+          r.photo_url,
+          (r.photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+        ),
         teamName: r.team_name,
-        teamLogoUrl: r.team_logo_url,
+        teamLogoUrl: usableLogoUrl(
+          r.team_logo_url,
+          (r.team_logo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
+        ),
         goals: Number(r.goals),
       })),
     };

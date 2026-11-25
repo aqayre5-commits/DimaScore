@@ -6,7 +6,7 @@ import { getTopScorersForLeague } from '@/lib/db/queries/league';
 import { StandingsWidget } from './StandingsWidget';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
 
 interface RightRailProps {
   locale: Locale;
@@ -97,19 +97,12 @@ export async function RightRail({ locale }: RightRailProps) {
             {uclScorers.map((p, i) => (
               <div key={p.playerId} className="flex items-center gap-2.5 px-3 py-2">
                 <span className="w-4 text-xs tabular-nums text-text-tertiary">{i + 1}</span>
-                {p.playerPhoto ? (
-                  <Image
-                    src={p.playerPhoto}
-                    alt=""
-                    className="size-6 rounded-full object-cover"
-                    width={24}
-                    height={24}
-                  />
-                ) : (
-                  <div className="flex size-6 items-center justify-center rounded-full bg-bg-surface-2">
-                    <span className="text-[10px] text-text-tertiary">{p.playerName.charAt(0)}</span>
-                  </div>
-                )}
+                <PlayerPhoto
+                  src={p.playerPhoto}
+                  name={p.playerName}
+                  size={24}
+                  className="size-6 rounded-full object-cover"
+                />
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/${locale}/joueur/${p.playerSlug}`}

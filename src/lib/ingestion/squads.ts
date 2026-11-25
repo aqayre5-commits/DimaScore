@@ -5,6 +5,7 @@ import type { NormalizedSquadPlayer } from '@/lib/data/types';
 import * as schema from '@/lib/db/schema';
 import type { SyncStats } from './types';
 import { slugify } from './slug';
+import { classifyPhotoUrl, type ClassifyCache } from '@/lib/logos/classify';
 
 // ─── Mapper (exported for testing) ───
 
@@ -35,23 +36,27 @@ export async function syncSquad(
   const players = await provider.getPlayerSquads({ team: params.teamId });
   const inserted = 0;
   let updated = 0;
+  const photoCache: ClassifyCache = new Map();
 
   for (const p of players) {
     const row = mapSquadPlayerToInsert(p, params.teamId, params.isWomen);
+    const photo = await classifyPhotoUrl(row.photoUrl, { cache: photoCache });
+    const values = { ...row, photoStatus: photo.status };
     await db
       .insert(schema.players)
-      .values(row)
+      .values(values)
       .onConflictDoUpdate({
         target: schema.players.id,
         set: {
-          slug: row.slug,
+          slug: values.slug,
           // Merge so a seeded name.ar/fr survives the feed's en-only rows.
           name: sql`${schema.players.name} || excluded.name`,
-          photoUrl: row.photoUrl,
-          currentTeamId: row.currentTeamId,
-          position: row.position,
-          shirtNumber: row.shirtNumber,
-          isWomen: row.isWomen,
+          photoUrl: values.photoUrl,
+          photoStatus: values.photoStatus,
+          currentTeamId: values.currentTeamId,
+          position: values.position,
+          shirtNumber: values.shirtNumber,
+          isWomen: values.isWomen,
         },
       });
     updated++;

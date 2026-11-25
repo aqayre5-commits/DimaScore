@@ -10,6 +10,7 @@ import { resolveGroupLabel } from './right-rail';
 import type { ResolvedKitPalette } from '@/lib/match/kit-colours';
 import { applyStoredSeasonFallback } from '@/lib/match/season-kits';
 import { loadFixtureKitContext } from '@/lib/match/season-kit-db';
+import { usableLogoUrl } from '@/lib/logos/status';
 
 // ── Match detail ──
 
@@ -313,18 +314,30 @@ export async function getMatchLineups(
   });
 
   // Batch-fetch photo + birth date from players table (birth date drives under-16 safeguarding)
-  const hydrateMap = new Map<number, { photoUrl: string | null; birthDate: string | null }>();
+  const hydrateMap = new Map<
+    number,
+    {
+      photoUrl: string | null;
+      photoStatus?: import('@/lib/logos/status').LogoStatus | null;
+      birthDate: string | null;
+    }
+  >();
   if (allPlayerIds.size > 0) {
     const playerRows = await db
       .select({
         id: schema.players.id,
         photoUrl: schema.players.photoUrl,
+        photoStatus: schema.players.photoStatus,
         birthDate: schema.players.birthDate,
       })
       .from(schema.players)
       .where(inArray(schema.players.id, [...allPlayerIds]));
     for (const pr of playerRows)
-      hydrateMap.set(pr.id, { photoUrl: pr.photoUrl, birthDate: pr.birthDate });
+      hydrateMap.set(pr.id, {
+        photoUrl: pr.photoUrl,
+        photoStatus: pr.photoStatus,
+        birthDate: pr.birthDate,
+      });
   }
 
   const kitCtx = await loadFixtureKitContext(db, fixtureId);
@@ -342,7 +355,10 @@ export async function getMatchLineups(
       number: s.number,
       pos: s.pos,
       grid: s.grid ?? null,
-      photoUrl: hydrateMap.get(s.id)?.photoUrl ?? null,
+      photoUrl: usableLogoUrl(
+        hydrateMap.get(s.id)?.photoUrl ?? null,
+        hydrateMap.get(s.id)?.photoStatus ?? null,
+      ),
       birthDate: hydrateMap.get(s.id)?.birthDate ?? null,
     })),
     substitutes: r.rawSubs.map((s) => ({
@@ -350,7 +366,10 @@ export async function getMatchLineups(
       name: s.name,
       number: s.number,
       pos: s.pos,
-      photoUrl: hydrateMap.get(s.id)?.photoUrl ?? null,
+      photoUrl: usableLogoUrl(
+        hydrateMap.get(s.id)?.photoUrl ?? null,
+        hydrateMap.get(s.id)?.photoStatus ?? null,
+      ),
       birthDate: hydrateMap.get(s.id)?.birthDate ?? null,
     })),
   }));
@@ -426,6 +445,7 @@ export async function getMatchPlayerStats(
       stats: schema.fixturePlayerStats.stats,
       playerName: schema.players.name,
       playerPhoto: schema.players.photoUrl,
+      playerPhotoStatus: schema.players.photoStatus,
     })
     .from(schema.fixturePlayerStats)
     .innerJoin(schema.players, eq(schema.fixturePlayerStats.playerId, schema.players.id))
@@ -440,7 +460,7 @@ export async function getMatchPlayerStats(
     playerId: r.playerId,
     teamId: r.teamId,
     playerName: r.playerName,
-    playerPhoto: r.playerPhoto,
+    playerPhoto: usableLogoUrl(r.playerPhoto, r.playerPhotoStatus ?? null),
     position: r.position,
     minutesPlayed: r.minutesPlayed,
     rating: r.rating,

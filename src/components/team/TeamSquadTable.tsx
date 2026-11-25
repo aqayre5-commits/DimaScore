@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 import type { SquadPlayer } from '@/lib/db/queries/team';
 import type { Locale } from '@/lib/i18n/config';
-import Image from 'next/image';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
 
 interface TeamSquadTableProps {
   players: SquadPlayer[];
@@ -85,19 +85,15 @@ export function TeamSquadTable({ players, locale }: TeamSquadTableProps) {
                     href={`/${locale}/joueur/${player.slug}`}
                     className="flex flex-col items-center gap-1 rounded-lg px-1 py-2.5 transition-colors hover:bg-accent-green/[0.06]"
                   >
-                    {player.photoUrl ? (
-                      <Image
-                        src={player.photoUrl}
-                        alt=""
-                        width={48}
-                        height={48}
-                        className="size-12 rounded-full border-2 border-border-subtle object-cover"
-                      />
-                    ) : (
-                      <div className="flex size-12 items-center justify-center rounded-full border-2 border-border-subtle bg-bg-surface-2 text-sm text-text-tertiary">
-                        {player.shirtNumber ?? '?'}
-                      </div>
-                    )}
+                    <PlayerPhoto
+                      src={player.photoUrl}
+                      status={player.photoStatus}
+                      name={resolvePlayerName(player, locale)}
+                      firstname={player.firstname}
+                      lastname={player.lastname}
+                      size={48}
+                      className="size-12 rounded-full border-2 border-border-subtle object-cover"
+                    />
                     <span className="text-center text-xs font-semibold leading-tight text-text-primary">
                       {resolvePlayerName(player, locale)}
                     </span>

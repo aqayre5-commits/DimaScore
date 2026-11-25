@@ -6,8 +6,9 @@ import { getLeagueCountryName } from '@/lib/constants/league-content';
 import type { PlayerDetail } from '@/lib/db/queries/player';
 import type { Locale } from '@/lib/i18n/config';
 import { isUnderage } from '@/lib/utils/age';
-import Image from 'next/image';
 import { teamLabel } from '@/lib/i18n/localized-names';
+import { PlayerPhoto } from '@/components/shared/PlayerPhoto';
+import { TeamLogo } from '@/components/shared/Logo';
 
 interface PlayerPageHeaderProps {
   player: PlayerDetail;
@@ -98,17 +99,24 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
     <div className="h-full overflow-hidden rounded-xl border border-border-subtle bg-bg-surface bg-gradient-to-br from-bg-surface from-20% via-blue-500/5 via-50% to-blue-500/15">
       <div className="flex h-full items-stretch">
         {/* Player photo — fills left side edge-to-edge (hidden for under-16s) */}
-        {player.photoUrl && !underage ? (
+        {underage ? (
+          <div className="hidden w-[180px] shrink-0 items-center justify-center bg-bg-surface-2 md:flex">
+            <span className="text-5xl text-text-tertiary">&#128100;</span>
+          </div>
+        ) : (
           <>
             {/* Desktop: full-height photo with gradient fade */}
             <div className="relative hidden w-[180px] shrink-0 md:block">
-              <Image
+              <PlayerPhoto
                 src={player.photoUrl}
+                status={player.photoStatus}
+                name={name}
+                firstname={player.firstname}
+                lastname={player.lastname}
                 alt={name}
+                size={200}
+                rounded={false}
                 className="h-full w-full object-cover object-top"
-                width={200}
-                height={200}
-                priority
               />
               {/* Gradient fade right edge */}
               <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-r from-transparent to-bg-surface" />
@@ -117,20 +125,18 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
             </div>
             {/* Mobile: circular photo */}
             <div className="flex shrink-0 items-center px-3 py-3 md:hidden">
-              <Image
+              <PlayerPhoto
                 src={player.photoUrl}
+                status={player.photoStatus}
+                name={name}
+                firstname={player.firstname}
+                lastname={player.lastname}
                 alt={name}
+                size={72}
                 className="size-[72px] shrink-0 rounded-full object-cover"
-                width={72}
-                height={72}
-                priority
               />
             </div>
           </>
-        ) : (
-          <div className="hidden w-[180px] shrink-0 items-center justify-center bg-bg-surface-2 md:flex">
-            <span className="text-5xl text-text-tertiary">&#128100;</span>
-          </div>
         )}
 
         {/* Identity column */}
@@ -171,16 +177,12 @@ export function PlayerPageHeader({ player, locale, lastRatings }: PlayerPageHead
                 href={`/${locale}/equipe/${player.currentTeam?.slug ?? ''}`}
                 className="mt-2.5 inline-flex items-center gap-2 text-[14px] font-medium text-text-primary transition-colors hover:text-accent-azure"
               >
-                {player.currentTeam?.logoUrl && (
-                  <Image
-                    src={player.currentTeam.logoUrl}
-                    alt=""
-                    width={22}
-                    height={22}
-                    className="size-[22px] object-contain"
-                    priority
-                  />
-                )}
+                <TeamLogo
+                  src={player.currentTeam?.logoUrl}
+                  name={clubName}
+                  size={22}
+                  className="size-[22px] object-contain"
+                />
                 <span>{clubName}</span>
               </Link>
             )}
