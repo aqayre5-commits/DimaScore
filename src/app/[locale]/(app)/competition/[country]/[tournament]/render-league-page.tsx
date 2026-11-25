@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
-import { InnerPageShell } from '@/components/layout/InnerPageShell';
+import { CompetitionPage } from '@/components/league/template/CompetitionPage';
+import { CURATED_LOGOS, DARK_LOGOS, countryFlag } from '@/lib/competitions/artwork';
 import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
@@ -18,7 +19,6 @@ import {
 } from '@/lib/constants/competitions-mega-menu';
 import { RelatedCompetitions } from '@/components/tournament/RelatedCompetitions';
 import { CompetitionMediaSection } from '@/components/tournament/CompetitionMediaSection';
-import { CenterTabs } from '@/components/tournament/CenterTabs';
 import { db } from '@/lib/db/client';
 import { getStandings } from '@/lib/db/queries';
 import {
@@ -26,7 +26,6 @@ import {
   getLeagueCoverage,
   getLeagueRounds,
   getCurrentRound,
-  getLeagueFeaturedMatches,
   getLeagueFixtures,
   getResolvedTopScorers,
   getResolvedTopAssists,
@@ -35,24 +34,13 @@ import {
 } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
+import { toSiteDateKey } from '@/lib/utils/date';
 import { competitionDisplayName, competitionHeading } from '@/lib/competitions/display-name';
 import { getInjuriesForCompetition } from '@/lib/db/queries/injuries';
 import { InjuriesTab } from '@/components/league/InjuriesTab';
 import { LeagueAboutCard } from '@/components/league/LeagueAboutCard';
-import { LeaguePageHeader } from '@/components/league/LeaguePageHeader';
-import { LeagueStandingsTab } from '@/components/league/LeagueStandingsTab';
-import { LeagueRightRailCard } from '@/components/league/LeagueRightRailCard';
 import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
-import { LeagueOverviewTab } from '@/components/league/LeagueOverviewTab';
-import { LeagueFixturesTab } from '@/components/league/LeagueFixturesTab';
-import { LeaguePlayersTab } from '@/components/league/LeaguePlayersTab';
-import { LeagueTeamsTab } from '@/components/league/LeagueTeamsTab';
 import { getLeagueIntro, getLeagueCountryName } from '@/lib/constants/league-content';
-import {
-  BOTOLA_2_COMPETITION_ID,
-  botola2AboutTeamsValue,
-  botola2HeaderTeamsCount,
-} from '@/lib/seo/botola-2-classement';
 import { BOTOLA_PRO_COMPETITION_ID, botolaClassementPath } from '@/lib/seo/botola-classement';
 import { botolaMatchsPath } from '@/lib/seo/botola-matchs';
 import { botolaSeasonOpenerPath } from '@/lib/seo/botola-season-opener';
@@ -68,7 +56,6 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number, lo
     standings,
     rounds,
     currentRound,
-    featuredMatches,
     fixtures,
     topScorers,
     topAssists,
@@ -80,11 +67,10 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number, lo
     getStandings(db, competitionId, seasonYear),
     getLeagueRounds(db, competitionId, seasonYear),
     getCurrentRound(db, competitionId, seasonYear),
-    getLeagueFeaturedMatches(db, competitionId, seasonYear, 2),
     getLeagueFixtures(db, competitionId, seasonYear),
-    getResolvedTopScorers(db, competitionId, seasonYear, locale),
-    getResolvedTopAssists(db, competitionId, seasonYear, locale),
-    getTopCardsForLeague(db, competitionId, seasonYear, 10, locale),
+    getResolvedTopScorers(db, competitionId, seasonYear, locale, 200),
+    getResolvedTopAssists(db, competitionId, seasonYear, locale, 200),
+    getTopCardsForLeague(db, competitionId, seasonYear, 200, locale),
     getInjuriesForCompetition(db, competitionId, seasonYear, 30, locale),
     getCompetitionTeams(db, competitionId, seasonYear),
   ]);
@@ -93,7 +79,6 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number, lo
     standings,
     rounds,
     currentRound,
-    featuredMatches,
     fixtures,
     topScorers,
     topAssists,
@@ -101,6 +86,12 @@ async function getCachedLeagueData(competitionId: number, seasonYear: number, lo
     injuries,
     competitionTeams,
   };
+}
+
+async function getSiteTodayKey() {
+  'use cache';
+  cacheLife('minutes');
+  return toSiteDateKey(new Date());
 }
 
 const LEAGUE_TAB_HASHES: Record<
@@ -183,7 +174,6 @@ export async function renderLeaguePage(
     standings,
     rounds,
     currentRound,
-    featuredMatches,
     fixtures,
     topScorers,
     topAssists,
@@ -191,6 +181,7 @@ export async function renderLeaguePage(
     injuries,
     competitionTeams,
   } = await getCachedLeagueData(competition.id, seasonYear, locale);
+  const todayKey = await getSiteTodayKey();
 
   // Translated name (e.g. "الدوري الإنجليزي الممتاز") when the provider only stored English.
   const competitionName = competitionDisplayName(
@@ -218,86 +209,17 @@ export async function renderLeaguePage(
     { label: competitionName },
   ];
 
-  // Center tabs — Overview / Matches / Standings / Stats / Teams
   const hashes = LEAGUE_TAB_HASHES[locale];
-  const tabs = [
-    {
-      key: 'overview',
-      hash: hashes.overview,
-      labelKey: 'overview',
-      icon: 'home',
-      content: (
-        <LeagueOverviewTab
-          standings={standings}
-          fixtures={fixtures}
-          rounds={rounds}
-          defaultRound={currentRound ?? 1}
-          topScorers={topScorers}
-          topAssists={topAssists}
-          topCards={topCards}
-          coverage={coverage}
-          locale={locale}
-          competitionName={competitionName}
-          seasonLabel={seasonLabel}
-        />
-      ),
-    },
-    {
-      key: 'fixtures',
-      hash: hashes.fixtures,
-      labelKey: 'fixtures',
-      icon: 'calendar',
-      content: (
-        <LeagueFixturesTab
-          fixtures={fixtures}
-          rounds={rounds}
-          defaultRound={currentRound ?? 1}
-          locale={locale}
-        />
-      ),
-    },
-    {
-      key: 'standings',
-      hash: hashes.standings,
-      hashAliases: hashes.standings === 'standings' ? undefined : ['standings'],
-      labelKey: 'standings',
-      icon: 'table',
-      content:
-        standings.length > 0 ? (
-          <LeagueStandingsTab
-            standings={standings}
-            locale={locale}
-            caption={tL('tableCaption', { competition: competitionName, season: seasonLabel })}
-          />
-        ) : (
-          <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-8 text-center">
-            <p className="text-sm text-text-tertiary">{tL('comingSoon')}</p>
-          </div>
-        ),
-    },
-    {
-      key: 'stats',
-      hash: hashes.stats,
-      labelKey: 'stats',
-      icon: 'chart',
-      content: (
-        <LeaguePlayersTab
-          coverage={coverage}
-          topScorers={topScorers}
-          topAssists={topAssists}
-          topCards={topCards}
-          locale={locale}
-        />
-      ),
-    },
-    {
-      key: 'teams',
-      hash: hashes.teams,
-      labelKey: 'teams',
-      icon: 'shield',
-      content: <LeagueTeamsTab teams={competitionTeams} standings={standings} locale={locale} />,
-    },
-  ];
+  const logoSrc = CURATED_LOGOS[competition.id] ?? competition.logoUrl;
+  const invertLogo = DARK_LOGOS.has(competition.id);
+  const flag = countryFlag(competition.countryCode);
+  const basePath = `/${rawLocale}/competition/${rawCountry}/${rawTournament}`;
+  const clubs = competitionTeams.map((team) => ({
+    id: team.id,
+    slug: team.slug,
+    name: teamLabel(team, locale),
+    logoUrl: team.logoUrl,
+  }));
 
   return (
     <>
@@ -356,79 +278,55 @@ export async function renderLeaguePage(
         )}
       </div>
 
-      <InnerPageShell
-        pageHeader={
-          <LeaguePageHeader
-            competition={competition}
-            displayName={competitionName}
-            seasonYear={seasonYear}
-            locale={locale}
-            countryName={countryName}
-            introText={introText}
-            availableSeasons={availableSeasons}
-            currentSeasonYear={currentSeasonYear}
-            teamsCount={
-              competition.id === BOTOLA_2_COMPETITION_ID
-                ? botola2HeaderTeamsCount(
-                    standings.map((row) => row.teamId),
-                    botola2AboutTeamsValue(),
-                  )
-                : competitionTeams.length
-            }
-            matchesCount={fixtures.length}
-            totalRounds={rounds.length}
-            currentRound={currentRound}
-          />
-        }
-        leftRail={
-          <LeagueLeftRail
-            locale={locale}
-            activeCompetitionId={competition.id}
-            competitionLogos={competitionLogos}
-          />
-        }
-        center={<CenterTabs tabs={tabs} />}
-        rightRailTop={
-          featuredMatches.length > 0 ? (
-            <LeagueRightRailCard
-              featuredMatches={featuredMatches.slice(0, 1)}
+      <div className="mx-auto w-full max-w-[1280px] px-4 pt-4">
+        <div className="flex flex-col gap-2.5 xl:grid xl:grid-cols-[256px_minmax(0,1fr)] xl:items-start xl:gap-2.5">
+          <aside className="order-2 xl:order-none xl:col-start-1 xl:row-start-1 xl:block xl:sticky xl:top-[104px] xl:max-h-[calc(100vh-120px)] xl:overflow-y-auto lg:hidden xl:flex xl:flex-col">
+            <LeagueLeftRail
               locale={locale}
+              activeCompetitionId={competition.id}
+              competitionLogos={competitionLogos}
+            />
+          </aside>
+          <div className="order-1 min-w-0 xl:col-start-2 xl:row-start-1">
+            <CompetitionPage
+              locale={locale}
+              competitionId={competition.id}
               competitionName={competitionName}
-              stretch
+              logoSrc={logoSrc}
+              invertLogo={invertLogo}
+              countryName={countryName}
+              countryFlag={flag}
+              introText={introText}
+              seasonYear={seasonYear}
+              seasonLabel={seasonLabel}
+              availableSeasons={availableSeasons}
+              currentSeasonYear={currentSeasonYear}
+              basePath={basePath}
+              hashes={hashes}
+              fixtures={fixtures}
+              standings={standings}
+              rounds={rounds}
+              defaultRound={currentRound ?? 1}
+              topScorers={topScorers}
+              topAssists={topAssists}
+              topCards={topCards}
+              clubs={clubs}
+              tableCaption={tL('tableCaption', { competition: competitionName, season: seasonLabel })}
+              todayKey={todayKey}
             />
-          ) : undefined
-        }
-        rightRail={
-          <LeagueRightRailCard
-            featuredMatches={featuredMatches.slice(1)}
-            topScorers={topScorers.slice(0, 3)}
-            locale={locale}
-            competitionName={competitionName}
-          />
-        }
-        belowCenter={
-          <>
-            {/* Mobile-only: surface the right-rail featured matches (hidden xl:block rail). */}
-            {featuredMatches.length > 0 && (
-              <div className="lg:hidden">
-                <LeagueRightRailCard
-                  featuredMatches={featuredMatches}
-                  locale={locale}
-                  competitionName={competitionName}
-                />
-              </div>
-            )}
-            <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
-            {coverage?.injuries && <InjuriesTab injuries={injuries} />}
-            <RelatedCompetitions
-              competitionIds={getRelatedCompetitionIds(competition.id)}
-              locale={locale}
-            />
-            <CompetitionMediaSection competitionId={competition.id} locale={locale} />
-          </>
-        }
-      />
-      {MOROCCO_HUB_COMPETITION_IDS.has(competition.id) && (
+            <div className="mt-2.5">
+              <LeagueAboutCard competition={competition} seasonYear={seasonYear} locale={locale} />
+              {coverage?.injuries && <InjuriesTab injuries={injuries} />}
+              <RelatedCompetitions
+                competitionIds={getRelatedCompetitionIds(competition.id)}
+                locale={locale}
+              />
+              <CompetitionMediaSection competitionId={competition.id} locale={locale} />
+            </div>
+          </div>
+        </div>
+      </div>
+            {MOROCCO_HUB_COMPETITION_IDS.has(competition.id) && (
         <MoroccoHubLinks locale={locale} current={hubKeyForCompetition(competition.id)} />
       )}
     </>

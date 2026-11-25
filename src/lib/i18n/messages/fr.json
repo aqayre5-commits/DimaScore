@@ -661,7 +661,20 @@
     "colGoalDiffFull": "Différence de buts",
     "colGoalsFull": "Buts pour et contre",
     "colPointsFull": "Points",
-    "colRankFull": "Rang"
+    "colRankFull": "Rang",
+    "overviewTab": "Aperçu",
+    "tableTab": "Classement",
+    "viewMore": "Voir plus",
+    "showFewer": "Réduire",
+    "noFixturesOnDay": "Aucun match de championnat ce jour-là.",
+    "pinCompetition": "Épingler {name}",
+    "unpinCompetition": "Désépingler {name}",
+    "starFixture": "Enregistrer {match}",
+    "unstarFixture": "Retirer {match} des matchs enregistrés",
+    "allStats": "Toutes les stats",
+    "overall": "Général",
+    "today": "Aujourd'hui",
+    "roundNumber": "Journée {n}"
   },
   "shared": {
     "share": "Partager",

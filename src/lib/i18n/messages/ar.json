@@ -661,7 +661,20 @@
     "colGoalDiffFull": "فارق الأهداف",
     "colGoalsFull": "الأهداف له وعليه",
     "colPointsFull": "النقاط",
-    "colRankFull": "المركز"
+    "colRankFull": "المركز",
+    "overviewTab": "نظرة عامة",
+    "tableTab": "الترتيب",
+    "viewMore": "عرض المزيد",
+    "showFewer": "عرض أقل",
+    "noFixturesOnDay": "لا توجد مباريات للدوري في هذا اليوم.",
+    "pinCompetition": "تثبيت {name}",
+    "unpinCompetition": "إلغاء تثبيت {name}",
+    "starFixture": "حفظ {match}",
+    "unstarFixture": "إزالة {match} من المباريات المحفوظة",
+    "allStats": "كل الإحصائيات",
+    "overall": "إجمالي",
+    "today": "اليوم",
+    "roundNumber": "الجولة {n}"
   },
   "shared": {
     "share": "مشاركة",
