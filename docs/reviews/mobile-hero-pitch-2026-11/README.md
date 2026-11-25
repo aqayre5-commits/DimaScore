@@ -56,4 +56,26 @@ Copies in `shots/`.
 - Hero 390 before/after: `shots/before-hero-en-m390.png`, `shots/after-hero-en-m390.png`
 - Hero 360 (name wrap): `shots/after-hero-en-m360.png`
 - Line-ups 390 before/after: `shots/before-lineups-en-m390.png`, `shots/after-lineups-en-m390.png`
-- Desktop 1440 no-change check: `shots/before-hero-en-d1440.png` / `after-hero-en-d1440.png` and the line-ups pair (0 px difference)
+- Desktop 1440 no-change check: the original pair (commit e39fda7) was pixel-identical. The later after shots include named full-time scorers from a fuller local seed, so they differ in text only. Desktop CSS (≥768) is unchanged.
+
+## Follow-up: scorer names (2026-11-25 01:32 GMT / Europe/London)
+
+Abdilahi noted the first after-hero 390 shot showed minutes only (`50′ 60′ 64′`,
+PSV `32′ (P)`), with 84′ and 87′ missing.
+
+Cause: local `fixture_events` for 1635715 had `player_id` NULL (so `nameOf`
+returned nothing and the board rendered minutes only) and only the mid-match
+goals. This was not CSS clipping or a #62 grouping regression. The same
+minutes-only hero appeared on `origin/main` with that seed.
+
+Local seed only (not in this PR): Valverde 50′, Bellingham 60′, Mbappé 64′ 84′,
+Vinícius Júnior 87′, Perisic 32′ (P), with player ids set.
+
+Typography: mobile `.mc .mc-team small` is **12px** (was 11px). Colour is
+`--muted` `#afbab5` on the board `#131817`, contrast **8.98:1** (AA). Names
+stay centred under each team and fit on one line at 390 and 360. Desktop
+scorer type stays 14px.
+
+The kicker wrap (“UEFA Champions League” / “League Stage - 5”) is already
+present on the before-390 shot and is not a #64 regression, so it was left
+alone.

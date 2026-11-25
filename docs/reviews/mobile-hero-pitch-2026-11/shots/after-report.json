@@ -7,7 +7,7 @@
       "x": 14,
       "y": 103,
       "w": 362,
-      "h": 228.9,
+      "h": 245.4,
       "alignSelf": "auto",
       "textAlign": "start"
     },
@@ -26,7 +26,7 @@
           "x": 25,
           "y": 159,
           "w": 130.3,
-          "h": 131.3,
+          "h": 147.8,
           "alignSelf": "start",
           "textAlign": "center"
         },
@@ -50,7 +50,7 @@
           "x": 25,
           "y": 248,
           "w": 130.3,
-          "h": 42.3,
+          "h": 58.8,
           "alignSelf": "start",
           "textAlign": "center"
         },
@@ -71,7 +71,7 @@
           "x": 234.7,
           "y": 159,
           "w": 130.3,
-          "h": 131.3,
+          "h": 147.8,
           "alignSelf": "start",
           "textAlign": "center"
         },
@@ -95,7 +95,7 @@
           "x": 234.7,
           "y": 248,
           "w": 130.3,
-          "h": 18.1,
+          "h": 19.2,
           "alignSelf": "start",
           "textAlign": "center"
         },
@@ -108,7 +108,7 @@
         "gaps": {
           "crestName": 0,
           "nameScorers": 0,
-          "scorersMeta": 32.2
+          "scorersMeta": 47.6
         }
       }
     ],
@@ -147,7 +147,7 @@
       "x": 14,
       "y": 103,
       "w": 332,
-      "h": 248,
+      "h": 264.4,
       "alignSelf": "auto",
       "textAlign": "start"
     },
@@ -166,7 +166,7 @@
           "x": 25,
           "y": 159,
           "w": 115.3,
-          "h": 150.3,
+          "h": 166.8,
           "alignSelf": "start",
           "textAlign": "center"
         },
@@ -190,7 +190,7 @@
           "x": 25,
           "y": 267.1,
           "w": 115.3,
-          "h": 42.3,
+          "h": 58.8,
           "alignSelf": "start",
           "textAlign": "center"
         },
@@ -211,7 +211,7 @@
           "x": 219.7,
           "y": 159,
           "w": 115.3,
-          "h": 150.3,
+          "h": 166.8,
           "alignSelf": "start",
           "textAlign": "center"
         },
@@ -235,7 +235,7 @@
           "x": 219.7,
           "y": 267.1,
           "w": 115.3,
-          "h": 18.1,
+          "h": 19.2,
           "alignSelf": "start",
           "textAlign": "center"
         },
@@ -248,7 +248,7 @@
         "gaps": {
           "crestName": 0,
           "nameScorers": 0,
-          "scorersMeta": 32.2
+          "scorersMeta": 47.6
         }
       }
     ],
@@ -287,7 +287,7 @@
       "x": 288.7,
       "y": 119,
       "w": 1122.5,
-      "h": 267.3,
+      "h": 289.5,
       "alignSelf": "auto",
       "textAlign": "start"
     },
@@ -306,7 +306,7 @@
           "x": 332.8,
           "y": 186,
           "w": 421.3,
-          "h": 140.3,
+          "h": 162.5,
           "alignSelf": "auto",
           "textAlign": "start"
         },
@@ -329,8 +329,8 @@
         "scorers": {
           "x": 528.2,
           "y": 259.8,
-          "w": 21.3,
-          "h": 66.6,
+          "w": 122.2,
+          "h": 88.8,
           "alignSelf": "auto",
           "textAlign": "start"
         },
@@ -338,7 +338,7 @@
           "col": 543.5,
           "crest": 453.3,
           "name": 607.5,
-          "scorers": 538.8
+          "scorers": 589.3
         },
         "gaps": {
           "crestName": -106.5,
@@ -372,9 +372,9 @@
           "textAlign": "end"
         },
         "scorers": {
-          "x": 1149.9,
+          "x": 1101.5,
           "y": 265.1,
-          "w": 44.9,
+          "w": 93.3,
           "h": 27.5,
           "alignSelf": "auto",
           "textAlign": "end"
@@ -383,12 +383,12 @@
           "col": 1156.5,
           "crest": 1269.7,
           "name": 1092.4,
-          "scorers": 1172.4
+          "scorers": 1148.2
         },
         "gaps": {
           "crestName": -106.5,
           "nameScorers": 9.3,
-          "scorersMeta": 54.8
+          "scorersMeta": 77
         }
       }
     ],

@@ -1204,9 +1204,11 @@
     font-size: 17px;
   }
   .mc .mc-team small {
-    font-size: 11px;
+    font-size: 12px;
     margin-top: 0;
     text-align: center;
+    overflow-wrap: anywhere;
+    line-height: 1.25;
   }
   .mc .mc-scorers:empty {
     display: none;
