@@ -840,8 +840,15 @@ html:not([data-theme='light']) .pl .matchrow .clock.is-live {
 .pl .stand-table :is(td, th).stand-num,
 .pl .pl-ranking :is(td, th).stand-num {
   text-align: end;
-  padding-inline-end: var(--card-inset);
   font-variant-numeric: tabular-nums;
+}
+
+/* card-inset end padding is only for the last column (flush to the card
+   edge). Applying it to every .stand-num left GD/P with ~23px of content
+   at desktop, so the Arabic "فارق" abbreviation overflowed by 2px. */
+.pl .stand-table :is(td, th):last-child,
+.pl .pl-ranking :is(td, th):last-child {
+  padding-inline-end: var(--card-inset);
 }
 
 .pl .stand-table td.stand-num,
@@ -933,6 +940,50 @@ html:not([data-theme='light']) .pl .matchrow .clock.is-live {
 .pl .standing-team .mark,
 .pl .player-cell .mark {
   --m: 21px;
+}
+
+
+/* Stats (and standings) must shrink to the content column: a table's default
+   min-width is its min-content, which blew the Goals column past the viewport
+   at 390/360. The value column keeps a reserved width so "Goals"/"Assists"
+   never clip; names ellipsis in the leftover space. */
+.pl-stats-board,
+.pl-stats-boards,
+.player-ranking,
+.pl-main {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.pl .stand-table,
+.pl .pl-ranking,
+.player-ranking {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.pl .pl-ranking col.stand-num,
+.pl .pl-ranking :is(th, td).stand-num,
+.mc .pl .pl-ranking :is(th, td).stand-num {
+  width: 4.75rem;
+  min-width: 4.75rem;
+  max-width: 4.75rem;
+  box-sizing: border-box;
+  padding-inline: 8px 10px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.pl .pl-ranking :is(th, td):nth-child(2),
+.pl .stand-table :is(th, td):nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pl .player-cell {
+  overflow: hidden;
 }
 
 .pl .standing-live {
