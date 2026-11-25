@@ -227,6 +227,14 @@ export interface NormalizedFixture {
   };
 }
 
+export interface NormalizedFixtureWithDetails {
+  id: number;
+  events: NormalizedFixtureEvent[];
+  lineups: NormalizedFixtureLineup[];
+  statistics: NormalizedFixtureStatistic[];
+  players: NormalizedFixturePlayer[];
+}
+
 export interface NormalizedFixtureEvent {
   time: { elapsed: number; extra: number | null };
   team: { id: number; name: string; logo: string | null };

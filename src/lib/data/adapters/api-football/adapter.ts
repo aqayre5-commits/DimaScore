@@ -7,6 +7,7 @@ import type {
   NormalizedTeam,
   NormalizedTeamStatistics,
   NormalizedFixture,
+  NormalizedFixtureWithDetails,
   NormalizedFixtureEvent,
   NormalizedFixtureLineup,
   NormalizedFixtureStatistic,
@@ -452,6 +453,21 @@ export class ApiFootballAdapter implements DataProvider {
     );
     const valid = filterValid(res.response, isValidFixtureEntry, 'fixtures');
     return valid.map(normalizeFixture);
+  }
+
+  async getFixturesWithDetails(params: {
+    ids: number[];
+  }): Promise<NormalizedFixtureWithDetails[]> {
+    if (params.ids.length === 0) return [];
+    const res = await endpoints.fetchFixtures({ ids: params.ids.join('-') });
+    const valid = filterValid(res.response, isValidFixtureEntry, 'fixtures-ids');
+    return valid.map((raw) => ({
+      id: raw.fixture.id,
+      events: (raw.events ?? []).map(normalizeFixtureEvent),
+      lineups: (raw.lineups ?? []).map(normalizeFixtureLineup),
+      statistics: (raw.statistics ?? []).map(normalizeFixtureStatistic),
+      players: (raw.players ?? []).map(normalizeFixturePlayer),
+    }));
   }
 
   async getLiveFixtures(params?: { league?: string }): Promise<NormalizedFixture[]> {

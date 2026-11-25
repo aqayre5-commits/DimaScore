@@ -56,8 +56,29 @@ describe('parseRoundNumber', () => {
     expect(parseRoundNumber('')).toBe(null);
   });
 
+  it('parses "Knockout Round Play-offs" → 31', () => {
+    expect(parseRoundNumber('Knockout Round Play-offs')).toBe(31);
+  });
+
+  it('parses "8th Finals" as Round of 16', () => {
+    expect(parseRoundNumber('8th Finals')).toBe(33);
+  });
+
+  it('parses "16th Finals" as Round of 32', () => {
+    expect(parseRoundNumber('16th Finals')).toBe(32);
+  });
+
+  it('parses "1st Qualifying Round" before the league phase', () => {
+    expect(parseRoundNumber('1st Qualifying Round')).toBe(-39);
+    expect(parseRoundNumber('2nd Qualifying Round')).toBe(-38);
+  });
+
+  it('parses Preliminary Round ahead of group stages', () => {
+    expect(parseRoundNumber('Preliminary Round')).toBe(-30);
+  });
+
   it('returns null for unknown format', () => {
-    expect(parseRoundNumber('Preliminary Round')).toBe(null);
+    expect(parseRoundNumber('Not a round')).toBe(null);
   });
 
   it('handles whitespace', () => {

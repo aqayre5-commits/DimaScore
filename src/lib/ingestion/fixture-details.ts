@@ -6,6 +6,7 @@ import type {
   NormalizedFixtureLineup,
   NormalizedFixtureStatistic,
   NormalizedFixturePlayer,
+  NormalizedFixtureWithDetails,
 } from '@/lib/data/types';
 import * as schema from '@/lib/db/schema';
 import { runWrites } from '@/lib/db/client';
@@ -13,6 +14,7 @@ import { resolveTeamKits } from '@/lib/match/kit-colours';
 import { KIT_CORRECTIONS } from '@/lib/match/kit-corrections';
 import { resolveTeamKitsWithSeason, type FixtureKitContext } from '@/lib/match/season-kits';
 import { loadFixtureKitContext } from '@/lib/match/season-kit-db';
+import { chunkIds } from './chunk';
 
 // ── Events ──
 
@@ -90,17 +92,20 @@ function mapPlayerStats(
 
 // ── Sync one fixture ──
 
-export async function syncFixtureDetails(
-  provider: DataProvider,
+export async function writeFixtureDetails(
   db: NeonHttpDatabase<typeof schema>,
   fixtureId: number,
+  payload: {
+    events: NormalizedFixtureEvent[];
+    lineups: NormalizedFixtureLineup[];
+    statistics: NormalizedFixtureStatistic[];
+    players: NormalizedFixturePlayer[];
+  },
 ): Promise<{ events: number; lineups: number; statistics: number; playerStats: number }> {
-  const [events, lineups, statistics, players] = await Promise.all([
-    provider.getFixtureEvents({ fixture: fixtureId }).catch(() => []),
-    provider.getFixtureLineups({ fixture: fixtureId }).catch(() => []),
-    provider.getFixtureStatistics({ fixture: fixtureId }).catch(() => []),
-    provider.getFixturePlayers({ fixture: fixtureId }).catch(() => []),
-  ]);
+  const events = payload.events;
+  const lineups = payload.lineups;
+  const statistics = payload.statistics;
+  const players = payload.players;
 
   let eventsCount = 0;
   let lineupsCount = 0;
@@ -189,6 +194,63 @@ export async function syncFixtureDetails(
     statistics: statisticsCount,
     playerStats: playerStatsCount,
   };
+}
+
+export async function syncFixtureDetails(
+  provider: DataProvider,
+  db: NeonHttpDatabase<typeof schema>,
+  fixtureId: number,
+): Promise<{ events: number; lineups: number; statistics: number; playerStats: number }> {
+  const [events, lineups, statistics, players] = await Promise.all([
+    provider.getFixtureEvents({ fixture: fixtureId }).catch(() => []),
+    provider.getFixtureLineups({ fixture: fixtureId }).catch(() => []),
+    provider.getFixtureStatistics({ fixture: fixtureId }).catch(() => []),
+    provider.getFixturePlayers({ fixture: fixtureId }).catch(() => []),
+  ]);
+  return writeFixtureDetails(db, fixtureId, { events, lineups, statistics, players });
+}
+
+export async function syncFixtureDetailsBatch(
+  provider: DataProvider,
+  db: NeonHttpDatabase<typeof schema>,
+  fixtureIds: number[],
+): Promise<
+  { fixtureId: number; events: number; lineups: number; statistics: number; playerStats: number }[]
+> {
+  const results: {
+    fixtureId: number;
+    events: number;
+    lineups: number;
+    statistics: number;
+    playerStats: number;
+  }[] = [];
+
+  for (const chunk of chunkIds(fixtureIds)) {
+    let detailed: NormalizedFixtureWithDetails[] = [];
+    if (typeof provider.getFixturesWithDetails === 'function') {
+      try {
+        detailed = await provider.getFixturesWithDetails({ ids: chunk });
+      } catch {
+        detailed = [];
+      }
+    }
+    const byId = new Map(detailed.map((d) => [d.id, d]));
+    for (const id of chunk) {
+      const row = byId.get(id);
+      const hasDetails =
+        row != null &&
+        (row.events.length > 0 ||
+          row.lineups.length > 0 ||
+          row.statistics.length > 0 ||
+          row.players.length > 0);
+      const counts = hasDetails && row
+        ? await writeFixtureDetails(db, id, row)
+        : await syncFixtureDetails(provider, db, id);
+      results.push({ fixtureId: id, ...counts });
+    }
+  }
+
+  return results;
 }
 
 // ── Live sync: events, lineups, and/or team stats — never sets detailsSyncedAt ──

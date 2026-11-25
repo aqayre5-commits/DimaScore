@@ -3,7 +3,7 @@ import { db } from '@/lib/db/client';
 import { getDataProvider } from '@/lib/data';
 import { verifyCronSecret } from '@/lib/cron/auth';
 import {
-  syncFixtureDetails,
+  syncFixtureDetailsBatch,
   getFixturesMissingDetails,
   getPenFixturesMissingShootout,
   getScoredFixturesMissingEvents,
@@ -26,18 +26,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ ok: true, message: 'No fixtures missing details', processed: 0 });
     }
 
-    const results: {
-      fixtureId: number;
-      events: number;
-      lineups: number;
-      statistics: number;
-      playerStats: number;
-    }[] = [];
-
-    for (const fixtureId of fixtureIds) {
-      const counts = await syncFixtureDetails(provider, db, fixtureId);
-      results.push({ fixtureId, ...counts });
-    }
+    const results = await syncFixtureDetailsBatch(provider, db, fixtureIds);
 
     return NextResponse.json({ ok: true, processed: results.length, results });
   } catch (error) {

@@ -1,7 +1,10 @@
 import type { CompetitionMeta } from '@/lib/ingestion/types';
 
 /**
- * 36 competitions verified via live API-Football queries.
+ * 55 competitions in the ingestion catalog: the previously live set plus the
+ * 17 D1 additions of 25 Nov 2026. League ids marked [U] in the
+ * competition-formats plan still need a free /leagues?id= confirmation
+ * before first ingest.
  * Ordered by tier (Tier 1 seeded first → Tier 6 last).
  *
  * Team IDs (Morocco men=31, Morocco women=14461, Wydad=968, Raja=976)
@@ -158,6 +161,42 @@ export const VERIFIED_COMPETITIONS: CompetitionMeta[] = [
     isMoroccoFocus: false,
     displayPriority: 34,
   },
+  {
+    id: 538,
+    slug: 'afcon-u20',
+    tier: 3,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 35,
+  },
+  {
+    id: 973,
+    slug: 'afcon-u17',
+    tier: 3,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 36,
+  },
+  {
+    id: 1015,
+    slug: 'afcon-u23',
+    tier: 3,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 37,
+  },
+  {
+    id: 953,
+    slug: 'afcon-u23-qualifiers',
+    tier: 3,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 38,
+  },
 
   // ── Tier 4: Top European leagues + UEFA club ──
   {
@@ -240,6 +279,42 @@ export const VERIFIED_COMPETITIONS: CompetitionMeta[] = [
     isFeatured: false,
     isMoroccoFocus: false,
     displayPriority: 48,
+  },
+  {
+    id: 4,
+    slug: 'euro',
+    tier: 4,
+    isWomen: false,
+    isFeatured: true,
+    isMoroccoFocus: false,
+    displayPriority: 49,
+  },
+  {
+    id: 960,
+    slug: 'euro-qualifiers',
+    tier: 4,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 59,
+  },
+  {
+    id: 45,
+    slug: 'fa-cup',
+    tier: 4,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 80,
+  },
+  {
+    id: 143,
+    slug: 'copa-del-rey',
+    tier: 4,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 81,
   },
 
   // ── Tier 5: Women's European + UEFA women's ──
@@ -363,6 +438,89 @@ export const VERIFIED_COMPETITIONS: CompetitionMeta[] = [
     isMoroccoFocus: false,
     displayPriority: 66,
   },
+
+  // ── Tier 7: International tournaments (D1, 25 Nov 2026) ──
+  {
+    id: 8,
+    slug: 'womens-world-cup',
+    tier: 7,
+    isWomen: true,
+    isFeatured: true,
+    isMoroccoFocus: false,
+    displayPriority: 70,
+  },
+  {
+    id: 480,
+    slug: 'olympics-men',
+    tier: 7,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 71,
+  },
+  {
+    id: 524,
+    slug: 'olympics-women',
+    tier: 7,
+    isWomen: true,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 72,
+  },
+  {
+    id: 15,
+    slug: 'club-world-cup',
+    tier: 7,
+    isWomen: false,
+    isFeatured: true,
+    isMoroccoFocus: false,
+    displayPriority: 73,
+  },
+  {
+    id: 9,
+    slug: 'copa-america',
+    tier: 7,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 74,
+  },
+  {
+    id: 490,
+    slug: 'u20-world-cup',
+    tier: 7,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 75,
+  },
+  {
+    id: 587,
+    slug: 'u17-world-cup',
+    tier: 7,
+    isWomen: false,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 76,
+  },
+  {
+    id: 920,
+    slug: 'u20-womens-world-cup',
+    tier: 7,
+    isWomen: true,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 77,
+  },
+  {
+    id: 950,
+    slug: 'u17-womens-world-cup',
+    tier: 7,
+    isWomen: true,
+    isFeatured: false,
+    isMoroccoFocus: false,
+    displayPriority: 78,
+  },
 ];
 
 /**
@@ -375,15 +533,10 @@ export const UNVERIFIED_COMPETITION_NAMES: Record<string, number | null> = {
   'Botola Pro Feminine': null,
   'Coupe du Trone Feminine': null,
   'UEFA Nations League': null,
-  'UEFA Euro Qualifiers': null,
   'CAF Women Champions League': null,
   'African Football League': null,
-  'FIFA Women World Cup 2027': null,
   'Women WC 2027 Qualifiers (all confederations)': null,
-  'FIFA Club World Cup': null,
   'FIFA Women Club World Cup': null,
-  'Olympics Football Men': null,
-  'Olympics Football Women': null,
   'Arab Cup Men': null,
   'Arab Cup Women': null,
   'Premiere Ligue (France Women)': null,

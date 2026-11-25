@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
 import { getDataProvider } from '@/lib/data';
 import { verifyCronSecret } from '@/lib/cron/auth';
-import { syncTopScorers, syncTopAssists } from '@/lib/ingestion/top-scorers';
+import { syncTopScorers, syncTopAssists, syncTopYellowCards, syncTopRedCards } from '@/lib/ingestion/top-scorers';
 import { getCurrentSeasons } from '@/lib/db/queries';
 import { and, eq, inArray } from 'drizzle-orm';
 import * as schema from '@/lib/db/schema';
@@ -26,6 +26,7 @@ export async function GET(request: Request) {
               season: schema.leagueCoverage.season,
               topScorers: schema.leagueCoverage.topScorers,
               topAssists: schema.leagueCoverage.topAssists,
+              topCards: schema.leagueCoverage.topCards,
             })
             .from(schema.leagueCoverage)
             .where(
@@ -50,6 +51,8 @@ export async function GET(request: Request) {
       season: number;
       scorers: number;
       assists: number;
+      yellowCards?: number;
+      redCards?: number;
       error?: string;
     }[] = [];
 
@@ -57,6 +60,8 @@ export async function GET(request: Request) {
       try {
         let scorersCount = 0;
         let assistsCount = 0;
+        let yellowCount = 0;
+        let redCount = 0;
 
         if (row.topScorers) {
           const stats = await syncTopScorers(provider, db, {
@@ -74,11 +79,26 @@ export async function GET(request: Request) {
           assistsCount = stats.updated;
         }
 
+        if (row.topCards) {
+          const yellow = await syncTopYellowCards(provider, db, {
+            leagueId: row.leagueId,
+            season: row.season,
+          });
+          const red = await syncTopRedCards(provider, db, {
+            leagueId: row.leagueId,
+            season: row.season,
+          });
+          yellowCount = yellow.updated;
+          redCount = red.updated;
+        }
+
         results.push({
           leagueId: row.leagueId,
           season: row.season,
           scorers: scorersCount,
           assists: assistsCount,
+          yellowCards: yellowCount,
+          redCards: redCount,
         });
       } catch (err) {
         // One league's failure must not abort the rest of the run.

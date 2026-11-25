@@ -53,6 +53,7 @@ export function resolveCountryKey(slug: string, locale: Locale): string | undefi
  */
 export const COUNTRY_LABELS: Record<string, Record<Locale, string>> = {
   fifa: { fr: 'International', en: 'International', ar: 'دولي' },
+  ioc: { fr: 'Jeux olympiques', en: 'Olympics', ar: 'الأولمبياد' },
   uefa: { fr: 'Europe', en: 'Europe', ar: 'أوروبا' },
   caf: { fr: 'Afrique', en: 'Africa', ar: 'إفريقيا' },
   maroc: { fr: 'Maroc', en: 'Morocco', ar: 'المغرب' },

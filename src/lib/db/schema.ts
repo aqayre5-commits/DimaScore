@@ -139,6 +139,10 @@ export const teams = pgTable(
     secondaryColor: text('secondary_color'),
     isNational: boolean('is_national').default(false),
     isWomen: boolean('is_women').default(false),
+    // Inferred category for national-team families (men/women senior + youth).
+    // Filled by scripts/backfill-national-from-senior.ts --apply after migration 0008.
+    nationalCategory: text('national_category').$type<'men' | 'women'>(),
+    ageGroup: integer('age_group'),
     // Club reserve/youth/women sides point at their senior parent club so crest resolution can
     // fall back to the parent logo (own logo_url ?? parent logo_url ?? initials). National youth
     // sides have no parent — they group by country_code. Self-referencing FK (Phase 16 · Task G).
@@ -151,6 +155,7 @@ export const teams = pgTable(
     index('teams_country_code_idx').on(t.countryCode),
     index('teams_is_women_idx').on(t.isWomen),
     index('teams_parent_team_id_idx').on(t.parentTeamId),
+    index('teams_national_family_idx').on(t.countryCode, t.nationalCategory, t.ageGroup),
   ],
 );
 
