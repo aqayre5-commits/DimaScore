@@ -40,14 +40,15 @@ export function FallbackMark({
   const palette: FallbackPalette = fallbackPalette(primary, secondary, theme);
   const long = initials.length >= 3;
   const fontSize = long ? 7.2 : initials.length === 1 ? 10 : 8.2;
+  // `size` goes on the width/height attributes (like an <img>), so any CSS class
+  // (hidden, md:hidden, .mark { width: var(--event-crest) }, max-h, w-auto) wins.
+  // Inline width/height/display would beat those classes and squeeze narrow rows.
   const dim = size ? { width: size, height: size } : undefined;
   const css: React.CSSProperties = {
-    display: 'inline-block',
     flexShrink: 0,
-    // Prefer --m from the parent .mark box; never width:100% (that blew up
-    // standings cells). A numeric `size` still wins when the caller passes one.
-    width: size ?? 'var(--m, 24px)',
-    height: size ?? 'var(--m, 24px)',
+    // Without an explicit `size`, take --m from the parent .mark box; never
+    // width:100% (that blew up standings cells).
+    ...(size ? null : { width: 'var(--m, 24px)', height: 'var(--m, 24px)' }),
     ...(sizeVar ? ({ ['--m' as string]: sizeVar } as React.CSSProperties) : null),
     ...style,
   };

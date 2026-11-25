@@ -62,8 +62,8 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
 
         {/* Identity */}
         <div className="flex min-w-0 flex-1 flex-col py-1">
-          <div className="flex items-center gap-2">
-            <h1 className="font-display text-xl font-bold leading-tight text-text-primary md:text-2xl">
+          <div className="flex min-w-0 items-center gap-2">
+            <h1 className="min-w-0 break-words font-display text-xl font-bold leading-tight text-text-primary [overflow-wrap:anywhere] md:text-2xl">
               {name}
             </h1>
             <TeamFollowButton teamId={team.id} teamName={name} />
@@ -84,7 +84,7 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
           )}
 
           {formResults && formResults.length > 0 && (
-            <div className="mt-1.5 flex items-center gap-2">
+            <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
               <span className="text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">
                 {t('form')}
               </span>
