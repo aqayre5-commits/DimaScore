@@ -18,6 +18,7 @@ import { matchHref } from '@/lib/seo/match-slug';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 import { localizeMatchStatus } from '@/lib/i18n/feed-labels';
+import { TeamMark } from '@/components/shared/TeamMark';
 
 interface TeamMatchesListProps {
   fixtures: FixtureWithCompetition[];
@@ -181,17 +182,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
         <div className="flex items-stretch gap-3 py-2.5">
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex items-center gap-2.5">
-              {f.homeTeam?.logoUrl ? (
-                <Image
-                  src={f.homeTeam.logoUrl}
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="size-6 shrink-0 object-contain"
-                />
-              ) : (
-                <span className="inline-block size-6 shrink-0 rounded bg-bg-surface-2" />
-              )}
+              <RowCrest team={f.homeTeam} />
               <span
                 className={`min-w-0 flex-1 truncate text-base ${awayWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
               >
@@ -212,17 +203,7 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
               )}
             </div>
             <div className="flex items-center gap-2.5">
-              {f.awayTeam?.logoUrl ? (
-                <Image
-                  src={f.awayTeam.logoUrl}
-                  alt=""
-                  width={24}
-                  height={24}
-                  className="size-6 shrink-0 object-contain"
-                />
-              ) : (
-                <span className="inline-block size-6 shrink-0 rounded bg-bg-surface-2" />
-              )}
+              <RowCrest team={f.awayTeam} />
               <span
                 className={`min-w-0 flex-1 truncate text-base ${homeWon ? 'text-text-tertiary' : 'font-medium text-text-primary'}`}
               >
@@ -273,5 +254,27 @@ function FixtureRow({ fixture: f, locale }: { fixture: FixtureWithCompetition; l
         </div>
       </div>
     </a>
+  );
+}
+
+function RowCrest({ team }: { team: FixtureWithCompetition['homeTeam'] }) {
+  if (!team) {
+    return <span className="inline-block size-6 shrink-0 rounded bg-bg-surface-2" aria-hidden />;
+  }
+  return (
+    <TeamMark
+      src={team.logoUrl}
+      status={team.logoStatus}
+      name={team.name}
+      shortName={team.shortName}
+      code={team.code}
+      primary={team.primaryColor}
+      secondary={team.secondaryColor}
+      isNational={team.isNational}
+      countryCode={team.countryCode}
+      size={24}
+      className="size-6 shrink-0 object-contain"
+      alt=""
+    />
   );
 }
