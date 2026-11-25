@@ -9,6 +9,8 @@ import type { Locale } from '@/lib/i18n/config';
 import { buildTeamHref } from './paths';
 
 const AGE = /\bU-?(1[5-9]|2[0-3])\b/i;
+/** "France W", "France U17 W", "Mexico W U17", "Women U17", "U17 Women", "(W)". */
+const WOMEN_MARK = /\bW(?:omen(?:'s)?)?\b|\(\s*W(?:omen)?\s*\)/i;
 const WOMEN_SUFFIX = /\s*\(?W(?:omen)?\)?\s*$/i;
 
 export type NationalCategory = 'men' | 'women';
@@ -22,18 +24,24 @@ export interface NationalClassification {
 export function classifyNationalTeamName(
   englishName: string,
   isWomenFlag = false,
+  competitionIsWomen?: boolean,
 ): NationalClassification {
   const ageMatch = englishName.match(AGE);
   const ageGroup = ageMatch ? parseInt(ageMatch[1], 10) : null;
+  const fromName = WOMEN_MARK.test(englishName);
+  // Prefer the competition's gender when the caller knows it (e.g. a team ingested
+  // from a women's tournament). Name marks and the stored is_women flag still apply
+  // when the competition gender is unknown, or when the name itself is marked women.
   const category: NationalCategory =
-    isWomenFlag || WOMEN_SUFFIX.test(englishName) ? 'women' : 'men';
+    competitionIsWomen === true || isWomenFlag || fromName ? 'women' : 'men';
   return { category, ageGroup };
 }
 
-/** Strip youth/women suffixes so "France U21" and "France" share a family key. */
+/** Strip youth/women marks so "France U21" / "Mexico W U17" share a family key. */
 export function nationalFamilyBaseName(englishName: string): string {
   return englishName
     .replace(AGE, ' ')
+    .replace(WOMEN_MARK, ' ')
     .replace(WOMEN_SUFFIX, ' ')
     .replace(/\s+/g, ' ')
     .trim()

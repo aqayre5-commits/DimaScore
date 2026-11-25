@@ -7,7 +7,8 @@
  * Run:
  *   pnpm tsx scripts/backfill-historical-fixtures.ts --comp 36                    # all seasons for AFCON Qualifiers
  *   pnpm tsx scripts/backfill-historical-fixtures.ts --comp 36 --seasons 2021,2023,2025  # specific seasons
- *   pnpm tsx scripts/backfill-historical-fixtures.ts --all-comps                  # all competitions, all historical seasons
+ *   pnpm tsx scripts/backfill-historical-fixtures.ts --all-comps                  # all competitions, history-rule seasons
+ *   pnpm tsx scripts/backfill-historical-fixtures.ts --all-comps --all-seasons    # override: every historical season
  *
  * Requires: .env.local with DATABASE_URL and API_FOOTBALL_KEY
  */
@@ -21,6 +22,7 @@ import { eq, sql } from 'drizzle-orm';
 import * as schema from '@/lib/db/schema';
 import { getDataProvider } from '@/lib/data';
 import { syncFixtures } from '@/lib/ingestion/fixtures';
+import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
 
 const sqlClient = neon(process.env.DATABASE_URL!);
 const db = drizzle(sqlClient, { schema });
@@ -48,6 +50,7 @@ async function main() {
   const compArg = process.argv.find((_, i, a) => a[i - 1] === '--comp');
   const seasonsArg = process.argv.find((_, i, a) => a[i - 1] === '--seasons');
   const allComps = process.argv.includes('--all-comps');
+  const allSeasons = process.argv.includes('--all-seasons');
 
   let entries: SeasonEntry[] = [];
 
@@ -75,8 +78,35 @@ async function main() {
     }
     log(`Competition ${compId}: ${entries.length} seasons to sync`);
   } else {
-    console.error('Usage: --comp <id> [--seasons 2021,2023] or --all-comps');
+    console.error('Usage: --comp <id> [--seasons 2021,2023] [--all-seasons] or --all-comps');
     process.exit(1);
+  }
+
+  if (!seasonsArg && !allSeasons && entries.length > 0) {
+    const seasonRows = await db
+      .select({
+        competitionId: schema.seasons.competitionId,
+        year: schema.seasons.year,
+        isCurrent: schema.seasons.isCurrent,
+        startDate: schema.seasons.startDate,
+        endDate: schema.seasons.endDate,
+      })
+      .from(schema.seasons);
+    const byComp = new Map<number, typeof seasonRows>();
+    for (const row of seasonRows) {
+      const list = byComp.get(row.competitionId) ?? [];
+      list.push(row);
+      byComp.set(row.competitionId, list);
+    }
+    const before = entries.length;
+    entries = entries.filter((e) => {
+      const windows = byComp.get(e.competitionId) ?? [];
+      const allowed = new Set(allowedSeasons(e.competitionId, windows));
+      return allowed.has(e.year);
+    });
+    log(
+      `History rule: kept ${entries.length}/${before} seasons (current+previous, or latest edition only). Pass --all-seasons or --seasons to override. No data is deleted.`,
+    );
   }
 
   let totalFixtures = 0;
