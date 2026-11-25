@@ -295,8 +295,14 @@
 .mc .mc-statcard h3 {
   padding: 7px var(--card-inset);
   font-size: 13px;
-  background: var(--hover);
+  font-weight: 700;
+  color: var(--ink);
+  background: none;
   margin: 0;
+}
+/* .mc-cols already has a bottom divider; don't double it under the first group header. */
+.mc .mc-statcard .mc-cols + div > h3 {
+  border-top: 0;
 }
 .mc .mc-metric {
   padding: 10px var(--card-inset);

@@ -267,6 +267,10 @@ function Choices<V extends string>({
   onChange: (v: V) => void;
   label: string;
 }) {
+  // A single option (today: "Match" on the stats tab) is not a useful control.
+  // Keep the component for a future half/full split; render nothing until there
+  // are at least two periods so the stats card sits flush under the tabs.
+  if (items.length < 2) return null;
   return (
     <div className="mc-choices" role="group" aria-label={label}>
       {items.map(([v, text]) => (
