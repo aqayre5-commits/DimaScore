@@ -75,15 +75,15 @@ async function fixturesNeedingKits(): Promise<number[]> {
           FROM ${schema.fixtureLineups}
           WHERE ${schema.fixtureLineups.fixtureId} = ${schema.fixtures.id}
         )`,
-        sql`EXISTS (
+        sql`(EXISTS (
           SELECT 1 FROM ${schema.fixtureLineups}
           WHERE ${schema.fixtureLineups.fixtureId} = ${schema.fixtures.id}
         ) OR EXISTS (
           SELECT 1 FROM ${schema.leagueCoverage} c
-          WHERE c.league_id = ${schema.fixtures.leagueId}
-            AND c.season = ${schema.fixtures.season}
+          WHERE c.league_id = ${schema.fixtures.competitionId}
+            AND c.season = ${schema.fixtures.seasonYear}
             AND c.lineups = true
-        )`,
+        ))`,
       ),
     )
     .orderBy(desc(schema.fixtures.kickoffAt))
