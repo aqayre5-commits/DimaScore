@@ -6,6 +6,7 @@ import type { FixtureWithTeams } from '../queries';
 import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { selectDefaultRound } from '@/lib/competitions/select-default-round';
+import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
 import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
 import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
 

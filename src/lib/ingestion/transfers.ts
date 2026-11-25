@@ -1,4 +1,4 @@
-import { eq, or, inArray } from 'drizzle-orm';
+import { eq, or, and, inArray } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { DataProvider } from '@/lib/data/provider';
 import * as schema from '@/lib/db/schema';
@@ -77,4 +77,91 @@ export async function syncTransfersForTeam(
   });
 
   return { inserted: unique.length, updated: 0 };
+}
+
+export const TRANSFER_CRON_WALL_MS = 15 * 60 * 1000;
+export const TRANSFER_CRON_MARGIN_MS = 60 * 1000;
+
+/**
+ * Weekly club-transfer pass used by `/api/cron/transfers` and chained from
+ * the Sunday squads-refresh job. Stops starting new teams when `deadline`
+ * is reached so the parent cron can respect its wall clock.
+ */
+export async function runLeagueTransfers(
+  provider: DataProvider,
+  db: NeonHttpDatabase<typeof schema>,
+  opts: { deadline?: number } = {},
+): Promise<{
+  synced: number;
+  failed: number;
+  skippedForDeadline: number;
+  results: { teamId: number; inserted: number; error?: string }[];
+}> {
+  const { getCurrentSeasons } = await import('@/lib/db/queries');
+  const currentSeasons = await getCurrentSeasons(db);
+  if (currentSeasons.length === 0) {
+    return { synced: 0, failed: 0, skippedForDeadline: 0, results: [] };
+  }
+
+  const leagueRows = await db
+    .select({ id: schema.competitions.id })
+    .from(schema.competitions)
+    .where(
+      and(
+        inArray(
+          schema.competitions.id,
+          currentSeasons.map((s) => s.competitionId),
+        ),
+        eq(schema.competitions.type, 'League'),
+      ),
+    );
+  const leagueIds = new Set(leagueRows.map((r) => r.id));
+  const seasons = currentSeasons.filter((s) => leagueIds.has(s.competitionId));
+
+  const teamIdRows =
+    seasons.length === 0
+      ? []
+      : await db
+          .selectDistinct({ teamId: schema.standings.teamId })
+          .from(schema.standings)
+          .innerJoin(schema.teams, eq(schema.standings.teamId, schema.teams.id))
+          .where(
+            and(
+              inArray(
+                schema.standings.competitionId,
+                seasons.map((s) => s.competitionId),
+              ),
+              inArray(schema.standings.seasonYear, [...new Set(seasons.map((s) => s.year))]),
+              eq(schema.teams.isNational, false),
+            ),
+          );
+
+  const teamIds = [
+    ...new Set(teamIdRows.map((r) => r.teamId).filter((id): id is number => id != null)),
+  ];
+
+  const results: { teamId: number; inserted: number; error?: string }[] = [];
+  let skippedForDeadline = 0;
+
+  for (const teamId of teamIds) {
+    if (opts.deadline != null && Date.now() >= opts.deadline) {
+      skippedForDeadline = teamIds.length - results.length;
+      break;
+    }
+    try {
+      const stats = await syncTransfersForTeam(provider, db, teamId);
+      results.push({ teamId, inserted: stats.inserted });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`Transfers: team ${teamId} failed:`, error);
+      results.push({ teamId, inserted: 0, error: message });
+    }
+  }
+
+  return {
+    synced: results.filter((r) => !r.error).length,
+    failed: results.filter((r) => r.error).length,
+    skippedForDeadline,
+    results,
+  };
 }

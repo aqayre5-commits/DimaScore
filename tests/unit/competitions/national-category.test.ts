@@ -20,6 +20,26 @@ describe('classifyNationalTeamName', () => {
     expect(classifyNationalTeamName('France U23 W')).toEqual({ category: 'women', ageGroup: 23 });
   });
 
+  it('classifies API-Football women youth name patterns (W before or after the age group)', () => {
+    expect(classifyNationalTeamName('Mexico W U17')).toEqual({ category: 'women', ageGroup: 17 });
+    expect(classifyNationalTeamName('Mexico U17 W')).toEqual({ category: 'women', ageGroup: 17 });
+    expect(classifyNationalTeamName('Mexico Women U17')).toEqual({ category: 'women', ageGroup: 17 });
+    expect(classifyNationalTeamName('Mexico U-17 Women')).toEqual({ category: 'women', ageGroup: 17 });
+    expect(classifyNationalTeamName("Mexico Women's U17")).toEqual({ category: 'women', ageGroup: 17 });
+    expect(nationalFamilyBaseName('Mexico W U17')).toBe('mexico');
+  });
+
+  it('prefers the competition gender when it is known', () => {
+    expect(classifyNationalTeamName('Mexico U17', false, true)).toEqual({
+      category: 'women',
+      ageGroup: 17,
+    });
+    expect(classifyNationalTeamName('Mexico U17', false, false)).toEqual({
+      category: 'men',
+      ageGroup: 17,
+    });
+  });
+
   it('shares a family base name across categories', () => {
     expect(nationalFamilyBaseName('France U21')).toBe('france');
     expect(nationalFamilyBaseName('France W')).toBe('france');
