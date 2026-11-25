@@ -85,24 +85,30 @@
 .mc .mc-scoreline {
   display: grid;
   align-items: start; /* names + crests stay level; scorer lists grow downward */
+  /* Equal side columns keep the score geometrically centred; long names wrap
+     inside a column instead of pushing it. Horizontal inset comes from the
+     card padding so left and right gaps stay equal and small. */
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: clamp(12px, 3vw, 46px);
-  padding: 12px 2% 21px;
+  padding-block: 12px 21px;
+  padding-inline: 0;
   direction: ltr;
 }
 .mc .mc-team {
   display: grid;
-  grid-template-columns: auto minmax(0, auto);
+  grid-template-columns: auto minmax(0, 1fr);
   grid-template-rows: auto auto;
-  justify-content: center;
+  justify-content: start;
   justify-items: start;
   column-gap: clamp(12px, 1.5vw, 22px);
   row-gap: 4px;
   text-align: start;
+  width: 100%;
   min-width: 0;
 }
 .mc .mc-team:last-child {
-  grid-template-columns: minmax(0, auto) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  justify-content: stretch;
   justify-items: end;
   text-align: end;
 }
