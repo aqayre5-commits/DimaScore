@@ -239,7 +239,7 @@ export interface NormalizedFixtureEvent {
 }
 
 export interface NormalizedFixtureLineup {
-  team: { id: number; name: string; logo: string | null };
+  team: { id: number; name: string; logo: string | null; colors?: unknown };
   formation: string | null;
   coach: { id: number | null; name: string | null; photo: string | null };
   startXI: Array<{

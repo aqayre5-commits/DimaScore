@@ -10,6 +10,7 @@ import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
 import { VERIFIED_COMPETITIONS } from '@/lib/constants/competitions';
 import { computeDeltas, type FixtureRow } from './diff';
 import { trackCall, resetTick, isQuotaExhausted } from './quota';
+import { fixturesWithCompleteKits } from '@/lib/match/kit-colours';
 
 const TRACKED_COMPETITION_IDS = new Set(VERIFIED_COMPETITIONS.map((c) => c.id));
 
@@ -90,10 +91,10 @@ export async function pollLiveFixtures(): Promise<PollResult> {
     };
 
     const existingLineups = await db
-      .select({ fixtureId: schema.fixtureLineups.fixtureId })
+      .select({ fixtureId: schema.fixtureLineups.fixtureId, colors: schema.fixtureLineups.colors })
       .from(schema.fixtureLineups)
       .where(inArray(schema.fixtureLineups.fixtureId, fixtureIds));
-    const hasLineups = new Set(existingLineups.map((r) => r.fixtureId));
+    const hasCompleteKits = fixturesWithCompleteKits(existingLineups);
 
     const deltaIds = new Set(deltas.map((d) => d.fixtureId));
     const now = Date.now();
@@ -101,7 +102,7 @@ export async function pollLiveFixtures(): Promise<PollResult> {
       if (isQuotaExhausted()) break;
       const cov = resolveCov(f.league.id, f.league.season);
       if (!cov) continue;
-      const wantLineups = cov.lineups && !hasLineups.has(f.id);
+      const wantLineups = cov.lineups && !hasCompleteKits.has(f.id);
       const due = deltaIds.has(f.id) || now - (lastEventSync.get(f.id) ?? 0) > EVENT_THROTTLE_MS;
       const wantEvents = cov.events && due;
       const wantStatistics = cov.statistics && due;

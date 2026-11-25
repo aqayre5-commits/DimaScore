@@ -1721,33 +1721,15 @@ html:not([data-theme='light']) .mc dialog::backdrop {
   font-size: 18px;
   letter-spacing: -0.8px;
 }
-.mc .lu-home {
-  --kit: #96d4f3;
-  --shirt-edge: #284756;
-  --shirt-sleeve: #7ebcde;
-  --shirt-trim: #f7fbff;
-  --shirt-number: #112b3e;
-}
-.mc .lu-away {
-  --kit: #fffdfa;
-  --shirt-edge: #2e3338;
-  --shirt-sleeve: #292c30;
-  --shirt-trim: #e5e5e1;
-  --shirt-number: #171a1c;
-}
+/* Neutral fallback only — per-fixture palettes are set as inline --kit vars. */
+.mc .lu-home,
+.mc .lu-away,
 .mc .lu-keeper {
-  --kit: #ffcc64;
-  --shirt-sleeve: #eda744;
-  --shirt-trim: #47362a;
-  --shirt-edge: #584334;
-  --shirt-number: #282622;
-}
-.mc .lu-away .lu-keeper {
-  --kit: #e4c4fc;
-  --shirt-sleeve: #bf96db;
-  --shirt-trim: #493555;
-  --shirt-edge: #513b60;
-  --shirt-number: #311d3a;
+  --kit: #c8cdd1;
+  --shirt-edge: #4a4f54;
+  --shirt-sleeve: #c8cdd1;
+  --shirt-trim: #d9dce0;
+  --shirt-number: #1a1a1a;
 }
 .mc .lu-name {
   font-size: clamp(10.5px, 3.45cqw, 13px);
@@ -2228,21 +2210,7 @@ html:not([data-theme='light']) .mc .lu-direction {
   }
 }
 
-/* Line-ups: template kit palette for the two sides (the feed has no kit colours). */
-.mc .lu-player.lu-keeper {
-  --kit: #ffcc64;
-  --shirt-sleeve: #eda744;
-  --shirt-trim: #47362a;
-  --shirt-edge: #584334;
-  --shirt-number: #282622;
-}
-.mc .lu-away .lu-player.lu-keeper {
-  --kit: #e4c4fc;
-  --shirt-sleeve: #bf96db;
-  --shirt-trim: #493555;
-  --shirt-edge: #513b60;
-  --shirt-number: #311d3a;
-}
+/* Keeper kit comes from the saved goalkeeper palette (inline vars on .lu-player.lu-keeper). */
 .mc .lu-toolbar h2 {
   font-size: var(--title-size);
 }

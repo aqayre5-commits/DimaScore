@@ -50,6 +50,13 @@
       "when": 1791309073608,
       "tag": "0006_add_parent_team_id",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795566728139,
+      "tag": "0007_fixture_lineup_colors",
+      "breakpoints": true
     }
   ]
 }
