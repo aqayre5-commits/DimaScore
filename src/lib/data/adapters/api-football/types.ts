@@ -159,6 +159,11 @@ export interface RawFixtureEntry {
     extratime: { home: number | null; away: number | null };
     penalty: { home: number | null; away: number | null };
   };
+  // Present when requested via /fixtures?ids= (batch details).
+  events?: RawFixtureEvent[];
+  lineups?: RawFixtureLineup[];
+  statistics?: RawFixtureStatistic[];
+  players?: RawFixturePlayerEntry[];
 }
 
 export interface RawFixtureEvent {

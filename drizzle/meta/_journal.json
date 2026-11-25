@@ -57,6 +57,13 @@
       "when": 1795566728139,
       "tag": "0007_fixture_lineup_colors",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795566728140,
+      "tag": "0008_national_team_categories",
+      "breakpoints": true
     }
   ]
 }

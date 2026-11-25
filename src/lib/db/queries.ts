@@ -7,6 +7,7 @@ import type { TeamSnapshot, VenueSnapshot } from './queries-hydrate';
 import { applyComputedStandings } from '@/lib/standings/compute';
 import { LIVE_CODES_ARRAY } from '@/lib/match-status';
 import { isDisplayableFixture } from './queries/homepage';
+import { KNOCKOUT_ROUND_NAMES } from '@/lib/ingestion/round';
 
 export interface FixtureWithTeams {
   id: number;
@@ -47,18 +48,7 @@ export interface StandingRow {
 
 // ── Q2b: Knockout fixtures (whitelisted rounds only) ──
 
-const KNOCKOUT_ROUNDS = [
-  'Round of 128',
-  'Round of 64',
-  'Round of 32',
-  'Round of 16',
-  'Quarter-finals',
-  'Semi-finals',
-  'Semi-Finals',
-  '3rd Place Final',
-  '3rd place',
-  'Final',
-];
+const KNOCKOUT_ROUNDS: readonly string[] = KNOCKOUT_ROUND_NAMES;
 
 /**
  * Get all knockout-stage fixtures for a competition season.

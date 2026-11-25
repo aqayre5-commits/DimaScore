@@ -332,6 +332,140 @@ const ALL_ENTRIES: MegaMenuEntry[] = [
     slugs: { fr: 'super-lig', en: 'super-lig', ar: 'الدوري-التركي' },
     isCurrentlyVisible: true,
   },
+
+  // D1 catalog additions (25 Nov 2026) — no UI pages yet; ids and slugs are registered here
+  // so later format PRs can link them without a second catalog change.
+  {
+    competitionId: 4,
+    labelKey: 'euro',
+    countryKey: 'uefa',
+    slugs: { fr: 'euro', en: 'euro', ar: 'يورو' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 960,
+    labelKey: 'euroQualifiers',
+    countryKey: 'uefa',
+    slugs: { fr: 'qualifs-euro', en: 'euro-qualifiers', ar: 'تصفيات-اليورو' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 45,
+    labelKey: 'faCup',
+    countryKey: 'angleterre',
+    slugs: { fr: 'fa-cup', en: 'fa-cup', ar: 'كأس-إنجلترا' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 143,
+    labelKey: 'copaDelRey',
+    countryKey: 'espagne',
+    slugs: { fr: 'coupe-du-roi', en: 'copa-del-rey', ar: 'كأس-الملك' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 538,
+    labelKey: 'afconU20',
+    countryKey: 'caf',
+    slugs: { fr: 'can-u20', en: 'afcon-u20', ar: 'كأس-أمم-إفريقيا-تحت-20' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 973,
+    labelKey: 'afconU17',
+    countryKey: 'caf',
+    slugs: { fr: 'can-u17', en: 'afcon-u17', ar: 'كأس-أمم-إفريقيا-تحت-17' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 1015,
+    labelKey: 'afconU23',
+    countryKey: 'caf',
+    slugs: { fr: 'can-u23', en: 'afcon-u23', ar: 'كأس-أمم-إفريقيا-تحت-23' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 953,
+    labelKey: 'afconU23Qualifiers',
+    countryKey: 'caf',
+    slugs: {
+      fr: 'qualifs-can-u23',
+      en: 'afcon-u23-qualifiers',
+      ar: 'تصفيات-كأس-أمم-إفريقيا-تحت-23',
+    },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 8,
+    labelKey: 'womensWorldCup',
+    countryKey: 'fifa',
+    slugs: { fr: 'coupe-du-monde-feminine', en: 'womens-world-cup', ar: 'كأس-العالم-للسيدات' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 480,
+    labelKey: 'olympicsMen',
+    countryKey: 'ioc',
+    slugs: { fr: 'jo-hommes', en: 'olympics-men', ar: 'الأولمبياد-رجال' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 524,
+    labelKey: 'olympicsWomen',
+    countryKey: 'ioc',
+    slugs: { fr: 'jo-femmes', en: 'olympics-women', ar: 'الأولمبياد-سيدات' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 15,
+    labelKey: 'clubWorldCup',
+    countryKey: 'fifa',
+    slugs: { fr: 'coupe-du-monde-des-clubs', en: 'club-world-cup', ar: 'كأس-العالم-للأندية' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 9,
+    labelKey: 'copaAmerica',
+    countryKey: 'fifa',
+    slugs: { fr: 'copa-america', en: 'copa-america', ar: 'كوبا-أمريكا' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 490,
+    labelKey: 'u20WorldCup',
+    countryKey: 'fifa',
+    slugs: { fr: 'coupe-du-monde-u20', en: 'u20-world-cup', ar: 'كأس-العالم-تحت-20' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 587,
+    labelKey: 'u17WorldCup',
+    countryKey: 'fifa',
+    slugs: { fr: 'coupe-du-monde-u17', en: 'u17-world-cup', ar: 'كأس-العالم-تحت-17' },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 920,
+    labelKey: 'u20WomensWorldCup',
+    countryKey: 'fifa',
+    slugs: {
+      fr: 'coupe-du-monde-u20-feminine',
+      en: 'u20-womens-world-cup',
+      ar: 'كأس-العالم-للسيدات-تحت-20',
+    },
+    isCurrentlyVisible: true,
+  },
+  {
+    competitionId: 950,
+    labelKey: 'u17WomensWorldCup',
+    countryKey: 'fifa',
+    slugs: {
+      fr: 'coupe-du-monde-u17-feminine',
+      en: 'u17-womens-world-cup',
+      ar: 'كأس-العالم-للسيدات-تحت-17',
+    },
+    isCurrentlyVisible: true,
+  },
 ];
 
 /** All competition entries — used for lookups across both top nav and "More" menu. */
@@ -399,6 +533,10 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
       'wafcon2024',
       'cafChampionsLeague',
       'cafConfederationCup',
+      'afconU20',
+      'afconU17',
+      'afconU23',
+      'afconU23Qualifiers',
     ]),
   },
   {
@@ -425,6 +563,10 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
       'europaLeague',
       'conferenceLeague',
       'nationsLeague',
+      'euro',
+      'euroQualifiers',
+      'faCup',
+      'copaDelRey',
     ]),
   },
   {
@@ -447,6 +589,20 @@ export const MEGA_MENU_SECTIONS: MegaMenuSection[] = [
       'frauenBundesliga',
       'ligaF',
       'serieAWomen',
+      'womensWorldCup',
+      'olympicsWomen',
+      'u20WomensWorldCup',
+      'u17WomensWorldCup',
+    ]),
+  },
+  {
+    titleKey: 'international',
+    entries: entriesFor([
+      'clubWorldCup',
+      'copaAmerica',
+      'olympicsMen',
+      'u20WorldCup',
+      'u17WorldCup',
     ]),
   },
 ];
@@ -512,12 +668,18 @@ const COMPETITION_FAMILIES: Record<number, number[]> = {
   922: [6, 36, 12, 20], // WAFCON → AFCON, AFCON Qual, CAF CL, CAF Confed
   12: [20, 6, 36], // CAF CL → CAF Confed, AFCON, AFCON Qual
   20: [12, 6, 36], // CAF Confed → CAF CL, AFCON, AFCON Qual
+  538: [973, 1015, 953, 6], // AFCON U20 → U17, U23, U23 qual, AFCON
+  973: [538, 1015, 953, 6],
+  1015: [538, 973, 953, 6],
+  953: [1015, 538, 973, 6],
 
   // UEFA competitions
   2: [3, 848, 5], // UCL → UEL, UECL, Nations League
   3: [2, 848, 5], // UEL → UCL, UECL, Nations League
   848: [2, 3, 5], // UECL → UCL, UEL, Nations League
   5: [2, 3, 848], // Nations League → UCL, UEL, UECL
+  4: [960, 5], // EURO → EURO qual, Nations League
+  960: [4, 5],
 
   // Top-5 European leagues (siblings)
   39: [140, 78, 135, 61], // PL → La Liga, Bundesliga, Serie A, Ligue 1
@@ -533,6 +695,10 @@ const COMPETITION_FAMILIES: Record<number, number[]> = {
   82: [525, 44, 142, 139], // Frauen BL → UWCL, WSL, Liga F, Serie A W
   142: [525, 44, 82, 139], // Liga F → UWCL, WSL, Frauen BL, Serie A W
   139: [525, 44, 82, 142], // Serie A W → UWCL, WSL, Frauen BL, Liga F
+  8: [524, 920, 950], // Women's WC → Olympics W, U20 W, U17 W
+  524: [8, 480],
+  920: [8, 950, 490],
+  950: [8, 920, 587],
 
   // Arab & Turkish leagues (siblings)
   307: [233, 186, 202, 301, 203], // Saudi → Egypt, Algeria, Tunisia, UAE, Turkey
@@ -541,6 +707,15 @@ const COMPETITION_FAMILIES: Record<number, number[]> = {
   202: [307, 233, 186, 301, 203], // Tunisia → Saudi, Egypt, Algeria, UAE, Turkey
   301: [307, 233, 186, 202, 203], // UAE → Saudi, Egypt, Algeria, Tunisia, Turkey
   203: [307, 233, 186, 202, 301], // Turkey → Saudi, Egypt, Algeria, Tunisia, UAE
+
+  // International tournaments
+  15: [1, 9], // Club World Cup → WC, Copa América
+  9: [15, 1, 4],
+  480: [524, 1015, 953],
+  490: [587, 920, 1],
+  587: [490, 950, 1],
+  45: [39], // FA Cup → Premier League
+  143: [140], // Copa del Rey → La Liga
 };
 
 /** Get related competition IDs for a given competition. Returns empty array if none. */

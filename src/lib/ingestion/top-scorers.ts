@@ -121,3 +121,65 @@ export async function syncTopAssists(
 
   return { inserted: 0, updated };
 }
+
+export async function syncTopYellowCards(
+  provider: DataProvider,
+  db: NeonHttpDatabase<typeof schema>,
+  params: { leagueId: number; season: number },
+): Promise<SyncStats> {
+  const players = await provider.getTopYellowCards({
+    league: params.leagueId,
+    season: params.season,
+  });
+  return upsertTopPlayers(db, players, params, 'top-yellow-cards');
+}
+
+export async function syncTopRedCards(
+  provider: DataProvider,
+  db: NeonHttpDatabase<typeof schema>,
+  params: { leagueId: number; season: number },
+): Promise<SyncStats> {
+  const players = await provider.getTopRedCards({
+    league: params.leagueId,
+    season: params.season,
+  });
+  return upsertTopPlayers(db, players, params, 'top-red-cards');
+}
+
+async function upsertTopPlayers(
+  db: NeonHttpDatabase<typeof schema>,
+  players: NormalizedTopPlayer[],
+  params: { leagueId: number; season: number },
+  label: string,
+): Promise<SyncStats> {
+  let updated = 0;
+  await runWrites(async (tx) => {
+    for (const p of players) {
+      const row = mapTopPlayerToInsert(p, params.leagueId, params.season);
+      if (!row) continue;
+      try {
+        await tx
+          .insert(schema.playerSeasonStats)
+          .values(row)
+          .onConflictDoUpdate({
+            target: [
+              schema.playerSeasonStats.playerId,
+              schema.playerSeasonStats.teamId,
+              schema.playerSeasonStats.competitionId,
+              schema.playerSeasonStats.seasonYear,
+            ],
+            set: {
+              stats: sql`COALESCE(${schema.playerSeasonStats.stats}, '{}'::jsonb) || ${JSON.stringify(row.stats)}::jsonb`,
+            },
+          });
+        updated++;
+      } catch (err) {
+        console.warn(
+          `[${label}] skipped player ${row.playerId} (league ${params.leagueId}/${params.season}):`,
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
+  });
+  return { inserted: 0, updated };
+}

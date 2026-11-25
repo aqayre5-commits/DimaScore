@@ -5,6 +5,7 @@ import type {
   NormalizedTeam,
   NormalizedTeamStatistics,
   NormalizedFixture,
+  NormalizedFixtureWithDetails,
   NormalizedFixtureEvent,
   NormalizedFixtureLineup,
   NormalizedFixtureStatistic,
@@ -66,6 +67,7 @@ export interface DataProvider {
     status?: string;
     live?: string;
   }): Promise<NormalizedFixture[]>;
+  getFixturesWithDetails(params: { ids: number[] }): Promise<NormalizedFixtureWithDetails[]>;
   getLiveFixtures(params?: { league?: string }): Promise<NormalizedFixture[]>;
   getFixtureRounds(params: { league: number; season: number }): Promise<string[]>;
   getHeadToHead(params: { h2h: string; last?: number }): Promise<NormalizedFixture[]>;
