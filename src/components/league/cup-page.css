@@ -1,0 +1,414 @@
+/* Domestic cup page. Layout and cards follow the Domestic-Cup reference
+   (competition.css, tie-card.css, draw window). Tokens come from the
+   redesigned match/league system (ds-tokens.css, .pl / .mc). */
+
+.cup-page .pl-identity .byline{display:block}
+.cup-page .pl-season{white-space:nowrap}
+.cup-grid>.pl-side{position:sticky;top:14px}
+.cup-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-block-end:12px;flex-wrap:wrap}
+.cup-controls .pl-controls{margin:0;border:0}
+.cup-controls .ds-period{max-width:100%}
+.cup-page .cup-table{width:100%;border-collapse:collapse;table-layout:auto}
+.cup-table thead th{font-size:12px;color:var(--muted);background:var(--hover)}
+.cup-table :is(th,td){font-variant-numeric:tabular-nums;text-align:end;padding:8px 6px;border-bottom:1px solid var(--table-rule,var(--line))}
+.cup-table th:first-child,.cup-table td:first-child{width:36px;text-align:center}
+.cup-table :is(th,td):nth-child(2){text-align:start}
+.cup-table tbody td:last-child{font-weight:750}
+.cup-teamlink,.cup-person,.cup-unit{display:inline-flex;align-items:center;gap:8px;min-width:0;line-height:1.25}
+.cup-teamlink,.cup-person{font-weight:650}
+.cup-teamlink:hover bdi,.cup-person:hover bdi{text-decoration:underline;text-underline-offset:.16em}
+.cup-mark{width:var(--cup-logo,21px);height:var(--cup-logo,21px);object-fit:contain;flex:none}
+.cup-initial{border-radius:50%;background:var(--hover);border:1px solid var(--line);display:inline-grid;place-items:center;color:var(--muted);font-size:10px}
+.cup-table td.cup-pos{box-shadow:inset 3px 0 var(--band,transparent)}[dir=rtl] .cup-table td.cup-pos{box-shadow:inset -3px 0 var(--band,transparent)}
+.cup-rules{display:grid}.cup-rule{display:grid;grid-template-columns:minmax(42px,auto) minmax(0,1fr);gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--table-rule,var(--line))}
+.cup-rule .cup-rank{border-inline-start:3px solid var(--band);padding-inline-start:8px;font-weight:700;font-variant-numeric:tabular-nums}
+.cup-rule small,.cup-note,.cup-meta{display:block;font-size:13px;color:var(--muted);line-height:1.45}
+.cup-note{margin-block:8px}.cup-meta{font-variant-numeric:tabular-nums}
+.cup-unit{display:flex;font-weight:620}.cup-unit .cup-score{margin-inline-start:auto;font-weight:750;font-variant-numeric:tabular-nums}
+.cup-ties{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(285px,100%),1fr));gap:10px;align-items:start}
+.pl-side .cup-ties{grid-template-columns:1fr}
+.cup-controls .cup-count{font-size:13px;color:var(--muted)}
+.cup-page .herocore .cup-mark{--cup-logo:var(--crest)}
+.cup-page .standing-team .cup-mark{--cup-logo:21px}
+.cup-page .ghead{margin-block-start:8px}
+.cup-page .pl-identity .cup-mark{--cup-logo:48px}
+.cup-page .cup-statlist{display:grid}.cup-statline{display:flex;align-items:baseline;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:9px 0}.cup-statline b{font-variant-numeric:tabular-nums}
+.cup-event{display:grid;grid-template-columns:50px 21px minmax(0,1fr);gap:9px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.cup-event b{font-variant-numeric:tabular-nums}.cup-back{display:inline-flex;align-items:center;gap:4px;min-height:44px}
+.cup-page .pl-tabs .pl-tab{white-space:nowrap}
+.cup-page .pl-pitch-head .cup-mark{--cup-logo:24px}.cup-page .pl-player>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cup-page .pl-player.narrow{width:19.6%}
+.phone .cup-grid>.pl-side{position:static;margin-block-start:var(--section)}
+.phone .cup-table :is(th,td){padding:8px 4px}.phone .cup-table th:first-child,.phone .cup-table td:first-child{width:29px}
+.phone .cup-table tbody{font-size:14px}.phone .cup-rule{padding:8px 0}.phone .cup-page .pl-identity .cup-mark{--cup-logo:38px}
+.phone .cup-ties.two{grid-template-columns:1fr}
+.phone .cup-page .pl-tabs{overflow-x:auto}.phone .cup-page .cup-extra-tabs .pl-tab{font-size:12px}
+.cup-context{display:grid;gap:8px}.cup-stagehead{margin-bottom:12px}.cup-stagehead .pl-head{margin:0}
+@media(max-width:420px){.cup-page .pl-identity{gap:7px}.cup-page .pl-identity h1{font-size:19px}.cup-controls .ds-period{font-size:13px}}
+.cup-heroteam{display:grid;justify-items:center;gap:5px}.cup-page .herotop{align-items:center}.cup-page .pl-pitch-head{display:flex;gap:8px;align-items:center}.cup-page .pl-pitch-head small{margin-inline-start:auto}
+.cup-compareline{padding:12px 0}.cup-compareline>div:first-child{display:flex;align-items:center;justify-content:space-between;font-size:15px}
+.cup-bars{margin-top:7px;height:5px;background:#a2a7af;border-radius:4px;overflow:hidden}.cup-bars i{height:100%;display:block;background:#53789d}
+
+.cup-wide{min-width:0}
+.cup-date-group + .cup-date-group,.cup-profile-round + .cup-profile-round{margin-block-start:20px}
+.cup-profile-round h3{font-size:15px;margin-block:10px 6px}
+.cup-fixtures>.cup-ties,.cup-wide>section>.cup-ties{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cup-fixtures .cup-day-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gutter)}
+.cup-page .cup-overview-list>.ghead{margin-block:8px}
+.cup-page .pl-head .ds-period{flex:none}
+.cup-page .cup-grid>.pl-side{position:static}
+.cup-grid .cup-controls{min-height:44px}
+.cup-rules + .cup-context{margin-block-start:12px}
+.cup-page .cup-overview-list .cup-ties{grid-template-columns:1fr}
+.cup-page .cup-overview-list .cup-ties .tie-double{--tie-cell:clamp(44px,5.25vw,64px)}
+.cup-grid .pl-side .cup-ties .tie-team,.cup-grid .pl-side .cup-ties .tie-team>a{font-size:14px}
+.cup-page .cup-grid .pl-head{align-items:center}
+.phone .cup-fixtures .cup-day-rows,.phone .cup-fixtures>.cup-ties,.phone .cup-wide>section>.cup-ties{grid-template-columns:1fr}
+.phone .cup-page .cup-grid>.pl-main{display:grid;gap:var(--section)}
+.phone .cup-grid .pl-side .cup-ties .tie-team,.phone .cup-grid .pl-side .cup-ties .tie-team>a{font-size:15px}
+.cup-page .cup-back{margin-block-end:4px}
+
+.cup-fixtures>section+section{margin-block-start:var(--section)}
+.cup-fixtures>section>.cup-ties{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cup-pen-score{display:block;font-size:12px;font-weight:650;line-height:1.25}
+.phone .cup-fixtures>section>.cup-ties{grid-template-columns:1fr}
+.cup-page .cup-person bdi,.cup-page .cup-teamlink bdi{overflow-wrap:anywhere}
+
+
+.cup-row .cup-mark{--cup-logo:var(--row-crest)}
+.cup-clock-note{display:block;font-size:11px;line-height:1.2;color:var(--muted)}
+.cup-picked .cup-date-group+.cup-date-group{margin-block-start:12px}
+.cup-page .cup-picked .ds-fixture-toolbar{flex-wrap:nowrap}
+
+.cup-date-group .cup-leg-label{font-weight:500;color:var(--muted)}
+.cup-stat-layout [hidden]{display:none!important}
+.cup-stat-layout .pl-details li .cup-teamlink{min-height:36px}
+.cup-stat-layout .pl-details .cup-mark,.cup-stat-layout .pl-ranking .cup-mark{--cup-logo:20px}
+.cup-draw .draw-selected h3{color:var(--ink)}
+.phone .cup-stat-layout .pl-controls{flex-wrap:wrap}
+
+
+.cup-pair {
+  --tie-cell: 44px;
+  display: grid;
+  align-content: start;
+  align-self: start;
+  min-width: 0;
+  border: 1px solid var(--border, var(--line));
+  border-radius: 8px;
+  background: transparent;
+  padding: 10px 12px;
+  font-variant-numeric: tabular-nums;
+}
+.tie-double { grid-template-columns: minmax(0,1fr) repeat(3,var(--tie-cell)); }
+.tie-single-link { display: grid; grid-template-columns: minmax(0,1fr) var(--tie-cell); grid-row: span 3; grid-template-rows: subgrid; color: inherit; }
+.tie-identity,.tie-column { display: grid; grid-row: span 3; grid-template-rows: subgrid; align-items: center; min-width: 0; }
+.cup-pair { grid-template-rows: minmax(21px,auto) repeat(2,minmax(28px,auto)); }
+.tie-cap { font-size: 12px; line-height: 1.25; font-weight: 550; color: var(--muted); text-decoration: none; }
+.tie-identity > .tie-cap { padding-inline-end: 6px; }
+.tie-column { text-align: center; text-decoration: none; color: inherit; }
+.tie-total { text-align: end; border-inline-start: 1px solid var(--table-rule, var(--line)); padding-inline-end: 1px; }
+.tie-total > abbr { cursor: help; }
+.tie-team,.tie-team > a { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 15px; line-height: 1.22; font-weight: 550; }
+.tie-team { padding-inline-end: 5px; }
+.tie-team bdi { overflow-wrap: anywhere; }
+.tie-team.is-winner,.tie-team.is-winner > a { font-weight: 720; }
+.tie-num { font-size: 15px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.tie-total .tie-num { font-weight: 650; }
+.tie-total .is-winner { font-weight: 800; }
+.cup-leg:hover,.cup-leg:focus-visible { background: var(--hover, var(--soft)); border-radius: 4px; }
+.cup-leg:hover > .tie-cap,.cup-leg:focus-visible > .tie-cap,.is-selected > .tie-cap { text-decoration: underline; text-underline-offset: 3px; }
+.tie-identity a:hover,.tie-single-link:hover .tie-team bdi { text-decoration: underline; text-underline-offset: 3px; }
+.tie-note { grid-column: 1 / -1; margin-block-start: 5px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+.tie-double:focus-within { position: relative; }
+@media(max-width:400px) { .cup-pair { padding: 8px 10px; } }
+#destination-content .card:has(>.cup-pair:only-child){border:0;padding:0;background:transparent}
+.cup-leg:not(.is-selected)>.tie-cap{text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--border,var(--line));text-underline-offset:3px}
+/* The World Cup round window is shared by single-match and two-leg draws. */
+.draw-window{container-type:inline-size;min-width:0}
+.draw-tree{
+  --draw-gap:clamp(18px,2.1vw,36px);--slot:140px;--round-head:38px;
+  display:grid;grid-template-columns:var(--tracks);align-items:start;min-width:0;
+}
+.draw-round{min-width:0}
+.draw-round h3{
+  display:flex;align-items:center;justify-content:center;height:var(--round-head);
+  margin:0;border-block-end:1px solid var(--line);background:var(--hover,var(--soft));color:var(--ink);
+  font-size:14px;line-height:1.15;letter-spacing:-.02em;font-weight:660;text-align:center;
+}
+.draw-matches,.draw-gutter svg{height:calc(var(--slots)*var(--slot))}
+.draw-matches{position:relative}
+.draw-node{position:absolute;inset-inline:0;top:calc(var(--position)*var(--slot));transform:translateY(-50%);min-width:0}
+.draw-node.draw-target>.cup-pair,.draw-node:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:8px}
+.draw-node .cup-pair{width:100%}
+.draw-gutter{padding-block-start:var(--round-head);width:var(--draw-gap)}
+.draw-gutter svg{display:block;overflow:visible;width:100%;fill:none;stroke:color-mix(in srgb,var(--muted) 63%,var(--line));stroke-width:1.4px;stroke-linejoin:round;stroke-linecap:round}
+[dir=rtl] .draw-gutter svg,:host-context([dir=rtl]) .draw-gutter svg{transform:scaleX(-1)}
+.draw-forward{display:none}
+.draw-bar,.draw-tools{display:flex;align-items:center;gap:8px}
+.draw-bar{justify-content:space-between;flex-wrap:wrap;margin-block-end:14px}
+.draw-tools .ds-period{margin:0}
+.draw-step{height:44px;min-width:34px;display:grid;place-items:center;border-radius:6px}
+.draw-step:not(.draw-disabled):hover{background:var(--hover,var(--soft))}
+.draw-disabled{color:var(--muted);opacity:.35}
+.draw-bar>.link{font-size:14px}
+.draw-tree[data-solo]{max-width:530px}
+@container(max-width:820px){
+ .draw-tree{display:block}
+ .draw-gutter,.draw-round:not(.draw-selected),.draw-round h3{display:none}
+ .draw-matches{height:auto;display:grid;gap:10px}
+ .draw-node{position:static;transform:none}
+ .draw-forward{display:flex;align-items:center;justify-content:flex-end;gap:4px;min-height:36px;font-size:12px;font-weight:600;color:var(--muted);padding-inline:3px}
+ .draw-forward .ic{width:14px;height:14px}
+ .draw-forward:hover{text-decoration:underline}
+}
+
+.draw-placement{margin-block-start:10px;font-size:14px}
+#destination-content .draw-forward svg{width:14px;height:14px}
+
+
+.draw-window { container-type: inline-size; min-width: 0; }
+.cup-draw .draw-window { overflow-x: auto; overscroll-behavior-inline: contain; }
+.draw-tree {
+  --draw-gap: clamp(18px, 2.1vw, 36px);
+  --slot: 140px;
+  --round-head: 38px;
+  display: grid;
+  grid-template-columns: var(--tracks);
+  align-items: start;
+  min-width: 0;
+}
+.draw-tree:not([data-solo]) { min-width: 780px; }
+.draw-tree[data-solo] { max-width: 530px; min-width: 0; }
+.draw-round { min-width: 0; }
+.draw-round h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--round-head);
+  margin: 0;
+  border-block-end: 1px solid var(--line);
+  background: var(--hover);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 660;
+  text-align: center;
+}
+.draw-round h3 a { color: inherit; text-decoration: none; }
+.draw-round h3 a:hover { text-decoration: underline; }
+.draw-matches, .draw-gutter svg { height: calc(var(--slots) * var(--slot)); }
+.draw-matches { position: relative; }
+.draw-node {
+  position: absolute;
+  inset-inline: 0;
+  top: calc(var(--position) * var(--slot));
+  transform: translateY(-50%);
+  min-width: 0;
+}
+.draw-node.draw-target > .cup-pair, .draw-node:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+.draw-node .cup-pair { width: 100%; }
+.draw-gutter { padding-block-start: var(--round-head); width: var(--draw-gap); }
+.draw-gutter svg {
+  display: block;
+  overflow: visible;
+  width: 100%;
+  fill: none;
+  stroke: color-mix(in srgb, var(--muted) 63%, var(--line));
+  stroke-width: 1.4px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+[dir='rtl'] .draw-gutter svg { transform: scaleX(-1); }
+.draw-forward { display: none; }
+.draw-bar, .draw-tools { display: flex; align-items: center; gap: 8px; }
+.draw-bar { justify-content: space-between; flex-wrap: wrap; margin-block-end: 14px; }
+.draw-step {
+  height: 44px;
+  min-width: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+}
+.draw-step:not(.draw-disabled):hover { background: var(--hover); }
+.draw-disabled { color: var(--muted); opacity: 0.35; pointer-events: none; }
+
+.cup-round-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+.cup-round-nav ul {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  max-width: 100%;
+}
+.cup-round-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--ink);
+  text-decoration: none;
+  font: 580 var(--ds-period-size, 15px)/1.2 var(--font);
+  white-space: nowrap;
+}
+.cup-round-nav a[aria-current='page'] {
+  border-color: var(--border);
+  background: var(--field);
+}
+.cup-round-nav a:hover { background: var(--hover); }
+
+.cup-page .cup-board {
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius, 8px);
+  padding: 10px 16px 12px;
+  color: inherit;
+  text-decoration: none;
+  display: grid;
+  gap: 10px;
+}
+.cup-page .cup-board .herotop,
+.cup-page .cup-board .herobottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.cup-page .cup-board .herotop .round { font-weight: 650; color: var(--ink); }
+.cup-page .cup-board .herobottom .link { color: var(--green); font-weight: 650; }
+.cup-page .cup-board .herocore {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+.cup-page .cup-heroteam {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 0;
+  text-align: center;
+}
+.cup-page .cup-heroteam strong {
+  font-size: clamp(16px, 1.4vw, 20px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.cup-page .cup-day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.cup-page .cup-leg-label { font-weight: 500; color: var(--muted); }
+
+.cup-when {
+  display: grid;
+  gap: 8px;
+}
+.cup-when-card {
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius, 8px);
+  padding: 8px 16px 10px;
+}
+.cup-when-card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+}
+.cup-when-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  color: inherit;
+  text-decoration: none;
+}
+.cup-when-row .when {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  color: var(--muted);
+}
+.cup-when-row .names { min-width: 0; }
+.cup-when-row .names bdi { display: block; overflow-wrap: anywhere; }
+
+.cup-clubs h2 { margin: 0 0 8px; }
+.cup-club-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cup-club-list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 13px;
+}
+.cup-club-list a:hover bdi { text-decoration: underline; text-underline-offset: 0.16em; }
+
+.cup-page .ds-fixture-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-block-end: 1px solid var(--line);
+  margin-block-end: 8px;
+}
+.cup-page .cup-count { font-size: 13px; color: var(--muted); }
+
+@media (max-width: 767px) {
+  .draw-tree { display: block; min-width: 0; }
+  .draw-gutter, .draw-round:not(.draw-selected), .draw-round h3 { display: none; }
+  .draw-matches { height: auto; display: grid; gap: 10px; }
+  .draw-node { position: static; transform: none; }
+  .draw-forward {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    min-height: 36px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    padding-inline: 3px;
+    text-decoration: none;
+  }
+  .draw-forward:hover { text-decoration: underline; }
+  .cup-club-list { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  .cup-page .pl-identity { gap: 7px; }
+  .cup-page .pl-identity h1 { font-size: 19px; }
+}

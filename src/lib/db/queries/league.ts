@@ -7,6 +7,7 @@ import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { selectDefaultRound } from '@/lib/competitions/select-default-round';
 import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
+import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
 
 // ── Types ──
 
@@ -145,13 +146,15 @@ export async function getAvailableSeasons(
   const fixtureCountByYear = new Map(fixtureCountRows.map((r) => [r.seasonYear, Number(r.count)]));
   const seasonsWithFixtures = new Set(fixtureCountRows.map((r) => r.seasonYear));
 
-  return rows
+  const all = rows
     .filter((r) => (r.isCurrent ?? false) || seasonsWithFixtures.has(r.year))
     .map((r) => ({
       year: r.year,
       isCurrent: r.isCurrent ?? false,
       fixtureCount: fixtureCountByYear.get(r.year) ?? 0,
     }));
+  const allowed = new Set(allowedSeasons(competitionId, all));
+  return allowed.size === 0 ? all : all.filter((s) => allowed.has(s.year));
 }
 
 export async function getLeagueRounds(

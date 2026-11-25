@@ -1209,5 +1209,25 @@
       "today": "Aujourd’hui",
       "tomorrow": "Demain"
     }
+  },
+  "domesticCup": {
+    "stagesTab": "Phases",
+    "todaysMatches": "Matchs du jour",
+    "tomorrow": "Demain",
+    "fullTime": "Fin",
+    "matchCentre": "Fiche du match",
+    "firstLeg": "Aller",
+    "secondLeg": "Retour",
+    "leg1": "Aller",
+    "leg2": "Retour",
+    "agg": "Cumul",
+    "aggregate": "Score cumulé",
+    "replay": "Rejoué",
+    "earlierRounds": "Tours précédents",
+    "rounds": "Tours",
+    "matchesCount": "{n} matchs",
+    "clubs": "Clubs",
+    "recordsFrom": "Statistiques joueurs à partir de {round}",
+    "noStats": "Les statistiques ne sont pas disponibles pour cette compétition."
   }
 }

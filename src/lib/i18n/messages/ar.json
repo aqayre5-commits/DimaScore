@@ -1209,5 +1209,25 @@
       "today": "اليوم",
       "tomorrow": "غدًا"
     }
+  },
+  "domesticCup": {
+    "stagesTab": "الأدوار",
+    "todaysMatches": "مباريات اليوم",
+    "tomorrow": "غدًا",
+    "fullTime": "نهاية المباراة",
+    "matchCentre": "تفاصيل المباراة",
+    "firstLeg": "الذهاب",
+    "secondLeg": "الإياب",
+    "leg1": "الذهاب",
+    "leg2": "الإياب",
+    "agg": "المجموع",
+    "aggregate": "النتيجة الإجمالية",
+    "replay": "إعادة",
+    "earlierRounds": "أدوار سابقة",
+    "rounds": "الأدوار",
+    "matchesCount": "{n} مباريات",
+    "clubs": "الأندية",
+    "recordsFrom": "إحصائيات اللاعبين من {round}",
+    "noStats": "الإحصائيات غير متوفرة لهذه المسابقة."
   }
 }
