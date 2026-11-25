@@ -38,11 +38,11 @@
 .cup-page .pl-tabs .pl-tab{white-space:nowrap}
 .cup-page .pl-pitch-head .cup-mark{--cup-logo:24px}.cup-page .pl-player>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cup-page .pl-player.narrow{width:19.6%}
-.phone .cup-grid>.pl-side{position:static;margin-block-start:var(--section)}
-.phone .cup-table :is(th,td){padding:8px 4px}.phone .cup-table th:first-child,.phone .cup-table td:first-child{width:29px}
-.phone .cup-table tbody{font-size:14px}.phone .cup-rule{padding:8px 0}.phone .cup-page .pl-identity .cup-mark{--cup-logo:38px}
-.phone .cup-ties.two{grid-template-columns:1fr}
-.phone .cup-page .pl-tabs{overflow-x:auto}.phone .cup-page .cup-extra-tabs .pl-tab{font-size:12px}
+
+
+
+
+
 .cup-context{display:grid;gap:8px}.cup-stagehead{margin-bottom:12px}.cup-stagehead .pl-head{margin:0}
 @media(max-width:420px){.cup-page .pl-identity{gap:7px}.cup-page .pl-identity h1{font-size:19px}.cup-controls .ds-period{font-size:13px}}
 .cup-heroteam{display:grid;justify-items:center;gap:5px}.cup-page .herotop{align-items:center}.cup-page .pl-pitch-head{display:flex;gap:8px;align-items:center}.cup-page .pl-pitch-head small{margin-inline-start:auto}
@@ -63,29 +63,29 @@
 .cup-page .cup-overview-list .cup-ties .tie-double{--tie-cell:clamp(44px,5.25vw,64px)}
 .cup-grid .pl-side .cup-ties .tie-team,.cup-grid .pl-side .cup-ties .tie-team>a{font-size:14px}
 .cup-page .cup-grid .pl-head{align-items:center}
-.phone .cup-fixtures .cup-day-rows,.phone .cup-fixtures>.cup-ties,.phone .cup-wide>section>.cup-ties{grid-template-columns:1fr}
-.phone .cup-page .cup-grid>.pl-main{display:grid;gap:var(--section)}
-.phone .cup-grid .pl-side .cup-ties .tie-team,.phone .cup-grid .pl-side .cup-ties .tie-team>a{font-size:15px}
+
+
+
 .cup-page .cup-back{margin-block-end:4px}
 
 .cup-fixtures>section+section{margin-block-start:var(--section)}
 .cup-fixtures>section>.cup-ties{grid-template-columns:repeat(2,minmax(0,1fr))}
 .cup-pen-score{display:block;font-size:12px;font-weight:650;line-height:1.25}
-.phone .cup-fixtures>section>.cup-ties{grid-template-columns:1fr}
+
 .cup-page .cup-person bdi,.cup-page .cup-teamlink bdi{overflow-wrap:anywhere}
 
 
 .cup-row .cup-mark{--cup-logo:var(--row-crest)}
 .cup-clock-note{display:block;font-size:11px;line-height:1.2;color:var(--muted)}
 .cup-picked .cup-date-group+.cup-date-group{margin-block-start:12px}
-.cup-page .cup-picked .ds-fixture-toolbar{flex-wrap:nowrap}
+.cup-page .cup-picked .ds-fixture-toolbar{flex-wrap:wrap}
 
 .cup-date-group .cup-leg-label{font-weight:500;color:var(--muted)}
 .cup-stat-layout [hidden]{display:none!important}
 .cup-stat-layout .pl-details li .cup-teamlink{min-height:36px}
 .cup-stat-layout .pl-details .cup-mark,.cup-stat-layout .pl-ranking .cup-mark{--cup-logo:20px}
 .cup-draw .draw-selected h3{color:var(--ink)}
-.phone .cup-stat-layout .pl-controls{flex-wrap:wrap}
+
 
 
 .cup-pair {
@@ -143,7 +143,7 @@
 .draw-node .cup-pair{width:100%}
 .draw-gutter{padding-block-start:var(--round-head);width:var(--draw-gap)}
 .draw-gutter svg{display:block;overflow:visible;width:100%;fill:none;stroke:color-mix(in srgb,var(--muted) 63%,var(--line));stroke-width:1.4px;stroke-linejoin:round;stroke-linecap:round}
-[dir=rtl] .draw-gutter svg,:host-context([dir=rtl]) .draw-gutter svg{transform:scaleX(-1)}
+[dir=rtl] .draw-gutter svg{transform:scaleX(-1)}
 .draw-forward{display:none}
 .draw-bar,.draw-tools{display:flex;align-items:center;gap:8px}
 .draw-bar{justify-content:space-between;flex-wrap:wrap;margin-block-end:14px}
@@ -387,6 +387,25 @@
 }
 .cup-page .cup-count { font-size: 13px; color: var(--muted); }
 
+
+.cup-page .pl-main > *,
+.cup-page .cup-date-group,
+.cup-page .ds-fixture-toolbar,
+.cup-page .cup-round-nav,
+.cup-page .cup-round-nav ul {
+  min-width: 0;
+  max-width: 100%;
+}
+.cup-page .ds-fixture-toolbar {
+  flex-wrap: wrap;
+}
+.cup-page .cup-round-nav {
+  flex: 1 1 12rem;
+}
+
+@media (max-width: 767px) {
+.cup-grid>.pl-side{position:static;margin-block-start:var(--section)}.cup-table :is(th,td){padding:8px 4px}.cup-table th:first-child,.cup-table td:first-child{width:29px}.cup-table tbody{font-size:14px}.cup-rule{padding:8px 0}.cup-page .pl-identity .cup-mark{--cup-logo:38px}.cup-ties.two{grid-template-columns:1fr}.cup-page .pl-tabs{overflow-x:auto}.cup-page .cup-extra-tabs .pl-tab{font-size:12px}.cup-fixtures .cup-day-rows,.cup-fixtures>.cup-ties,.cup-wide>section>.cup-ties{grid-template-columns:1fr}.cup-page .cup-grid>.pl-main{display:grid;gap:var(--section)}.cup-grid .pl-side .cup-ties .tie-team,.cup-grid .pl-side .cup-ties .tie-team>a{font-size:15px}.cup-fixtures>section>.cup-ties{grid-template-columns:1fr}.cup-stat-layout .pl-controls{flex-wrap:wrap}
+}
 @media (max-width: 767px) {
   .draw-tree { display: block; min-width: 0; }
   .draw-gutter, .draw-round:not(.draw-selected), .draw-round h3 { display: none; }
