@@ -86,7 +86,8 @@
   min-width: 0;
 }
 
-.pl-identity h1 {
+.pl-identity h1,
+.mc .pl-identity h1 {
   margin: 0;
   font-size: clamp(25px, 2.15vw, 36px);
   font-weight: 750;
@@ -1002,7 +1003,8 @@ html:not([data-theme='light']) .pl .standing-live {
     justify-self: end;
   }
 
-  .pl-identity h1 {
+  .pl-identity h1,
+  .mc .pl-identity h1 {
     font-size: 20px;
   }
 
