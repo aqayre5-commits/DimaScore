@@ -1,0 +1,422 @@
+[
+  {
+    "tag": "before",
+    "vp": "m390",
+    "area": "hero",
+    "board": {
+      "x": 14,
+      "y": 103,
+      "w": 362,
+      "h": 231.3,
+      "alignSelf": "auto",
+      "textAlign": "start"
+    },
+    "score": {
+      "x": 163.3,
+      "y": 158,
+      "w": 63.4,
+      "h": 88,
+      "alignSelf": "auto",
+      "textAlign": "center"
+    },
+    "scoreMid": 195,
+    "sides": [
+      {
+        "col": {
+          "x": 25,
+          "y": 158,
+          "w": 133.3,
+          "h": 133.3,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "crest": {
+          "x": 25,
+          "y": 158,
+          "w": 64,
+          "h": 64,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "name": {
+          "x": 25,
+          "y": 226,
+          "w": 91.4,
+          "h": 19,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "scorers": {
+          "x": 83.3,
+          "y": 249,
+          "w": 16.7,
+          "h": 42.3,
+          "alignSelf": "auto",
+          "textAlign": "center"
+        },
+        "mids": {
+          "col": 91.6,
+          "crest": 57,
+          "name": 70.7,
+          "scorers": 91.6
+        },
+        "gaps": {
+          "crestName": 4,
+          "nameScorers": 4,
+          "scorersMeta": 12
+        }
+      },
+      {
+        "col": {
+          "x": 231.7,
+          "y": 158,
+          "w": 133.3,
+          "h": 105.1,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "crest": {
+          "x": 231.7,
+          "y": 158,
+          "w": 64,
+          "h": 64,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "name": {
+          "x": 231.7,
+          "y": 226,
+          "w": 118,
+          "h": 19,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "scorers": {
+          "x": 280.7,
+          "y": 249,
+          "w": 35.3,
+          "h": 14.1,
+          "alignSelf": "auto",
+          "textAlign": "center"
+        },
+        "mids": {
+          "col": 298.4,
+          "crest": 263.7,
+          "name": 290.7,
+          "scorers": 298.4
+        },
+        "gaps": {
+          "crestName": 4,
+          "nameScorers": 4,
+          "scorersMeta": 40.2
+        }
+      }
+    ],
+    "crestY": [
+      158,
+      158
+    ],
+    "nameY": [
+      226,
+      226
+    ],
+    "scorerY": [
+      249.03125,
+      249.03125
+    ]
+  },
+  {
+    "tag": "before",
+    "vp": "m390",
+    "area": "lineups",
+    "cardW": 362,
+    "wrapW": 360,
+    "pitchW": 300.5,
+    "pitchH": 464,
+    "padLeft": 29.8,
+    "padRight": 29.8,
+    "insetLeft": 30.8,
+    "insetRight": 30.8,
+    "shirtW": 43.9
+  },
+  {
+    "tag": "before",
+    "vp": "m360",
+    "area": "hero",
+    "board": {
+      "x": 14,
+      "y": 103,
+      "w": 332,
+      "h": 231.3,
+      "alignSelf": "auto",
+      "textAlign": "start"
+    },
+    "score": {
+      "x": 148.3,
+      "y": 158,
+      "w": 63.4,
+      "h": 88,
+      "alignSelf": "auto",
+      "textAlign": "center"
+    },
+    "scoreMid": 180,
+    "sides": [
+      {
+        "col": {
+          "x": 25,
+          "y": 158,
+          "w": 118.3,
+          "h": 133.3,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "crest": {
+          "x": 25,
+          "y": 158,
+          "w": 64,
+          "h": 64,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "name": {
+          "x": 25,
+          "y": 226,
+          "w": 91.4,
+          "h": 19,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "scorers": {
+          "x": 75.8,
+          "y": 249,
+          "w": 16.7,
+          "h": 42.3,
+          "alignSelf": "auto",
+          "textAlign": "center"
+        },
+        "mids": {
+          "col": 84.1,
+          "crest": 57,
+          "name": 70.7,
+          "scorers": 84.1
+        },
+        "gaps": {
+          "crestName": 4,
+          "nameScorers": 4,
+          "scorersMeta": 12
+        }
+      },
+      {
+        "col": {
+          "x": 216.7,
+          "y": 158,
+          "w": 118.3,
+          "h": 105.1,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "crest": {
+          "x": 216.7,
+          "y": 158,
+          "w": 64,
+          "h": 64,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "name": {
+          "x": 216.7,
+          "y": 226,
+          "w": 118,
+          "h": 19,
+          "alignSelf": "start",
+          "textAlign": "center"
+        },
+        "scorers": {
+          "x": 258.2,
+          "y": 249,
+          "w": 35.3,
+          "h": 14.1,
+          "alignSelf": "auto",
+          "textAlign": "center"
+        },
+        "mids": {
+          "col": 275.9,
+          "crest": 248.7,
+          "name": 275.7,
+          "scorers": 275.9
+        },
+        "gaps": {
+          "crestName": 4,
+          "nameScorers": 4,
+          "scorersMeta": 40.2
+        }
+      }
+    ],
+    "crestY": [
+      158,
+      158
+    ],
+    "nameY": [
+      226,
+      226
+    ],
+    "scorerY": [
+      249.03125,
+      249.03125
+    ]
+  },
+  {
+    "tag": "before",
+    "vp": "m360",
+    "area": "lineups",
+    "cardW": 332,
+    "wrapW": 330,
+    "pitchW": 293,
+    "pitchH": 452.4,
+    "padLeft": 18.5,
+    "padRight": 18.5,
+    "insetLeft": 19.5,
+    "insetRight": 19.5,
+    "shirtW": 42.8
+  },
+  {
+    "tag": "before",
+    "vp": "d1440",
+    "area": "hero",
+    "board": {
+      "x": 288.7,
+      "y": 119,
+      "w": 1122.5,
+      "h": 267.3,
+      "alignSelf": "auto",
+      "textAlign": "start"
+    },
+    "score": {
+      "x": 797.3,
+      "y": 186,
+      "w": 105.4,
+      "h": 106.5,
+      "alignSelf": "auto",
+      "textAlign": "center"
+    },
+    "scoreMid": 850,
+    "sides": [
+      {
+        "col": {
+          "x": 332.8,
+          "y": 186,
+          "w": 421.3,
+          "h": 140.3,
+          "alignSelf": "auto",
+          "textAlign": "start"
+        },
+        "crest": {
+          "x": 400,
+          "y": 186,
+          "w": 106.5,
+          "h": 106.5,
+          "alignSelf": "start",
+          "textAlign": "start"
+        },
+        "name": {
+          "x": 528.2,
+          "y": 186,
+          "w": 158.7,
+          "h": 69.8,
+          "alignSelf": "start",
+          "textAlign": "start"
+        },
+        "scorers": {
+          "x": 528.2,
+          "y": 259.8,
+          "w": 21.3,
+          "h": 66.6,
+          "alignSelf": "auto",
+          "textAlign": "start"
+        },
+        "mids": {
+          "col": 543.5,
+          "crest": 453.3,
+          "name": 607.5,
+          "scorers": 538.8
+        },
+        "gaps": {
+          "crestName": -106.5,
+          "nameScorers": 4,
+          "scorersMeta": 21
+        }
+      },
+      {
+        "col": {
+          "x": 945.8,
+          "y": 186,
+          "w": 421.3,
+          "h": 106.5,
+          "alignSelf": "auto",
+          "textAlign": "end"
+        },
+        "crest": {
+          "x": 1216.4,
+          "y": 186,
+          "w": 106.5,
+          "h": 106.5,
+          "alignSelf": "start",
+          "textAlign": "end"
+        },
+        "name": {
+          "x": 989.9,
+          "y": 186,
+          "w": 204.9,
+          "h": 69.8,
+          "alignSelf": "start",
+          "textAlign": "end"
+        },
+        "scorers": {
+          "x": 1149.9,
+          "y": 265.1,
+          "w": 44.9,
+          "h": 27.5,
+          "alignSelf": "auto",
+          "textAlign": "end"
+        },
+        "mids": {
+          "col": 1156.5,
+          "crest": 1269.7,
+          "name": 1092.4,
+          "scorers": 1172.4
+        },
+        "gaps": {
+          "crestName": -106.5,
+          "nameScorers": 9.3,
+          "scorersMeta": 54.8
+        }
+      }
+    ],
+    "crestY": [
+      186,
+      186
+    ],
+    "nameY": [
+      186,
+      186
+    ],
+    "scorerY": [
+      259.78125,
+      265.0625
+    ]
+  },
+  {
+    "tag": "before",
+    "vp": "d1440",
+    "area": "lineups",
+    "cardW": 366.8,
+    "wrapW": 364.8,
+    "pitchW": 344.8,
+    "pitchH": 532.4,
+    "padLeft": 10,
+    "padRight": 10,
+    "insetLeft": 11,
+    "insetRight": 11,
+    "shirtW": 50
+  }
+]
