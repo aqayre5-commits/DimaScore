@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useTranslations } from 'next-intl';
 import type { MatchLineup } from '@/lib/db/queries/match-detail';
 import {
@@ -17,10 +17,17 @@ import {
 } from '@/lib/match/match-centre';
 import { EventIcon, type EventArt } from './icons';
 import type { McMatch, McTeam } from './types';
+import { isGoalkeeperPos, kitCssVars, type KitPalette } from '@/lib/match/kit-colours';
 
 type Status = 'sent' | 'off' | 'starter' | 'ready' | 'live' | 'finished';
 
 const art = (k: BadgeKind): EventArt => (k === 'own' ? 'goal' : k);
+
+const kitStyle = (palette: KitPalette | null | undefined) =>
+  (palette ? kitCssVars(palette) : {}) as CSSProperties;
+
+const isKeeper = (pos: string | null | undefined, line?: number) =>
+  isGoalkeeperPos(pos) || (pos == null && line === 0);
 
 /** Pitch markings and the shirt, defined once per page (template symbols, 68×105 and 52×44). */
 function Symbols() {
@@ -208,13 +215,15 @@ export function Lineups({
             <button
               key={`${idx}-${id}`}
               type="button"
-              className={`lu-player${pos.line === 0 ? ' lu-keeper' : ''}${dismissed ? ' lu-vacant' : ''}`}
+              className={`lu-player${isKeeper(p.pos, pos.line) ? ' lu-keeper' : ''}${dismissed ? ' lu-vacant' : ''}`}
+              data-kit-role={isKeeper(p.pos, pos.line) ? 'goalkeeper' : 'player'}
               style={
                 {
                   '--x': `${pos.x}%`,
                   '--y': `${pos.y}%`,
                   '--cell': `${pos.cell}%`,
-                } as React.CSSProperties
+                  ...(isKeeper(p.pos, pos.line) ? kitStyle(lineups[s].colors?.goalkeeper) : {}),
+                } as CSSProperties
               }
               title={caption}
               aria-label={caption}
@@ -260,7 +269,9 @@ export function Lineups({
         key={s}
         className={`lu-team ${s ? 'lu-away' : 'lu-home'}`}
         data-index={s}
+        data-team-id={team.id}
         data-selected={shown === s}
+        style={kitStyle(lineups[s].colors?.player)}
       >
         <header className="lu-card-head">
           <div className="lu-card-club">

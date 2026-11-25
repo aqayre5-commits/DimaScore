@@ -343,6 +343,8 @@ export interface PitchPlayer {
   name: string;
   short: string;
   num: number | null;
+  /** Provider position ("G", "D", "M", "F"). Used for kit role, never the shirt number. */
+  pos: string | null;
   /** 0 keeper, 1 defender, 2 midfielder, 3 forward (null for substitutes). */
   role: 0 | 1 | 2 | 3 | null;
 }
@@ -384,6 +386,7 @@ export function pitchSide(l: MatchLineup): PitchSide {
       name: p.name,
       short: shortName(p.name),
       num: Number.isFinite(p.number) ? p.number : null,
+      pos: p.pos,
       role,
     };
   };

@@ -7,6 +7,7 @@ import * as schema from '../schema';
 import { getTeamsMap, type TeamSnapshot } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { resolveGroupLabel } from './right-rail';
+import type { ResolvedKitPalette } from '@/lib/match/kit-colours';
 
 // ── Match detail ──
 
@@ -246,12 +247,18 @@ export interface LineupPlayer {
   birthDate: string | null;
 }
 
+export interface StoredLineupKits {
+  player: ResolvedKitPalette;
+  goalkeeper: ResolvedKitPalette;
+}
+
 export interface MatchLineup {
   teamId: number;
   formation: string | null;
   coach: { id: number; name: string } | null;
   starters: LineupPlayer[];
   substitutes: Omit<LineupPlayer, 'grid'>[];
+  colors?: StoredLineupKits | null;
 }
 
 export async function getMatchLineups(
@@ -265,6 +272,7 @@ export async function getMatchLineups(
       coachId: schema.fixtureLineups.coachId,
       starters: schema.fixtureLineups.starters,
       substitutes: schema.fixtureLineups.substitutes,
+      colors: schema.fixtureLineups.colors,
       coachName: schema.coaches.name,
     })
     .from(schema.fixtureLineups)
@@ -293,6 +301,7 @@ export async function getMatchLineups(
       formation: r.formation,
       coachId: r.coachId,
       coachName: r.coachName,
+      colors: r.colors,
       rawStarters,
       rawSubs,
     };
@@ -317,6 +326,7 @@ export async function getMatchLineups(
     teamId: r.teamId,
     formation: r.formation,
     coach: r.coachId != null && r.coachName != null ? { id: r.coachId, name: r.coachName } : null,
+    colors: r.colors ?? null,
     starters: r.rawStarters.map((s) => ({
       id: s.id,
       name: s.name,

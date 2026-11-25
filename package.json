@@ -11,6 +11,7 @@
     "test:integration": "vitest run --project integration",
     "test:all": "vitest run",
     "test:watch": "vitest",
+    "test:shirt-colours": "python3 tests/e2e/shirt-colours.spec.py",
     "seed": "tsx scripts/seed.ts",
     "seed:wc": "tsx scripts/seed-wc.ts",
     "worker:live-poller": "tsx --env-file=.env.local workers/live-poller/src/index.ts",

@@ -15,10 +15,11 @@ import { syncLiveFixtureDetails } from './fixture-details';
  *
  * - Live backstop: for covered live fixtures, fetch events when they're missing
  *   or stale (the poller hasn't bumped `updated_at` within `staleMinutes`, and
- *   the match isn't paused at HT); fetch lineups when still missing. When the
+ *   the match isn't paused at HT); fetch lineups when still missing or when a
+ *   stored kit is only a neutral fallback. When the
  *   poller is healthy every live fixture is fresh, so this returns ≈nothing.
  * - Pre-kickoff lineups: for covered NS fixtures kicking off within 45 min with
- *   no lineups yet, fetch lineups once. This is a genuine gap even with a healthy
+ *   no complete kit palettes yet, fetch lineups once. This is a genuine gap even with a healthy
  *   poller (it only touches live fixtures) — api-football publishes lineups ~1h
  *   before kickoff.
  *
@@ -57,7 +58,15 @@ export async function getLiveFixturesNeedingDetails(
       seasonYear: schema.fixtures.seasonYear,
       statusCode: schema.fixtures.statusCode,
       hasEvents: sql<boolean>`EXISTS (SELECT 1 FROM ${schema.fixtureEvents} WHERE ${schema.fixtureEvents.fixtureId} = ${schema.fixtures.id})`,
-      hasLineups: sql<boolean>`EXISTS (SELECT 1 FROM ${schema.fixtureLineups} WHERE ${schema.fixtureLineups.fixtureId} = ${schema.fixtures.id})`,
+      hasCompleteKits: sql<boolean>`(
+        SELECT COUNT(*) FILTER (
+          WHERE ${schema.fixtureLineups.colors} IS NOT NULL
+            AND ${schema.fixtureLineups.colors}->'player'->>'source' IS DISTINCT FROM 'neutral'
+            AND ${schema.fixtureLineups.colors}->'goalkeeper'->>'source' IS DISTINCT FROM 'neutral'
+        ) >= 2
+        FROM ${schema.fixtureLineups}
+        WHERE ${schema.fixtureLineups.fixtureId} = ${schema.fixtures.id}
+      )`,
       stale: sql<boolean>`${schema.fixtures.updatedAt} < NOW() - make_interval(mins => ${staleMinutes})`,
     })
     .from(schema.fixtures)
@@ -105,10 +114,10 @@ export async function getLiveFixturesNeedingDetails(
     let wantLineups = false;
     if (LIVE_CODES.includes(c.statusCode)) {
       if (cov.events && (!c.hasEvents || (c.stale && c.statusCode !== 'HT'))) wantEvents = true;
-      if (cov.lineups && !c.hasLineups) wantLineups = true;
+      if (cov.lineups && !c.hasCompleteKits) wantLineups = true;
     } else {
       // NS imminent: lineups only.
-      if (cov.lineups && !c.hasLineups) wantLineups = true;
+      if (cov.lineups && !c.hasCompleteKits) wantLineups = true;
     }
 
     if (wantEvents || wantLineups) out.push({ id: c.id, events: wantEvents, lineups: wantLineups });

@@ -27,6 +27,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import type { ResolvedKitPalette } from '@/lib/match/kit-colours';
 
 // ─── Enums ───
 
@@ -312,6 +313,11 @@ export const fixtureLineups = pgTable(
     formation: text('formation'),
     starters: jsonb('starters').notNull(),
     substitutes: jsonb('substitutes').notNull(),
+    /** Resolved player + goalkeeper palettes for this fixture (see kit-colours.ts). */
+    colors: jsonb('colors').$type<{
+      player: ResolvedKitPalette;
+      goalkeeper: ResolvedKitPalette;
+    }>(),
   },
   (t) => [primaryKey({ columns: [t.fixtureId, t.teamId] })],
 );
