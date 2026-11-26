@@ -37,8 +37,6 @@ import {
   type PlayerTally,
   type SquadPosition,
 } from './page-model';
-import { getBareSlugCollisions } from './resolve-hub-team';
-import { publicTeamSlug } from './public-slug';
 
 export interface HubTeam {
   id: number;
@@ -106,8 +104,6 @@ export interface TeamHubData {
   };
   transfers: { in: HubMove[]; out: HubMove[] } | null;
   primaryCompetitionId: number | null;
-  /** URL slug: bare name, or the stored id-slug when that name collides. */
-  publicSlug: string;
   /** Which tabs have content. Empty tabs get no link and no URL (404). */
   populated: { matches: boolean; squad: boolean; stats: boolean; transfers: boolean };
   /**
@@ -148,11 +144,9 @@ function teamTotals(f: TeamPageFixture, teamId: number) {
   return { gf: gf ?? 0, ga: ga ?? 0 };
 }
 
-/** Uncached load, used by middleware (Cache Components `use cache` cannot run there). */
-export async function loadTeamHubFresh(
-  teamSlug: string,
-  locale: Locale,
-): Promise<TeamHubData | null> {
+export async function loadTeamHub(teamSlug: string, locale: Locale): Promise<TeamHubData | null> {
+  'use cache';
+  cacheLife('minutes');
   const [team, t] = await Promise.all([
     getTeamBySlug(db, teamSlug),
     getTranslations({ locale, namespace: 'teamHub' }),
@@ -433,7 +427,6 @@ export async function loadTeamHubFresh(
     },
     transfers: transferOut,
     primaryCompetitionId: primaryComp?.id ?? null,
-    publicSlug: publicTeamSlug(team.slug, national, await getBareSlugCollisions()),
     populated: {
       matches: hubFixtures.length > 0,
       squad: squad.length > 0,
@@ -442,16 +435,4 @@ export async function loadTeamHubFresh(
     },
     stats: statsScope,
   };
-}
-
-export async function loadTeamHub(teamSlug: string, locale: Locale): Promise<TeamHubData | null> {
-  'use cache';
-  cacheLife('minutes');
-  return loadTeamHubFresh(teamSlug, locale);
-}
-
-export function tabHasContent(data: TeamHubData, tab: import('./hub-paths').HubTab): boolean {
-  if (tab === 'overview') return true;
-  if (tab === 'transfers') return data.populated.transfers && !data.team.isNational;
-  return data.populated[tab];
 }

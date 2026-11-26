@@ -15,9 +15,6 @@ import { botolaClassementPath } from '@/lib/seo/botola-classement';
 import { botola2ClassementPath } from '@/lib/seo/botola-2-classement';
 import { botolaMatchsPath } from '@/lib/seo/botola-matchs';
 import { CHUNK_SIZE, monthRange, planChunks, type SitemapChunk } from './chunks';
-import { hubPath, isPathLocale } from '@/lib/team/hub-paths';
-import { getBareSlugCollisions } from '@/lib/team/resolve-hub-team';
-import { publicTeamSlug } from '@/lib/team/public-slug';
 
 /**
  * Sitemap data layer. Inclusion is exactly the indexable.ts conditions (the same SQL each page's
@@ -170,7 +167,7 @@ export async function getSitemapIndexEntries(): Promise<{ id: string; lastModifi
 // ── Chunk bodies ──
 
 async function staticEntries(): Promise<Entry[]> {
-  const [compLm, globalLm, moroccoLm, colliding] = await Promise.all([
+  const [compLm, globalLm, moroccoLm] = await Promise.all([
     rows<{ competition_id: number | string; lm: string | Date | null }>(sql`
       SELECT competition_id, MAX(${FIXTURE_LASTMOD}) AS lm
       FROM fixtures WHERE kickoff_at <= NOW() AND competition_id IS NOT NULL
@@ -181,7 +178,6 @@ async function staticEntries(): Promise<Entry[]> {
     rows<{ lm: string | Date | null }>(sql`
       SELECT MAX(${FIXTURE_LASTMOD}) AS lm FROM fixtures
       WHERE kickoff_at <= NOW() AND (home_team_id = ${FEATURED_TEAM_ID} OR away_team_id = ${FEATURED_TEAM_ID})`),
-    getBareSlugCollisions(),
   ]);
   const comp = new Map(compLm.map((r) => [Number(r.competition_id), toDate(r.lm)]));
   const global = toDate(globalLm[0]?.lm);
@@ -215,7 +211,7 @@ async function staticEntries(): Promise<Entry[]> {
   }
 
   out.push(
-    ...entry((l) => teamSitemapPath(l, { slug: FEATURED_TEAM_SLUG, isNational: true }, colliding), {
+    ...entry((l) => `/${l}/equipe/${FEATURED_TEAM_SLUG}`, {
       priority: 0.95,
       changeFrequency: 'weekly',
       lastModified: toDate(moroccoLm[0]?.lm),
@@ -256,42 +252,22 @@ async function staticEntries(): Promise<Entry[]> {
   return out;
 }
 
-/** en/fr: new club/national-team URL. ar: existing /ar/equipe/{stored slug}. */
-function teamSitemapPath(
-  locale: Locale,
-  team: { slug: string; isNational: boolean },
-  colliding: ReadonlySet<string>,
-): string {
-  if (!isPathLocale(locale)) return `/${locale}/equipe/${encodeURIComponent(team.slug)}`;
-  const kind = team.isNational ? 'national' : 'club';
-  return hubPath(locale, kind, publicTeamSlug(team.slug, team.isNational, colliding));
-}
-
 async function teamEntries(page: number): Promise<Entry[]> {
-  const [list, lastmod, colliding] = await Promise.all([
-    rows<{ id: number | string; slug: string; is_national: boolean | string | null }>(sql`
-      SELECT teams.id AS id, teams.slug AS slug, teams.is_national AS is_national
+  const [list, lastmod] = await Promise.all([
+    rows<{ id: number | string; slug: string }>(sql`
+      SELECT teams.id AS id, teams.slug AS slug
       FROM teams
       WHERE ${teamIndexableSitemapCondition}
       ORDER BY teams.id
       LIMIT ${CHUNK_SIZE} OFFSET ${page * CHUNK_SIZE}`),
     getTeamLastmodMap(),
-    getBareSlugCollisions(),
   ]);
   return list.flatMap((t) =>
-    entry(
-      (l) =>
-        teamSitemapPath(
-          l,
-          { slug: t.slug, isNational: t.is_national === true || t.is_national === 't' },
-          colliding,
-        ),
-      {
-        priority: 0.7,
-        changeFrequency: 'weekly',
-        lastModified: lastmod.get(Number(t.id)),
-      },
-    ),
+    entry((l) => `/${l}/equipe/${encodeURIComponent(t.slug)}`, {
+      priority: 0.7,
+      changeFrequency: 'weekly',
+      lastModified: lastmod.get(Number(t.id)),
+    }),
   );
 }
 
