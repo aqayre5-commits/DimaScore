@@ -1212,6 +1212,9 @@
   },
   "domesticCup": {
     "leaguePhase": "League phase",
+    "knockout": "Knockout",
+    "matchdays": "Matchdays",
+    "tbd": "TBD",
     "leaguePhaseStandings": "League phase standings",
     "whatNext": "What happens next",
     "zoneR16": "Round of 16",

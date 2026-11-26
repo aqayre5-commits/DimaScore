@@ -47,6 +47,14 @@ import {
   usePatchedFixtures,
 } from './CompetitionBits';
 import { DrawWindow } from './CupDraw';
+import {
+  BRACKET_LABELS,
+  BRACKET_ROUND_SLUGS,
+  KNOCKOUT_SLUG,
+  isBracketRound,
+  layoutRounds,
+  uefaBracketRounds,
+} from '@/lib/competitions/bracket';
 import '../competition-page.css';
 import '../cup-page.css';
 
@@ -100,6 +108,11 @@ const TAB_KEYS = ['overview', 'fixtures', 'stages', 'stats'] as const;
 type TabKey = (typeof TAB_KEYS)[number];
 
 function hashToKey(hashes: CupTabHashes, hash: string): TabKey | null {
+  try {
+    hash = decodeURIComponent(hash); // Arabic tab hashes arrive percent-encoded
+  } catch {
+    /* keep the raw hash */
+  }
   const entries: [TabKey, string][] = [
     ['overview', hashes.overview],
     ['fixtures', hashes.fixtures],
@@ -122,7 +135,7 @@ function initScript(hashes: CupTabHashes): string {
     stages: 'stages',
     stats: 'stats',
   };
-  return `(function(){try{var r=document.currentScript.parentElement;var h=location.hash.slice(1);var a=${JSON.stringify(
+  return `(function(){try{var r=document.currentScript.parentElement;var h=decodeURIComponent(location.hash.slice(1));var a=${JSON.stringify(
     map,
   )};var k=a[h];if(k)r.setAttribute('data-tab',k);}catch(e){}})();`;
 }
@@ -385,36 +398,48 @@ export function DomesticCupPage({
     [cupRounds, now],
   );
 
-  const knockoutRounds = useMemo(
-    () => (leaguePhase ? cupRounds.filter((r) => leaguePhaseMatchday(r.label) == null) : cupRounds),
-    [cupRounds, leaguePhase],
+  const seasonOver = useMemo(
+    () =>
+      (currentSeasonYear != null && seasonYear < currentSeasonYear) ||
+      (patched.length > 0 && patched.every((f) => isFinished(f.statusCode))),
+    [currentSeasonYear, seasonYear, patched],
   );
-  const initialIsPhase = !!leaguePhase && initialRoundSlug === LEAGUE_PHASE_SLUG;
-  const [roundSlug, setRoundSlug] = useState(
-    () => (initialIsPhase ? null : initialRoundSlug) ?? fallbackRound?.slug ?? '',
-  );
-  // Stages view: the league-phase table, or one knockout/qualifying round of the draw.
-  const [stageSlug, setStageSlug] = useState<string>(() => {
-    if (initialIsPhase) return LEAGUE_PHASE_SLUG;
-    if (initialRoundSlug && knockoutRounds.some((r) => r.slug === initialRoundSlug)) {
-      return initialRoundSlug;
+  // A finished season opens Fixtures on its latest played round (the final), not on an upcoming one.
+  const latestPlayedRound = useMemo(() => {
+    for (let i = cupRounds.length - 1; i >= 0; i--) {
+      if (cupRounds[i].fixtures.some((f) => isFinished(f.statusCode))) return cupRounds[i];
     }
-    if (!leaguePhase) return initialRoundSlug ?? fallbackRound?.slug ?? '';
-    // Main knockout rounds (not qualifying) with any fixture → open the draw; else the table.
-    const main = knockoutRounds.filter(
-      (r) => r.fixtures.length > 0 && !/qualifying|preliminary|^play-?offs$/.test(r.slug),
-    );
-    return defaultCupRound(main, now)?.slug ?? LEAGUE_PHASE_SLUG;
+    return undefined;
+  }, [cupRounds]);
+  const startRound = seasonOver ? (latestPlayedRound ?? fallbackRound) : fallbackRound;
+
+  const initialIsPhase = !!leaguePhase && initialRoundSlug === LEAGUE_PHASE_SLUG;
+  const initialIsKnockout =
+    !!leaguePhase &&
+    !!initialRoundSlug &&
+    (initialRoundSlug === KNOCKOUT_SLUG || isBracketRound(initialRoundSlug));
+  const [roundSlug, setRoundSlug] = useState(() => {
+    if (initialIsPhase || initialIsKnockout) return startRound?.slug ?? '';
+    return initialRoundSlug ?? startRound?.slug ?? '';
   });
-  const stageRound = findCupRound(knockoutRounds, stageSlug);
-  const activeRound: CupRound | undefined = findCupRound(cupRounds, roundSlug) ?? fallbackRound;
+  const bracketHasFixtures = useMemo(
+    () => cupRounds.some((r) => isBracketRound(r.slug) && r.fixtures.length > 0),
+    [cupRounds],
+  );
+  // Stages view for the UEFA cups: the league-phase table, or the knockout bracket (a round slug focuses it).
+  const [stageSlug, setStageSlug] = useState<string>(() => {
+    if (!leaguePhase) return '';
+    if (initialIsPhase) return LEAGUE_PHASE_SLUG;
+    if (initialIsKnockout) return initialRoundSlug as string;
+    return seasonOver || bracketHasFixtures ? KNOCKOUT_SLUG : LEAGUE_PHASE_SLUG;
+  });
+  const activeRound: CupRound | undefined = findCupRound(cupRounds, roundSlug) ?? startRound;
 
   const [tab, setTab] = useState<TabKey>(() => {
     if (!initialRoundSlug) return 'overview';
-    if (!leaguePhase || initialIsPhase) return 'stages';
-    // A league-phase matchday URL opens Fixtures; knockout/qualifying rounds open Stages.
-    const r = findCupRound(cupRounds, initialRoundSlug);
-    return r && leaguePhaseMatchday(r.label) != null ? 'fixtures' : 'stages';
+    if (!leaguePhase || initialIsPhase || initialIsKnockout) return 'stages';
+    // League-phase matchdays and qualifying rounds open Fixtures.
+    return 'fixtures';
   });
   const [day, setDay] = useState(() => defaultDayKey(patched, now));
   const days = useMemo(() => uniqueDayKeys(patched), [patched]);
@@ -441,7 +466,11 @@ export function DomesticCupPage({
   }, [topScorers]);
 
   const weekFixtures = activeRound?.fixtures ?? [];
-  const weekGroups = useMemo(() => groupFixturesByDay(weekFixtures), [weekFixtures]);
+  const weekGroups = useMemo(() => {
+    const groups = groupFixturesByDay(weekFixtures);
+    // Finished season: most recent matchday first.
+    return seasonOver ? [...groups].reverse() : groups;
+  }, [weekFixtures, seasonOver]);
 
   function hrefFor(slug: string): string {
     const current = currentSeasonYear != null && seasonYear === currentSeasonYear;
@@ -457,12 +486,48 @@ export function DomesticCupPage({
     return localizeRound(r.label, locale) || r.label;
   }
   const labeledRounds = cupRounds.map((r) => ({ slug: r.slug, label: roundLabel(r) }));
-  const stageLinks = leaguePhase
-    ? [
-        { slug: LEAGUE_PHASE_SLUG, label: tCup('leaguePhase') },
-        ...knockoutRounds.map((r) => ({ slug: r.slug, label: roundLabel(r) })),
-      ]
-    : [];
+  // Finished season: latest rounds first, so the final leads the round list.
+  const navRounds = seasonOver ? [...labeledRounds].reverse() : labeledRounds;
+  const playoffZone = leaguePhase?.zones.find((z) => z.key === 'playoff');
+  const playoffTies = playoffZone
+    ? Math.max(1, Math.round((playoffZone.to - playoffZone.from + 1) / 2))
+    : 8;
+  const bracketRounds = useMemo(
+    () =>
+      leaguePhase
+        ? uefaBracketRounds(
+            cupRounds,
+            (slug, r) =>
+              r
+                ? roundLabel(r)
+                : localizeRound(BRACKET_LABELS[slug], locale) || BRACKET_LABELS[slug],
+            playoffTies,
+          )
+        : layoutRounds(cupRounds.map((r) => ({ ...r, label: roundLabel(r) }))),
+    // roundLabel depends only on locale and the translator
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cupRounds, leaguePhase, playoffTies, locale],
+  );
+  const stageIsPhase = !!leaguePhase && stageSlug === LEAGUE_PHASE_SLUG;
+  // Bracket focus: the round in the URL, else the live/next round, else the last one played.
+  const bracketFocus = (() => {
+    if (!leaguePhase) return activeRound?.slug ?? '';
+    if (isBracketRound(stageSlug)) return stageSlug;
+    const withFixtures = cupRounds.filter((r) => isBracketRound(r.slug) && r.fixtures.length > 0);
+    return defaultCupRound(withFixtures, now)?.slug ?? BRACKET_ROUND_SLUGS[0];
+  })();
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    root.querySelectorAll<HTMLElement>('.cup-round-nav ul').forEach((ul) => {
+      const cur = ul.querySelector<HTMLElement>('a[aria-current="page"]');
+      if (!cur || ul.scrollWidth <= ul.clientWidth) return;
+      const u = ul.getBoundingClientRect();
+      const c = cur.getBoundingClientRect();
+      const rtl = getComputedStyle(ul).direction === 'rtl';
+      ul.scrollLeft += rtl ? c.right - u.right : c.left - u.left;
+    });
+  }, [tab, activeRound?.slug]);
 
   useEffect(() => {
     function apply() {
@@ -517,13 +582,13 @@ export function DomesticCupPage({
     previous: t('prevRound'),
     next: t('nextRound'),
     rounds: tCup('rounds'),
+    tbd: tCup('tbd'),
   };
 
-  const drawRounds = leaguePhase ? knockoutRounds : cupRounds;
-  const drawSlug = leaguePhase ? (stageRound?.slug ?? '') : (activeRound?.slug ?? '');
+  const drawSlug = bracketFocus;
   const nextRound = (() => {
-    const i = drawRounds.findIndex((r) => r.slug === drawSlug);
-    return i >= 0 && i < drawRounds.length - 1 ? drawRounds[i + 1] : undefined;
+    const i = bracketRounds.findIndex((r) => r.slug === drawSlug);
+    return i >= 0 && i < bracketRounds.length - 1 ? bracketRounds[i + 1] : undefined;
   })();
 
   const phaseTable = leaguePhase ? (
@@ -695,7 +760,7 @@ export function DomesticCupPage({
                 {activeRound && (
                   <nav className="cup-round-nav" aria-label={tCup('rounds')}>
                     <ul>
-                      {labeledRounds.map((r) => (
+                      {navRounds.map((r) => (
                         <li key={r.slug}>
                           <a
                             href={hrefFor(r.slug)}
@@ -762,39 +827,71 @@ export function DomesticCupPage({
           <div className="pl-layout">
             <div className="pl-main">
               {leaguePhase && (
-                <nav className="cup-round-nav cup-stage-nav" aria-label={tCup('stagesTab')}>
-                  <ul>
-                    {stageLinks.map((r) => (
-                      <li key={r.slug}>
-                        <a
-                          href={hrefFor(r.slug)}
-                          aria-current={r.slug === stageSlug ? 'page' : undefined}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setStageSlug(r.slug);
-                            window.history.replaceState(null, '', hrefFor(r.slug));
-                          }}
-                        >
-                          {r.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                <nav className="stage-switch" aria-label={tCup('stagesTab')}>
+                  {[
+                    { slug: LEAGUE_PHASE_SLUG, label: tCup('leaguePhase') },
+                    { slug: KNOCKOUT_SLUG, label: tCup('knockout') },
+                  ].map((item) => {
+                    const current = (item.slug === LEAGUE_PHASE_SLUG) === stageIsPhase;
+                    return (
+                      <a
+                        key={item.slug}
+                        href={hrefFor(item.slug)}
+                        aria-current={current ? 'page' : undefined}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setStageSlug(item.slug);
+                          window.history.replaceState(null, '', hrefFor(item.slug));
+                        }}
+                      >
+                        {item.label}
+                      </a>
+                    );
+                  })}
                 </nav>
               )}
-              {leaguePhase && stageSlug === LEAGUE_PHASE_SLUG ? (
-                phaseTable
-              ) : drawRounds.length === 0 ? (
+              {stageIsPhase ? (
+                <>
+                  {phaseTable}
+                  <nav className="stage-matchdays" aria-label={tCup('matchdays')}>
+                    <h3>{tCup('matchdays')}</h3>
+                    <div className="cup-round-nav">
+                      <ul>
+                        {cupRounds
+                          .filter((r) => leaguePhaseMatchday(r.label) != null)
+                          .map((r) => (
+                            <li key={r.slug}>
+                              <a
+                                href={hrefFor(r.slug)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setRoundSlug(r.slug);
+                                  select('fixtures');
+                                  window.history.replaceState(null, '', hrefFor(r.slug));
+                                }}
+                              >
+                                {roundLabel(r)}
+                              </a>
+                            </li>
+                          ))}
+                      </ul>
+                    </div>
+                  </nav>
+                </>
+              ) : bracketRounds.length === 0 ? (
                 <p className="pl-empty">{t('comingSoon')}</p>
               ) : (
                 <DrawWindow
-                  rounds={drawRounds.map((r) => ({ ...r, label: roundLabel(r) }))}
+                  rounds={bracketRounds}
                   currentSlug={drawSlug}
                   locale={locale}
                   hrefFor={hrefFor}
                   nextHref={nextRound ? hrefFor(nextRound.slug) : null}
-                  nextLabel={nextRound ? roundLabel(nextRound) : null}
+                  nextLabel={nextRound ? nextRound.label : null}
                   labels={tieLabels}
+                  windowSize={leaguePhase ? bracketRounds.length : 3}
+                  active={tab === 'stages'}
+                  scrollToFocus={isBracketRound(stageSlug)}
                 />
               )}
               {phaseRules ? <div className="pl-mobile-top">{phaseRules}</div> : null}
