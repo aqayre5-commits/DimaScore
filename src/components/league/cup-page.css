@@ -100,8 +100,8 @@
   padding: 10px 12px;
   font-variant-numeric: tabular-nums;
 }
-.tie-double { grid-template-columns: minmax(var(--tie-name-min,112px),1fr) repeat(3,var(--tie-cell)); }
-.tie-single-link { display: grid; grid-template-columns: minmax(var(--tie-name-min,112px),1fr) var(--tie-cell); grid-row: span 3; grid-template-rows: subgrid; color: inherit; }
+.tie-double { grid-template-columns: minmax(0,1fr) repeat(3,var(--tie-cell)); }
+.tie-single-link { display: grid; grid-template-columns: minmax(0,1fr) var(--tie-cell); grid-row: span 3; grid-template-rows: subgrid; color: inherit; }
 .tie-identity,.tie-column { display: grid; grid-row: span 3; grid-template-rows: subgrid; align-items: center; min-width: 0; }
 .cup-pair { grid-template-rows: minmax(21px,auto) repeat(2,minmax(28px,auto)); }
 .tie-cap { font-size: 12px; line-height: 1.25; font-weight: 550; color: var(--muted); text-decoration: none; }
@@ -438,7 +438,6 @@
 .tie-tbd .tie-team { font-weight: 500; }
 .tie-ph { flex: none; width: 21px; height: 21px; border-radius: 50%; border: 1px dashed var(--muted); opacity: .7; }
 .draw-gutter path { vector-effect: non-scaling-stroke; }
-.draw-tree { --tie-name-min: 124px; }
 .draw-tree[data-solo] { min-width: 0; }
 
 /* ── Stage dropdown: a <details> menu of real links (crawlable, works without JS) ── */

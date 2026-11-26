@@ -645,7 +645,7 @@ export function DrawWindow({
             {
               ['--tracks' as string]: tracks,
               ['--cols' as string]: String(columns.length),
-              ['--col-min' as string]: anyTwoLegged ? '236px' : '196px',
+              ['--col-min' as string]: anyTwoLegged ? '280px' : '196px',
               ['--slots' as string]: String(maxSlots),
             } as CSSProperties
           }
