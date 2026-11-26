@@ -161,3 +161,41 @@ describe('knockout play-offs naming', () => {
     expect(rounds[0].slug).toBe('round-of-32');
   });
 });
+
+describe('round order across qualifying, league phase and knockout', () => {
+  it('puts the UECL "Playoff round" (August) before the league phase, not after it', () => {
+    const rounds = buildCupRounds(848, 2026, [
+      fx(1, 'League Stage - 1', 4, 5, '2026-10-02T20:00:00Z'),
+      fx(2, 'Playoff Round', 6, 7, '2026-08-20T20:00:00Z'),
+      fx(3, '3rd Qualifying Round', 8, 9, '2026-08-06T20:00:00Z'),
+      fx(4, 'League Stage - 6', 4, 5, '2026-12-18T20:00:00Z'),
+    ]);
+    expect(rounds.map((r) => r.slug)).toEqual([
+      '3rd-qualifying-round',
+      'playoff-round',
+      'league-stage-1',
+      'league-stage-6',
+    ]);
+  });
+
+  it('keeps the UCL qualifying play-offs ahead of matchday 1', () => {
+    const rounds = buildCupRounds(2, 2026, [
+      fx(1, 'League Stage - 1', 4, 5, '2026-09-16T20:00:00Z'),
+      fx(2, 'Play-offs', 6, 7, '2026-08-25T20:00:00Z'),
+    ]);
+    expect(rounds.map((r) => r.slug)).toEqual(['play-offs', 'league-stage-1']);
+  });
+
+  it('maps Coupe du Trône "8th/16th Finals" to Round of 16 / 32 and sorts them', () => {
+    const rounds = buildCupRounds(822, 2024, [
+      fx(1, '8th Finals', 1, 2, '2025-06-01T20:00:00Z'),
+      fx(2, '16th Finals', 3, 4, '2025-04-01T20:00:00Z'),
+      fx(3, 'Quarter-finals', 5, 6, '2025-07-01T20:00:00Z'),
+    ]);
+    expect(rounds.map((r) => [r.label, r.slug])).toEqual([
+      ['Round of 32', 'round-of-32'],
+      ['Round of 16', 'round-of-16'],
+      ['Quarter-finals', 'quarter-finals'],
+    ]);
+  });
+});

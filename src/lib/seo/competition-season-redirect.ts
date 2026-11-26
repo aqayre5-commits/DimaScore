@@ -7,14 +7,14 @@
  *    One rule for every competition, league or cup. No data is deleted.
  *  - `/…/{tournament}/[{year}/]round/{knockout|knockout-round-play-offs|round-of-32}` on the UEFA
  *    league-phase cups → `/round/knockout-play-offs`.
+ *  - Retired cup slugs (`16th-finals`, `8th-finals`, `1-128-finals`, …) → the canonical
+ *    `/round/round-of-32` (or `/round/knockout-play-offs` on a UEFA cup, in one hop).
  */
 import { locales, type Locale } from '@/lib/i18n/config';
 import { resolveCompetitionEntry } from '@/lib/competitions/resolve-competition';
-import { getCompetitionFormat } from '@/lib/competitions/formats';
-import { PLAYOFFS_ALIAS_SLUGS } from '@/lib/competitions/bracket';
-import { KNOCKOUT_PLAYOFFS_SLUG } from '@/lib/competitions/domestic-ties';
 import { resolveLeagueSeason } from '@/lib/competitions/league-season';
 import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
+import { resolveRedirectRoundSlug } from '@/lib/competitions/round-redirect';
 import { getMetadataForCompetition } from '@/lib/constants/tournament-metadata';
 
 export interface SeasonSnapshot {
@@ -67,12 +67,9 @@ export async function competitionSeasonRedirect(
     }
   }
 
-  if (
-    round &&
-    getCompetitionFormat(entry.competitionId)?.leaguePhase != null &&
-    (PLAYOFFS_ALIAS_SLUGS as readonly string[]).includes(round)
-  ) {
-    return `${base}${season ? `/${season}` : ''}/round/${KNOCKOUT_PLAYOFFS_SLUG}`;
+  if (round) {
+    const target = resolveRedirectRoundSlug(entry.competitionId, round);
+    if (target) return `${base}${season ? `/${season}` : ''}/round/${target}`;
   }
   return null;
 }

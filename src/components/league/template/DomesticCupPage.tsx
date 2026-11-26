@@ -49,8 +49,10 @@ import {
 } from './CompetitionBits';
 import { DrawWindow, TieCard } from './CupDraw';
 import { StagePicker } from './StagePicker';
+import { formatRoundRange } from '@/lib/competitions/round-range';
 import {
   BRACKET_LABELS,
+  BRACKET_ROUND_SLUGS,
   isBracketRound,
   layoutRounds,
   uefaBracketRounds,
@@ -416,7 +418,8 @@ export function DomesticCupPage({
   const initialIsPhase = !!leaguePhase && initialRoundSlug === LEAGUE_PHASE_SLUG;
   const initialIsKnockout = !!leaguePhase && !!initialRoundSlug && isBracketRound(initialRoundSlug);
   const [roundSlug, setRoundSlug] = useState(() => {
-    if (initialIsPhase || initialIsKnockout) return startRound?.slug ?? '';
+    if (initialIsPhase) return startRound?.slug ?? '';
+    // A knockout slug opens its own round in Fixtures too, even before it has fixtures.
     return initialRoundSlug ?? startRound?.slug ?? '';
   });
   const bracketHasFixtures = useMemo(
@@ -436,7 +439,9 @@ export function DomesticCupPage({
     if (initialIsKnockout) return initialRoundSlug as string;
     return seasonOver || bracketHasFixtures ? defaultKnockoutSlug : LEAGUE_PHASE_SLUG;
   });
-  const activeRound: CupRound | undefined = findCupRound(cupRounds, roundSlug) ?? startRound;
+  const knockoutSlotAsked = !!leaguePhase && isBracketRound(roundSlug);
+  const activeRound: CupRound | undefined =
+    findCupRound(cupRounds, roundSlug) ?? (knockoutSlotAsked ? undefined : startRound);
 
   const [tab, setTab] = useState<TabKey>(() => {
     if (!initialRoundSlug) return 'overview';
@@ -488,9 +493,29 @@ export function DomesticCupPage({
     if (md != null) return tCup('matchday', { n: md });
     return localizeRound(r.label, locale) || r.label;
   }
-  const labeledRounds = cupRounds.map((r) => ({ slug: r.slug, label: roundLabel(r) }));
-  // Finished season: latest rounds first, so the final leads the round list.
-  const navRounds = seasonOver ? [...labeledRounds].reverse() : labeledRounds;
+  // Fixtures round menu: every round in date order with its date span, as in the reference.
+  // The UEFA cups also list the knockout stages that have no fixtures yet, so each is reachable.
+  const fixtureOptions = (() => {
+    const options = cupRounds.map((r) => ({
+      slug: r.slug,
+      label: roundLabel(r),
+      detail: formatRoundRange(
+        r.fixtures.map((f) => fixtureDayKey(f)),
+        locale,
+      ),
+    }));
+    if (!leaguePhase) return options;
+    const rest = options.filter((o) => !isBracketRound(o.slug));
+    const stages = BRACKET_ROUND_SLUGS.map(
+      (slug) =>
+        options.find((o) => o.slug === slug) ?? {
+          slug,
+          label: localizeRound(BRACKET_LABELS[slug], locale) || BRACKET_LABELS[slug],
+          detail: '',
+        },
+    );
+    return [...rest, ...stages];
+  })();
   const playoffZone = leaguePhase?.zones.find((z) => z.key === 'playoff');
   const playoffTies = playoffZone
     ? Math.max(1, Math.round((playoffZone.to - playoffZone.from + 1) / 2))
@@ -518,19 +543,6 @@ export function DomesticCupPage({
     : isBracketRound(stageSlug)
       ? stageSlug
       : defaultKnockoutSlug;
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-    root.querySelectorAll<HTMLElement>('.cup-round-nav ul').forEach((ul) => {
-      const cur = ul.querySelector<HTMLElement>('a[aria-current="page"]');
-      if (!cur || ul.scrollWidth <= ul.clientWidth) return;
-      const u = ul.getBoundingClientRect();
-      const c = cur.getBoundingClientRect();
-      const rtl = getComputedStyle(ul).direction === 'rtl';
-      ul.scrollLeft += rtl ? c.right - u.right : c.left - u.left;
-    });
-  }, [tab, activeRound?.slug]);
-
   useEffect(() => {
     function apply() {
       const key = hashToKey(hashes, window.location.hash.slice(1));
@@ -597,6 +609,19 @@ export function DomesticCupPage({
     else setRoundSlug(slug);
     window.history.replaceState(null, '', hrefFor(slug));
   }
+  function selectRound(slug: string) {
+    setRoundSlug(slug);
+    window.history.replaceState(null, '', hrefFor(slug));
+  }
+  const roundPicker = (
+    <StagePicker
+      label={tCup('round')}
+      current={activeRound?.slug ?? roundSlug}
+      options={fixtureOptions}
+      hrefFor={hrefFor}
+      onSelect={selectRound}
+    />
+  );
   const stagePicker = (
     <StagePicker
       label={tCup('stage')}
@@ -614,6 +639,14 @@ export function DomesticCupPage({
       locale={locale}
       caption={tCup('leaguePhaseStandings')}
     />
+  ) : null;
+  const phaseSummary = phaseTable ? (
+    <section className="pl-summary">
+      <div className="pl-head">
+        <h2>{tCup('leaguePhaseStandings')}</h2>
+      </div>
+      {phaseTable}
+    </section>
   ) : null;
   const phaseRules = leaguePhase ? (
     <LeaguePhaseRules zones={leaguePhase.zones} title={tCup('whatNext')} />
@@ -783,49 +816,19 @@ export function DomesticCupPage({
               )}
             </section>
             {overviewScorers.length > 0 ? scorersRail : null}
-            {phaseTable ? (
-              <section className="pl-summary">
-                <div className="pl-head">
-                  <h2>{tCup('leaguePhaseStandings')}</h2>
-                </div>
-                {phaseTable}
-              </section>
-            ) : null}
+            {phaseSummary}
           </div>
         </div>
 
         <div data-pl-panel="fixtures">
-          <div className="pl-mobile-top">
-            {whenRail}
-            {overviewScorers.length > 0 ? scorersRail : null}
-          </div>
+          <div className="pl-mobile-top">{whenRail}</div>
           <div className="pl-layout">
             <div className="pl-main">
-              <div className="ds-fixture-toolbar">
+              <div className="ds-fixture-toolbar cup-controls">
                 <span className="cup-count">
                   {tCup('matchesCount', { n: weekFixtures.length })}
                 </span>
-                {activeRound && (
-                  <nav className="cup-round-nav" aria-label={tCup('rounds')}>
-                    <ul>
-                      {navRounds.map((r) => (
-                        <li key={r.slug}>
-                          <a
-                            href={hrefFor(r.slug)}
-                            aria-current={r.slug === activeRound.slug ? 'page' : undefined}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setRoundSlug(r.slug);
-                              window.history.replaceState(null, '', hrefFor(r.slug));
-                            }}
-                          >
-                            {r.label}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </nav>
-                )}
+                {roundPicker}
               </div>
               {weekGroups.length === 0 ? (
                 <p className="pl-empty">{t('noFixtures')}</p>
@@ -862,10 +865,13 @@ export function DomesticCupPage({
                   );
                 })
               )}
+              <div className="pl-mobile-top">
+                {phaseSummary ?? (overviewScorers.length > 0 ? scorersRail : null)}
+              </div>
             </div>
             <aside className="pl-side pl-aux-desktop">
               {whenRail}
-              {overviewScorers.length > 0 ? scorersRail : null}
+              {phaseSummary ?? (overviewScorers.length > 0 ? scorersRail : null)}
             </aside>
           </div>
         </div>

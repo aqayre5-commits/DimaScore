@@ -1242,6 +1242,7 @@
     "stage": "المرحلة",
     "previousStage": "الدور السابق",
     "nextStage": "الدور التالي",
-    "versus": "ضد"
+    "versus": "ضد",
+    "round": "الجولة"
   }
 }

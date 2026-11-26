@@ -1242,6 +1242,7 @@
     "stage": "Phase",
     "previousStage": "Tour précédent",
     "nextStage": "Tour suivant",
-    "versus": "contre"
+    "versus": "contre",
+    "round": "Tour"
   }
 }

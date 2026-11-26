@@ -13,6 +13,7 @@ import {
   AR_STANDING_ZONES,
   AR_STAT_TYPES,
 } from './feed-labels-ar';
+import { canonicalRoundLabel, frenchRoundLabel } from '@/lib/competitions/round-labels';
 
 const PLACEHOLDER: Record<string, string> = {
   n: '(\\d+)',
@@ -81,8 +82,11 @@ export function localizeStatType(type: string, locale: string): string {
 /** Feed round or group label ("Regular Season - 7", "Group H", "League A - Group B"). */
 export function localizeRound(round: string | null | undefined, locale: string): string {
   if (!round) return '';
-  if (!isAr(locale)) return round;
-  return arabicRound(round.trim()) ?? round;
+  const trimmed = round.trim();
+  const canonical = canonicalRoundLabel(trimmed);
+  if (locale === 'fr') return frenchRoundLabel(trimmed);
+  if (!isAr(locale)) return canonical;
+  return arabicRound(canonical) ?? arabicRound(trimmed) ?? canonical;
 }
 
 /**
@@ -108,6 +112,8 @@ const AR_ROUND_EXTRA: Record<string, string> = {
   Finals: 'النهائي',
   'Quarter-Finals': 'ربع النهائي',
   '8th Finals': 'دور الـ16',
+  '16th Finals': 'دور الـ32',
+  '32nd Finals': 'دور الـ64',
   '3rd Place': 'مباراة المركز الثالث',
   'Round of {n}': 'دور الـ{n}',
   'Round {n}': 'الجولة {n}',
@@ -129,6 +135,7 @@ const AR_ORDINALS = [
   'العاشر',
 ];
 const ORDINAL_ROUND_RE = /^(\d{1,2})(?:st|nd|rd|th) (Qualifying |Preliminary )?Round$/i;
+const QUALIFYING_NAMED_RE = /^(\d{1,2})(?:st|nd|rd|th) Round Qualifying( Replays)?$/i;
 
 let extraTemplates: Compiled[] | null = null;
 
@@ -150,6 +157,11 @@ function arabicRoundSegment(seg: string): string | null {
           ? 'الدور التمهيدي'
           : 'الدور';
     return `${base} ${AR_ORDINALS[Number(ord[1])]}`;
+  }
+  const qual = QUALIFYING_NAMED_RE.exec(seg);
+  if (qual && AR_ORDINALS[Number(qual[1])]) {
+    const base = `الدور التأهيلي ${AR_ORDINALS[Number(qual[1])]}`;
+    return qual[2] ? `إعادة ${base}` : base;
   }
   return null;
 }

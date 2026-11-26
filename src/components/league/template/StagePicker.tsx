@@ -5,6 +5,8 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 export interface StageOption {
   slug: string;
   label: string;
+  /** Shown after the label in the menu only, e.g. the date span of a round. */
+  detail?: string;
 }
 
 /**
@@ -69,7 +71,13 @@ export function StagePicker({
       onToggle={(e) => setOpen(e.currentTarget.open)}
       onKeyDown={onKeyDown}
     >
-      <summary className="ds-period" aria-label={`${label}: ${currentOption.label}`}>
+      <summary
+        className="ds-period"
+        aria-label={`${label}: ${currentOption.label}`}
+        title={
+          currentOption.detail ? `${currentOption.label} · ${currentOption.detail}` : undefined
+        }
+      >
         <bdi>{currentOption.label}</bdi>
         <svg className="ic" aria-hidden="true" viewBox="0 0 24 24">
           <path d="m5 9 7 7 7-7" />
@@ -94,6 +102,7 @@ export function StagePicker({
                   {isCurrent ? <path d="m5 12.5 4.5 4.5L19 7.5" /> : null}
                 </svg>
                 <bdi>{o.label}</bdi>
+                {o.detail ? <span className="stage-detail">{o.detail}</span> : null}
               </a>
             </li>
           );

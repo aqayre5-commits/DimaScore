@@ -5,6 +5,7 @@
 
 import { getCompetitionFormat } from '@/lib/competitions/formats';
 import { slugifyRound } from '@/lib/competitions/paths';
+import { canonicalRoundLabel } from '@/lib/competitions/round-labels';
 import { normalizeTieRound, tieKey } from '@/lib/competitions/tie';
 import { isFinished, isLive } from '@/lib/match-status';
 import type { FixtureWithTeams } from '@/lib/db/queries';
@@ -85,6 +86,8 @@ const FALLBACK_ORDER = [
   'third-round-proper',
   'fourth-round',
   'fifth-round',
+  'round-of-256',
+  'round-of-128',
   'round-of-64',
   'round-of-32',
   'knockout-round-play-offs',
@@ -129,7 +132,12 @@ export function leaguePhaseMatchday(label: string | null | undefined): number | 
 /** UEFA qualifying rounds ("1st Qualifying Round", "Preliminary Round", qualifying "Play-offs"). */
 export function isQualifyingRound(label: string | null | undefined): boolean {
   const slug = slugifyRound(label ?? '');
-  return /qualifying|preliminary/.test(slug) || slug === 'play-offs' || slug === 'playoffs';
+  return /qualifying|preliminary/.test(slug) || isQualifyingPlayoffs(slug);
+}
+
+/** The August qualifying play-off round ("Play-offs", "Playoff round", "Play-off Round"). */
+function isQualifyingPlayoffs(slug: string): boolean {
+  return /^play-?offs?(-round)?$/.test(slug);
 }
 
 function rankRound(label: string): number {
@@ -137,7 +145,7 @@ function rankRound(label: string): number {
   // European cups: qualifying → play-offs → league-phase matchdays → knockout rounds.
   const q = /^(\d+)(st|nd|rd|th)-qualifying-round$/.exec(slug);
   if (q) return -3 + Number(q[1]) / 10;
-  if (slug === 'play-offs' || slug === 'playoffs') return -1.5;
+  if (isQualifyingPlayoffs(slug)) return -1.5;
   const md = leaguePhaseMatchday(label);
   if (md != null) return -1 + md / 100;
   const i = FALLBACK_ORDER.indexOf(slug);
@@ -151,7 +159,10 @@ export function buildCupRounds(
   roundInfos: RoundInfo[] = [],
 ): CupRound[] {
   const uefaPhase = getCompetitionFormat(competitionId, seasonYear)?.leaguePhase != null;
-  const nameOf = (raw: string) => (uefaPhase ? canonicalUefaRound(raw) : raw);
+  const nameOf = (raw: string) => {
+    const name = canonicalRoundLabel(raw);
+    return uefaPhase ? canonicalUefaRound(name) : name;
+  };
   const byLabel = new Map<string, FixtureWithTeams[]>();
   for (const f of fixtures) {
     const label = nameOf((f.round ?? '').trim() || 'Round');

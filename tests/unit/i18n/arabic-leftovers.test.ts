@@ -37,20 +37,20 @@ function withIntl(child: ReturnType<typeof createElement>) {
 
 describe('round labels the #53 pack did not list (Champions League, qualifiers, play-offs)', () => {
   it.each([
-    ['League Stage - 1', 'مرحلة الدوري - الجولة 1'],
-    ['1st Qualifying Round', 'الدور التأهيلي الأول'],
-    ['4th Qualifying Round', 'الدور التأهيلي الرابع'],
-    ['2nd Round', 'الدور الثاني'],
-    ['Play-offs', 'الملحق'],
-    ['Knockout Round Play-offs', 'ملحق الأدوار الإقصائية'],
-    ['Play-offs - Semi-finals', 'الملحق - نصف النهائي'],
-    ['Round 5', 'الجولة 5'],
-    ['Round of 64', 'دور الـ64'],
-    ['Group Stage', 'دور المجموعات'],
-  ])('%s → %s', (en, expected) => {
-    expect(localizeRound(en, 'ar')).toBe(expected);
+    ['League Stage - 1', 'مرحلة الدوري - الجولة 1', 'Phase de ligue - journée 1'],
+    ['1st Qualifying Round', 'الدور التأهيلي الأول', '1er tour de qualification'],
+    ['4th Qualifying Round', 'الدور التأهيلي الرابع', '4e tour de qualification'],
+    ['2nd Round', 'الدور الثاني', '2e tour'],
+    ['Play-offs', 'الملحق', 'Barrages'],
+    ['Knockout Round Play-offs', 'ملحق الأدوار الإقصائية', 'Barrages à élimination directe'],
+    ['Play-offs - Semi-finals', 'الملحق - نصف النهائي', 'Barrages - Demi-finales'],
+    ['Round 5', 'الجولة 5', 'Tour 5'],
+    ['Round of 64', 'دور الـ64', '32es de finale'],
+    ['Group Stage', 'دور المجموعات', 'Phase de groupes'],
+  ])('%s', (en, ar, fr) => {
+    expect(localizeRound(en, 'ar')).toBe(ar);
     expect(localizeRound(en, 'en')).toBe(en);
-    expect(localizeRound(en, 'fr')).toBe(en);
+    expect(localizeRound(en, 'fr')).toBe(fr);
   });
 
   it('leaves a genuinely unknown label untouched rather than half-translating it', () => {

@@ -9,6 +9,7 @@
 
 import type { Locale } from '@/lib/i18n/config';
 import { slugify } from '@/lib/ingestion/slug';
+import { canonicalRoundLabel } from '@/lib/competitions/round-labels';
 import {
   buildCompetitionHref,
   findEntryByCompetitionId,
@@ -24,7 +25,7 @@ export const ROUND_SEGMENT = 'round';
 export const RESERVED_COMPETITION_SEGMENTS = ['fixtures', 'standings', 'stats'] as const;
 
 export function slugifyRound(roundLabel: string): string {
-  const slug = slugify(roundLabel);
+  const slug = slugify(canonicalRoundLabel(roundLabel));
   if ((RESERVED_COMPETITION_SEGMENTS as readonly string[]).includes(slug)) {
     return `round-${slug}`;
   }

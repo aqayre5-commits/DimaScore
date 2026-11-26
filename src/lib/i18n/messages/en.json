@@ -1242,6 +1242,7 @@
     "stage": "Stage",
     "previousStage": "Previous round",
     "nextStage": "Next round",
-    "versus": "v"
+    "versus": "v",
+    "round": "Round"
   }
 }
