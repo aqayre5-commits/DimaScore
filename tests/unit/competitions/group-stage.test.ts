@@ -13,6 +13,7 @@ import {
   editionYearLabel,
 } from '@/lib/competitions/group-stage';
 import { getCompetitionFormat } from '@/lib/competitions/formats';
+import { isMissingBestThirdsPath } from '@/lib/competitions/best-thirds-round';
 import type { StandingRow } from '@/lib/db/queries';
 import type { CupRound } from '@/lib/competitions/domestic-ties';
 
@@ -181,5 +182,33 @@ describe('per-edition format rules', () => {
     expect(f.allRoundsTwoLegged).toBe(true);
     expect(twoLeggedSlots(f).has('final')).toBe(true);
     expect(getCompetitionFormat(1191, 2025)?.allRoundsTwoLegged).toBeUndefined();
+  });
+});
+
+describe('best-thirds URL existence', () => {
+  it('keeps WAFCON 2024 best-thirds and 404s the 2026 edition', () => {
+    expect(isMissingBestThirdsPath('/en/competition/caf/wafcon-2024/round/best-thirds')).toBe(
+      false,
+    );
+    expect(
+      isMissingBestThirdsPath('/ar/competition/caf/كأس-أمم-إفريقيا-للسيدات-2024/round/best-thirds'),
+    ).toBe(false);
+    expect(isMissingBestThirdsPath('/en/competition/caf/wafcon-2026/round/best-thirds')).toBe(true);
+    expect(isMissingBestThirdsPath('/fr/competition/caf/can-feminine-2026/round/best-thirds')).toBe(
+      true,
+    );
+    expect(isMissingBestThirdsPath('/en/competition/caf/wafcon-2026/2025/round/best-thirds')).toBe(
+      true,
+    );
+  });
+
+  it('does not flag a real best-thirds edition or a different round', () => {
+    expect(isMissingBestThirdsPath('/en/competition/world/world-cup-2026/round/best-thirds')).toBe(
+      false,
+    );
+    expect(isMissingBestThirdsPath('/en/competition/caf/wafcon-2026/round/quarter-finals')).toBe(
+      false,
+    );
+    expect(isMissingBestThirdsPath('/en/club/arsenal')).toBe(false);
   });
 });

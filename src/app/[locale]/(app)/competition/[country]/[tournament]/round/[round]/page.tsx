@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import { BASE_URL } from '@/lib/constants/site';
 import { redirectPlayoffsAlias } from '@/lib/competitions/round-redirect';
+import { isMissingBestThirdsPath } from '@/lib/competitions/best-thirds-round';
 import { CompetitionContent, resolveEntry } from '../../competition-content';
 
 interface PageProps {
@@ -14,6 +16,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locale, country: rawCountry, tournament: rawTournament, round: rawRound } = await params;
   const typedLocale = locale as Locale;
   const round = decodeURIComponent(rawRound);
+  if (
+    isMissingBestThirdsPath(
+      `/${locale}/competition/${rawCountry}/${rawTournament}/round/${encodeURIComponent(round)}`,
+    )
+  ) {
+    notFound();
+  }
   const entry = resolveEntry(decodeURIComponent(rawTournament), typedLocale);
   if (entry) {
     redirectPlayoffsAlias(
@@ -44,6 +53,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CupRoundPage({ params }: PageProps) {
   const { locale, country: rawCountry, tournament: rawTournament, round } = await params;
   setRequestLocale(locale);
+  if (
+    isMissingBestThirdsPath(`/${locale}/competition/${rawCountry}/${rawTournament}/round/${round}`)
+  ) {
+    notFound();
+  }
   const entry = resolveEntry(decodeURIComponent(rawTournament), locale as Locale);
   if (entry) {
     redirectPlayoffsAlias(
