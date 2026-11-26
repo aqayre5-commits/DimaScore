@@ -21,6 +21,7 @@ import {
   botolaProCompetitionPageTitle,
 } from '@/lib/seo/botola-classement';
 import { isSeasonSegment } from '@/lib/seo/competition-tab-redirects';
+import { redirectOutOfWindowSeason } from '@/lib/competitions/season-redirect';
 import { CompetitionContent, resolveEntry } from '../competition-content';
 
 interface PageProps {
@@ -44,6 +45,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const entry = resolveEntry(tournament, typedLocale);
   if (!entry) notFound();
+
+  // Outside current + last season: permanent redirect to the current-season URL (blocking phase).
+  await redirectOutOfWindowSeason(
+    entry.competitionId,
+    seasonYear,
+    `/${locale}/competition/${rawCountry}/${rawTournament}`,
+  );
 
   const competition = await getCompetitionById(db, entry.competitionId);
   const tMenu = await getTranslations({ locale, namespace: 'megaMenu' });

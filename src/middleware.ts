@@ -7,6 +7,8 @@ import { parseSlugRedirect, slugRedirectPath } from '@/lib/seo/slug-redirect';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { pointXDefaultAtEnglish } from '@/lib/i18n/hreflang-header';
 import { canonicalCompetitionRedirect } from '@/lib/seo/competition-canonical';
+import { competitionSeasonRedirect } from '@/lib/seo/competition-season-redirect';
+import { lookupSeasonSnapshot } from '@/lib/seo/competition-season-lookup';
 import { resolveBareMatchRedirect } from '@/lib/seo/match-redirect';
 import { lookupMatchSlug } from '@/lib/seo/match-slug-lookup';
 import {
@@ -83,6 +85,14 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = competitionTarget;
     return NextResponse.redirect(url, 301);
+  }
+
+  // Seasons outside current + last, and retired play-off round slugs → real 308 before render.
+  const seasonTarget = await competitionSeasonRedirect(pathname, lookupSeasonSnapshot);
+  if (seasonTarget) {
+    const url = request.nextUrl.clone();
+    url.pathname = seasonTarget;
+    return NextResponse.redirect(url, 308);
   }
 
   // Public JSON API: per-IP rate limit on enumeration-prone routes (429 + Retry-After, fail-open).

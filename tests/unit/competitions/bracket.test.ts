@@ -8,7 +8,7 @@ import {
   uefaBracketRounds,
   KNOCKOUT_SLUG,
 } from '@/lib/competitions/bracket';
-import type { CupRound, CupTie } from '@/lib/competitions/domestic-ties';
+import { buildCupRounds, type CupRound, type CupTie } from '@/lib/competitions/domestic-ties';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 
 let n = 0;
@@ -46,7 +46,7 @@ function round(slug: string, ties: CupTie[]): CupRound {
 describe('UEFA bracket layout', () => {
   it('names the five bracket rounds and a reserved knockout slug', () => {
     expect(BRACKET_ROUND_SLUGS).toEqual([
-      'knockout-round-play-offs',
+      'knockout-play-offs',
       'round-of-16',
       'quarter-finals',
       'semi-finals',
@@ -93,5 +93,33 @@ describe('UEFA bracket layout', () => {
     ]);
     expect(rounds.map((r) => r.ties.length)).toEqual([2, 1]);
     expect(rounds[0].ties.every(Boolean)).toBe(true);
+  });
+});
+
+describe('play-off column from production labels', () => {
+  const f = (id: number, round: string, h: number, a: number, day: number) =>
+    ({
+      id,
+      round,
+      kickoffAt: new Date(Date.UTC(2026, 1, day)),
+      statusCode: 'FT',
+      homeTeamId: h,
+      awayTeamId: a,
+      homeScore: 1,
+      awayScore: 0,
+    }) as unknown as FixtureWithTeams;
+
+  it.each(['Round of 32', 'Knockout Round Play-offs'])('fills the play-offs from "%s"', (label) => {
+    const rounds = buildCupRounds(2, 2025, [
+      f(1, label, 10, 11, 17),
+      f(2, label, 11, 10, 24),
+      f(3, 'Round of 16', 1, 10, 80),
+    ]);
+    const bracket = uefaBracketRounds(rounds, (s) => s, 8);
+    expect(bracket[0].slug).toBe('knockout-play-offs');
+    expect(bracket[0].ties.filter(Boolean)).toHaveLength(1);
+    expect(bracket[0].ties.filter((t) => t == null)).toHaveLength(7);
+    // …and sits beside the Round of 16 tie its winner joins.
+    expect(bracket[0].ties[0]?.homeTeamId).toBe(10);
   });
 });

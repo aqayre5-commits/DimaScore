@@ -5,6 +5,8 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
 import { BASE_URL } from '@/lib/constants/site';
 import { isSeasonSegment } from '@/lib/seo/competition-tab-redirects';
+import { redirectPlayoffsAlias } from '@/lib/competitions/round-redirect';
+import { redirectOutOfWindowSeason } from '@/lib/competitions/season-redirect';
 import { CompetitionContent, resolveEntry } from '../../../competition-content';
 
 interface PageProps {
@@ -18,12 +20,30 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { locale, country: rawCountry, tournament: rawTournament, season, round: rawRound } =
-    await params;
+  const {
+    locale,
+    country: rawCountry,
+    tournament: rawTournament,
+    season,
+    round: rawRound,
+  } = await params;
   if (!isSeasonSegment(season)) notFound();
   const typedLocale = locale as Locale;
   const round = decodeURIComponent(rawRound);
   const entry = resolveEntry(decodeURIComponent(rawTournament), typedLocale);
+  if (entry) {
+    await redirectOutOfWindowSeason(
+      entry.competitionId,
+      Number(season),
+      `/${locale}/competition/${rawCountry}/${rawTournament}`,
+    );
+    redirectPlayoffsAlias(
+      entry.competitionId,
+      round,
+      `/${locale}/competition/${rawCountry}/${rawTournament}`,
+      season,
+    );
+  }
   const languages: Record<string, string> = {};
   for (const loc of locales) {
     const locSlug = entry?.slugs[loc as Locale] ?? decodeURIComponent(rawTournament);

@@ -441,29 +441,126 @@
 .draw-tree { --tie-name-min: 124px; }
 .draw-tree[data-solo] { min-width: 0; }
 
-.stage-switch {
-  display: inline-flex;
+/* ── Stage dropdown: a <details> menu of real links (crawlable, works without JS) ── */
+.stage-menu {
+  position: relative;
+  display: inline-block;
   max-width: 100%;
-  margin-block-end: 12px;
+}
+.stage-menu > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.stage-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.stage-menu > summary::marker {
+  content: '';
+}
+.stage-menu > summary:focus-visible {
+  outline: 2px solid var(--focus, #176b51);
+  outline-offset: 2px;
+}
+.stage-menu[open] > summary > svg {
+  transform: rotate(180deg);
+}
+.stage-options {
+  position: absolute;
+  inset-inline-start: 0;
+  top: calc(100% + 4px);
+  z-index: 30;
+  min-width: max(100%, 208px);
+  max-width: min(320px, 86vw);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
   border: 1px solid var(--border, var(--line));
   border-radius: 8px;
-  overflow: hidden;
+  background: var(--surface, #fff);
+  box-shadow: 0 8px 24px #14241b1f;
 }
-.stage-switch a {
-  display: inline-flex;
+.stage-options a {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
   min-height: 44px;
-  min-width: 112px;
-  padding-inline: 16px;
+  padding-inline: 8px;
+  border-radius: 6px;
   color: var(--ink);
   text-decoration: none;
-  font: 600 15px/1.2 var(--font);
+  font: 560 15px/1.2 var(--font);
   white-space: nowrap;
 }
-.stage-switch a + a { border-inline-start: 1px solid var(--border, var(--line)); }
-.stage-switch a[aria-current='page'] { background: var(--field); color: var(--green); font-weight: 700; }
-.stage-switch a:hover { background: var(--hover); }
-.stage-switch a:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
-.stage-matchdays { margin-block-start: 14px; }
-.stage-matchdays h3 { margin: 0 0 6px; font-size: 14px; font-weight: 650; color: var(--muted); }
+.stage-options a:hover {
+  background: var(--hover);
+}
+.stage-options a:focus-visible {
+  outline: 2px solid var(--focus, #176b51);
+  outline-offset: -2px;
+}
+.stage-options a[aria-current='page'] {
+  font-weight: 700;
+  color: var(--green, var(--ink));
+}
+.stage-options .stage-check {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.stage-menu .ds-period > svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.draw-step {
+  color: var(--ink);
+}
+.draw-step .ic {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.draw-forward .ic,
+.pl-head .link .ic {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pl-head .link .ic {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+}
+[dir='rtl'] .draw-step .ic,
+[dir='rtl'] .draw-forward .ic,
+[dir='rtl'] .pl-head .link .ic.forward {
+  transform: scaleX(-1);
+}
+
+/* Bracket cards show a 3-letter team code; the full name stays as visually hidden text + title. */
+.tie-code {
+  letter-spacing: 0.02em;
+}
+.cup-vh {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Phone: one round at a time, so the multi-column minimum width must not apply. */
+@media (max-width: 767px) {
+  .draw-tree:not([data-solo]) { min-width: 0; }
+}

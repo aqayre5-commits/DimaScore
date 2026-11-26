@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { formatSeasonLabel, resolveLeagueSeason } from '@/lib/competitions/league-season';
+import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
 
 const seasons = [
   { year: 2026, isCurrent: true, fixtureCount: 12 },
@@ -55,5 +56,36 @@ describe('formatSeasonLabel', () => {
   it('formats 2026 as 2026/27', () => {
     expect(formatSeasonLabel(2026)).toBe('2026/27');
     expect(formatSeasonLabel(2025)).toBe('2025/26');
+  });
+});
+
+describe('seasons outside the allowed window', () => {
+  const allowed = allowedSeasons(2, seasons, new Date('2026-11-26T12:00:00Z'));
+
+  it('allows current and last season only', () => {
+    expect(allowed).toEqual([2026, 2025]);
+  });
+
+  it('flags a request for an older season so the route can redirect', () => {
+    const r = resolveLeagueSeason(seasons, 2026, 2024, allowed);
+    expect(r.requestedOutOfWindow).toBe(true);
+    expect(r.seasonYear).toBe(2026);
+    // Nothing is deleted: the older season is still in the data, just not offered.
+    expect(seasons.some((s) => s.year === 2024)).toBe(true);
+    expect(r.seasons.map((s) => s.year)).toEqual([2026, 2025]);
+  });
+
+  it('flags a season that has no data at all', () => {
+    expect(resolveLeagueSeason(seasons, 2026, 2031, allowed).requestedOutOfWindow).toBe(true);
+  });
+
+  it.each([
+    [null, false],
+    [2026, false],
+    [2025, false],
+  ])('does not redirect a request for %s', (requested, expected) => {
+    expect(resolveLeagueSeason(seasons, 2026, requested, allowed).requestedOutOfWindow).toBe(
+      expected,
+    );
   });
 });

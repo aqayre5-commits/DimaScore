@@ -10,6 +10,11 @@ export interface ResolvedLeagueSeason {
   /** Picker list — always includes the current season, flags aligned to it. */
   seasons: SeasonOption[];
   currentSeasonYear: number | null;
+  /**
+   * A season was requested (…/2024) but it is outside the allowed window (current + last), or has
+   * no data. The page serves the current season, and the route should permanently redirect to it.
+   */
+  requestedOutOfWindow: boolean;
 }
 
 /**
@@ -50,10 +55,12 @@ export function resolveLeagueSeason(
     byYear.has(requestedYear) &&
     (allowed.size === 0 || allowed.has(requestedYear));
 
+  const requested = requestedYear != null && Number.isFinite(requestedYear);
   return {
     seasonYear: requestedOk ? requestedYear : currentSeasonYear,
     seasons,
     currentSeasonYear,
+    requestedOutOfWindow: requested && !requestedOk,
   };
 }
 

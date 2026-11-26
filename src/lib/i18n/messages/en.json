@@ -1238,6 +1238,10 @@
     "matchesCount": "{n} matches",
     "clubs": "Clubs",
     "recordsFrom": "Player records from {round}",
-    "noStats": "Statistics are not available for this competition."
+    "noStats": "Statistics are not available for this competition.",
+    "stage": "Stage",
+    "previousStage": "Previous round",
+    "nextStage": "Next round",
+    "versus": "v"
   }
 }

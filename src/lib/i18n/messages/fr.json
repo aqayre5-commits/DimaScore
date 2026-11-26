@@ -1238,6 +1238,10 @@
     "matchesCount": "{n} matchs",
     "clubs": "Clubs",
     "recordsFrom": "Statistiques joueurs à partir de {round}",
-    "noStats": "Les statistiques ne sont pas disponibles pour cette compétition."
+    "noStats": "Les statistiques ne sont pas disponibles pour cette compétition.",
+    "stage": "Phase",
+    "previousStage": "Tour précédent",
+    "nextStage": "Tour suivant",
+    "versus": "contre"
   }
 }

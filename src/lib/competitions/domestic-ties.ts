@@ -88,6 +88,7 @@ const FALLBACK_ORDER = [
   'round-of-64',
   'round-of-32',
   'knockout-round-play-offs',
+  'knockout-play-offs',
   'round-of-16',
   'quarter-finals',
   'quarterfinals',
@@ -99,6 +100,26 @@ const FALLBACK_ORDER = [
 /** UEFA league-phase matchday ("League Stage - 5"); not a knockout round. */
 export const LEAGUE_PHASE_SLUG = 'league-phase';
 const LEAGUE_STAGE_RE = /^league[- ](stage|phase)\s*-\s*(\d+)$/i;
+
+/** One name for the UEFA league-phase cups' two-leg play-off round, however the feed labels it. */
+export const KNOCKOUT_PLAYOFFS_LABEL = 'Knockout play-offs';
+export const KNOCKOUT_PLAYOFFS_SLUG = 'knockout-play-offs';
+
+/**
+ * Production labels the UCL / UEL / UECL play-off round "Round of 32" (2025/26) or
+ * "Knockout Round Play-offs" (earlier editions). Both are the knockout play-offs.
+ */
+export function canonicalUefaRound(label: string): string {
+  const slug = slugifyRound(label);
+  if (
+    slug === 'round-of-32' ||
+    slug === 'knockout-round-play-offs' ||
+    slug === 'knockout-play-offs'
+  ) {
+    return KNOCKOUT_PLAYOFFS_LABEL;
+  }
+  return label;
+}
 
 export function leaguePhaseMatchday(label: string | null | undefined): number | null {
   const m = LEAGUE_STAGE_RE.exec((label ?? '').trim());
@@ -129,15 +150,17 @@ export function buildCupRounds(
   fixtures: FixtureWithTeams[],
   roundInfos: RoundInfo[] = [],
 ): CupRound[] {
+  const uefaPhase = getCompetitionFormat(competitionId, seasonYear)?.leaguePhase != null;
+  const nameOf = (raw: string) => (uefaPhase ? canonicalUefaRound(raw) : raw);
   const byLabel = new Map<string, FixtureWithTeams[]>();
   for (const f of fixtures) {
-    const label = (f.round ?? '').trim() || 'Round';
+    const label = nameOf((f.round ?? '').trim() || 'Round');
     const list = byLabel.get(label) ?? [];
     list.push(f);
     byLabel.set(label, list);
   }
   for (const info of roundInfos) {
-    const label = (info.round ?? '').trim();
+    const label = nameOf((info.round ?? '').trim());
     if (label && !byLabel.has(label)) byLabel.set(label, []);
   }
 
