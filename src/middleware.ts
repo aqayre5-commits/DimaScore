@@ -10,14 +10,11 @@ import { canonicalCompetitionRedirect } from '@/lib/seo/competition-canonical';
 import { competitionSeasonRedirect } from '@/lib/seo/competition-season-redirect';
 import { lookupSeasonSnapshot } from '@/lib/seo/competition-season-lookup';
 import { resolveBareMatchRedirect } from '@/lib/seo/match-redirect';
-import { isMissingBestThirdsPath } from '@/lib/competitions/best-thirds-round';
-import { locales, type Locale } from '@/lib/i18n/config';
 import { lookupMatchSlug } from '@/lib/seo/match-slug-lookup';
 import {
   createExistenceCache,
   entityCacheKey,
   entityHttpResponse,
-  localeHttpResponse,
   parseEntityPath,
 } from '@/lib/seo/entity-http';
 import { lookupEntity } from '@/lib/seo/entity-lookup';
@@ -102,15 +99,6 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = seasonTarget;
     return NextResponse.redirect(url, 308);
-  }
-
-  // An edition with no qualifying third-placed sides has no /round/best-thirds page.
-  // Middleware so the status is a real 404, not a streamed 200 with the groups view or a soft 404.
-  if (isMissingBestThirdsPath(pathname)) {
-    const loc = (pathname.split('/')[1] ?? 'en') as Locale;
-    const locale = (locales as readonly string[]).includes(loc) ? loc : 'en';
-    const http = localeHttpResponse(locale, 'missing');
-    return new NextResponse(http.body, { status: http.status, headers: http.headers });
   }
 
   // Public JSON API: per-IP rate limit on enumeration-prone routes (429 + Retry-After, fail-open).

@@ -6,7 +6,6 @@ import { getCountrySlug } from '@/lib/constants/country-slugs';
 import { BASE_URL } from '@/lib/constants/site';
 import { isSeasonSegment } from '@/lib/seo/competition-tab-redirects';
 import { redirectPlayoffsAlias } from '@/lib/competitions/round-redirect';
-import { isMissingBestThirdsPath } from '@/lib/competitions/best-thirds-round';
 import { redirectOutOfWindowSeason } from '@/lib/competitions/season-redirect';
 import { CompetitionContent, resolveEntry } from '../../../competition-content';
 
@@ -31,13 +30,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!isSeasonSegment(season)) notFound();
   const typedLocale = locale as Locale;
   const round = decodeURIComponent(rawRound);
-  if (
-    isMissingBestThirdsPath(
-      `/${locale}/competition/${rawCountry}/${rawTournament}/${season}/round/${encodeURIComponent(round)}`,
-    )
-  ) {
-    notFound();
-  }
   const entry = resolveEntry(decodeURIComponent(rawTournament), typedLocale);
   if (entry) {
     await redirectOutOfWindowSeason(
@@ -73,13 +65,6 @@ export default async function CupSeasonRoundPage({ params }: PageProps) {
   const { locale, country: rawCountry, tournament: rawTournament, season, round } = await params;
   setRequestLocale(locale);
   if (!isSeasonSegment(season)) notFound();
-  if (
-    isMissingBestThirdsPath(
-      `/${locale}/competition/${rawCountry}/${rawTournament}/${season}/round/${round}`,
-    )
-  ) {
-    notFound();
-  }
   const seasonYear = Number(season);
   return (
     <CompetitionContent
