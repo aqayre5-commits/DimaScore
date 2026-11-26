@@ -2,15 +2,17 @@ import { and, asc, gte, inArray, lt } from 'drizzle-orm';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { hydrateTeams } from '../queries-hydrate';
-import { isDisplayableFixture } from './homepage';
+import { isHomeDisplayableFixture } from '@/lib/home/displayable';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import type { HomeCompetition, HomeFixture } from '@/lib/home/model';
 
 /**
  * Every fixture from every competition (friendlies included) that kicks off in [from, to), with
- * its teams and competition. Home shows the whole day, so nothing is filtered by competition;
- * only rows the rest of the site also hides are dropped (an unresolved "TBD" team, youth sides in
- * the Friendlies feed — see isDisplayableFixture). 3 queries: fixtures + competitions, teams.
+ * its teams and competition. Home shows the whole day, so nothing is filtered by competition.
+ * Youth matches, youth friendlies included, are kept. A row is dropped only when a side is
+ * missing or its name is TBD, unknown, or empty (isHomeDisplayableFixture). The ticker and the
+ * old homepage still use isDisplayableFixture, which hides youth friendlies; that is unchanged.
+ * 3 queries: fixtures + competitions, teams.
  */
 export async function getHomeWindowFixtures(
   db: NeonHttpDatabase<typeof schema>,
@@ -70,7 +72,7 @@ export async function getHomeWindowFixtures(
     if (competitionId == null) continue;
     const homeTeam = r.homeTeamId != null ? (teams.get(r.homeTeamId) ?? null) : null;
     const awayTeam = r.awayTeamId != null ? (teams.get(r.awayTeamId) ?? null) : null;
-    if (!isDisplayableFixture({ competition: { id: competitionId }, homeTeam, awayTeam })) continue;
+    if (!isHomeDisplayableFixture({ homeTeam, awayTeam })) continue;
     fixtures.push({
       ...r,
       competitionId,
