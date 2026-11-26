@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { TeamMark } from '@/components/shared/TeamMark';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { LocalTime } from '@/components/shared/LocalTime';
@@ -14,9 +14,34 @@ import type { DrawRound } from '@/lib/competitions/bracket';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { buildTeamHref } from '@/lib/competitions/paths';
+import { teamCode } from '@/lib/competitions/team-code';
 
 function teamName(team: FixtureWithTeams['homeTeam'], locale: Locale): string {
   return team ? getTeamDisplayName(team, locale) : '—';
+}
+
+/**
+ * A team name inside a tie card. In the bracket (`compact`) the column is narrow, so it shows the
+ * 3-letter code (API-Football `teams.code`, else a generated one); the full name stays in the
+ * title and as visually hidden text for screen readers and crawlers.
+ */
+function TeamName({
+  team,
+  locale,
+  compact,
+}: {
+  team: FixtureWithTeams['homeTeam'];
+  locale: Locale;
+  compact: boolean;
+}) {
+  const full = teamName(team, locale);
+  if (!compact) return <bdi>{full}</bdi>;
+  return (
+    <bdi className="tie-code" title={full}>
+      <span aria-hidden="true">{teamCode(team)}</span>
+      <span className="cup-vh">{full}</span>
+    </bdi>
+  );
 }
 
 function scoreOf(f: FixtureWithTeams, teamId: number): number | null {
@@ -122,10 +147,13 @@ export function SingleMatchCard({
   fixture,
   locale,
   labels,
+  compact = false,
 }: {
   fixture: FixtureWithTeams;
   locale: Locale;
   labels: { fullTime: string; matchCentre: string };
+  /** Bracket cards show 3-letter team codes. */
+  compact?: boolean;
 }) {
   const href = matchHref(locale, {
     id: fixture.id,
@@ -170,11 +198,11 @@ export function SingleMatchCard({
         </span>
         <div className={`tie-team${win === 'home' ? ' is-winner' : ''}`}>
           <Mark team={fixture.homeTeam} locale={locale} />
-          <bdi>{teamName(fixture.homeTeam, locale)}</bdi>
+          <TeamName team={fixture.homeTeam} locale={locale} compact={compact} />
         </div>
         <div className={`tie-team${win === 'away' ? ' is-winner' : ''}`}>
           <Mark team={fixture.awayTeam} locale={locale} />
-          <bdi>{teamName(fixture.awayTeam, locale)}</bdi>
+          <TeamName team={fixture.awayTeam} locale={locale} compact={compact} />
         </div>
       </div>
       <div className="tie-column">
@@ -194,10 +222,13 @@ export function TwoLegTieCard({
   tie,
   locale,
   labels,
+  compact = false,
 }: {
   tie: CupTie;
   locale: Locale;
   labels: { leg1: string; leg2: string; agg: string; aggTitle: string };
+  /** Bracket cards show 3-letter team codes. */
+  compact?: boolean;
 }) {
   const [idA, idB] = tieSides(tie);
   const teamA = teamFromTie(tie, idA);
@@ -282,27 +313,27 @@ export function TwoLegTieCard({
         </span>
         <div className={`tie-team${win === idA ? ' is-winner' : ''}`}>
           {teamA?.slug ? (
-            <a href={buildTeamHref(locale, teamA.slug)}>
+            <a href={buildTeamHref(locale, teamA.slug)} title={teamName(teamA, locale)}>
               <Mark team={teamA} locale={locale} />
-              <bdi>{teamName(teamA, locale)}</bdi>
+              <TeamName team={teamA} locale={locale} compact={compact} />
             </a>
           ) : (
             <>
               <Mark team={teamA} locale={locale} />
-              <bdi>{teamName(teamA, locale)}</bdi>
+              <TeamName team={teamA} locale={locale} compact={compact} />
             </>
           )}
         </div>
         <div className={`tie-team${win === idB ? ' is-winner' : ''}`}>
           {teamB?.slug ? (
-            <a href={buildTeamHref(locale, teamB.slug)}>
+            <a href={buildTeamHref(locale, teamB.slug)} title={teamName(teamB, locale)}>
               <Mark team={teamB} locale={locale} />
-              <bdi>{teamName(teamB, locale)}</bdi>
+              <TeamName team={teamB} locale={locale} compact={compact} />
             </a>
           ) : (
             <>
               <Mark team={teamB} locale={locale} />
-              <bdi>{teamName(teamB, locale)}</bdi>
+              <TeamName team={teamB} locale={locale} compact={compact} />
             </>
           )}
         </div>
@@ -329,9 +360,12 @@ export function TieCard({
   tie,
   locale,
   labels,
+  compact = false,
 }: {
   tie: CupTie;
   locale: Locale;
+  /** Bracket cards show 3-letter team codes; every other view keeps full names. */
+  compact?: boolean;
   labels: {
     fullTime: string;
     matchCentre: string;
@@ -342,10 +376,17 @@ export function TieCard({
   };
 }) {
   if (tie.twoLegged || tie.fixtures.length > 1) {
-    return <TwoLegTieCard tie={tie} locale={locale} labels={labels} />;
+    return <TwoLegTieCard tie={tie} locale={locale} labels={labels} compact={compact} />;
   }
   if (tie.fixtures[0]) {
-    return <SingleMatchCard fixture={tie.fixtures[0]} locale={locale} labels={labels} />;
+    return (
+      <SingleMatchCard
+        fixture={tie.fixtures[0]}
+        locale={locale}
+        labels={labels}
+        compact={compact}
+      />
+    );
   }
   return (
     <article className="cup-pair">
@@ -354,48 +395,67 @@ export function TieCard({
   );
 }
 
-export function RoundNav({
-  rounds,
-  currentSlug,
-  hrefFor,
-  labels,
-}: {
-  rounds: { slug: string; label: string }[];
-  currentSlug: string;
-  hrefFor: (slug: string) => string;
-  labels: { previous: string; next: string; rounds: string };
-}) {
-  const index = rounds.findIndex((r) => r.slug === currentSlug);
-  const prev = index > 0 ? rounds[index - 1] : null;
-  const next = index >= 0 && index < rounds.length - 1 ? rounds[index + 1] : null;
+const ARROW = {
+  back: 'm15 5-7 7 7 7',
+  forward: 'm9 5 7 7-7 7',
+};
+
+function StepIcon({ dir }: { dir: 'back' | 'forward' }) {
   return (
-    <nav className="draw-bar cup-round-nav" aria-label={labels.rounds}>
+    <svg className={`ic ${dir}`} aria-hidden="true" viewBox="0 0 24 24">
+      <path d={ARROW[dir]} />
+    </svg>
+  );
+}
+
+/** Previous / stage picker / next, as in the reference (`.draw-bar > .draw-tools`). */
+export function DrawBar({
+  prev,
+  next,
+  hrefFor,
+  onSelect,
+  labels,
+  children,
+}: {
+  prev: { slug: string; label: string } | null;
+  next: { slug: string; label: string } | null;
+  hrefFor: (slug: string) => string;
+  onSelect?: (slug: string) => void;
+  labels: { previous: string; next: string };
+  children: ReactNode;
+}) {
+  function step(target: { slug: string; label: string } | null, dir: 'back' | 'forward') {
+    const text = dir === 'back' ? labels.previous : labels.next;
+    if (!target) {
+      return (
+        <span className="draw-step draw-disabled" aria-disabled="true" aria-label={text}>
+          <StepIcon dir={dir} />
+        </span>
+      );
+    }
+    return (
       <a
-        className={`draw-step${prev ? '' : ' draw-disabled'}`}
-        href={prev ? hrefFor(prev.slug) : undefined}
-        aria-label={labels.previous}
-        aria-disabled={!prev}
+        className="draw-step"
+        href={hrefFor(target.slug)}
+        aria-label={`${text} · ${target.label}`}
+        onClick={(e) => {
+          if (!onSelect) return;
+          e.preventDefault();
+          onSelect(target.slug);
+        }}
       >
-        ‹
+        <StepIcon dir={dir} />
       </a>
-      <ul>
-        {rounds.map((r) => (
-          <li key={r.slug}>
-            <a href={hrefFor(r.slug)} aria-current={r.slug === currentSlug ? 'page' : undefined}>
-              {r.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-      <a
-        className={`draw-step${next ? '' : ' draw-disabled'}`}
-        href={next ? hrefFor(next.slug) : undefined}
-        aria-label={labels.next}
-        aria-disabled={!next}
-      >
-        ›
-      </a>
-    </nav>
+    );
+  }
+  return (
+    <div className="draw-bar">
+      <div className="draw-tools">
+        {step(prev, 'back')}
+        {children}
+        {step(next, 'forward')}
+      </div>
+    </div>
   );
 }
 
@@ -507,6 +567,8 @@ type DrawLabels = {
   next: string;
   rounds: string;
   tbd: string;
+  /** "v" in "Quarter-finals · v Liverpool". */
+  versus: string;
 };
 
 export function DrawWindow({
@@ -514,28 +576,23 @@ export function DrawWindow({
   currentSlug,
   locale,
   hrefFor,
-  nextHref,
-  nextLabel,
+  onSelect,
+  picker,
   labels,
   windowSize = 3,
-  active = true,
-  scrollToFocus = false,
 }: {
   rounds: DrawRound[];
   currentSlug: string;
   locale: Locale;
   hrefFor: (slug: string) => string;
-  nextHref?: string | null;
-  nextLabel?: string | null;
+  /** Swap the stage in place (client navigation); the links still work without it. */
+  onSelect?: (slug: string) => void;
+  /** The stage dropdown, shown between the previous and next arrows. */
+  picker: ReactNode;
   labels: DrawLabels;
-  /** Adjacent rounds shown side by side on desktop (the pane scrolls when it is narrower). */
+  /** Adjacent rounds shown side by side on desktop, starting at the selected stage. */
   windowSize?: number;
-  /** True while the draw is on screen, so the pane can scroll the focused round into view. */
-  active?: boolean;
-  /** Scroll the pane to the focused round (only when a round was asked for). */
-  scrollToFocus?: boolean;
 }) {
-  const paneRef = useRef<HTMLDivElement>(null);
   const visible = rounds.filter((r) => !r.earlier || r.slug === currentSlug);
   const focusIdx = Math.max(
     0,
@@ -552,27 +609,35 @@ export function DrawWindow({
     .map((_, i) => (i === 0 ? 'minmax(0,1fr)' : 'var(--draw-gap) minmax(0,1fr)'))
     .join(' ');
   const anyTwoLegged = columns.some((r) => r.twoLegged);
+  const prev = focusIdx > 0 ? visible[focusIdx - 1] : null;
+  const next = focusIdx < visible.length - 1 ? visible[focusIdx + 1] : null;
 
-  useEffect(() => {
-    const pane = paneRef.current;
-    if (!active || !scrollToFocus || !pane) return;
-    const target = pane.querySelector<HTMLElement>('.draw-round.draw-selected');
-    if (!target || pane.scrollWidth <= pane.clientWidth) return;
-    const p = pane.getBoundingClientRect();
-    const t = target.getBoundingClientRect();
-    const rtl = getComputedStyle(pane).direction === 'rtl';
-    pane.scrollLeft += rtl ? t.right - p.right : t.left - p.left;
-  }, [active, scrollToFocus, focus?.slug]);
+  /** Phone: the tie this one feeds into, "{next stage} · v {opponent}". */
+  function forwardOf(round: DrawRound, tie: CupTie | null) {
+    const at = visible.findIndex((r) => r.slug === round.slug);
+    const nextRound = at >= 0 ? visible[at + 1] : undefined;
+    if (!tie || !nextRound) return null;
+    const mine = clubsOf(tie);
+    const nextTie = nextRound.ties.find((t) => t && clubsOf(t).some((id) => mine.includes(id)));
+    if (!nextTie) return null;
+    const opponentId = clubsOf(nextTie).find((id) => !mine.includes(id));
+    const opponent = opponentId != null ? teamFromTie(nextTie, opponentId) : null;
+    if (!opponent) return null;
+    return { slug: nextRound.slug, label: nextRound.label, opponent };
+  }
 
   return (
     <div className="cup-draw">
-      <RoundNav
-        rounds={visible.map((r) => ({ slug: r.slug, label: r.label }))}
-        currentSlug={focus?.slug ?? currentSlug}
+      <DrawBar
+        prev={prev ? { slug: prev.slug, label: prev.label } : null}
+        next={next ? { slug: next.slug, label: next.label } : null}
         hrefFor={hrefFor}
+        onSelect={onSelect}
         labels={labels}
-      />
-      <div className="draw-window" ref={paneRef}>
+      >
+        {picker}
+      </DrawBar>
+      <div className="draw-window">
         <div
           className="draw-tree"
           data-solo={columns.length <= 1 ? '' : undefined}
@@ -580,7 +645,7 @@ export function DrawWindow({
             {
               ['--tracks' as string]: tracks,
               ['--cols' as string]: String(columns.length),
-              ['--col-min' as string]: anyTwoLegged ? '288px' : '230px',
+              ['--col-min' as string]: anyTwoLegged ? '236px' : '196px',
               ['--slots' as string]: String(maxSlots),
             } as CSSProperties
           }
@@ -603,6 +668,7 @@ export function DrawWindow({
                   <div className="draw-matches" style={{ ['--slots' as string]: String(maxSlots) }}>
                     {(round.ties.length > 0 ? round.ties : [null]).map((tie, i) => {
                       const position = ((i + 0.5) / Math.max(slots, 1)) * maxSlots;
+                      const forward = selected ? forwardOf(round, tie) : null;
                       return (
                         <div
                           key={tie?.key ?? `empty-${i}`}
@@ -611,13 +677,25 @@ export function DrawWindow({
                           style={{ ['--position' as string]: position }}
                         >
                           {tie ? (
-                            <TieCard tie={tie} locale={locale} labels={labels} />
+                            <TieCard tie={tie} locale={locale} labels={labels} compact />
                           ) : (
                             <TbdCard twoLegged={round.twoLegged} labels={labels} />
                           )}
-                          {selected && nextHref && nextLabel ? (
-                            <a className="draw-forward" href={nextHref}>
-                              {nextLabel} ›
+                          {forward ? (
+                            <a
+                              className="draw-forward"
+                              href={hrefFor(forward.slug)}
+                              onClick={(e) => {
+                                if (!onSelect) return;
+                                e.preventDefault();
+                                onSelect(forward.slug);
+                              }}
+                            >
+                              <span>
+                                {forward.label} · {labels.versus}{' '}
+                                <bdi>{teamName(forward.opponent, locale)}</bdi>
+                              </span>
+                              <StepIcon dir="forward" />
                             </a>
                           ) : null}
                         </div>

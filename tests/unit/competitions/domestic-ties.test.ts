@@ -3,6 +3,7 @@ import {
   buildCupRounds,
   defaultCupRound,
   fixtureLegLabel,
+  canonicalUefaRound,
   isQualifyingRound,
   leaguePhaseMatchday,
 } from '@/lib/competitions/domestic-ties';
@@ -109,11 +110,11 @@ describe('UEFA league-phase cups', () => {
       'play-offs',
       'league-stage-1',
       'league-stage-2',
-      'knockout-round-play-offs',
+      'knockout-play-offs',
       'round-of-16',
       'final',
     ]);
-    const po = rounds.find((r) => r.slug === 'knockout-round-play-offs')!;
+    const po = rounds.find((r) => r.slug === 'knockout-play-offs')!;
     expect(po.twoLegged).toBe(true);
     expect(po.ties).toHaveLength(1);
   });
@@ -123,5 +124,40 @@ describe('UEFA league-phase cups', () => {
     expect(leaguePhaseMatchday('Round of 16')).toBeNull();
     expect(isQualifyingRound('2nd Qualifying Round')).toBe(true);
     expect(isQualifyingRound('Semi-finals')).toBe(false);
+  });
+});
+
+describe('knockout play-offs naming', () => {
+  it('names the 2025/26 "Round of 32" and the older "Knockout Round Play-offs" the same stage', () => {
+    for (const label of ['Round of 32', 'Knockout Round Play-offs', 'Knockout Play-offs']) {
+      expect(canonicalUefaRound(label)).toBe('Knockout play-offs');
+    }
+    expect(canonicalUefaRound('Round of 16')).toBe('Round of 16');
+  });
+
+  it.each([2, 3, 848])('competition %i: Round of 32 is the two-leg knockout play-offs', (id) => {
+    const rounds = buildCupRounds(id, 2025, [
+      fx(1, 'Round of 32', 4, 5, '2026-02-17T20:00:00Z', [1, 0]),
+      fx(2, 'Round of 32', 5, 4, '2026-02-24T20:00:00Z', [2, 2]),
+      fx(3, 'Round of 16', 1, 4, '2026-03-10T20:00:00Z', [1, 1]),
+    ]);
+    expect(rounds.map((r) => r.slug)).toEqual(['knockout-play-offs', 'round-of-16']);
+    expect(rounds[0].label).toBe('Knockout play-offs');
+    expect(rounds[0].twoLegged).toBe(true);
+    expect(rounds[0].ties).toHaveLength(1);
+  });
+
+  it('keeps one round when both labels appear in the same season', () => {
+    const rounds = buildCupRounds(2, 2025, [
+      fx(1, 'Round of 32', 4, 5, '2026-02-17T20:00:00Z'),
+      fx(2, 'Knockout Round Play-offs', 6, 7, '2026-02-18T20:00:00Z'),
+    ]);
+    expect(rounds).toHaveLength(1);
+    expect(rounds[0].ties).toHaveLength(2);
+  });
+
+  it('leaves a domestic cup Round of 32 alone', () => {
+    const rounds = buildCupRounds(45, 2025, [fx(1, 'Round of 32', 4, 5, '2026-02-17T20:00:00Z')]);
+    expect(rounds[0].slug).toBe('round-of-32');
   });
 });

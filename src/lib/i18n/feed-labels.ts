@@ -93,6 +93,7 @@ export function localizeRound(round: string | null | undefined, locale: string):
 const AR_ROUND_EXTRA: Record<string, string> = {
   'Knockout Round Play-offs': 'ملحق الأدوار الإقصائية',
   'Knockout Play-offs': 'ملحق الأدوار الإقصائية',
+  'Knockout play-offs': 'ملحق الأدوار الإقصائية',
   'Promotion Play-offs': 'ملحق الصعود',
   'Relegation Play-offs': 'ملحق الهبوط',
   'Play-off': 'الملحق',

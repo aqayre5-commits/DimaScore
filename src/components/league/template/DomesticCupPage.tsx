@@ -29,6 +29,7 @@ import {
   fixtureLegLabel,
   leaguePhaseMatchday,
   LEAGUE_PHASE_SLUG,
+  KNOCKOUT_PLAYOFFS_SLUG,
   type CupRound,
 } from '@/lib/competitions/domestic-ties';
 import type { StandingRow } from '@/lib/db/queries';
@@ -46,11 +47,10 @@ import {
   mapAssists,
   usePatchedFixtures,
 } from './CompetitionBits';
-import { DrawWindow } from './CupDraw';
+import { DrawWindow, TieCard } from './CupDraw';
+import { StagePicker } from './StagePicker';
 import {
   BRACKET_LABELS,
-  BRACKET_ROUND_SLUGS,
-  KNOCKOUT_SLUG,
   isBracketRound,
   layoutRounds,
   uefaBracketRounds,
@@ -414,10 +414,7 @@ export function DomesticCupPage({
   const startRound = seasonOver ? (latestPlayedRound ?? fallbackRound) : fallbackRound;
 
   const initialIsPhase = !!leaguePhase && initialRoundSlug === LEAGUE_PHASE_SLUG;
-  const initialIsKnockout =
-    !!leaguePhase &&
-    !!initialRoundSlug &&
-    (initialRoundSlug === KNOCKOUT_SLUG || isBracketRound(initialRoundSlug));
+  const initialIsKnockout = !!leaguePhase && !!initialRoundSlug && isBracketRound(initialRoundSlug);
   const [roundSlug, setRoundSlug] = useState(() => {
     if (initialIsPhase || initialIsKnockout) return startRound?.slug ?? '';
     return initialRoundSlug ?? startRound?.slug ?? '';
@@ -426,12 +423,18 @@ export function DomesticCupPage({
     () => cupRounds.some((r) => isBracketRound(r.slug) && r.fixtures.length > 0),
     [cupRounds],
   );
-  // Stages view for the UEFA cups: the league-phase table, or the knockout bracket (a round slug focuses it).
+  // The knockout stage to open when none was asked for: the live/next round, else the start of the path.
+  const defaultKnockoutSlug = useMemo(() => {
+    if (seasonOver) return KNOCKOUT_PLAYOFFS_SLUG;
+    const withFixtures = cupRounds.filter((r) => isBracketRound(r.slug) && r.fixtures.length > 0);
+    return defaultCupRound(withFixtures, now)?.slug ?? KNOCKOUT_PLAYOFFS_SLUG;
+  }, [cupRounds, now, seasonOver]);
+  // Stages view for the UEFA cups: the league-phase table, or one knockout stage (a window of rounds).
   const [stageSlug, setStageSlug] = useState<string>(() => {
     if (!leaguePhase) return '';
     if (initialIsPhase) return LEAGUE_PHASE_SLUG;
     if (initialIsKnockout) return initialRoundSlug as string;
-    return seasonOver || bracketHasFixtures ? KNOCKOUT_SLUG : LEAGUE_PHASE_SLUG;
+    return seasonOver || bracketHasFixtures ? defaultKnockoutSlug : LEAGUE_PHASE_SLUG;
   });
   const activeRound: CupRound | undefined = findCupRound(cupRounds, roundSlug) ?? startRound;
 
@@ -509,13 +512,12 @@ export function DomesticCupPage({
     [cupRounds, leaguePhase, playoffTies, locale],
   );
   const stageIsPhase = !!leaguePhase && stageSlug === LEAGUE_PHASE_SLUG;
-  // Bracket focus: the round in the URL, else the live/next round, else the last one played.
-  const bracketFocus = (() => {
-    if (!leaguePhase) return activeRound?.slug ?? '';
-    if (isBracketRound(stageSlug)) return stageSlug;
-    const withFixtures = cupRounds.filter((r) => isBracketRound(r.slug) && r.fixtures.length > 0);
-    return defaultCupRound(withFixtures, now)?.slug ?? BRACKET_ROUND_SLUGS[0];
-  })();
+  // Stage in the draw: the picked knockout stage; domestic cups follow the active round.
+  const drawSlug = !leaguePhase
+    ? (activeRound?.slug ?? '')
+    : isBracketRound(stageSlug)
+      ? stageSlug
+      : defaultKnockoutSlug;
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
@@ -579,17 +581,31 @@ export function DomesticCupPage({
     leg2: tCup('leg2'),
     agg: tCup('agg'),
     aggTitle: tCup('aggregate'),
-    previous: t('prevRound'),
-    next: t('nextRound'),
+    previous: tCup('previousStage'),
+    next: tCup('nextStage'),
     rounds: tCup('rounds'),
     tbd: tCup('tbd'),
+    versus: tCup('versus'),
   };
 
-  const drawSlug = bracketFocus;
-  const nextRound = (() => {
-    const i = bracketRounds.findIndex((r) => r.slug === drawSlug);
-    return i >= 0 && i < bracketRounds.length - 1 ? bracketRounds[i + 1] : undefined;
-  })();
+  const stageOptions = [
+    ...(leaguePhase ? [{ slug: LEAGUE_PHASE_SLUG, label: tCup('leaguePhase') }] : []),
+    ...bracketRounds.filter((r) => !r.earlier).map((r) => ({ slug: r.slug, label: r.label })),
+  ];
+  function selectStage(slug: string) {
+    if (leaguePhase) setStageSlug(slug);
+    else setRoundSlug(slug);
+    window.history.replaceState(null, '', hrefFor(slug));
+  }
+  const stagePicker = (
+    <StagePicker
+      label={tCup('stage')}
+      current={leaguePhase ? stageSlug || drawSlug : drawSlug}
+      options={stageOptions}
+      hrefFor={hrefFor}
+      onSelect={selectStage}
+    />
+  );
 
   const phaseTable = leaguePhase ? (
     <LeaguePhaseTable
@@ -602,6 +618,38 @@ export function DomesticCupPage({
   const phaseRules = leaguePhase ? (
     <LeaguePhaseRules zones={leaguePhase.zones} title={tCup('whatNext')} />
   ) : null;
+
+  // Side card on the league-phase view: the first two play-off ties, with a link to the stage.
+  const playoffsRound = bracketRounds.find((r) => r.slug === KNOCKOUT_PLAYOFFS_SLUG);
+  const playoffTiesPreview = (playoffsRound?.ties ?? [])
+    .filter((ti): ti is NonNullable<typeof ti> => ti != null)
+    .slice(0, 2);
+  const koCard =
+    leaguePhase && playoffsRound && playoffTiesPreview.length > 0 ? (
+      <section>
+        <div className="pl-head">
+          <h2>{playoffsRound.label}</h2>
+          <a
+            className="link"
+            href={hrefFor(KNOCKOUT_PLAYOFFS_SLUG)}
+            onClick={(e) => {
+              e.preventDefault();
+              selectStage(KNOCKOUT_PLAYOFFS_SLUG);
+            }}
+          >
+            {tCup('stagesTab')}{' '}
+            <svg className="ic forward" aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M3 12h17m-6-6 6 6-6 6" />
+            </svg>
+          </a>
+        </div>
+        <div className="cup-ties">
+          {playoffTiesPreview.map((ti) => (
+            <TieCard key={ti.key} tie={ti} locale={locale} labels={tieLabels} />
+          ))}
+        </div>
+      </section>
+    ) : null;
 
   const whenRail = (
     <section className="cup-when pl-coming">
@@ -824,59 +872,18 @@ export function DomesticCupPage({
 
         <div data-pl-panel="stages">
           <div className="pl-mobile-top">{whenRail}</div>
-          <div className="pl-layout">
+          <div className="pl-layout cup-grid">
             <div className="pl-main">
-              {leaguePhase && (
-                <nav className="stage-switch" aria-label={tCup('stagesTab')}>
-                  {[
-                    { slug: LEAGUE_PHASE_SLUG, label: tCup('leaguePhase') },
-                    { slug: KNOCKOUT_SLUG, label: tCup('knockout') },
-                  ].map((item) => {
-                    const current = (item.slug === LEAGUE_PHASE_SLUG) === stageIsPhase;
-                    return (
-                      <a
-                        key={item.slug}
-                        href={hrefFor(item.slug)}
-                        aria-current={current ? 'page' : undefined}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setStageSlug(item.slug);
-                          window.history.replaceState(null, '', hrefFor(item.slug));
-                        }}
-                      >
-                        {item.label}
-                      </a>
-                    );
-                  })}
-                </nav>
-              )}
-              {stageIsPhase ? (
+              {leaguePhase && stageIsPhase ? (
                 <>
-                  {phaseTable}
-                  <nav className="stage-matchdays" aria-label={tCup('matchdays')}>
-                    <h3>{tCup('matchdays')}</h3>
-                    <div className="cup-round-nav">
-                      <ul>
-                        {cupRounds
-                          .filter((r) => leaguePhaseMatchday(r.label) != null)
-                          .map((r) => (
-                            <li key={r.slug}>
-                              <a
-                                href={hrefFor(r.slug)}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setRoundSlug(r.slug);
-                                  select('fixtures');
-                                  window.history.replaceState(null, '', hrefFor(r.slug));
-                                }}
-                              >
-                                {roundLabel(r)}
-                              </a>
-                            </li>
-                          ))}
-                      </ul>
-                    </div>
-                  </nav>
+                  <section>
+                    <div className="cup-controls">{stagePicker}</div>
+                    {phaseTable}
+                  </section>
+                  <div className="pl-mobile-top">
+                    {phaseRules}
+                    {koCard}
+                  </div>
                 </>
               ) : bracketRounds.length === 0 ? (
                 <p className="pl-empty">{t('comingSoon')}</p>
@@ -886,19 +893,20 @@ export function DomesticCupPage({
                   currentSlug={drawSlug}
                   locale={locale}
                   hrefFor={hrefFor}
-                  nextHref={nextRound ? hrefFor(nextRound.slug) : null}
-                  nextLabel={nextRound ? nextRound.label : null}
+                  onSelect={selectStage}
+                  picker={stagePicker}
                   labels={tieLabels}
-                  windowSize={leaguePhase ? bracketRounds.length : 3}
-                  active={tab === 'stages'}
-                  scrollToFocus={isBracketRound(stageSlug)}
                 />
               )}
-              {phaseRules ? <div className="pl-mobile-top">{phaseRules}</div> : null}
             </div>
             <aside className="pl-side pl-aux-desktop">
               {whenRail}
-              {phaseRules}
+              {stageIsPhase ? (
+                <>
+                  {phaseRules}
+                  {koCard}
+                </>
+              ) : null}
             </aside>
           </div>
         </div>

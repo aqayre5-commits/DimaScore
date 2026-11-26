@@ -6,11 +6,16 @@
  */
 import type { CupRound, CupTie } from '@/lib/competitions/domestic-ties';
 
-/** Reserved /round/{slug} for the bracket view. */
+/** Retired /round/{slug} names for the play-offs; they now redirect to the canonical stage URL. */
 export const KNOCKOUT_SLUG = 'knockout';
+export const PLAYOFFS_ALIAS_SLUGS = [
+  'knockout',
+  'knockout-round-play-offs',
+  'round-of-32',
+] as const;
 
 export const BRACKET_ROUND_SLUGS = [
-  'knockout-round-play-offs',
+  'knockout-play-offs',
   'round-of-16',
   'quarter-finals',
   'semi-finals',
@@ -19,7 +24,7 @@ export const BRACKET_ROUND_SLUGS = [
 
 /** API-Football round names for each bracket slot (used when a round has no fixtures yet). */
 export const BRACKET_LABELS: Record<string, string> = {
-  'knockout-round-play-offs': 'Knockout Round Play-offs',
+  'knockout-play-offs': 'Knockout play-offs',
   'round-of-16': 'Round of 16',
   'quarter-finals': 'Quarter-finals',
   'semi-finals': 'Semi-finals',
