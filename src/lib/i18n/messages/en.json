@@ -1,4 +1,20 @@
 {
+  "home": {
+    "comingUp": "Coming up",
+    "todaysMatches": "Today’s matches",
+    "chooseDay": "Choose matchday",
+    "all": "All",
+    "live": "Live",
+    "upcoming": "Upcoming",
+    "finished": "Finished",
+    "liveStandings": "Live standings",
+    "chooseLeague": "Choose league",
+    "provisional": "Provisional table",
+    "matchCentre": "Match centre",
+    "noMatchesDay": "No matches on this day.",
+    "noMatchesFilter": "No matches in this filter.",
+    "showAll": "Show all matches"
+  },
   "app": {
     "name": "DimaScore",
     "tagline": "Live football — scores, standings and stats worldwide",
@@ -1011,7 +1027,7 @@
   },
   "matchCentre": {
     "rail": {
-      "overall": "Overall",
+      "overall": "Home",
       "favourites": "Favourites",
       "tournaments": "Tournament editions",
       "pinned": "Pinned competitions",

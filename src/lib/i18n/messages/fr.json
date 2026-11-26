@@ -1,4 +1,20 @@
 {
+  "home": {
+    "comingUp": "À venir",
+    "todaysMatches": "Matchs du jour",
+    "chooseDay": "Choisir la journée",
+    "all": "Tous",
+    "live": "En direct",
+    "upcoming": "À venir",
+    "finished": "Terminés",
+    "liveStandings": "Classement en direct",
+    "chooseLeague": "Choisir le championnat",
+    "provisional": "Classement provisoire",
+    "matchCentre": "Centre du match",
+    "noMatchesDay": "Aucun match ce jour-là.",
+    "noMatchesFilter": "Aucun match pour ce filtre.",
+    "showAll": "Voir tous les matchs"
+  },
   "app": {
     "name": "DimaScore",
     "tagline": "Football en direct — scores, classements et stats du monde entier",
@@ -1011,7 +1027,7 @@
   },
   "matchCentre": {
     "rail": {
-      "overall": "Vue d’ensemble",
+      "overall": "Accueil",
       "favourites": "Favoris",
       "tournaments": "Éditions des tournois",
       "pinned": "Compétitions épinglées",

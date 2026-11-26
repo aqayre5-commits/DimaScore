@@ -19,47 +19,33 @@ const at = (needle: string) => {
 };
 
 describe('home page order (DOM order = visual order)', () => {
-  it('main column reads: H1, hero, live card, matches, Morocco/Botola table, rest, videos', () => {
+  const VIEW = read('src/components/home/HomePage.tsx');
+  const inView = (needle: string) => {
+    const i = VIEW.indexOf(needle);
+    expect(i, `${needle} missing from HomePage.tsx`).toBeGreaterThan(-1);
+    return i;
+  };
+
+  it('renders the redesigned Home (rail, then the Home view), not the old homepage', () => {
+    expect(PAGE).not.toMatch(/<HomeFeatured|<HomeMatchTabs|<LeagueLeftRail|<HomeRailWidgets/);
+    expect(at('<CompetitionRail')).toBeLessThan(at('<HomeView'));
+  });
+
+  it('reads: H1, featured match, coming up, matches, live standings', () => {
     const order = [
       '<h1',
-      '<HomeFeatured',
-      '<HomeNextMatch',
-      'id="matches"',
-      'variant="mobile"',
-      '<HomeDeferredVideos',
-    ].map(at);
+      'className="feature"',
+      'className="soon"',
+      'className="matches"',
+      'className="standings"',
+    ].map(inView);
     expect(order).toEqual([...order].sort((a, b) => a - b));
   });
 
-  it('the page is laid out by DOM order, not by CSS order', () => {
-    expect(PAGE).not.toMatch(/\border-(1|2|3|first|last)\b/);
-    expect(PAGE).not.toMatch(/flex-col-reverse|flex-row-reverse/);
-  });
-
-  it('the left rail and the right rail sit in the DOM where they sit on screen (rail, main, rail)', () => {
-    const left = at('<LeagueLeftRail');
-    const main = at('<h1');
-    const right = at('variant="desktop"');
-    expect(left).toBeLessThan(main);
-    expect(main).toBeLessThan(right);
-  });
-
-  it('the rail group labels are not headings on the home page, so the H1 is the first heading', () => {
-    expect(PAGE).toContain('groupHeading="p"');
-    expect(PAGE.indexOf('<h1')).toBeLessThan(PAGE.indexOf('<h2'));
-  });
-
-  it('the live card is live-only on mobile and in the desktop rail', () => {
-    expect(PAGE).toMatch(/<HomeNextMatch[\s\S]*?liveOnly/);
-    expect(read('src/components/homepage/HomeRailWidgets.tsx')).toMatch(
-      /<HomeNextMatch[\s\S]*?liveOnly/,
-    );
-  });
-
-  it('mobile rail widgets: Botola table first, then FIFA ranking, then top performances', () => {
-    expect(read('src/components/homepage/HomeRailWidgets.tsx')).toContain(
-      "mobile: ['leagueSnapshot', 'fifaRanking', 'topPerformances']",
-    );
+  it('the page is laid out by DOM order and grid areas, not by CSS order', () => {
+    const css = read('src/components/home/home-page.css');
+    expect(css).not.toMatch(/\border\s*:/);
+    expect(VIEW).not.toMatch(/flex-col-reverse|flex-row-reverse/);
   });
 });
 

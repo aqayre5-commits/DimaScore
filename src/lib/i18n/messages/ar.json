@@ -1,4 +1,20 @@
 {
+  "home": {
+    "comingUp": "القادمة",
+    "todaysMatches": "مباريات اليوم",
+    "chooseDay": "اختر اليوم",
+    "all": "الكل",
+    "live": "مباشر",
+    "upcoming": "القادمة",
+    "finished": "انتهت",
+    "liveStandings": "الترتيب المباشر",
+    "chooseLeague": "اختر الدوري",
+    "provisional": "ترتيب مؤقت",
+    "matchCentre": "مركز المباراة",
+    "noMatchesDay": "لا توجد مباريات في هذا اليوم.",
+    "noMatchesFilter": "لا توجد مباريات في هذا التصنيف.",
+    "showAll": "عرض كل المباريات"
+  },
   "app": {
     "name": "ديماسكور",
     "tagline": "كرة القدم مباشرة — النتائج والترتيب والإحصائيات حول العالم",
@@ -1011,7 +1027,7 @@
   },
   "matchCentre": {
     "rail": {
-      "overall": "نظرة عامة",
+      "overall": "الرئيسية",
       "favourites": "المفضلة",
       "tournaments": "نسخ البطولات",
       "pinned": "المسابقات المثبتة",

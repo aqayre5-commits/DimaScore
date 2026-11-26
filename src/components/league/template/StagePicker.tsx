@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
 export interface StageOption {
   slug: string;
   label: string;
   /** Shown after the label in the menu only, e.g. the date span of a round. */
   detail?: string;
+  /** Optional mark before the label (Home's standings picker shows the league crest). */
+  icon?: ReactNode;
 }
 
 /**
@@ -78,6 +80,7 @@ export function StagePicker({
           currentOption.detail ? `${currentOption.label} · ${currentOption.detail}` : undefined
         }
       >
+        {currentOption.icon}
         <bdi>{currentOption.label}</bdi>
         <svg className="ic" aria-hidden="true" viewBox="0 0 24 24">
           <path d="m5 9 7 7 7-7" />
@@ -101,6 +104,7 @@ export function StagePicker({
                 <svg className="ic stage-check" aria-hidden="true" viewBox="0 0 24 24">
                   {isCurrent ? <path d="m5 12.5 4.5 4.5L19 7.5" /> : null}
                 </svg>
+                {o.icon}
                 <bdi>{o.label}</bdi>
                 {o.detail ? <span className="stage-detail">{o.detail}</span> : null}
               </a>
