@@ -1262,5 +1262,25 @@
     "nextStage": "Tour suivant",
     "versus": "contre",
     "round": "Tour"
+  },
+  "cupGroups": {
+    "groupStage": "Phase de groupes",
+    "bestThirds": "Meilleurs troisièmes",
+    "group": "Groupe",
+    "groupN": "Groupe {n}",
+    "league": "Ligue",
+    "leagueDivision": "Ligue {d}",
+    "groupStandings": "Classement du groupe",
+    "thirdPlace": "Match pour la troisième place",
+    "topAdvance": "Les {n} premiers se qualifient",
+    "qualifies": "Qualifié",
+    "eliminated": "Éliminé",
+    "ruleThirds": "Les {n} meilleurs troisièmes se qualifient",
+    "ruleOut": "Éliminés",
+    "rulePlayoff": "Barrages {a}/{b}",
+    "rulePromotion": "Promotion · {to}",
+    "ruleRelegation": "Relégation · {to}",
+    "ruleStay": "Maintien en Ligue {league}",
+    "colGF": "BP"
   }
 }

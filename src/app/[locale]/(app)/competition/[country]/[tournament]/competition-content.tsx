@@ -22,6 +22,7 @@ import { renderDomesticCupPage } from './render-domestic-cup-page';
 import { getCompetitionFormat } from '@/lib/competitions/formats';
 import { NavCompetitionRegister } from '@/components/chrome/NavCompetitionRegister';
 import { getRailProps } from '@/components/match/centre/rail-props';
+import { GROUP_STAGE_TEMPLATE_IDS } from '@/lib/competitions/group-stage';
 
 /** Normalize slug → competition entry. Locale is unused; aliases share one ID. */
 export function resolveEntry(tournament: string, locale?: Locale): MegaMenuEntry | undefined {
@@ -99,6 +100,26 @@ async function CompetitionBody({
     if (editionYear != null && editionYear !== metadata.editionYear) {
       const seasonMeta = getMetadataForCompetitionSeason(entry.competitionId, editionYear);
       if (seasonMeta) metadata = seasonMeta;
+    }
+  }
+
+  // Group-stage tournaments (World Cup, AFCON, WAFCON, EURO, CAF club cups, women's UEFA cups,
+  // qualifiers, Nations League) use the redesigned cup template when the competition has a DB
+  // row. An edition slug (wafcon-2024) picks its season when no /[season] segment is given.
+  if (entry && GROUP_STAGE_TEMPLATE_IDS.has(entry.competitionId)) {
+    const groupComp = await getCachedCompetition(entry.competitionId);
+    if (groupComp) {
+      const editionYear = findEditionYearBySlug(entry.competitionId, tournament);
+      return renderDomesticCupPage(
+        groupComp,
+        entry,
+        typedLocale,
+        rawLocale,
+        rawCountry,
+        rawTournament,
+        seasonParam ?? (editionYear != null ? String(editionYear) : undefined),
+        roundSlug,
+      );
     }
   }
 
