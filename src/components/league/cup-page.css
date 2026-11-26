@@ -559,3 +559,8 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Phone: one round at a time, so the multi-column minimum width must not apply. */
+@media (max-width: 767px) {
+  .draw-tree:not([data-solo]) { min-width: 0; }
+}
