@@ -141,7 +141,12 @@ async function CompetitionBody({
 
   if (competition.type === 'Cup') {
     const format = getCompetitionFormat(competition.id);
-    if (format?.kind === 'domestic-cup') {
+    // Domestic cups and the UEFA league-phase cups (format rows with a configured league phase:
+    // CL 2, EL 3, ECL 848) use the reference template. Others stay on the generic cup page.
+    if (
+      format?.kind === 'domestic-cup' ||
+      (format?.kind === 'league-phase-knockout' && format.leaguePhase != null)
+    ) {
       return renderDomesticCupPage(
         competition,
         entry,

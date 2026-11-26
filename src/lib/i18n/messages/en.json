@@ -1211,6 +1211,13 @@
     }
   },
   "domesticCup": {
+    "leaguePhase": "League phase",
+    "leaguePhaseStandings": "League phase standings",
+    "whatNext": "What happens next",
+    "zoneR16": "Round of 16",
+    "zonePlayoff": "Knockout play-offs",
+    "zoneOut": "Eliminated",
+    "matchday": "Matchday {n}",
     "stagesTab": "Stages",
     "todaysMatches": "Today's matches",
     "tomorrow": "Tomorrow",

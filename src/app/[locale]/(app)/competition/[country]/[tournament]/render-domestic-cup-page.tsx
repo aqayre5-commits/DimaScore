@@ -24,6 +24,8 @@ import {
   getCompetitionTeams,
   getLeagueStatsMeta,
 } from '@/lib/db/queries/league';
+import { getStandings } from '@/lib/db/queries';
+import { getCompetitionFormat } from '@/lib/competitions/formats';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
 import { toSiteDateKey, INTL_LOCALE, SITE_TZ } from '@/lib/utils/date';
@@ -38,20 +40,43 @@ import { mcFont } from '@/components/match/centre/font';
 import type { BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import '@/components/match/centre/match-centre.css';
 
-async function getCachedCupData(competitionId: number, seasonYear: number, locale: Locale) {
+async function getCachedCupData(
+  competitionId: number,
+  seasonYear: number,
+  locale: Locale,
+  withStandings = false,
+) {
   'use cache';
   cacheLife('minutes');
-  const [rounds, fixtures, topScorers, topAssists, topCards, competitionTeams, statsMeta] =
-    await Promise.all([
-      getLeagueRounds(db, competitionId, seasonYear),
-      getLeagueFixtures(db, competitionId, seasonYear),
-      getResolvedTopScorers(db, competitionId, seasonYear, locale, 200),
-      getResolvedTopAssists(db, competitionId, seasonYear, locale, 200),
-      getTopCardsForLeague(db, competitionId, seasonYear, 200, locale),
-      getCompetitionTeams(db, competitionId, seasonYear),
-      getLeagueStatsMeta(db, competitionId, seasonYear),
-    ]);
-  return { rounds, fixtures, topScorers, topAssists, topCards, competitionTeams, statsMeta };
+  const [
+    rounds,
+    fixtures,
+    topScorers,
+    topAssists,
+    topCards,
+    competitionTeams,
+    statsMeta,
+    standings,
+  ] = await Promise.all([
+    getLeagueRounds(db, competitionId, seasonYear),
+    getLeagueFixtures(db, competitionId, seasonYear),
+    getResolvedTopScorers(db, competitionId, seasonYear, locale, 200),
+    getResolvedTopAssists(db, competitionId, seasonYear, locale, 200),
+    getTopCardsForLeague(db, competitionId, seasonYear, 200, locale),
+    getCompetitionTeams(db, competitionId, seasonYear),
+    getLeagueStatsMeta(db, competitionId, seasonYear),
+    withStandings ? getStandings(db, competitionId, seasonYear) : Promise.resolve([]),
+  ]);
+  return {
+    rounds,
+    fixtures,
+    topScorers,
+    topAssists,
+    topCards,
+    competitionTeams,
+    statsMeta,
+    standings,
+  };
 }
 
 async function getSiteTodayKey() {
@@ -112,8 +137,18 @@ export async function renderDomesticCupPage(
     );
   }
 
-  const { rounds, fixtures, topScorers, topAssists, topCards, competitionTeams, statsMeta } =
-    await getCachedCupData(competition.id, seasonYear, locale);
+  // UEFA league-phase cups (CL / EL / ECL) share this template and add the single league-phase table.
+  const phaseFormat = getCompetitionFormat(competition.id, seasonYear)?.leaguePhase ?? null;
+  const {
+    rounds,
+    fixtures,
+    topScorers,
+    topAssists,
+    topCards,
+    competitionTeams,
+    statsMeta,
+    standings,
+  } = await getCachedCupData(competition.id, seasonYear, locale, phaseFormat != null);
 
   const statsThroughLabel = statsMeta.throughAt
     ? new Intl.DateTimeFormat(INTL_LOCALE[locale], {
@@ -235,6 +270,7 @@ export async function renderDomesticCupPage(
               statsFromLabel={hideStats ? null : statsFromLabel}
               hideStats={hideStats}
               initialRoundSlug={initialRoundSlug ?? null}
+              leaguePhase={phaseFormat ? { standings, zones: phaseFormat.zones } : null}
             />
           </div>
         </div>

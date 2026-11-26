@@ -1211,6 +1211,13 @@
     }
   },
   "domesticCup": {
+    "leaguePhase": "مرحلة الدوري",
+    "leaguePhaseStandings": "ترتيب مرحلة الدوري",
+    "whatNext": "ما المرحلة التالية؟",
+    "zoneR16": "دور الـ16",
+    "zonePlayoff": "ملحق الأدوار الإقصائية",
+    "zoneOut": "الإقصاء",
+    "matchday": "الجولة {n}",
     "stagesTab": "الأدوار",
     "todaysMatches": "مباريات اليوم",
     "tomorrow": "غدًا",

@@ -250,6 +250,7 @@
 .pl-panels[data-tab='fixtures'] [data-pl-panel='fixtures'],
 .pl-panels[data-tab='standings'] [data-pl-panel='standings'],
 .pl-panels[data-tab='stats'] [data-pl-panel='stats'],
+.pl-panels[data-tab='stages'] [data-pl-panel='stages'],
 .pl-panels[data-tab='teams'] [data-pl-panel='teams'] {
   display: block;
 }
@@ -257,7 +258,8 @@
 .pl-panels[data-tab='overview'] [data-pl-tab='overview'],
 .pl-panels[data-tab='fixtures'] [data-pl-tab='fixtures'],
 .pl-panels[data-tab='standings'] [data-pl-tab='standings'],
-.pl-panels[data-tab='stats'] [data-pl-tab='stats'] {
+.pl-panels[data-tab='stats'] [data-pl-tab='stats'],
+.pl-panels[data-tab='stages'] [data-pl-tab='stages'] {
   color: var(--green);
   border-color: var(--green);
   font-weight: 710;
