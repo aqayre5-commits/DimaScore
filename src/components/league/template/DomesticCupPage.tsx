@@ -474,11 +474,8 @@ export function DomesticCupPage({
   }, [topScorers]);
 
   const weekFixtures = activeRound?.fixtures ?? [];
-  const weekGroups = useMemo(() => {
-    const groups = groupFixturesByDay(weekFixtures);
-    // Finished season: most recent matchday first.
-    return seasonOver ? [...groups].reverse() : groups;
-  }, [weekFixtures, seasonOver]);
+  // Chronological within the selected round, including finished seasons (First leg before Second leg).
+  const weekGroups = useMemo(() => groupFixturesByDay(weekFixtures), [weekFixtures]);
 
   function hrefFor(slug: string): string {
     const current = currentSeasonYear != null && seasonYear === currentSeasonYear;
@@ -799,8 +796,9 @@ export function DomesticCupPage({
                     <div key={f.id}>
                       {leg ? (
                         <p className="ghead cup-day-head">
-                          <span>{parent ? roundLabel(parent) : ''}</span>
+                          <strong>{parent ? roundLabel(parent) : ''}</strong>
                           <span className="cup-leg-label">
+                            {' · '}
                             {leg === 'first'
                               ? tCup('firstLeg')
                               : leg === 'second'
@@ -847,9 +845,10 @@ export function DomesticCupPage({
                   return (
                     <div key={g.key} className="cup-date-group">
                       <h3 className="ghead cup-day-head">
-                        <span>{formatDateLabel(g.key, locale, todayLabel)}</span>
+                        <strong>{formatDateLabel(g.key, locale, todayLabel)}</strong>
                         {sameLeg && leg ? (
                           <span className="cup-leg-label">
+                            {' · '}
                             {leg === 'first'
                               ? tCup('firstLeg')
                               : leg === 'second'

@@ -294,7 +294,6 @@ export function fixtureLegLabel(
   tie: CupTie,
   fixture: FixtureWithTeams,
 ): 'first' | 'second' | 'replay' | null {
-  if (tie.fixtures.length < 2) return null;
   const index = tie.fixtures.findIndex((f) => f.id === fixture.id);
   if (index < 0) return null;
   if (tie.twoLegged) {
@@ -302,5 +301,6 @@ export function fixtureLegLabel(
     if (index === 1) return 'second';
     return 'replay';
   }
+  if (tie.fixtures.length < 2) return null;
   return index > 0 ? 'replay' : null;
 }

@@ -23,7 +23,7 @@
 }
 
 .pl button,
-.pl summary {
+.pl summary:not(.ds-period) {
   font: inherit;
   color: inherit;
   background: none;
@@ -34,7 +34,7 @@
 
 .pl button:focus-visible,
 .pl a:focus-visible,
-.pl summary:focus-visible,
+.pl summary:not(.ds-period):focus-visible,
 .pl select:focus-visible {
   outline: 3px solid var(--focus, #238861);
   outline-offset: 2px;
