@@ -11,6 +11,7 @@ import { formatDateLabel, toSiteDateKey } from '@/lib/utils/date';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { TeamMark } from '@/components/shared/TeamMark';
 import { MatchLink } from '@/components/shared/MatchLink';
+import { IntentLink } from '@/components/shared/IntentLink';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { matchHref } from '@/lib/seo/match-slug';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
@@ -320,7 +321,7 @@ function ClubDirectory({
       <ul className="cup-club-list">
         {clubs.map((c) => (
           <li key={c.id}>
-            <a href={buildTeamHref(locale, c.slug)}>
+            <IntentLink href={buildTeamHref(locale, c.slug)}>
               <TeamMark
                 className="mark cup-mark"
                 src={c.logoUrl}
@@ -332,7 +333,7 @@ function ClubDirectory({
                 sizeVar="20px"
               />
               <bdi>{c.name}</bdi>
-            </a>
+            </IntentLink>
           </li>
         ))}
       </ul>

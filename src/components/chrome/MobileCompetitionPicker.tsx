@@ -33,6 +33,14 @@ export function MobileCompetitionPicker() {
   const [mounted, setMounted] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // Rail links navigate client-side (the Topbar, and so this sheet, stays mounted), so dismiss the
+  // sheet when the route changes; a full page load used to do this implicitly.
+  const [sheetPath, setSheetPath] = useState(pathname);
+  if (sheetPath !== pathname) {
+    setSheetPath(pathname);
+    setOpen(false);
+  }
+
   // Fetch the sheet chunk (and its styles) once the page has a competition, so the first tap
   // opens it without a wait.
   useEffect(() => {

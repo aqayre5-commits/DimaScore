@@ -8,6 +8,7 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { buildTeamHref } from '@/lib/competitions/paths';
 import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 import { TeamMark } from '@/components/shared/TeamMark';
+import { IntentLink } from '@/components/shared/IntentLink';
 
 /** Reference band colours (competition.js ruleRows): direct, play-off, out. */
 const BAND: Record<string, string> = {
@@ -93,10 +94,10 @@ export function LeaguePhaseTable({
               </td>
               <td>
                 {row.team?.slug ? (
-                  <a className="cup-teamlink" href={buildTeamHref(locale, row.team.slug)}>
+                  <IntentLink className="cup-teamlink" href={buildTeamHref(locale, row.team.slug)}>
                     {crest}
                     <bdi>{name}</bdi>
-                  </a>
+                  </IntentLink>
                 ) : (
                   <span className="cup-teamlink">
                     {crest}

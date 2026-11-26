@@ -1,0 +1,123 @@
+/*
+ * Competition route skeleton. Lives inside `.mc` / `.pl`, so it uses the same tokens as the page
+ * (--light, --line, --card-radius, --competition-header-size, --section, --gutter) and the same
+ * `.shell` / `.rail` / `.mc-mainarea` / `.pl-*` geometry from match-centre.css and
+ * competition-page.css; this file only adds the placeholder bars.
+ */
+.cs .cs-bar {
+  display: block;
+  height: 14px;
+  border-radius: 6px;
+  background: var(--light);
+}
+.cs .cs-pulse,
+.cs [data-cs] {
+  animation: cs-pulse 1.4s ease-in-out infinite;
+}
+@keyframes cs-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs .cs-pulse,
+  .cs [data-cs] {
+    animation: none;
+  }
+}
+
+/* rail */
+.cs .cs-rail {
+  display: grid;
+  gap: 14px;
+  padding: 4px 3px 10px 0;
+}
+.cs .cs-rail-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+}
+.cs .cs-rail-row > i {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--light);
+}
+.cs .cs-rail-row .cs-bar {
+  flex: 1;
+  max-width: 150px;
+}
+.cs .cs-rail-head {
+  width: 96px;
+  height: 12px;
+  margin-top: 8px;
+}
+
+/* identity */
+.cs .cs-logo {
+  width: var(--competition-header-size);
+  height: var(--competition-header-size);
+  flex: 0 0 var(--competition-header-size);
+  border-radius: var(--card-radius);
+  background: var(--light);
+}
+.cs .cs-title {
+  height: clamp(25px, 2.15vw, 36px);
+  width: min(320px, 60vw);
+}
+.cs .cs-byline {
+  width: min(180px, 40vw);
+  margin-top: 10px;
+}
+
+/* tabs */
+.cs .cs-tab {
+  display: block;
+  width: clamp(64px, 7vw, 110px);
+  height: 14px;
+  margin: 15px clamp(14px, 2vw, 32px);
+  border-radius: 6px;
+  background: var(--light);
+}
+
+/* cards / table rows */
+.cs .cs-card {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--card-radius);
+  padding: var(--card-inset);
+}
+.cs .cs-card + .cs-card {
+  margin-top: var(--section);
+}
+.cs .cs-card-head {
+  width: 140px;
+  height: 18px;
+  margin-bottom: 14px;
+}
+.cs .cs-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  border-top: 1px solid var(--light);
+}
+.cs .cs-line > i {
+  flex: none;
+  width: var(--row-crest);
+  height: var(--row-crest);
+  border-radius: 50%;
+  background: var(--light);
+}
+.cs .cs-line .cs-bar:first-of-type {
+  flex: 1;
+  max-width: 220px;
+}
+.cs .cs-line .cs-bar:last-of-type {
+  flex: none;
+  width: 36px;
+  margin-inline-start: auto;
+}
