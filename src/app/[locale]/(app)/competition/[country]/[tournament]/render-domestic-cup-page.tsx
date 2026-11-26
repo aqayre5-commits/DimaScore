@@ -27,6 +27,7 @@ import {
 import { getStandings } from '@/lib/db/queries';
 import { getCompetitionFormat } from '@/lib/competitions/formats';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
+import { cacheCompetitionData } from '@/lib/competitions/cache-life';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
 import { toSiteDateKey, INTL_LOCALE, SITE_TZ } from '@/lib/utils/date';
 import { competitionDisplayName, competitionHeading } from '@/lib/competitions/display-name';
@@ -45,9 +46,10 @@ async function getCachedCupData(
   seasonYear: number,
   locale: Locale,
   withStandings = false,
+  finishedSeason = false,
 ) {
   'use cache';
-  cacheLife('minutes');
+  cacheCompetitionData(finishedSeason);
   const [
     rounds,
     fixtures,
@@ -104,20 +106,22 @@ export async function renderDomesticCupPage(
   seasonParam?: string,
   initialRoundSlug?: string | null,
 ) {
-  const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
-  const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
-  const tMenu = await getTranslations({ locale: rawLocale, namespace: 'megaMenu' });
-  const tCup = await getTranslations({ locale: rawLocale, namespace: 'domesticCup' });
-
   const requestedYear = seasonParam ? Number(seasonParam) : null;
-  const {
-    seasonYear,
-    seasons: availableSeasons,
-    currentSeasonYear,
-  } = await resolveCompetitionSeason(
-    competition.id,
-    requestedYear != null && Number.isFinite(requestedYear) ? requestedYear : null,
-  );
+  // Independent reads run together (was ten awaits in series across this renderer); only the cup
+  // data below needs the resolved season year.
+  const [tBc, tL, tMenu, tCup, season, todayKey, railProps] = await Promise.all([
+    getTranslations({ locale: rawLocale, namespace: 'breadcrumb' }),
+    getTranslations({ locale: rawLocale, namespace: 'leaguePage' }),
+    getTranslations({ locale: rawLocale, namespace: 'megaMenu' }),
+    getTranslations({ locale: rawLocale, namespace: 'domesticCup' }),
+    resolveCompetitionSeason(
+      competition.id,
+      requestedYear != null && Number.isFinite(requestedYear) ? requestedYear : null,
+    ),
+    getSiteTodayKey(),
+    getRailProps(locale, competition.id),
+  ]);
+  const { seasonYear, seasons: availableSeasons, currentSeasonYear } = season;
 
   const competitionName = competitionDisplayName(
     competition.name,
@@ -148,7 +152,13 @@ export async function renderDomesticCupPage(
     competitionTeams,
     statsMeta,
     standings,
-  } = await getCachedCupData(competition.id, seasonYear, locale, phaseFormat != null);
+  } = await getCachedCupData(
+    competition.id,
+    seasonYear,
+    locale,
+    phaseFormat != null,
+    currentSeasonYear != null && seasonYear < currentSeasonYear,
+  );
 
   const statsThroughLabel = statsMeta.throughAt
     ? new Intl.DateTimeFormat(INTL_LOCALE[locale], {
@@ -167,8 +177,7 @@ export async function renderDomesticCupPage(
   const hideStats =
     topScorers.length + topAssists.length + topCards.length === 0 && !statsMeta.playerCount;
 
-  const todayKey = await getSiteTodayKey();
-  const { rail, current: railCurrent } = await getRailProps(locale, competition.id);
+  const { rail, current: railCurrent } = railProps;
 
   const seasonLabel = formatSeasonLabel(seasonYear);
   const countryName = getLeagueCountryName(competition.countryCode, locale);

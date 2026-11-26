@@ -27,6 +27,7 @@ import {
   getLeagueStatsMeta,
 } from '@/lib/db/queries/league';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
+import { cacheCompetitionData } from '@/lib/competitions/cache-life';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
 import { toSiteDateKey, INTL_LOCALE, SITE_TZ } from '@/lib/utils/date';
 import { competitionDisplayName, competitionHeading } from '@/lib/competitions/display-name';
@@ -39,9 +40,14 @@ import { mcFont } from '@/components/match/centre/font';
 import type { BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import '@/components/match/centre/match-centre.css';
 
-async function getCachedLeagueData(competitionId: number, seasonYear: number, locale: Locale) {
+async function getCachedLeagueData(
+  competitionId: number,
+  seasonYear: number,
+  locale: Locale,
+  finishedSeason: boolean,
+) {
   'use cache';
-  cacheLife('minutes');
+  cacheCompetitionData(finishedSeason);
   const [
     standings,
     rounds,
@@ -118,19 +124,21 @@ export async function renderLeaguePage(
   rawTournament: string,
   seasonParam?: string,
 ) {
-  const tBc = await getTranslations({ locale: rawLocale, namespace: 'breadcrumb' });
-  const tL = await getTranslations({ locale: rawLocale, namespace: 'leaguePage' });
-  const tMenu = await getTranslations({ locale: rawLocale, namespace: 'megaMenu' });
-
   const requestedYear = seasonParam ? Number(seasonParam) : null;
-  const {
-    seasonYear,
-    seasons: availableSeasons,
-    currentSeasonYear,
-  } = await resolveCompetitionSeason(
-    competition.id,
-    requestedYear != null && Number.isFinite(requestedYear) ? requestedYear : null,
-  );
+  // Independent reads (translation bundles, season snapshot, rail, today key) run together; only the
+  // league data below needs the resolved season year. This used to be six awaits in series.
+  const [tBc, tL, tMenu, season, todayKey, railProps] = await Promise.all([
+    getTranslations({ locale: rawLocale, namespace: 'breadcrumb' }),
+    getTranslations({ locale: rawLocale, namespace: 'leaguePage' }),
+    getTranslations({ locale: rawLocale, namespace: 'megaMenu' }),
+    resolveCompetitionSeason(
+      competition.id,
+      requestedYear != null && Number.isFinite(requestedYear) ? requestedYear : null,
+    ),
+    getSiteTodayKey(),
+    getRailProps(locale, competition.id),
+  ]);
+  const { seasonYear, seasons: availableSeasons, currentSeasonYear } = season;
 
   if (!seasonYear) {
     const name = competitionDisplayName(
@@ -159,7 +167,12 @@ export async function renderLeaguePage(
     topCards,
     competitionTeams,
     statsMeta,
-  } = await getCachedLeagueData(competition.id, seasonYear, locale);
+  } = await getCachedLeagueData(
+    competition.id,
+    seasonYear,
+    locale,
+    currentSeasonYear != null && seasonYear < currentSeasonYear,
+  );
   const statsThroughLabel = statsMeta.throughAt
     ? new Intl.DateTimeFormat(INTL_LOCALE[locale], {
         day: 'numeric',
@@ -168,8 +181,7 @@ export async function renderLeaguePage(
         timeZone: SITE_TZ,
       }).format(new Date(statsMeta.throughAt))
     : null;
-  const todayKey = await getSiteTodayKey();
-  const { rail, current: railCurrent } = await getRailProps(locale, competition.id);
+  const { rail, current: railCurrent } = railProps;
 
   const competitionName = competitionDisplayName(
     competition.name,

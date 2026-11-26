@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import { db } from '@/lib/db/client';
@@ -33,7 +34,7 @@ export interface RailCurrent {
  * Overall, Favourites, Tournament editions, Popular (active competitions in editorial order),
  * Browse (zones → countries → competitions). Shared by the match page and competition pages.
  */
-export async function getRailProps(
+async function buildRailProps(
   locale: Locale,
   currentId: number,
 ): Promise<{ rail: CompetitionRailProps; current: RailCurrent | null }> {
@@ -109,3 +110,10 @@ export async function getRailProps(
     },
   };
 }
+
+/**
+ * Request-level dedupe (React `cache`): the competition page asks for the rail from the nav
+ * registration, the body and the renderer; they now share one call instead of each awaiting its
+ * own, and the body can start it early without a second lookup.
+ */
+export const getRailProps = cache(buildRailProps);

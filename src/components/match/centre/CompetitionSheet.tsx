@@ -56,7 +56,14 @@ export function CompetitionSheet({ open, onClose, onSearch, rail }: CompetitionS
             <NavIcon name="close" />
           </button>
         </div>
-        <div className="dialogbody">
+        <div
+          className="dialogbody"
+          // The rail's links navigate client-side now, so the sheet is not torn down by a page
+          // load: close it on any link tap (incl. the current competition, which keeps the URL).
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('a')) ref.current?.close();
+          }}
+        >
           <CompetitionRail {...rail} onSearch={onSearch} />
         </div>
       </dialog>

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useFollows } from '@/hooks/useFollows';
 import { NavIcon } from './icons';
 import { TeamMark } from '@/components/shared/TeamMark';
+import { IntentLink } from '@/components/shared/IntentLink';
 
 const SearchModal = dynamic(
   () => import('@/components/chrome/SearchModal').then((m) => m.SearchModal),
@@ -58,7 +59,7 @@ const fill = (s: string, n: string | number) => s.replace('{n}', String(n));
 
 function Row({ e, current, open }: { e: RailEntry; current: boolean; open: string }) {
   return (
-    <a
+    <IntentLink
       href={e.href}
       className={`railrow${current ? ' current' : ''}`}
       aria-label={open.replace('{name}', e.label)}
@@ -66,7 +67,7 @@ function Row({ e, current, open }: { e: RailEntry; current: boolean; open: strin
     >
       <TeamMark className="mark" src={e.logo} name={e.label} variant="competition" />
       <bdi>{e.label}</bdi>
-    </a>
+    </IntentLink>
   );
 }
 
@@ -102,14 +103,14 @@ export function CompetitionRail(p: CompetitionRailProps) {
 
   return (
     <nav className="railpanel" aria-label={L.nav}>
-      <a href={p.homeHref} className="railrow major">
+      <IntentLink href={p.homeHref} className="railrow major">
         <NavIcon name="home" />
         {L.overall}
-      </a>
-      <a href={p.favouritesHref} className="railrow major">
+      </IntentLink>
+      <IntentLink href={p.favouritesHref} className="railrow major">
         <NavIcon name="star" />
         {L.favourites}
-      </a>
+      </IntentLink>
       <button
         type="button"
         className="railrow major tournament-shortcut"
@@ -184,7 +185,7 @@ export function CompetitionRail(p: CompetitionRailProps) {
                     <span className="treenum">{c.entries.length}</span>
                   </summary>
                   {c.entries.map((e) => (
-                    <a
+                    <IntentLink
                       key={e.id}
                       href={e.href}
                       className={`leaf${e.id === p.currentId ? ' current' : ''}`}
@@ -196,7 +197,7 @@ export function CompetitionRail(p: CompetitionRailProps) {
                         variant="competition"
                       />
                       <bdi>{e.label}</bdi>
-                    </a>
+                    </IntentLink>
                   ))}
                 </details>
               ))}
@@ -226,12 +227,19 @@ export function CompetitionRail(p: CompetitionRailProps) {
         <div className="dialogbody">
           <nav className="tournament-list" aria-label={L.tournaments}>
             {p.tournaments.map((e) => (
-              <a key={e.id} href={e.href} className="tournament-option">
+              <IntentLink
+                key={e.id}
+                href={e.href}
+                className="tournament-option"
+                // Client-side navigation keeps this component mounted, so the modal must be
+                // closed here (a full page load used to dismiss it implicitly).
+                onClick={() => dialogRef.current?.close()}
+              >
                 <TeamMark className="mark" src={e.logo} name={e.label} variant="competition" />
                 <bdi>{e.label}</bdi>
                 <span />
                 <NavIcon name="right" />
-              </a>
+              </IntentLink>
             ))}
           </nav>
         </div>

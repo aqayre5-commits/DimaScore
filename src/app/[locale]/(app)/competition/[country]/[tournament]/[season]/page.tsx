@@ -2,8 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
-import { db } from '@/lib/db/client';
-import { getCompetitionById } from '@/lib/db/queries/league';
+import { getCachedCompetition } from '@/lib/competitions/cached-competition';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { BASE_URL } from '@/lib/constants/site';
 import { buildLeagueMeta } from '@/lib/seo/hub-metadata';
@@ -53,8 +52,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     `/${locale}/competition/${rawCountry}/${rawTournament}`,
   );
 
-  const competition = await getCompetitionById(db, entry.competitionId);
-  const tMenu = await getTranslations({ locale, namespace: 'megaMenu' });
+  const [competition, tMenu] = await Promise.all([
+    getCachedCompetition(entry.competitionId),
+    getTranslations({ locale, namespace: 'megaMenu' }),
+  ]);
   const displayName = competitionDisplayName(
     competition?.name,
     typedLocale,

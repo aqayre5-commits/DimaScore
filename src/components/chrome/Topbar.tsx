@@ -18,6 +18,7 @@ import { LangSwitcher } from './LangSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { MobileDrawer } from './MobileDrawer';
 import { MobileCompetitionPicker } from './MobileCompetitionPicker';
+import { IntentLink } from '@/components/shared/IntentLink';
 
 function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void }) {
   const t = useTranslations('megaMenu');
@@ -48,14 +49,13 @@ function MoreMegaMenu({ locale, onClose }: { locale: Locale; onClose: () => void
               <ul className="flex flex-col gap-0.5">
                 {visibleEntries.map((entry) => (
                   <li key={`${entry.competitionId}-${entry.labelKey}`}>
-                    <Link
+                    <IntentLink
                       href={buildCompetitionHref(entry, locale)}
-                      prefetch={false}
                       onClick={onClose}
                       className="block rounded px-2 py-1.5 text-sm text-text-secondary transition-colors hover:bg-accent-azure/5 hover:text-accent-azure"
                     >
                       {t(entry.labelKey)}
-                    </Link>
+                    </IntentLink>
                   </li>
                 ))}
               </ul>

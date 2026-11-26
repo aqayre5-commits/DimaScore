@@ -13,7 +13,8 @@ import {
 import { findCupContentBySlug, findEditionYearBySlug } from '@/lib/constants/cup-content';
 import { competitions } from '@/lib/db/schema';
 import { db } from '@/lib/db/client';
-import { getCompetitionById } from '@/lib/db/queries/league';
+import { getCachedCompetition } from '@/lib/competitions/cached-competition';
+import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { renderCupPage } from './render-cup-page';
 import { renderLeaguePage } from './render-league-page';
 import { renderGenericCupPage } from './render-generic-cup-page';
@@ -39,12 +40,6 @@ async function getLeftRailLogos(): Promise<Record<number, string | null>> {
   return Object.fromEntries(rows.map((r) => [r.id, r.logoUrl]));
 }
 
-async function getCachedCompetition(competitionId: number) {
-  'use cache';
-  cacheLife('minutes');
-  return getCompetitionById(db, competitionId);
-}
-
 interface CompetitionContentProps {
   /** Raw (still percent-encoded) locale string from the route. */
   rawLocale: string;
@@ -64,16 +59,25 @@ interface CompetitionContentProps {
  * and dispatches. Reads NO request-time dynamic APIs (no searchParams), so the
  * default route (season undefined) prerenders fully static.
  */
-export async function CompetitionContent(props: CompetitionContentProps) {
-  // The mobile navbar competition picker (template "PL ▾") gets this competition and the rail.
-  const entry = resolveEntry(decodeURIComponent(props.rawTournament));
-  const nav = await getRailProps(props.rawLocale as Locale, entry?.competitionId ?? -1);
+export function CompetitionContent(props: CompetitionContentProps) {
   return (
     <>
-      <NavCompetitionRegister current={nav.current} rail={nav.rail} />
+      {/* Sibling async components render concurrently: the rail lookup used to be awaited here
+       *before* the body started, putting it in front of every other read on the page. */}
+      <NavRegistration rawLocale={props.rawLocale} rawTournament={props.rawTournament} />
       <CompetitionBody {...props} />
     </>
   );
+}
+
+/** The mobile navbar competition picker (template "PL ▾") gets this competition and the rail. */
+async function NavRegistration({
+  rawLocale,
+  rawTournament,
+}: Pick<CompetitionContentProps, 'rawLocale' | 'rawTournament'>) {
+  const entry = resolveEntry(decodeURIComponent(rawTournament));
+  const nav = await getRailProps(rawLocale as Locale, entry?.competitionId ?? -1);
+  return <NavCompetitionRegister current={nav.current} rail={nav.rail} />;
 }
 
 async function CompetitionBody({
@@ -120,7 +124,19 @@ async function CompetitionBody({
     return <ComingSoon locale={rawLocale} tournament={tournament} />;
   }
 
-  const competition = await getCachedCompetition(entry.competitionId);
+  // Everything below the competition row needs only the competition id, which the slug already
+  // gave us. Start the independent cached reads now so they overlap with the competition lookup
+  // (and with each other) instead of queueing behind it. The renderers await the same memoised
+  // promises (React `cache`), so nothing is fetched twice.
+  const competitionPromise = getCachedCompetition(entry.competitionId);
+  const requestedYear = season != null && Number.isFinite(season) ? season : null;
+  const warm: Promise<unknown>[] = [
+    getRailProps(typedLocale, entry.competitionId),
+    resolveCompetitionSeason(entry.competitionId, requestedYear),
+  ];
+  // Warm-ups are best-effort: a failure here resurfaces where the renderer awaits the same promise.
+  for (const w of warm) w.catch(() => {});
+  const competition = await competitionPromise;
   if (!competition) {
     return <ComingSoon locale={rawLocale} tournament={tournament} />;
   }

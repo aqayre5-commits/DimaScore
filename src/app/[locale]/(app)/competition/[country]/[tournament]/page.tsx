@@ -5,8 +5,7 @@ import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
 import { findCupContentBySlug } from '@/lib/constants/cup-content';
 import { ALL_ENTRIES, TOP_NAV_COMPETITION_IDS } from '@/lib/constants/competitions-mega-menu';
 import { getCountrySlug } from '@/lib/constants/country-slugs';
-import { db } from '@/lib/db/client';
-import { getCompetitionById } from '@/lib/db/queries/league';
+import { getCachedCompetition } from '@/lib/competitions/cached-competition';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
 import { competitionDisplayName } from '@/lib/competitions/display-name';
@@ -108,9 +107,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   let title: string | null = null;
 
   if (entry) {
-    const competition = await getCompetitionById(db, entry.competitionId);
+    // Same cached, request-deduped lookups the page body uses (this phase used to run its own
+    // uncached Neon query, then the translations, then the season, one after the other, before the
+    // response could commit). They are independent, so run them together.
+    const [competition, tMenu, resolvedSeason] = await Promise.all([
+      getCachedCompetition(entry.competitionId),
+      getTranslations({ locale, namespace: 'megaMenu' }),
+      resolveCompetitionSeason(entry.competitionId, null),
+    ]);
     if (competition) {
-      const tMenu = await getTranslations({ locale, namespace: 'megaMenu' });
       const localName = competitionDisplayName(
         competition.name,
         typedLocale,
@@ -118,7 +123,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         displayName,
       );
       displayName = localName;
-      const { seasonYear } = await resolveCompetitionSeason(competition.id, null);
+      const { seasonYear } = resolvedSeason;
       const season = seasonYear ? formatSeasonLabel(seasonYear) : '';
       displayName = season ? `${displayName} ${season}` : displayName;
       if (competition.id === BOTOLA_2_COMPETITION_ID) {

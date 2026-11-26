@@ -3,6 +3,7 @@
 import { Fragment, type CSSProperties, type ReactNode } from 'react';
 import { TeamMark } from '@/components/shared/TeamMark';
 import { MatchLink } from '@/components/shared/MatchLink';
+import { IntentLink } from '@/components/shared/IntentLink';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { matchHref } from '@/lib/seo/match-slug';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
@@ -356,10 +357,10 @@ export function TwoLegTieCard({
           <span className="tie-cap" />
           <div className={`tie-team${win === idA ? ' is-winner' : ''}`}>
             {teamA?.slug ? (
-              <a href={buildTeamHref(locale, teamA.slug)} title={teamName(teamA, locale)}>
+              <IntentLink href={buildTeamHref(locale, teamA.slug)} title={teamName(teamA, locale)}>
                 <Mark team={teamA} locale={locale} />
                 <TeamName team={teamA} locale={locale} compact={compact} />
-              </a>
+              </IntentLink>
             ) : (
               <>
                 <Mark team={teamA} locale={locale} />
@@ -369,10 +370,10 @@ export function TwoLegTieCard({
           </div>
           <div className={`tie-team${win === idB ? ' is-winner' : ''}`}>
             {teamB?.slug ? (
-              <a href={buildTeamHref(locale, teamB.slug)} title={teamName(teamB, locale)}>
+              <IntentLink href={buildTeamHref(locale, teamB.slug)} title={teamName(teamB, locale)}>
                 <Mark team={teamB} locale={locale} />
                 <TeamName team={teamB} locale={locale} compact={compact} />
-              </a>
+              </IntentLink>
             ) : (
               <>
                 <Mark team={teamB} locale={locale} />

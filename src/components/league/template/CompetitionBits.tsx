@@ -11,6 +11,7 @@ import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getMatchState, isLive } from '@/lib/match-status';
 import { matchHref } from '@/lib/seo/match-slug';
 import { MatchLink } from '@/components/shared/MatchLink';
+import { IntentLink } from '@/components/shared/IntentLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { LocalTime } from '@/components/shared/LocalTime';
 import { formatSeason, formatDateLabel, toSiteDateKey, SITE_TZ } from '@/lib/utils/date';
@@ -649,9 +650,9 @@ export function StandingsTable({
                 </td>
                 <td>
                   {href ? (
-                    <a className="standing-team" href={href}>
+                    <IntentLink className="standing-team" href={href}>
                       {team}
-                    </a>
+                    </IntentLink>
                   ) : (
                     <span className="standing-team">{team}</span>
                   )}
@@ -776,10 +777,10 @@ export function PlayerRanking({
             <tr key={`${p.id}-${p.team}-${i}`}>
               <td className="stand-pos">{p.rank}</td>
               <td>
-                <a className="player-cell" href={`/${locale}/joueur/${p.slug}`}>
+                <IntentLink className="player-cell" href={`/${locale}/joueur/${p.slug}`}>
                   <Crest src={p.teamLogo} name={p.team} />
                   <bdi>{p.name}</bdi>
-                </a>
+                </IntentLink>
               </td>
               <td className="stand-num">{p.value}</td>
             </tr>
@@ -972,9 +973,9 @@ export function ClubDetails({
                 primary={team.primaryColor}
                 secondary={team.secondaryColor}
               />
-              <a href={`/${locale}/equipe/${team.slug}`}>
+              <IntentLink href={`/${locale}/equipe/${team.slug}`}>
                 <bdi>{team.name}</bdi>
-              </a>
+              </IntentLink>
             </li>
           ))}
         </ul>

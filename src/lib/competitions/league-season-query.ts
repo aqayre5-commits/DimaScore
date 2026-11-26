@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { cacheLife } from 'next/cache';
 import { db } from '@/lib/db/client';
 import { getAvailableSeasons, getCurrentSeasonYear } from '@/lib/db/queries/league';
@@ -19,11 +20,21 @@ export async function getLeagueSeasonSnapshot(competitionId: number) {
   return { availableSeasons, currentSeasonYear };
 }
 
-export async function resolveCompetitionSeason(
+async function resolveSeason(
   competitionId: number,
-  requestedYear: number | null = null,
+  requestedYear: number | null,
 ): Promise<ResolvedLeagueSeason> {
   const { availableSeasons, currentSeasonYear } = await getLeagueSeasonSnapshot(competitionId);
   const allowed = allowedSeasons(competitionId, availableSeasons);
   return resolveLeagueSeason(availableSeasons, currentSeasonYear, requestedYear, allowed);
 }
+
+/**
+ * React `cache` per request: `generateMetadata` and the page body resolve the same competition
+ * season; they share one snapshot read instead of two sequential ones.
+ */
+const resolveSeasonCached = cache(resolveSeason);
+export const resolveCompetitionSeason = (
+  competitionId: number,
+  requestedYear: number | null = null,
+): Promise<ResolvedLeagueSeason> => resolveSeasonCached(competitionId, requestedYear);

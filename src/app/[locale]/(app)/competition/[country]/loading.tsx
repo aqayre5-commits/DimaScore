@@ -1,3 +1,5 @@
+import { CompetitionSkeleton } from './[tournament]/CompetitionSkeleton';
+
 export default function CompetitionCountryLoading() {
-  return <div className="ds-route-fallback" aria-hidden />;
+  return <CompetitionSkeleton />;
 }
