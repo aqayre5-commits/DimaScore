@@ -40,7 +40,9 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#0d1117',
+  // Default (no saved theme) matches the dark `--surface`. The head theme
+  // script updates the live meta to #fff when atlas-theme is light.
+  themeColor: '#131817',
 };
 
 export async function generateMetadata({
@@ -96,12 +98,22 @@ export async function generateMetadata({
 const themeScript = `
   (function() {
     try {
-      var t = localStorage.getItem('atlas-theme');
-      if (t === 'light') {
-        document.documentElement.dataset.theme = 'light';
-      }
+      var light = localStorage.getItem('atlas-theme') === 'light';
+      var root = document.documentElement;
+      if (light) root.dataset.theme = 'light';
+      root.style.colorScheme = light ? 'light' : 'dark';
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', light ? '#fff' : '#131817');
     } catch (e) { /* localStorage unavailable in SSR/privacy mode */ }
   })();
+`;
+
+/* Critical pre-CSS paint: same values as html/--surface, so a full load does
+   not flash the old Midnight Pitch canvas (#0d1117 / #f3f6f9). The theme
+   script above runs first and sets data-theme when the saved theme is light. */
+const themeBootStyle = `
+  html,body{background-color:#131817;color-scheme:dark}
+  html[data-theme='light'],html[data-theme='light'] body{background-color:#fff;color-scheme:light}
 `;
 
 export default async function LocaleLayout({
@@ -134,11 +146,12 @@ export default async function LocaleLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <style dangerouslySetInnerHTML={{ __html: themeBootStyle }} />
         <link rel="preconnect" href="https://media.api-sports.io" />
         <link rel="dns-prefetch" href="https://media.api-sports.io" />
       </head>
       <body
-        className={`${fontClass} flex min-h-full flex-col bg-bg-canvas pb-[calc(3.5rem+env(safe-area-inset-bottom))] text-text-primary md:pb-0`}
+        className={`${fontClass} flex min-h-full flex-col pb-[calc(3.5rem+env(safe-area-inset-bottom))] text-text-primary md:pb-0`}
       >
         <JsonLd graph={buildGraph(buildOrganization(baseUrl), buildWebSite(baseUrl, locale))} />
         <NextIntlClientProvider locale={locale} messages={messages}>

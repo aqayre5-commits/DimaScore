@@ -101,11 +101,17 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-color: var(--surface);
     font-feature-settings: 'tnum';
   }
   html {
     @apply font-sans scroll-smooth;
+    background-color: var(--surface);
+    color-scheme: dark;
+  }
+  html[data-theme='light'] {
+    color-scheme: light;
   }
 }
 
