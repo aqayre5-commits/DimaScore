@@ -100,8 +100,8 @@
   padding: 10px 12px;
   font-variant-numeric: tabular-nums;
 }
-.tie-double { grid-template-columns: minmax(0,1fr) repeat(3,var(--tie-cell)); }
-.tie-single-link { display: grid; grid-template-columns: minmax(0,1fr) var(--tie-cell); grid-row: span 3; grid-template-rows: subgrid; color: inherit; }
+.tie-double { grid-template-columns: minmax(var(--tie-name-min,112px),1fr) repeat(3,var(--tie-cell)); }
+.tie-single-link { display: grid; grid-template-columns: minmax(var(--tie-name-min,112px),1fr) var(--tie-cell); grid-row: span 3; grid-template-rows: subgrid; color: inherit; }
 .tie-identity,.tie-column { display: grid; grid-row: span 3; grid-template-rows: subgrid; align-items: center; min-width: 0; }
 .cup-pair { grid-template-rows: minmax(21px,auto) repeat(2,minmax(28px,auto)); }
 .tie-cap { font-size: 12px; line-height: 1.25; font-weight: 550; color: var(--muted); text-decoration: none; }
@@ -111,7 +111,8 @@
 .tie-total > abbr { cursor: help; }
 .tie-team,.tie-team > a { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 15px; line-height: 1.22; font-weight: 550; }
 .tie-team { padding-inline-end: 5px; }
-.tie-team bdi { overflow-wrap: anywhere; }
+/* Names wrap at word breaks and only split a single over-long word; the card never squeezes a name below its column minimum. */
+.tie-team bdi { overflow-wrap: break-word; min-width: 0; }
 .tie-team.is-winner,.tie-team.is-winner > a { font-weight: 720; }
 .tie-num { font-size: 15px; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .tie-total .tie-num { font-weight: 650; }
@@ -153,7 +154,7 @@
 .draw-disabled{color:var(--muted);opacity:.35}
 .draw-bar>.link{font-size:14px}
 .draw-tree[data-solo]{max-width:530px}
-@container(max-width:820px){
+@container(max-width:560px){
  .draw-tree{display:block}
  .draw-gutter,.draw-round:not(.draw-selected),.draw-round h3{display:none}
  .draw-matches{height:auto;display:grid;gap:10px}
@@ -178,7 +179,7 @@
   align-items: start;
   min-width: 0;
 }
-.draw-tree:not([data-solo]) { min-width: 780px; }
+.draw-tree:not([data-solo]) { min-width: calc(var(--cols, 3) * var(--col-min, 268px) + (var(--cols, 3) - 1) * var(--draw-gap)); }
 .draw-tree[data-solo] { max-width: 530px; min-width: 0; }
 .draw-round { min-width: 0; }
 .draw-round h3 {
@@ -431,3 +432,38 @@
   .cup-page .pl-identity { gap: 7px; }
   .cup-page .pl-identity h1 { font-size: 19px; }
 }
+
+/* ── Bracket shell (TBD ties) and the Stages switch ── */
+.tie-tbd .tie-team,.tie-tbd .tie-num,.tie-tbd .tie-cap { color: var(--muted); }
+.tie-tbd .tie-team { font-weight: 500; }
+.tie-ph { flex: none; width: 21px; height: 21px; border-radius: 50%; border: 1px dashed var(--muted); opacity: .7; }
+.draw-gutter path { vector-effect: non-scaling-stroke; }
+.draw-tree { --tie-name-min: 124px; }
+.draw-tree[data-solo] { min-width: 0; }
+
+.stage-switch {
+  display: inline-flex;
+  max-width: 100%;
+  margin-block-end: 12px;
+  border: 1px solid var(--border, var(--line));
+  border-radius: 8px;
+  overflow: hidden;
+}
+.stage-switch a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 112px;
+  padding-inline: 16px;
+  color: var(--ink);
+  text-decoration: none;
+  font: 600 15px/1.2 var(--font);
+  white-space: nowrap;
+}
+.stage-switch a + a { border-inline-start: 1px solid var(--border, var(--line)); }
+.stage-switch a[aria-current='page'] { background: var(--field); color: var(--green); font-weight: 700; }
+.stage-switch a:hover { background: var(--hover); }
+.stage-switch a:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; }
+.stage-matchdays { margin-block-start: 14px; }
+.stage-matchdays h3 { margin: 0 0 6px; font-size: 14px; font-weight: 650; color: var(--muted); }

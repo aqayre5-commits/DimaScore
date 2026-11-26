@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { TeamMark } from '@/components/shared/TeamMark';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { LocalTime } from '@/components/shared/LocalTime';
@@ -9,7 +9,8 @@ import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
 import { getMatchState, isFinished } from '@/lib/match-status';
 import { asDate } from '@/lib/competitions/template-model';
-import type { CupRound, CupTie } from '@/lib/competitions/domestic-ties';
+import type { CupTie } from '@/lib/competitions/domestic-ties';
+import type { DrawRound } from '@/lib/competitions/bracket';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { Locale } from '@/lib/i18n/config';
 import { buildTeamHref } from '@/lib/competitions/paths';
@@ -152,10 +153,20 @@ export function SingleMatchCard({
       : null;
 
   return (
-    <MatchLink matchId={String(fixture.id)} href={href} preview={preview} className="cup-pair tie-single-link">
+    <MatchLink
+      matchId={String(fixture.id)}
+      href={href}
+      preview={preview}
+      className="cup-pair tie-single-link"
+    >
       <div className="tie-identity">
         <span className="tie-cap">
-          <LocalTime date={asDate(fixture.kickoffAt)} locale={locale} format="date" dateOptions={{ weekday: "short", day: "numeric", month: "short" }} />
+          <LocalTime
+            date={asDate(fixture.kickoffAt)}
+            locale={locale}
+            format="date"
+            dateOptions={{ weekday: 'short', day: 'numeric', month: 'short' }}
+          />
         </span>
         <div className={`tie-team${win === 'home' ? ' is-winner' : ''}`}>
           <Mark team={fixture.homeTeam} locale={locale} />
@@ -224,7 +235,12 @@ export function TwoLegTieCard({
     const a = scoreOf(fixture, idA);
     const b = scoreOf(fixture, idB);
     return (
-      <MatchLink matchId={String(fixture.id)} href={href} preview={preview} className="tie-column cup-leg">
+      <MatchLink
+        matchId={String(fixture.id)}
+        href={href}
+        preview={preview}
+        className="tie-column cup-leg"
+      >
         <span className="tie-cap">{cap}</span>
         <span className="tie-num">{a ?? '–'}</span>
         <span className="tie-num">{b ?? '–'}</span>
@@ -241,12 +257,27 @@ export function TwoLegTieCard({
         <span className="tie-cap">
           {Array.isArray(dateRange) ? (
             <>
-              <LocalTime date={dateRange[0]} locale={locale} format="date" dateOptions={{ weekday: "short", day: "numeric", month: "short" }} />
+              <LocalTime
+                date={dateRange[0]}
+                locale={locale}
+                format="date"
+                dateOptions={{ weekday: 'short', day: 'numeric', month: 'short' }}
+              />
               {' – '}
-              <LocalTime date={dateRange[1]} locale={locale} format="date" dateOptions={{ weekday: "short", day: "numeric", month: "short" }} />
+              <LocalTime
+                date={dateRange[1]}
+                locale={locale}
+                format="date"
+                dateOptions={{ weekday: 'short', day: 'numeric', month: 'short' }}
+              />
             </>
           ) : (
-            <LocalTime date={dateRange} locale={locale} format="date" dateOptions={{ weekday: "short", day: "numeric", month: "short" }} />
+            <LocalTime
+              date={dateRange}
+              locale={locale}
+              format="date"
+              dateOptions={{ weekday: 'short', day: 'numeric', month: 'short' }}
+            />
           )}
         </span>
         <div className={`tie-team${win === idA ? ' is-winner' : ''}`}>
@@ -368,16 +399,115 @@ export function RoundNav({
   );
 }
 
-function Gutter({ from, to }: { from: number; to: number }) {
-  const mid = (from + to) / 2;
+/** Placeholder for a tie that is not known yet (bracket shell). */
+function TbdCard({ twoLegged, labels }: { twoLegged: boolean; labels: DrawLabels }) {
+  return (
+    <article className={`cup-pair tie-tbd${twoLegged ? ' tie-double' : ''}`}>
+      <div className="tie-identity">
+        <span className="tie-cap">{labels.tbd}</span>
+        {[0, 1].map((n) => (
+          <div key={n} className="tie-team">
+            <span className="tie-ph" aria-hidden="true" />
+            <bdi>{labels.tbd}</bdi>
+          </div>
+        ))}
+      </div>
+      {twoLegged ? (
+        <>
+          {[labels.leg1, labels.leg2].map((cap) => (
+            <div key={cap} className="tie-column">
+              <span className="tie-cap">{cap}</span>
+              <span className="tie-num">–</span>
+              <span className="tie-num">–</span>
+            </div>
+          ))}
+          <div className="tie-column tie-total">
+            <span className="tie-cap">
+              <abbr title={labels.aggTitle}>{labels.agg}</abbr>
+            </span>
+            <span className="tie-num">–</span>
+            <span className="tie-num">–</span>
+          </div>
+        </>
+      ) : (
+        <div className="tie-column">
+          <span className="tie-cap" />
+          <span className="tie-num">–</span>
+          <span className="tie-num">–</span>
+        </div>
+      )}
+    </article>
+  );
+}
+
+function clubsOf(tie: CupTie | null): number[] {
+  if (!tie) return [];
+  const ids = new Set<number>();
+  for (const f of tie.fixtures) {
+    if (f.homeTeamId != null) ids.add(f.homeTeamId);
+    if (f.awayTeamId != null) ids.add(f.awayTeamId);
+  }
+  return [...ids];
+}
+
+/** Ties of the previous round that feed tie `j`: by shared club, else by position. */
+function feeders(prev: (CupTie | null)[], cur: (CupTie | null)[], j: number): number[] {
+  const target = clubsOf(cur[j]);
+  const byClub = prev
+    .map((t, i) => (clubsOf(t).some((id) => target.includes(id)) ? i : -1))
+    .filter((i) => i >= 0);
+  if (byClub.length > 0) return byClub;
+  if (prev.length < cur.length) return [];
+  const span = Math.max(1, Math.round(prev.length / cur.length));
+  const out: number[] = [];
+  for (let i = j * span; i < Math.min(prev.length, j * span + span); i++) {
+    // Skip a slot that is already linked to another tie by club.
+    const mine = clubsOf(prev[i]);
+    const elsewhere =
+      mine.length > 0 && cur.some((t, k) => k !== j && clubsOf(t).some((id) => mine.includes(id)));
+    if (!elsewhere) out.push(i);
+  }
+  return out;
+}
+
+function Gutter({
+  prev,
+  cur,
+  maxSlots,
+}: {
+  prev: (CupTie | null)[];
+  cur: (CupTie | null)[];
+  maxSlots: number;
+}) {
+  const y = (i: number, n: number) => ((i + 0.5) / Math.max(n, 1)) * maxSlots;
+  const paths: string[] = [];
+  for (let j = 0; j < cur.length; j++) {
+    const yj = y(j, cur.length);
+    const from = feeders(prev, cur, j);
+    for (const i of from) paths.push(`M0 ${y(i, prev.length)} H50 V${yj}`);
+    if (from.length > 0) paths.push(`M50 ${yj} H100`);
+  }
   return (
     <div className="draw-gutter" aria-hidden="true">
-      <svg viewBox="0 0 36 100" preserveAspectRatio="none">
-        <path d={`M0 ${from} H18 V${to} H36 M18 ${mid} H36`} />
+      <svg viewBox={`0 0 100 ${maxSlots}`} preserveAspectRatio="none">
+        <path d={paths.join(' ')} />
       </svg>
     </div>
   );
 }
+
+type DrawLabels = {
+  fullTime: string;
+  matchCentre: string;
+  leg1: string;
+  leg2: string;
+  agg: string;
+  aggTitle: string;
+  previous: string;
+  next: string;
+  rounds: string;
+  tbd: string;
+};
 
 export function DrawWindow({
   rounds,
@@ -387,48 +517,70 @@ export function DrawWindow({
   nextHref,
   nextLabel,
   labels,
+  windowSize = 3,
+  active = true,
+  scrollToFocus = false,
 }: {
-  rounds: CupRound[];
+  rounds: DrawRound[];
   currentSlug: string;
   locale: Locale;
   hrefFor: (slug: string) => string;
   nextHref?: string | null;
   nextLabel?: string | null;
-  labels: {
-    fullTime: string;
-    matchCentre: string;
-    leg1: string;
-    leg2: string;
-    agg: string;
-    aggTitle: string;
-    previous: string;
-    next: string;
-    rounds: string;
-  };
+  labels: DrawLabels;
+  /** Adjacent rounds shown side by side on desktop (the pane scrolls when it is narrower). */
+  windowSize?: number;
+  /** True while the draw is on screen, so the pane can scroll the focused round into view. */
+  active?: boolean;
+  /** Scroll the pane to the focused round (only when a round was asked for). */
+  scrollToFocus?: boolean;
 }) {
+  const paneRef = useRef<HTMLDivElement>(null);
   const visible = rounds.filter((r) => !r.earlier || r.slug === currentSlug);
-  const focus = visible.find((r) => r.slug === currentSlug) ?? visible[visible.length - 1];
-  const columns = visible.slice(-4);
+  const focusIdx = Math.max(
+    0,
+    visible.findIndex((r) => r.slug === currentSlug) >= 0
+      ? visible.findIndex((r) => r.slug === currentSlug)
+      : visible.length - 1,
+  );
+  const focus = visible[focusIdx];
+  const size = Math.max(1, Math.min(windowSize, visible.length));
+  const start = Math.min(focusIdx, visible.length - size);
+  const columns = visible.slice(start, start + size);
   const maxSlots = Math.max(1, ...columns.map((r) => Math.max(r.ties.length, 1)));
   const tracks = columns
     .map((_, i) => (i === 0 ? 'minmax(0,1fr)' : 'var(--draw-gap) minmax(0,1fr)'))
     .join(' ');
+  const anyTwoLegged = columns.some((r) => r.twoLegged);
+
+  useEffect(() => {
+    const pane = paneRef.current;
+    if (!active || !scrollToFocus || !pane) return;
+    const target = pane.querySelector<HTMLElement>('.draw-round.draw-selected');
+    if (!target || pane.scrollWidth <= pane.clientWidth) return;
+    const p = pane.getBoundingClientRect();
+    const t = target.getBoundingClientRect();
+    const rtl = getComputedStyle(pane).direction === 'rtl';
+    pane.scrollLeft += rtl ? t.right - p.right : t.left - p.left;
+  }, [active, scrollToFocus, focus?.slug]);
 
   return (
     <div className="cup-draw">
       <RoundNav
-        rounds={rounds.map((r) => ({ slug: r.slug, label: r.label }))}
+        rounds={visible.map((r) => ({ slug: r.slug, label: r.label }))}
         currentSlug={focus?.slug ?? currentSlug}
         hrefFor={hrefFor}
         labels={labels}
       />
-      <div className="draw-window">
+      <div className="draw-window" ref={paneRef}>
         <div
           className="draw-tree"
           data-solo={columns.length <= 1 ? '' : undefined}
           style={
             {
               ['--tracks' as string]: tracks,
+              ['--cols' as string]: String(columns.length),
+              ['--col-min' as string]: anyTwoLegged ? '288px' : '230px',
               ['--slots' as string]: String(maxSlots),
             } as CSSProperties
           }
@@ -439,10 +591,7 @@ export function DrawWindow({
             return (
               <div key={round.slug} style={{ display: 'contents' }}>
                 {col > 0 && (
-                  <Gutter
-                    from={((columns[col - 1]?.ties.length || 1) / maxSlots) * 50}
-                    to={(slots / maxSlots) * 50}
-                  />
+                  <Gutter prev={columns[col - 1].ties} cur={round.ties} maxSlots={maxSlots} />
                 )}
                 <section
                   className={`draw-round${selected ? ' draw-selected' : ''}`}
@@ -457,15 +606,14 @@ export function DrawWindow({
                       return (
                         <div
                           key={tie?.key ?? `empty-${i}`}
+                          id={tie ? `tie-${tie.fixtures[0]?.id}` : undefined}
                           className="draw-node"
                           style={{ ['--position' as string]: position }}
                         >
                           {tie ? (
                             <TieCard tie={tie} locale={locale} labels={labels} />
                           ) : (
-                            <article className="cup-pair">
-                              <span className="draw-slot">–</span>
-                            </article>
+                            <TbdCard twoLegged={round.twoLegged} labels={labels} />
                           )}
                           {selected && nextHref && nextLabel ? (
                             <a className="draw-forward" href={nextHref}>
