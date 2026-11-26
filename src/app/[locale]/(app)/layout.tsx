@@ -28,12 +28,12 @@ export default async function AppLayout({
       >
         {t('skipToContent')}
       </a>
-      <Suspense fallback={<div className="sticky top-0 z-50 h-10 bg-bg-surface-3" />}>
+      <Suspense fallback={<div className="ds-chrome-fallback sticky top-0 z-50 h-10" />}>
         <AdaptiveTopStrip locale={locale} />
       </Suspense>
       <Suspense
         fallback={
-          <div className="sticky top-10 z-40 h-12 border-b border-border-subtle bg-bg-surface" />
+          <div className="ds-chrome-fallback sticky top-10 z-40 h-12 border-b border-border-subtle" />
         }
       >
         <Topbar />

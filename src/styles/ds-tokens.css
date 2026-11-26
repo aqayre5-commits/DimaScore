@@ -9,6 +9,36 @@
  * `html:not([data-theme="light"])` — the same mapping as match-centre.css.
  */
 
+/* Page canvas: the same `--surface` values as `.mc` / `.pl`, lifted to `html`
+   so the first paint, the layout shell, and route-transition fallbacks match
+   the redesigned match / competition pages before those wrappers mount. Dark
+   (no data-theme="light") stays the site default. */
+html {
+  --surface: #131817;
+  background-color: var(--surface);
+  color-scheme: dark;
+}
+html[data-theme='light'] {
+  --surface: #fff;
+  color-scheme: light;
+}
+html, body {
+  background-color: var(--surface);
+}
+
+/* Blank route-transition surface. Used by loading.tsx so client navigations
+   do not flash the old Midnight Pitch canvas or the old InnerPageShell skeleton. */
+.ds-route-fallback {
+  min-height: calc(100svh - var(--app-sticky-offset, 88px));
+  background-color: var(--surface);
+}
+
+/* Chrome Suspense placeholders (ticker / topbar) use the same canvas so a
+   route transition does not flash the old Midnight Pitch strip colours. */
+.ds-chrome-fallback {
+  background-color: var(--surface);
+}
+
 :is(.mc, .pl) {
   --ink: #101512;
   --green: #006b47;
