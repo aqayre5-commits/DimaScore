@@ -24,11 +24,16 @@ export interface ZoneBand {
 
 export interface EditionFormat {
   competitionId: number;
+  /** An exact edition, or 'default'. A default row with `sinceSeason` applies from that edition on. */
   seasonYear: number | 'default';
+  sinceSeason?: number;
   kind: CompetitionFormatKind;
   twoLeggedRounds?: string[];
+  /** Every knockout round of the edition, qualifying rounds and final included, is two legs. */
+  allRoundsTwoLegged?: boolean;
   thirdPlaceMatch?: boolean;
   groups?: { count: number; size: number };
+  /** Best third-placed sides that go through (0 / absent: none, so no best-thirds stage). */
   bestThirdsAdvance?: number;
   leaguePhase?: { teams: number; matchdays: number; zones: ZoneBand[] };
   /**
@@ -115,9 +120,18 @@ const FORMATS: EditionFormat[] = [
     ],
   },
   {
-    // UWCL from 2025/26: one 18-team league phase (6 matchdays), then play-offs → QF → SF → final.
+    // UWCL before the league phase: 4 groups of 4, top two to the quarter-finals.
     competitionId: 525,
     seasonYear: 'default',
+    kind: 'league-phase-knockout',
+    groups: { count: 4, size: 4 },
+    twoLeggedRounds: ['Quarter-finals', 'Semi-finals'],
+  },
+  {
+    // UWCL from 2026/27: one 18-team league phase; 1–4 → QF, 5–12 → knockout play-offs, 13–18 out.
+    competitionId: 525,
+    seasonYear: 'default',
+    sinceSeason: 2026,
     kind: 'league-phase-knockout',
     tableRules: [
       { from: 1, to: 4, key: 'advance', round: 'quarter-finals' },
@@ -131,10 +145,9 @@ const FORMATS: EditionFormat[] = [
       'Quarter-finals',
       'Semi-finals',
     ],
-    unverified: ['league-phase size and bands'],
   },
   {
-    // Women's Europa Cup (new in 2025/26): a straight two-legged knockout, final included.
+    // Women's Europa Cup, first edition: a two-legged knockout.
     competitionId: 1191,
     seasonYear: 'default',
     kind: 'league-phase-knockout',
@@ -146,7 +159,15 @@ const FORMATS: EditionFormat[] = [
       'Semi-finals',
       'Final',
     ],
-    unverified: ['legs per stage'],
+    unverified: ['legs per stage before 2026/27'],
+  },
+  {
+    // Women's Europa Cup 2026/27: all six rounds are two legs, qualifying rounds and final included.
+    competitionId: 1191,
+    seasonYear: 'default',
+    sinceSeason: 2026,
+    kind: 'league-phase-knockout',
+    allRoundsTwoLegged: true,
   },
   { competitionId: 5, seasonYear: 'default', kind: 'tiered-groups' },
   {
@@ -169,14 +190,18 @@ const FORMATS: EditionFormat[] = [
     competitionId: 922,
     seasonYear: 2024,
     kind: 'finals-tournament',
+    // 3 groups of 4: the top two of each plus the two best third-placed sides reach the quarter-finals.
     groups: { count: 3, size: 4 },
-    bestThirdsAdvance: 4,
+    bestThirdsAdvance: 2,
   },
   {
     competitionId: 922,
-    seasonYear: 2026,
+    // The 2026 edition is filed under provider season 2025.
+    seasonYear: 2025,
     kind: 'finals-tournament',
+    // 4 groups of 4: the top two of each go straight to the quarter-finals (no best thirds).
     groups: { count: 4, size: 4 },
+    bestThirdsAdvance: 0,
   },
   {
     competitionId: 822,
@@ -185,7 +210,8 @@ const FORMATS: EditionFormat[] = [
     unverified: ['two-legged rounds'],
   },
   {
-    // CAF Champions League: two preliminary knockouts, 4 × 4 groups, then two-legged knockouts.
+    // CAF Champions League: two preliminary knockouts, 4 × 4 groups, then two-legged knockouts;
+    // the final is two legs (one aggregate card in the draw, two dated matches in Fixtures).
     competitionId: 12,
     seasonYear: 'default',
     kind: 'league-phase-knockout',
@@ -198,10 +224,9 @@ const FORMATS: EditionFormat[] = [
       'Semi-finals',
       'Final',
     ],
-    unverified: ['final legs'],
   },
   {
-    // CAF Confederation Cup: same shape as the CAF Champions League.
+    // CAF Confederation Cup: same shape as the CAF Champions League, two-legged final.
     competitionId: 20,
     seasonYear: 'default',
     kind: 'league-phase-knockout',
@@ -214,7 +239,24 @@ const FORMATS: EditionFormat[] = [
       'Semi-finals',
       'Final',
     ],
-    unverified: ['final legs'],
+  },
+  {
+    // CAF Women's Champions League: 2 groups of 4, semi-finals, third-place match, then a
+    // single-match final (not in `twoLeggedRounds`).
+    competitionId: 1164,
+    seasonYear: 'default',
+    kind: 'league-phase-knockout',
+    groups: { count: 2, size: 4 },
+    thirdPlaceMatch: true,
+    unverified: ['competition id 1164 (third-party listing)'],
+  },
+  {
+    competitionId: 1164,
+    seasonYear: 2026,
+    kind: 'league-phase-knockout',
+    groups: { count: 2, size: 4 },
+    thirdPlaceMatch: true,
+    unverified: ['competition id 1164 (third-party listing)'],
   },
   { competitionId: 10, seasonYear: 'default', kind: 'friendlies' },
   { competitionId: 29, seasonYear: 'default', kind: 'qualifiers' },
@@ -372,8 +414,15 @@ export function getCompetitionFormat(
   if (seasonYear != null) {
     const exact = list.find((f) => f.seasonYear === seasonYear);
     if (exact) return exact;
+    // A default row that starts at an edition applies from then on (latest start wins).
+    const since = list
+      .filter(
+        (f) => f.seasonYear === 'default' && f.sinceSeason != null && f.sinceSeason <= seasonYear,
+      )
+      .sort((a, b) => (b.sinceSeason ?? 0) - (a.sinceSeason ?? 0))[0];
+    if (since) return since;
   }
-  return list.find((f) => f.seasonYear === 'default') ?? list[0] ?? null;
+  return list.find((f) => f.seasonYear === 'default' && f.sinceSeason == null) ?? list[0] ?? null;
 }
 
 export function listCompetitionFormats(): EditionFormat[] {

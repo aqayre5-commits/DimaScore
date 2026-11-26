@@ -20,12 +20,27 @@ export async function getLeagueSeasonSnapshot(competitionId: number) {
   return { availableSeasons, currentSeasonYear };
 }
 
+/** Every edition with data, for tournaments that have an edition page per year. */
+export async function getEditionSeasonSnapshot(competitionId: number) {
+  'use cache';
+  cacheLife('season');
+  const [availableSeasons, currentSeasonYear] = await Promise.all([
+    getAvailableSeasons(db, competitionId, false),
+    getCurrentSeasonYear(db, competitionId),
+  ]);
+  return { availableSeasons, currentSeasonYear };
+}
+
 async function resolveSeason(
   competitionId: number,
   requestedYear: number | null,
+  allEditions: boolean,
 ): Promise<ResolvedLeagueSeason> {
-  const { availableSeasons, currentSeasonYear } = await getLeagueSeasonSnapshot(competitionId);
-  const allowed = allowedSeasons(competitionId, availableSeasons);
+  const { availableSeasons, currentSeasonYear } = await (allEditions
+    ? getEditionSeasonSnapshot(competitionId)
+    : getLeagueSeasonSnapshot(competitionId));
+  // Tournaments with an edition slug per year (wafcon-2024, afcon-2023) serve every edition that has data.
+  const allowed = allEditions ? undefined : allowedSeasons(competitionId, availableSeasons);
   return resolveLeagueSeason(availableSeasons, currentSeasonYear, requestedYear, allowed);
 }
 
@@ -37,4 +52,5 @@ const resolveSeasonCached = cache(resolveSeason);
 export const resolveCompetitionSeason = (
   competitionId: number,
   requestedYear: number | null = null,
-): Promise<ResolvedLeagueSeason> => resolveSeasonCached(competitionId, requestedYear);
+  allEditions = false,
+): Promise<ResolvedLeagueSeason> => resolveSeasonCached(competitionId, requestedYear, allEditions);

@@ -123,6 +123,8 @@ export async function getCurrentSeasonYear(
 export async function getAvailableSeasons(
   db: NeonHttpDatabase<typeof schema>,
   competitionId: number,
+  /** false: every edition with data (tournaments that have an edition page per year). */
+  applyPolicy = true,
 ): Promise<{ year: number; isCurrent: boolean; fixtureCount: number }[]> {
   const [rows, fixtureCountRows] = await Promise.all([
     db
@@ -153,6 +155,7 @@ export async function getAvailableSeasons(
       isCurrent: r.isCurrent ?? false,
       fixtureCount: fixtureCountByYear.get(r.year) ?? 0,
     }));
+  if (!applyPolicy) return all;
   const allowed = new Set(allowedSeasons(competitionId, all));
   return allowed.size === 0 ? all : all.filter((s) => allowed.has(s.year));
 }
