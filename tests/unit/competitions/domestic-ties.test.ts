@@ -89,6 +89,24 @@ describe('buildCupRounds', () => {
     expect(fixtureLegLabel(tie, tie.fixtures[0])).toBe(null);
     expect(fixtureLegLabel(tie, tie.fixtures[1])).toBe('replay');
   });
+
+  it('labels first and second legs of a two-legged UEFA tie', () => {
+    const rounds = buildCupRounds(2, 2025, [
+      fx(1, 'Round of 16', 1, 2, '2026-03-10T20:00:00Z', [1, 0]),
+      fx(2, 'Round of 16', 2, 1, '2026-03-17T20:00:00Z', [0, 0]),
+    ]);
+    const tie = rounds[0].ties[0];
+    expect(tie.twoLegged).toBe(true);
+    expect(fixtureLegLabel(tie, tie.fixtures[0])).toBe('first');
+    expect(fixtureLegLabel(tie, tie.fixtures[1])).toBe('second');
+  });
+
+  it('labels a lone scheduled match in a two-legged round as the first leg', () => {
+    const rounds = buildCupRounds(2, 2026, [fx(1, 'Round of 16', 1, 2, '2027-03-10T20:00:00Z')]);
+    const tie = rounds[0].ties[0];
+    expect(tie.twoLegged).toBe(true);
+    expect(fixtureLegLabel(tie, tie.fixtures[0])).toBe('first');
+  });
 });
 
 describe('UEFA league-phase cups', () => {

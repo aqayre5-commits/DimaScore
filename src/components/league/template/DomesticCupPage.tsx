@@ -799,8 +799,9 @@ export function DomesticCupPage({
                     <div key={f.id}>
                       {leg ? (
                         <p className="ghead cup-day-head">
-                          <span>{parent ? roundLabel(parent) : ''}</span>
+                          <strong>{parent ? roundLabel(parent) : ''}</strong>
                           <span className="cup-leg-label">
+                            {' · '}
                             {leg === 'first'
                               ? tCup('firstLeg')
                               : leg === 'second'
@@ -847,9 +848,10 @@ export function DomesticCupPage({
                   return (
                     <div key={g.key} className="cup-date-group">
                       <h3 className="ghead cup-day-head">
-                        <span>{formatDateLabel(g.key, locale, todayLabel)}</span>
+                        <strong>{formatDateLabel(g.key, locale, todayLabel)}</strong>
                         {sameLeg && leg ? (
                           <span className="cup-leg-label">
+                            {' · '}
                             {leg === 'first'
                               ? tCup('firstLeg')
                               : leg === 'second'

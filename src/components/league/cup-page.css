@@ -320,7 +320,7 @@
 .cup-page .cup-day-head {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 5px;
   flex-wrap: wrap;
 }
 .cup-page .cup-leg-label { font-weight: 500; color: var(--muted); }
