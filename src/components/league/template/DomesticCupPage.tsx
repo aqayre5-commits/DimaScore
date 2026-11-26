@@ -50,6 +50,8 @@ import {
 } from './CompetitionBits';
 import { DrawWindow, TieCard } from './CupDraw';
 import { StagePicker } from './StagePicker';
+import { GroupSummary, TournamentStages, type GroupStageInput } from './TournamentStages';
+import { isGroupRound } from '@/lib/competitions/group-stage';
 import { formatRoundRange } from '@/lib/competitions/round-range';
 import {
   BRACKET_LABELS,
@@ -105,6 +107,8 @@ export interface DomesticCupPageProps {
   initialRoundSlug?: string | null;
   /** UEFA single-table league phase (CL / EL / ECL). Absent for domestic cups. */
   leaguePhase?: { standings: StandingRow[]; zones: ZoneBand[] } | null;
+  /** Group-stage tournaments (World Cup, AFCON, EURO, CAF club cups, qualifiers): tables + draw. */
+  groupStage?: GroupStageInput | null;
 }
 
 const TAB_KEYS = ['overview', 'fixtures', 'stages', 'stats'] as const;
@@ -384,6 +388,7 @@ export function DomesticCupPage({
   hideStats = false,
   initialRoundSlug = null,
   leaguePhase = null,
+  groupStage = null,
 }: DomesticCupPageProps) {
   const t = useTranslations('leaguePage');
   const tCup = useTranslations('domesticCup');
@@ -446,6 +451,11 @@ export function DomesticCupPage({
 
   const [tab, setTab] = useState<TabKey>(() => {
     if (!initialRoundSlug) return 'overview';
+    // Group-stage tournaments: a group matchday opens Fixtures; groups and the draw open Stages.
+    if (groupStage) {
+      const r = findCupRound(cupRounds, initialRoundSlug);
+      return r && isGroupRound(r.label) ? 'fixtures' : 'stages';
+    }
     if (!leaguePhase || initialIsPhase || initialIsKnockout) return 'stages';
     // League-phase matchdays and qualifying rounds open Fixtures.
     return 'fixtures';
@@ -638,7 +648,9 @@ export function DomesticCupPage({
       caption={tCup('leaguePhaseStandings')}
     />
   ) : null;
-  const phaseSummary = phaseTable ? (
+  const phaseSummary = groupStage ? (
+    <GroupSummary input={groupStage} rounds={cupRounds} locale={locale} hrefFor={hrefFor} />
+  ) : phaseTable ? (
     <section className="pl-summary">
       <div className="pl-head">
         <h2>{tCup('leaguePhaseStandings')}</h2>
@@ -878,43 +890,58 @@ export function DomesticCupPage({
 
         <div data-pl-panel="stages">
           <div className="pl-mobile-top">{whenRail}</div>
-          <div className="pl-layout cup-grid">
-            <div className="pl-main">
-              {leaguePhase && stageIsPhase ? (
-                <>
-                  <section>
-                    <div className="cup-controls">{stagePicker}</div>
-                    {phaseTable}
-                  </section>
-                  <div className="pl-mobile-top">
+          {groupStage ? (
+            <div className="pl-layout cup-grid">
+              <TournamentStages
+                input={groupStage}
+                rounds={cupRounds}
+                fixtures={patched}
+                locale={locale}
+                initialSlug={initialRoundSlug}
+                hrefFor={hrefFor}
+                whenRail={whenRail}
+                labels={tieLabels}
+              />
+            </div>
+          ) : (
+            <div className="pl-layout cup-grid">
+              <div className="pl-main">
+                {leaguePhase && stageIsPhase ? (
+                  <>
+                    <section>
+                      <div className="cup-controls">{stagePicker}</div>
+                      {phaseTable}
+                    </section>
+                    <div className="pl-mobile-top">
+                      {phaseRules}
+                      {koCard}
+                    </div>
+                  </>
+                ) : bracketRounds.length === 0 ? (
+                  <p className="pl-empty">{t('comingSoon')}</p>
+                ) : (
+                  <DrawWindow
+                    rounds={bracketRounds}
+                    currentSlug={drawSlug}
+                    locale={locale}
+                    hrefFor={hrefFor}
+                    onSelect={selectStage}
+                    picker={stagePicker}
+                    labels={tieLabels}
+                  />
+                )}
+              </div>
+              <aside className="pl-side pl-aux-desktop">
+                {whenRail}
+                {stageIsPhase ? (
+                  <>
                     {phaseRules}
                     {koCard}
-                  </div>
-                </>
-              ) : bracketRounds.length === 0 ? (
-                <p className="pl-empty">{t('comingSoon')}</p>
-              ) : (
-                <DrawWindow
-                  rounds={bracketRounds}
-                  currentSlug={drawSlug}
-                  locale={locale}
-                  hrefFor={hrefFor}
-                  onSelect={selectStage}
-                  picker={stagePicker}
-                  labels={tieLabels}
-                />
-              )}
+                  </>
+                ) : null}
+              </aside>
             </div>
-            <aside className="pl-side pl-aux-desktop">
-              {whenRail}
-              {stageIsPhase ? (
-                <>
-                  {phaseRules}
-                  {koCard}
-                </>
-              ) : null}
-            </aside>
-          </div>
+          )}
         </div>
 
         {!hideStats && (

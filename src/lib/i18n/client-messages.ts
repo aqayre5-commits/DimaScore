@@ -15,6 +15,7 @@ export const CLIENT_MESSAGE_NAMESPACES = [
   'chrome',
   'coachPage',
   'competition',
+  'cupGroups',
   // Still read by CookieNotice on main; drop this entry once #23 (removes the notice) lands.
   'cookieNotice',
   'dateStrip',

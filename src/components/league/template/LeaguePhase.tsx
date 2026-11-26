@@ -15,6 +15,8 @@ const BAND: Record<string, string> = {
   r16: '#6089ad',
   playoff: '#a48bac',
   eliminated: '#9da5a1',
+  /** Nations League relegation band (reference ruleRows `down`). */
+  relegation: '#b38a70',
 };
 
 function bandFor(rank: number, zones: ZoneBand[]): ZoneBand | undefined {

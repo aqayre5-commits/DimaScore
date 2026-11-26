@@ -13,6 +13,8 @@ import { getCurrentSeasonYear } from '@/lib/db/queries/league';
 import { buildDynamicBracket } from '@/lib/constants/dynamic-bracket-builder';
 import { buildWc2026BracketWithLive } from '@/lib/constants/wc2026-bracket-builder';
 import { BASE_URL } from '@/lib/constants/site';
+import { GROUP_STAGE_TEMPLATE_IDS, KNOCKOUT_OPEN_SLUG } from '@/lib/competitions/group-stage';
+import { CompetitionContent } from '../competition-content';
 
 interface PageProps {
   params: Promise<{ locale: string; country: string; tournament: string }>;
@@ -86,6 +88,19 @@ export default async function BracketPage({ params, searchParams }: PageProps) {
   const tNav = await getTranslations({ locale, namespace: 'megaMenu' });
 
   const entry = resolveEntry(tournament, typedLocale);
+  // Redesigned: the bracket is the cup template's Stages tab opened on the first knockout round.
+  if (entry && GROUP_STAGE_TEMPLATE_IDS.has(entry.competitionId)) {
+    const year = season && /^\d{4}$/.test(season) ? Number(season) : undefined;
+    return (
+      <CompetitionContent
+        rawLocale={locale}
+        rawCountry={rawCountry}
+        rawTournament={rawTournament}
+        season={year}
+        roundSlug={KNOCKOUT_OPEN_SLUG}
+      />
+    );
+  }
   if (!entry || !BRACKET_COMPETITION_IDS.has(entry.competitionId)) {
     return <div className="p-8 text-center text-text-tertiary">{tT('bracketNotAvailable')}</div>;
   }

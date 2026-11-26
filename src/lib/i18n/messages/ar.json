@@ -1262,5 +1262,25 @@
     "nextStage": "الدور التالي",
     "versus": "ضد",
     "round": "الجولة"
+  },
+  "cupGroups": {
+    "groupStage": "مرحلة المجموعات",
+    "bestThirds": "أفضل المنتخبات في المركز الثالث",
+    "group": "المجموعة",
+    "groupN": "المجموعة {n}",
+    "league": "الدوري",
+    "leagueDivision": "الدوري {d}",
+    "groupStandings": "ترتيب المجموعة",
+    "thirdPlace": "مباراة المركز الثالث",
+    "topAdvance": "يتأهل أول {n}",
+    "qualifies": "يتأهل",
+    "eliminated": "أُقصي",
+    "ruleThirds": "تتأهل أفضل {n} منتخبات تحتل المركز الثالث",
+    "ruleOut": "الإقصاء",
+    "rulePlayoff": "ملحق {a}/{b}",
+    "rulePromotion": "الصعود · {to}",
+    "ruleRelegation": "الهبوط · {to}",
+    "ruleStay": "البقاء في الدوري {league}",
+    "colGF": "له"
   }
 }

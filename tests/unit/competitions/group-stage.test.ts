@@ -1,0 +1,141 @@
+import { describe, expect, it } from 'vitest';
+import {
+  buildGroups,
+  groupRules,
+  knockoutDraw,
+  knockoutPath,
+  pathSlot,
+  rankThirds,
+  isGroupRound,
+  isThirdPlaceRound,
+  extraKnockoutRounds,
+} from '@/lib/competitions/group-stage';
+import { getCompetitionFormat } from '@/lib/competitions/formats';
+import type { StandingRow } from '@/lib/db/queries';
+import type { CupRound } from '@/lib/competitions/domestic-ties';
+
+const row = (
+  group: string,
+  teamId: number,
+  rank: number,
+  points: number,
+  gd = 0,
+  gf = 0,
+): StandingRow => ({
+  groupLabel: group,
+  teamId,
+  rank,
+  points,
+  played: 3,
+  won: null,
+  drawn: null,
+  lost: null,
+  goalsFor: gf,
+  goalsAgainst: null,
+  goalDiff: gd,
+  form: null,
+  description: null,
+  team: null,
+});
+
+const round = (label: string, slug: string, ties = 0): CupRound => ({
+  label,
+  slug,
+  earlier: false,
+  twoLegged: false,
+  fixtures: [],
+  ties: Array.from({ length: ties }, (_, i) => ({
+    key: `${slug}-${i}`,
+    round: label,
+    roundSlug: slug,
+    twoLegged: false,
+    fixtures: [],
+    homeTeamId: i * 2 + 1,
+    awayTeamId: i * 2 + 2,
+  })),
+});
+
+describe('group-stage model', () => {
+  it('splits tables by group in label order and ranks the best thirds', () => {
+    const groups = buildGroups([
+      row('Group B', 5, 3, 4, 1, 3),
+      row('Group A', 1, 1, 9),
+      row('Group A', 2, 3, 4, 0, 4),
+      row('Group B', 6, 1, 7),
+      row('Group C', 9, 3, 3),
+    ]);
+    expect(groups.map((g) => g.label)).toEqual(['Group A', 'Group B', 'Group C']);
+    expect(groups.map((g) => g.slug)).toEqual(['group-a', 'group-b', 'group-c']);
+    expect(buildGroups([row('A', 1, 1, 3)])[0].slug).toBe('group-a');
+    const thirds = rankThirds(groups, 2);
+    expect(thirds.map((t) => [t.row.teamId, t.rank, t.qualifies])).toEqual([
+      [5, 1, true],
+      [2, 2, true],
+      [9, 3, false],
+    ]);
+  });
+
+  it('classifies rounds and finds the knockout path from the format', () => {
+    expect(isGroupRound('Group Stage - 2')).toBe(true);
+    expect(isGroupRound('League Stage - 5')).toBe(true);
+    expect(isGroupRound('Round of 16')).toBe(false);
+    expect(isThirdPlaceRound('3rd-place-final')).toBe(true);
+    expect(pathSlot('quarter-finals')).toBe('quarter-finals');
+    expect(pathSlot('knockout-round-play-offs')).toBe('knockout-play-offs');
+    const wc = getCompetitionFormat(1, 2026);
+    expect(knockoutPath([round('Final', 'final', 1)], wc)).toEqual([
+      'round-of-32',
+      'round-of-16',
+      'quarter-finals',
+      'semi-finals',
+      'final',
+    ]);
+    const afcon = getCompetitionFormat(6);
+    expect(knockoutPath([], afcon)[0]).toBe('round-of-16');
+    // UWCL: play-offs feed quarter-finals of the same size.
+    const uwcl = getCompetitionFormat(525);
+    const path = knockoutPath(
+      [round('Knockout Round Play-offs', 'knockout-round-play-offs', 4)],
+      uwcl,
+    );
+    expect(path).toEqual(['knockout-play-offs', 'quarter-finals', 'semi-finals', 'final']);
+    const draw = knockoutDraw(
+      [round('Knockout Round Play-offs', 'knockout-round-play-offs', 4)],
+      path,
+      (s) => s,
+    );
+    expect(draw.map((r) => r.ties.length)).toEqual([4, 4, 2, 1]);
+  });
+
+  it('keeps preliminary knockouts apart from the path and the groups', () => {
+    const extra = extraKnockoutRounds([
+      round('1st Round', '1st-round'),
+      round('Group Stage - 1', 'group-stage-1'),
+      round('Quarter-finals', 'quarter-finals'),
+      round('3rd Place Final', '3rd-place-final'),
+    ]);
+    expect(extra.map((r) => r.slug)).toEqual(['1st-round']);
+  });
+
+  it('builds the advancement key for finals, single tables and Nations League divisions', () => {
+    const wc = groupRules(getCompetitionFormat(1, 2026), 'round-of-32', null, 4);
+    expect(wc.map((r) => [r.range, r.key])).toEqual([
+      ['1–2', 'advance'],
+      ['3', 'third'],
+      ['4', 'out'],
+    ]);
+    const copa = groupRules(getCompetitionFormat(9, 2024), 'quarter-finals', null, 4);
+    expect(copa.map((r) => r.range)).toEqual(['1–2', '3–4']);
+    const uwcl = groupRules(getCompetitionFormat(525), 'knockout-play-offs', null, 18);
+    expect(uwcl.map((r) => [r.range, r.key])).toEqual([
+      ['1–4', 'advance'],
+      ['5–12', 'playoff'],
+      ['13–18', 'out'],
+    ]);
+    expect(groupRules(null, null, 'D', 3).map((r) => r.key)).toEqual([
+      'promotion',
+      'playoff',
+      'stay',
+    ]);
+  });
+});

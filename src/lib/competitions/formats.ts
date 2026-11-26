@@ -31,6 +31,11 @@ export interface EditionFormat {
   groups?: { count: number; size: number };
   bestThirdsAdvance?: number;
   leaguePhase?: { teams: number; matchdays: number; zones: ZoneBand[] };
+  /**
+   * Advancement key of a single-table phase on the group-stage template (UWCL league phase):
+   * ranks and the knockout round they enter (`round` is a knockout-path slug), or out.
+   */
+  tableRules?: { from: number; to: number; key: 'advance' | 'playoff' | 'out'; round?: string }[];
   unverified?: string[];
 }
 
@@ -109,8 +114,40 @@ const FORMATS: EditionFormat[] = [
       'Semi-finals',
     ],
   },
-  { competitionId: 525, seasonYear: 'default', kind: 'league-phase-knockout' },
-  { competitionId: 1191, seasonYear: 'default', kind: 'league-phase-knockout' },
+  {
+    // UWCL from 2025/26: one 18-team league phase (6 matchdays), then play-offs → QF → SF → final.
+    competitionId: 525,
+    seasonYear: 'default',
+    kind: 'league-phase-knockout',
+    tableRules: [
+      { from: 1, to: 4, key: 'advance', round: 'quarter-finals' },
+      { from: 5, to: 12, key: 'playoff', round: 'knockout-play-offs' },
+      { from: 13, to: 18, key: 'out' },
+    ],
+    twoLeggedRounds: [
+      'Knockout Round Play-offs',
+      'Knockout play-offs',
+      'Play-offs',
+      'Quarter-finals',
+      'Semi-finals',
+    ],
+    unverified: ['league-phase size and bands'],
+  },
+  {
+    // Women's Europa Cup (new in 2025/26): a straight two-legged knockout, final included.
+    competitionId: 1191,
+    seasonYear: 'default',
+    kind: 'league-phase-knockout',
+    twoLeggedRounds: [
+      '1st Round',
+      '2nd Round',
+      'Round of 16',
+      'Quarter-finals',
+      'Semi-finals',
+      'Final',
+    ],
+    unverified: ['legs per stage'],
+  },
   { competitionId: 5, seasonYear: 'default', kind: 'tiered-groups' },
   {
     competitionId: 1,
@@ -147,8 +184,38 @@ const FORMATS: EditionFormat[] = [
     kind: 'domestic-cup',
     unverified: ['two-legged rounds'],
   },
-  { competitionId: 12, seasonYear: 'default', kind: 'league-phase-knockout' },
-  { competitionId: 20, seasonYear: 'default', kind: 'league-phase-knockout' },
+  {
+    // CAF Champions League: two preliminary knockouts, 4 × 4 groups, then two-legged knockouts.
+    competitionId: 12,
+    seasonYear: 'default',
+    kind: 'league-phase-knockout',
+    groups: { count: 4, size: 4 },
+    twoLeggedRounds: [
+      '1st Round',
+      '2nd Round',
+      'Preliminary Round',
+      'Quarter-finals',
+      'Semi-finals',
+      'Final',
+    ],
+    unverified: ['final legs'],
+  },
+  {
+    // CAF Confederation Cup: same shape as the CAF Champions League.
+    competitionId: 20,
+    seasonYear: 'default',
+    kind: 'league-phase-knockout',
+    groups: { count: 4, size: 4 },
+    twoLeggedRounds: [
+      '1st Round',
+      '2nd Round',
+      'Preliminary Round',
+      'Quarter-finals',
+      'Semi-finals',
+      'Final',
+    ],
+    unverified: ['final legs'],
+  },
   { competitionId: 10, seasonYear: 'default', kind: 'friendlies' },
   { competitionId: 29, seasonYear: 'default', kind: 'qualifiers' },
   { competitionId: 32, seasonYear: 'default', kind: 'qualifiers' },
