@@ -14,7 +14,7 @@ import { MatchLink } from '@/components/shared/MatchLink';
 import { IntentLink } from '@/components/shared/IntentLink';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { LocalTime } from '@/components/shared/LocalTime';
-import { SINGLE_YEAR_EDITION_IDS } from '@/lib/competitions/group-stage';
+import { SINGLE_YEAR_EDITION_IDS, editionYearLabel } from '@/lib/competitions/group-stage';
 import { formatSeason, formatDateLabel, toSiteDateKey, SITE_TZ } from '@/lib/utils/date';
 import type { FixtureWithTeams, StandingRow } from '@/lib/db/queries';
 import type { TopPlayerRow, TopCardRow } from '@/lib/db/queries/league';
@@ -156,7 +156,9 @@ export function CompetitionIdentity({
   basePath: string;
 }) {
   const editionLabel = (y: number) =>
-    SINGLE_YEAR_EDITION_IDS.has(competitionId) ? String(y) : formatSeason(y);
+    SINGLE_YEAR_EDITION_IDS.has(competitionId)
+      ? editionYearLabel(competitionId, y)
+      : formatSeason(y);
   const t = useTranslations('leaguePage');
   const router = useRouter();
   const { followedComps, toggleComp } = useFollows();

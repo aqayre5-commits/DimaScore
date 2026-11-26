@@ -25,6 +25,7 @@ import {
   groupRules,
   isThirdPlaceRound,
   knockoutDraw,
+  twoLeggedSlots,
   knockoutPath,
   rankThirds,
   type GroupRule,
@@ -471,7 +472,7 @@ export function TournamentStages({
     if (isExtra) {
       drawRounds = layoutRounds(extra.map((r) => ({ ...r, label: roundName(r.slug, r) })));
     } else {
-      const draw = knockoutDraw(rounds, path, roundName);
+      const draw = knockoutDraw(rounds, path, roundName, twoLeggedSlots(input.format ?? null));
       if (isThird) {
         const semis = draw.find((r) => r.slug === 'semi-finals');
         const third = layoutRounds([

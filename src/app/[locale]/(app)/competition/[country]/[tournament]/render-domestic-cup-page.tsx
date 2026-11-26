@@ -26,7 +26,11 @@ import {
 } from '@/lib/db/queries/league';
 import { getStandings } from '@/lib/db/queries';
 import { getCompetitionFormat } from '@/lib/competitions/formats';
-import { GROUP_STAGE_TEMPLATE_IDS, SINGLE_YEAR_EDITION_IDS } from '@/lib/competitions/group-stage';
+import {
+  GROUP_STAGE_TEMPLATE_IDS,
+  SINGLE_YEAR_EDITION_IDS,
+  editionYearLabel,
+} from '@/lib/competitions/group-stage';
 import { resolveCompetitionSeason } from '@/lib/competitions/league-season-query';
 import { cacheCompetitionData } from '@/lib/competitions/cache-life';
 import { formatSeasonLabel } from '@/lib/competitions/league-season';
@@ -118,6 +122,7 @@ export async function renderDomesticCupPage(
     resolveCompetitionSeason(
       competition.id,
       requestedYear != null && Number.isFinite(requestedYear) ? requestedYear : null,
+      GROUP_STAGE_TEMPLATE_IDS.has(competition.id),
     ),
     getSiteTodayKey(),
     getRailProps(locale, competition.id),
@@ -184,7 +189,7 @@ export async function renderDomesticCupPage(
   const { rail, current: railCurrent } = railProps;
 
   const seasonLabel = SINGLE_YEAR_EDITION_IDS.has(competition.id)
-    ? String(seasonYear)
+    ? editionYearLabel(competition.id, seasonYear)
     : formatSeasonLabel(seasonYear);
   const countryName = getLeagueCountryName(competition.countryCode, locale);
 

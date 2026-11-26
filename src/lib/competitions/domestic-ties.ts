@@ -62,6 +62,7 @@ function kickoffTime(f: FixtureWithTeams): number {
 
 function isTwoLeggedRound(competitionId: number, seasonYear: number, roundLabel: string): boolean {
   const format = getCompetitionFormat(competitionId, seasonYear);
+  if (format?.allRoundsTwoLegged) return true;
   const listed = format?.twoLeggedRounds ?? [];
   const key = normalizeTieRound(roundLabel);
   return listed.some((name) => normalizeTieRound(name) === key);

@@ -9,6 +9,7 @@ import type { FixtureWithTeams } from '@/lib/db/queries';
 import type { CupRound } from '@/lib/competitions/domestic-ties';
 import type { EditionFormat } from '@/lib/competitions/formats';
 import { layoutRounds, type DrawRound } from '@/lib/competitions/bracket';
+import { slugifyRound } from '@/lib/competitions/paths';
 import { dedupeStandingsByTeam } from '@/lib/standings/dedupe';
 
 /** Stage-menu slugs (reference profile order keys). */
@@ -182,6 +183,8 @@ export function knockoutDraw(
   rounds: CupRound[],
   path: string[],
   labelOf: (slug: string, round: CupRound | undefined) => string,
+  /** Path slots the edition plays over two legs: a round with no fixtures yet keeps the right card. */
+  twoLeggedSlots: ReadonlySet<string> = new Set(),
 ): DrawRound[] {
   if (path.length === 0) return [];
   const bySlot = new Map<string, CupRound>();
@@ -203,7 +206,7 @@ export function knockoutDraw(
         slug,
         label: labelOf(slug, r),
         earlier: false,
-        twoLegged: r?.twoLegged ?? false,
+        twoLegged: r ? r.twoLegged : twoLeggedSlots.has(slug),
         ties: r?.ties ?? [],
       };
     }),
@@ -299,8 +302,25 @@ export function bandForRank(rules: GroupRule[], rank: number): GroupRule['key'] 
  * World Cup qualifiers (29–34, 37), AFCON qualifiers 36, EURO qualifiers 960, Nations League 5.
  */
 export const GROUP_STAGE_TEMPLATE_IDS: ReadonlySet<number> = new Set([
-  1, 6, 922, 4, 12, 20, 525, 1191, 29, 30, 31, 32, 33, 34, 37, 36, 960, 5,
+  1, 6, 922, 4, 12, 20, 525, 1191, 1164, 29, 30, 31, 32, 33, 34, 37, 36, 960, 5,
 ]);
 
 /** Finals tournaments played inside one calendar year: the edition reads "2026", not "2026/27". */
 export const SINGLE_YEAR_EDITION_IDS: ReadonlySet<number> = new Set([1, 6, 922, 4]);
+
+/** Knockout-path slots that the edition's format plays over two legs. */
+export function twoLeggedSlots(format: EditionFormat | null): Set<string> {
+  const out = new Set<string>();
+  if (format?.allRoundsTwoLegged) return new Set(KNOCKOUT_PATH.map((p) => p.slug));
+  for (const name of format?.twoLeggedRounds ?? []) {
+    const slot = pathSlot(slugifyRound(name));
+    if (slot) out.add(slot);
+  }
+  return out;
+}
+
+/** Where the provider's season year differs from the edition's name (WAFCON 2026 is filed under 2025). */
+const EDITION_LABEL: Record<number, Record<number, string>> = { 922: { 2025: '2026' } };
+export function editionYearLabel(competitionId: number, seasonYear: number): string {
+  return EDITION_LABEL[competitionId]?.[seasonYear] ?? String(seasonYear);
+}

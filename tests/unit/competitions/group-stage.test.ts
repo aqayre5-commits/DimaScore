@@ -9,6 +9,8 @@ import {
   isGroupRound,
   isThirdPlaceRound,
   extraKnockoutRounds,
+  twoLeggedSlots,
+  editionYearLabel,
 } from '@/lib/competitions/group-stage';
 import { getCompetitionFormat } from '@/lib/competitions/formats';
 import type { StandingRow } from '@/lib/db/queries';
@@ -93,7 +95,7 @@ describe('group-stage model', () => {
     const afcon = getCompetitionFormat(6);
     expect(knockoutPath([], afcon)[0]).toBe('round-of-16');
     // UWCL: play-offs feed quarter-finals of the same size.
-    const uwcl = getCompetitionFormat(525);
+    const uwcl = getCompetitionFormat(525, 2026);
     const path = knockoutPath(
       [round('Knockout Round Play-offs', 'knockout-round-play-offs', 4)],
       uwcl,
@@ -126,7 +128,7 @@ describe('group-stage model', () => {
     ]);
     const copa = groupRules(getCompetitionFormat(9, 2024), 'quarter-finals', null, 4);
     expect(copa.map((r) => r.range)).toEqual(['1–2', '3–4']);
-    const uwcl = groupRules(getCompetitionFormat(525), 'knockout-play-offs', null, 18);
+    const uwcl = groupRules(getCompetitionFormat(525, 2026), 'knockout-play-offs', null, 18);
     expect(uwcl.map((r) => [r.range, r.key])).toEqual([
       ['1–4', 'advance'],
       ['5–12', 'playoff'],
@@ -137,5 +139,47 @@ describe('group-stage model', () => {
       'playoff',
       'stay',
     ]);
+  });
+});
+
+describe('per-edition format rules', () => {
+  it('WAFCON 2024 sends two best thirds to the quarter-finals; 2026 (provider season 2025) has none', () => {
+    const f24 = getCompetitionFormat(922, 2024)!;
+    expect(f24.groups?.count).toBe(3);
+    expect(f24.bestThirdsAdvance).toBe(2);
+    expect(knockoutPath([], f24)[0]).toBe('quarter-finals');
+    const f26 = getCompetitionFormat(922, 2025)!;
+    expect(f26.groups?.count).toBe(4);
+    expect(f26.bestThirdsAdvance ?? 0).toBe(0);
+    expect(knockoutPath([], f26)[0]).toBe('quarter-finals');
+    expect(editionYearLabel(922, 2025)).toBe('2026');
+    expect(editionYearLabel(922, 2024)).toBe('2024');
+  });
+
+  it('men CAF club finals are two legs; the CAF women final is one match', () => {
+    for (const id of [12, 20]) {
+      expect(twoLeggedSlots(getCompetitionFormat(id, 2026))).toContain('final');
+    }
+    expect(twoLeggedSlots(getCompetitionFormat(1164, 2026)).has('final')).toBe(false);
+    expect(getCompetitionFormat(1164, 2026)?.groups).toEqual({ count: 2, size: 4 });
+  });
+
+  it('UWCL uses the 18-team league phase from 2026/27 and groups before', () => {
+    const f = getCompetitionFormat(525, 2026)!;
+    expect(f.tableRules?.map((r) => [r.from, r.to, r.key])).toEqual([
+      [1, 4, 'advance'],
+      [5, 12, 'playoff'],
+      [13, 18, 'out'],
+    ]);
+    expect(getCompetitionFormat(525, 2027)?.tableRules).toBeDefined();
+    expect(getCompetitionFormat(525, 2025)?.tableRules).toBeUndefined();
+    expect(getCompetitionFormat(525, 2025)?.groups?.count).toBe(4);
+  });
+
+  it("Women's Europa Cup 2026/27: every round, qualifying and final included, is two legs", () => {
+    const f = getCompetitionFormat(1191, 2026)!;
+    expect(f.allRoundsTwoLegged).toBe(true);
+    expect(twoLeggedSlots(f).has('final')).toBe(true);
+    expect(getCompetitionFormat(1191, 2025)?.allRoundsTwoLegged).toBeUndefined();
   });
 });
