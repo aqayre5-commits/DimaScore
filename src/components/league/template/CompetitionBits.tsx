@@ -223,8 +223,20 @@ export function CompetitionIdentity({
   );
 }
 
-export function UpcomingCard({ fixture, locale }: { fixture: FixtureWithTeams; locale: Locale }) {
-  const day = formatDateLabel(fixtureDaySafe(fixture), locale, todayWord(locale));
+export function UpcomingCard({
+  fixture,
+  locale,
+  dayLabel,
+  kind,
+}: {
+  fixture: FixtureWithTeams;
+  locale: Locale;
+  /** Overrides the card's day line (Home passes "Today" / "Tomorrow"). */
+  dayLabel?: string;
+  /** Competition line under the day (Home only; a competition page omits it). */
+  kind?: string;
+}) {
+  const day = dayLabel ?? formatDateLabel(fixtureDaySafe(fixture), locale, todayWord(locale));
   const href = matchHref(locale, {
     id: fixture.id,
     homeSlug: fixture.homeTeam?.slug,
@@ -247,6 +259,7 @@ export function UpcomingCard({ fixture, locale }: { fixture: FixtureWithTeams; l
       className="sooncard"
     >
       <div className="cardtop">{day}</div>
+      {kind ? <div className="cardkind">{kind}</div> : null}
       <div className="upcoming-match">
         <div className="pair">
           <div className="teamline">
@@ -407,9 +420,12 @@ export function FeaturedMatch({
 export function CompetitionMatchRow({
   fixture,
   locale,
+  minute,
 }: {
   fixture: FixtureWithTeams;
   locale: Locale;
+  /** Live match minute; when given, a running match shows "70′" instead of LIVE (Home). */
+  minute?: number | null;
 }) {
   const t = useTranslations('matchDetail');
   const tL = useTranslations('leaguePage');
@@ -438,7 +454,12 @@ export function CompetitionMatchRow({
 
   let clock: ReactNode;
   if (live) {
-    clock = fixture.statusCode === 'HT' ? t('halfTime') : t('live') || 'LIVE';
+    clock =
+      fixture.statusCode === 'HT'
+        ? t('halfTime')
+        : minute != null
+          ? `${minute}\u2032`
+          : t('live') || 'LIVE';
   } else if (state === 'interrupted') {
     clock = t('fullTime');
   } else if (isFinished) {
@@ -544,12 +565,15 @@ export function StandingsTable({
   locale,
   split,
   caption,
+  plain = false,
 }: {
   standings: StandingRow[];
   fixtures: FixtureWithTeams[];
   locale: Locale;
   split: TableSplit;
   caption?: string;
+  /** No qualification-zone marks or legend (Home's "Live standings" table). */
+  plain?: boolean;
 }) {
   const t = useTranslations('leaguePage');
   const groups = uniqueGroups(standings);
@@ -624,7 +648,7 @@ export function StandingsTable({
                 ? liveScoreLabel(row.teamId, fixtures)
                 : null;
             const href = row.team?.slug ? `/${locale}/equipe/${row.team.slug}` : undefined;
-            const color = zoneColor(row.description);
+            const color = plain ? null : zoneColor(row.description);
             const team = (
               <>
                 <Crest
@@ -665,7 +689,7 @@ export function StandingsTable({
           })}
         </tbody>
       </table>
-      {legend.length > 0 && (
+      {!plain && legend.length > 0 && (
         <div className="pl-legend">
           {legend.map((item) => (
             <span key={item.label}>

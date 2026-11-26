@@ -51,6 +51,8 @@ export interface CompetitionRailProps {
   zones: RailZone[];
   tournaments: RailEntry[];
   labels: RailLabels;
+  /** Home is the current page: the Home (Overall) row is highlighted. */
+  overallCurrent?: boolean;
   /** Overrides the built-in search modal (the navbar picker closes its sheet first). */
   onSearch?: () => void;
 }
@@ -103,7 +105,11 @@ export function CompetitionRail(p: CompetitionRailProps) {
 
   return (
     <nav className="railpanel" aria-label={L.nav}>
-      <IntentLink href={p.homeHref} className="railrow major">
+      <IntentLink
+        href={p.homeHref}
+        className={`railrow major${p.overallCurrent ? ' current' : ''}`}
+        aria-current={p.overallCurrent ? 'page' : undefined}
+      >
         <NavIcon name="home" />
         {L.overall}
       </IntentLink>

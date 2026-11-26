@@ -1,0 +1,449 @@
+/*
+ * Home — ported from the "DimaScore Overall" reference (desktop + mobile). Scoped under .mc .ds-home (Home sits in the match-page shell, so this beats .mc rules),
+ * which also carries .pl, so the shared match rows, upcoming cards and standings table keep the
+ * competition-page styles. Mapping: .phone → max-width 767px; body:not(.phone) → min-width 768px;
+ * :root[data-theme=dark] → html:not([data-theme='light']).
+ */
+.mc .ds-home {
+  background: var(--surface);
+}
+.ds-home-vh {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.mc .ds-home h2 {
+  margin: 0;
+  font-size: var(--title-size);
+  font-weight: 760;
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+}
+
+/* ── Grid: featured match + upcoming on row 1, fixtures + standings on row 2. The sections are
+   siblings in reading order (feature, upcoming, matches, standings), placed by grid areas. ── */
+.mc .ds-home .overall {
+  display: grid;
+  grid-template-columns: var(--dashboard-columns);
+  column-gap: var(--table-gutter);
+  row-gap: var(--section);
+  align-content: start;
+  align-items: start;
+}
+.mc .ds-home .feature {
+  grid-area: feature;
+  min-width: 0;
+}
+.mc .ds-home .soon {
+  grid-area: soon;
+  min-width: 0;
+}
+.mc .ds-home .matches {
+  grid-area: matches;
+  min-width: 0;
+}
+.mc .ds-home .standings {
+  grid-area: active;
+}
+@media (min-width: 768px) {
+  .mc .ds-home .overall.has-feature.has-coming {
+    grid-template-areas: 'feature soon' 'matches active';
+    grid-template-rows: auto auto;
+  }
+  .mc .ds-home .overall.has-feature.no-coming {
+    grid-template-areas: 'feature active' 'matches active';
+    grid-template-rows: max-content 1fr;
+  }
+  .mc .ds-home .overall.no-feature.has-coming {
+    grid-template-areas: 'matches soon' 'matches active';
+    grid-template-rows: max-content 1fr;
+  }
+  .mc .ds-home .overall.no-feature.no-coming {
+    grid-template-areas: 'matches active';
+  }
+  .mc .ds-home .overall.has-feature.has-coming > .feature {
+    align-self: stretch;
+  }
+  .mc .ds-home .overall.has-feature.has-coming > .feature > .hero {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .mc .ds-home .overall.has-feature.has-coming > .feature .herocore {
+    flex: 1;
+  }
+  /* Upcoming cards start directly with their content in the desktop rail. */
+  .mc .ds-home .soon > h2 {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+@media (min-width: 768px) and (max-width: 1100px) {
+  .mc .ds-home .overall {
+    grid-template-columns: minmax(0, 1.58fr) minmax(0, 1fr);
+  }
+}
+
+/* ── Featured match ── */
+.mc .ds-home .hero {
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  background: transparent;
+  padding: 10px var(--card-inset) 0;
+}
+.mc .ds-home .herotop,
+.mc .ds-home .herobottom,
+.mc .ds-home .sectionhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mc .ds-home .league-title {
+  font-weight: 760;
+  letter-spacing: -0.04em;
+  font-size: clamp(20px, 1.65vw, 26px);
+  line-height: 1.25;
+  min-width: 0;
+}
+.mc .ds-home .live-tag {
+  color: var(--green);
+  font-weight: 760;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(18px, 1.55vw, 24px);
+  white-space: nowrap;
+}
+.mc .ds-home .live-tag.neutral {
+  color: var(--muted);
+}
+.mc .ds-home .herocore {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 20px 4px 23px;
+}
+.mc .ds-home .teamblock {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.mc .ds-home .teamblock .mark {
+  --m: var(--crest);
+}
+.mc .ds-home .teamblock strong {
+  font-size: clamp(20px, 1.85vw, 29px);
+  letter-spacing: -0.04em;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+/* The digits follow the teams — home score beside the home team, mirrored in Arabic. */
+.mc .ds-home .bigscore {
+  display: inline-flex;
+  justify-content: center;
+  gap: 0.12em;
+  font-size: clamp(50px, 4.4vw, 71px);
+  font-weight: 780;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+.mc .ds-home .herobottom {
+  border-top: 0;
+  min-height: 58px;
+  font-size: var(--row-size);
+}
+.mc .ds-home .event {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12px;
+  letter-spacing: -0.025em;
+  color: var(--muted);
+}
+.mc .ds-home .link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--green-dark);
+  font-weight: 690;
+  min-height: 44px;
+  letter-spacing: -0.024em;
+  white-space: nowrap;
+}
+.mc .ds-home .link:hover {
+  background: var(--hover);
+}
+[dir='rtl'] .mc .ds-home .link .ic.forward {
+  transform: scaleX(-1);
+}
+
+/* ── Coming up ── */
+.mc .ds-home .soon {
+  container-type: inline-size;
+}
+.mc .ds-home .soon .upgrid {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.mc .ds-home .soon .sooncard {
+  border-radius: var(--card-radius);
+  padding: 8px var(--card-inset) 10px;
+}
+.mc .ds-home .soon .sooncard:hover {
+  background: var(--hover);
+}
+.mc .ds-home .soon .sooncard .cardtop {
+  margin-bottom: 0;
+  color: var(--ink);
+  font-weight: 720;
+  font-size: clamp(16px, 1.46vw, 22px);
+  letter-spacing: -0.035em;
+  line-height: 1.18;
+}
+.mc .ds-home .cardkind {
+  color: var(--muted);
+  font-size: clamp(13px, 1.1vw, 16px);
+  line-height: 1.35;
+  margin-bottom: 6px;
+}
+.mc .ds-home .soon .sooncard .teamline {
+  font-weight: 610;
+  font-size: var(--row-size);
+  letter-spacing: -0.026em;
+}
+.mc .ds-home .soon .sooncard .mark {
+  --m: var(--coming-crest);
+}
+
+/* ── Today's matches ── */
+.mc .ds-home .matches > .sectionhead {
+  min-height: 44px;
+}
+.mc .ds-home .sectionhead > .stage-menu {
+  margin-inline-start: auto;
+}
+.mc .ds-home .sectionhead .stage-options {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
+.mc .ds-home .tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  margin-top: 3px;
+  margin-bottom: 12px;
+}
+.mc .ds-home .tab {
+  flex: 1;
+  min-height: 44px;
+  padding: 5px 3px;
+  border-bottom: 4px solid transparent;
+  font-size: clamp(15px, 1.3vw, 20px);
+  line-height: 1.15;
+}
+.mc .ds-home .tab[aria-pressed='true'] {
+  color: var(--green);
+  border-color: var(--green);
+  font-weight: 710;
+}
+.mc .ds-home .leaguegroup + .leaguegroup {
+  margin-block-start: 12px;
+}
+.mc .ds-home .ghead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+  font-size: var(--row-size);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+.mc .ds-home .ghead strong {
+  font-weight: 740;
+}
+.mc .ds-home .ghead span {
+  font-size: 0.9em;
+  color: var(--muted);
+}
+.mc .ds-home .matchrow + .matchrow {
+  margin-top: var(--fixture-gap);
+}
+.mc .ds-home .empty {
+  color: var(--muted);
+  padding: 20px 0;
+  margin: 0;
+}
+.mc .ds-home .empty .link {
+  min-height: 0;
+}
+
+/* ── Live standings ── */
+.mc .ds-home .standings {
+  min-width: 0;
+  container-type: inline-size;
+}
+.mc .ds-home .stand-controls {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 12px 0 10px;
+}
+.mc .ds-home .stand-controls > .stage-menu {
+  display: block;
+  flex: 1 1 155px;
+  min-width: 0;
+}
+.mc .ds-home .stand-controls > .stage-menu > summary.ds-period {
+  display: flex;
+  width: 100%;
+  border-radius: 7px;
+  padding-inline: 12px;
+  gap: 9px;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.mc .ds-home .stand-controls > .stage-menu > summary.ds-period > bdi {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mc .ds-home .stand-controls .mark {
+  --m: 23px;
+}
+.mc .ds-home .stand-controls .stage-options {
+  inset-inline-end: 0;
+  max-height: min(60vh, 420px);
+}
+/* One outline per table (reference "Card borders and alignment"). */
+.mc .ds-home .stand-table {
+  border: 1px solid var(--border);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+}
+.mc .ds-home .stand-foot {
+  padding-block: 8px 0;
+}
+.mc .ds-home .stand-foot small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ── Phone (reference .phone): hero, upcoming, matches, standings stacked ── */
+@media (max-width: 767px) {
+  .mc .ds-home .overall {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'feature' 'soon' 'matches' 'active';
+    row-gap: var(--table-stack);
+  }
+  .mc .ds-home .overall.no-feature {
+    grid-template-areas: 'matches' 'active';
+  }
+  .mc .ds-home .overall.no-feature.has-coming {
+    grid-template-areas: 'soon' 'matches' 'active';
+  }
+  .mc .ds-home .overall.has-feature.no-coming {
+    grid-template-areas: 'feature' 'matches' 'active';
+  }
+  .mc .ds-home .hero {
+    padding: 7px 9px 0;
+    border-radius: 7px;
+  }
+  .mc .ds-home .herotop .league-title,
+  .mc .ds-home .live-tag {
+    font-size: 16px;
+  }
+  .mc .ds-home .herocore {
+    padding: 9px 0 10px;
+  }
+  .mc .ds-home .teamblock {
+    gap: 2px;
+  }
+  .mc .ds-home .teamblock strong {
+    font-size: 16px;
+  }
+  .mc .ds-home .bigscore {
+    font-size: 40px;
+  }
+  .mc .ds-home .herobottom {
+    font-size: 13px;
+    min-height: 40px;
+  }
+  .mc .ds-home .event {
+    gap: 8px;
+  }
+  .mc .ds-home .soon .upgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mc .ds-home .soon .upgrid:has(> .sooncard:only-child) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mc .ds-home .soon .sooncard {
+    padding: 7px 9px 8px;
+    border-radius: 6px;
+  }
+  .mc .ds-home .soon .sooncard .cardtop {
+    font-size: 15px;
+  }
+  .mc .ds-home .cardkind {
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .mc .ds-home .soon .sooncard .teamline {
+    font-size: 14px;
+    gap: 5px;
+  }
+  .mc .ds-home .soon > h2 {
+    margin-bottom: 8px;
+  }
+  .mc .ds-home .matches > .sectionhead {
+    min-height: 39px;
+  }
+  .mc .ds-home .tabs {
+    margin-top: 0;
+  }
+  .mc .ds-home .tab {
+    min-height: 44px;
+    font-size: 14px;
+    border-bottom-width: 3px;
+  }
+  .mc .ds-home .stand-controls {
+    margin: 8px 0;
+  }
+  .mc .ds-home .stand-controls > .stage-menu > summary.ds-period {
+    font-size: 15px;
+  }
+}
+@container (max-width: 350px) {
+  .mc .ds-home .soon .upgrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 359px) {
+  .mc .ds-home .teamblock strong {
+    font-size: 14px;
+  }
+  .mc .ds-home .soon .sooncard {
+    padding-inline: 6px;
+  }
+}

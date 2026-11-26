@@ -84,12 +84,11 @@ describe('AR homepage + Edition Maroc SERP polish (IMP-013)', () => {
   });
 
   it('gives each locale homepage a real h1 from pageHeading', () => {
+    // Home (reference "Overall") keeps the h1 in the DOM, visually hidden as in the reference.
     const src = readFileSync('src/app/[locale]/(app)/page.tsx', 'utf8');
-    expect(src).toContain(
-      '<h1 className="px-1 text-xl font-semibold text-text-primary sm:text-2xl">',
-    );
-    expect(src).toContain("{t('pageHeading')}");
-    expect(src).not.toMatch(/<h1[^>]*text-sm/);
+    const view = readFileSync('src/components/home/HomePage.tsx', 'utf8');
+    expect(src).toContain("heading: t('pageHeading')");
+    expect(view).toContain('<h1 className="ds-home-vh">{labels.heading}</h1>');
     for (const pack of Object.values(packs)) {
       expect(pack.pageHeading.trim().length).toBeGreaterThan(8);
     }
