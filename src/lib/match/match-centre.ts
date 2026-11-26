@@ -9,6 +9,7 @@ import type {
   MatchLineup,
   MatchTeamStats,
 } from '@/lib/db/queries/match-detail';
+import { coercePlayerId, keyLineups, normPlayerName, withStablePlayerIds } from './player-identity';
 import { eventKind, isShootout, minuteKey, parseFormation, statNumber } from './match-view';
 
 export type Side = 0 | 1;
@@ -81,8 +82,36 @@ export function buildIncidents(
   lineups: MatchLineup[],
   locale: string,
 ): Incident[] {
+  const keyed = keyLineups(lineups);
+  const namesByTeam = new Map<number, Map<string, number | null>>();
   const bench = new Set<number>();
-  for (const l of lineups) for (const p of l.substitutes) bench.add(p.id);
+  for (const l of keyed) {
+    const names = new Map<string, number | null>();
+    for (const p of [...l.starters, ...l.substitutes]) {
+      const key = normPlayerName(p.name);
+      if (!key) continue;
+      // A repeated name is ambiguous: attach the event to nobody rather than the wrong shirt.
+      names.set(key, names.has(key) ? null : coercePlayerId(p.id));
+    }
+    namesByTeam.set(l.teamId, names);
+    for (const p of l.substitutes) {
+      const id = coercePlayerId(p.id);
+      if (id != null) bench.add(id);
+    }
+  }
+  const resolveId = (teamId: number | null, rawId: unknown, name: string | null): number | null => {
+    const id = coercePlayerId(rawId);
+    if (id != null) return id;
+    const key = normPlayerName(name);
+    if (teamId == null || !key) return null;
+    return namesByTeam.get(teamId)?.get(key) ?? null;
+  };
+  const named = (who: MatchEvent['player'], teamId: number | null) => {
+    if (!who) return null;
+    const name = nameOf(who, locale);
+    return { id: resolveId(teamId, who.id, name), name };
+  };
+
   const sorted = events
     .map((e, i) => ({ e, i }))
     .sort((a, b) => minuteKey(a.e) - minuteKey(b.e) || a.i - b.i)
@@ -95,14 +124,18 @@ export function buildIncidents(
     const k = eventKind(e);
     if (k === 'other') continue;
     const side: Side = e.teamId === homeTeamId ? 0 : 1;
+    // Own goals are credited to the team that benefits; the scorer is on the other side.
+    const squadTeamId =
+      k === 'ownGoal' ? (keyed.find((l) => l.teamId !== e.teamId)?.teamId ?? null) : e.teamId;
+    const who = named(e.player, squadTeamId);
     const base: Incident = {
       key: String(e.id),
       minute: e.minute,
       extra: e.extraMinute,
       side,
       kind: 'goal',
-      playerId: e.player?.id ?? null,
-      player: nameOf(e.player, locale),
+      playerId: who?.id ?? null,
+      player: who?.name ?? null,
       assist: null,
       inId: null,
       inName: null,
@@ -117,7 +150,7 @@ export function buildIncidents(
       out.push({
         ...base,
         kind: k,
-        assist: k === 'goal' ? nameOf(e.assist, locale) : null,
+        assist: k === 'goal' ? (named(e.assist, e.teamId)?.name ?? null) : null,
         score: [h, a],
       });
     } else if (k === 'missedPenalty') {
@@ -128,12 +161,12 @@ export function buildIncidents(
         kind: k === 'yellowCard' ? 'yellow' : k === 'secondYellow' ? 'secondYellow' : 'red',
       });
     } else if (k === 'substitution') {
-      const p = e.player ? { id: e.player.id, name: nameOf(e.player, locale) } : null;
-      const q = e.assist ? { id: e.assist.id, name: nameOf(e.assist, locale) } : null;
+      const p = who;
+      const q = named(e.assist, e.teamId);
       // Default (current feed): player = going off, assist = coming on.
       let on = q;
       let off = p;
-      if (p && bench.has(p.id) && !(q && bench.has(q.id))) {
+      if (p && p.id != null && bench.has(p.id) && !(q && q.id != null && bench.has(q.id))) {
         on = p;
         off = q;
       }
@@ -360,9 +393,11 @@ export interface PitchSide {
 }
 
 /** "A. Maitland-Niles" → "Maitland-Niles"; keeps one-word names. For the small pitch labels. */
-export function shortName(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return name;
+export function shortName(name: string | null | undefined): string {
+  const trimmed = name?.trim() ?? '';
+  if (!trimmed) return '';
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return trimmed;
   const last = parts[parts.length - 1];
   return last.length <= 3 ? parts.slice(-2).join(' ') : last;
 }
@@ -379,20 +414,26 @@ const gridOf = (p: LineupPlayer) => {
  * then lists the XI instead of drawing the pitch).
  */
 export function pitchSide(l: MatchLineup): PitchSide {
+  // Assign a distinct id before any Record<id, player> write. Null ids would
+  // otherwise collapse onto one key and every slot would show the last player.
+  const keyed = withStablePlayerIds(l);
   const players: Record<number, PitchPlayer> = {};
   const add = (p: Omit<LineupPlayer, 'grid'>, role: PitchPlayer['role']) => {
-    players[p.id] = {
-      id: p.id,
-      name: p.name,
+    const id = coercePlayerId(p.id);
+    if (id == null) return;
+    players[id] = {
+      id,
+      name: p.name ?? '',
       short: shortName(p.name),
       num: Number.isFinite(p.number) ? p.number : null,
       pos: p.pos,
       role,
     };
   };
-  const starters = l.starters;
+  const idOf = (p: { id: unknown }): number => coercePlayerId(p.id) ?? 0;
+  const starters = keyed.starters;
   const grids = starters.map(gridOf);
-  let xi: number[] = starters.map((p) => p.id);
+  let xi: number[] = starters.map(idOf);
   let rows: number[] | null = null;
   if (starters.length === 11 && grids.every(Boolean)) {
     const placed = starters
@@ -400,7 +441,7 @@ export function pitchSide(l: MatchLineup): PitchSide {
       .sort((a, b) => a.line - b.line || a.col - b.col);
     const lines = [...new Set(placed.map((s) => s.line))];
     rows = lines.map((ln) => placed.filter((s) => s.line === ln).length);
-    xi = placed.map((s) => s.p.id);
+    xi = placed.map((s) => idOf(s.p));
     for (const s of placed) {
       const line = lines.indexOf(s.line);
       add(s.p, line === 0 ? 0 : line === 1 ? 1 : line === lines.length - 1 ? 3 : 2);
@@ -418,9 +459,18 @@ export function pitchSide(l: MatchLineup): PitchSide {
       for (const p of starters) add(p, null);
     }
   }
-  for (const p of l.substitutes) if (!players[p.id]) add(p, null);
+  for (const p of keyed.substitutes) {
+    const id = coercePlayerId(p.id);
+    if (id != null && players[id] == null) add(p, null);
+  }
   const formation = l.formation ?? (rows && rows.length > 1 ? rows.slice(1).join('-') : '');
-  return { formation, xi, rows, bench: l.substitutes.map((p) => p.id), players };
+  return {
+    formation,
+    xi,
+    rows,
+    bench: keyed.substitutes.map(idOf),
+    players,
+  };
 }
 
 export type BadgeKind = 'goal' | 'own' | 'yellow' | 'red' | 'on' | 'off';

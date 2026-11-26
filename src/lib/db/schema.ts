@@ -305,6 +305,9 @@ export const fixtureEvents = pgTable(
     type: text('type').notNull(),
     detail: text('detail'),
     comments: text('comments'),
+    /** Provider name kept when player_id is null or the players row has no name yet. */
+    playerName: text('player_name'),
+    assistName: text('assist_name'),
   },
   (t) => [index('fixture_events_fixture_minute_idx').on(t.fixtureId, t.minute)],
 );

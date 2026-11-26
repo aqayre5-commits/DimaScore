@@ -11,6 +11,7 @@ import type { ResolvedKitPalette } from '@/lib/match/kit-colours';
 import { applyStoredSeasonFallback } from '@/lib/match/season-kits';
 import { loadFixtureKitContext } from '@/lib/match/season-kit-db';
 import { usableLogoUrl } from '@/lib/logos/status';
+import { mergeEventPerson } from '@/lib/match/player-identity';
 
 // ── Match detail ──
 
@@ -177,8 +178,8 @@ export interface MatchEvent {
   detail: string | null;
   comments: string | null;
   teamId: number | null;
-  player: { id: number; name: Record<string, string> } | null;
-  assist: { id: number; name: Record<string, string> } | null;
+  player: { id: number | null; name: Record<string, string> } | null;
+  assist: { id: number | null; name: Record<string, string> } | null;
 }
 
 export async function getMatchEvents(
@@ -197,8 +198,10 @@ export async function getMatchEvents(
       e.team_id AS "teamId",
       e.player_id AS "playerId",
       p.name AS "playerName",
+      e.player_name AS "playerNameRaw",
       e.assist_player_id AS "assistPlayerId",
-      a.name AS "assistName"
+      a.name AS "assistName",
+      e.assist_name AS "assistNameRaw"
     FROM fixture_events e
     LEFT JOIN players p ON p.id = e.player_id
     LEFT JOIN players a ON a.id = e.assist_player_id
@@ -214,16 +217,18 @@ export async function getMatchEvents(
     detail: r.detail,
     comments: r.comments,
     teamId: r.teamId != null ? Number(r.teamId) : null,
-    // LEFT JOIN: an event can name a player the players table does not have yet (name NULL).
-    // Keep the id and an empty name map so consumers never index into null.
-    player:
-      r.playerId != null
-        ? { id: Number(r.playerId), name: (r.playerName ?? {}) as Record<string, string> }
-        : null,
-    assist:
-      r.assistPlayerId != null
-        ? { id: Number(r.assistPlayerId), name: (r.assistName ?? {}) as Record<string, string> }
-        : null,
+    // A null id still keeps a provider name when ingestion stored one. A joined
+    // players-table name wins when the id resolved.
+    player: mergeEventPerson(
+      r.playerId != null ? Number(r.playerId) : null,
+      r.playerName,
+      r.playerNameRaw,
+    ),
+    assist: mergeEventPerson(
+      r.assistPlayerId != null ? Number(r.assistPlayerId) : null,
+      r.assistName,
+      r.assistNameRaw,
+    ),
   }));
 }
 
@@ -237,8 +242,10 @@ type RawEventRow = {
   teamId: number | null;
   playerId: number | null;
   playerName: unknown;
+  playerNameRaw: string | null;
   assistPlayerId: number | null;
   assistName: unknown;
+  assistNameRaw: string | null;
 };
 
 // ── Match lineups ──

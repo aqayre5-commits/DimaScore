@@ -18,6 +18,7 @@ import {
 import { EventIcon, type EventArt } from './icons';
 import type { McMatch, McTeam } from './types';
 import { isGoalkeeperPos, kitCssVars, type KitPalette } from '@/lib/match/kit-colours';
+import { playerDisplayName } from '@/lib/match/player-identity';
 import { TeamMark } from '@/components/shared/TeamMark';
 
 type Status = 'sent' | 'off' | 'starter' | 'ready' | 'live' | 'finished';
@@ -116,14 +117,22 @@ export function Lineups({
       if (i.inId != null && i.inName) subNames.set(i.inId, i.inName);
       if (i.outId != null && i.outName) subNames.set(i.outId, i.outName);
     }
-  const player = (s: Side, id: number) =>
-    sides[s].players[id] ?? {
+  const player = (s: Side, id: number) => {
+    const found = sides[s].players[id] ?? {
       id,
       name: subNames.get(id) ?? '',
       short: subNames.get(id) ?? '',
       num: null,
+      pos: null,
       role: null,
     };
+    const name = playerDisplayName(found.name, found.num, t('unknownPlayer'));
+    return {
+      ...found,
+      name,
+      short: found.name.trim() ? found.short || name : name,
+    };
+  };
   const history = (id: number) => playerHistory(incidents, id);
   const status = (s: Side, id: number, h: HistoryEntry[]): Status => {
     if (h.some((e) => e.kind === 'red')) return 'sent';
