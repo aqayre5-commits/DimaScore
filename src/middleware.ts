@@ -5,7 +5,7 @@ import { getAdminSession } from '@/lib/auth/admin';
 import { lookupCanonicalSlug } from '@/lib/seo/slug-redirect-lookup';
 import { parseSlugRedirect, slugRedirectPath } from '@/lib/seo/slug-redirect';
 import { checkRateLimit } from '@/lib/security/rate-limit';
-import { pointXDefaultAtEnglish } from '@/lib/i18n/hreflang-header';
+import { pointArabicTeamAlternate, pointXDefaultAtEnglish } from '@/lib/i18n/hreflang-header';
 import { canonicalCompetitionRedirect } from '@/lib/seo/competition-canonical';
 import { competitionSeasonRedirect } from '@/lib/seo/competition-season-redirect';
 import { lookupSeasonSnapshot } from '@/lib/seo/competition-season-lookup';
@@ -21,7 +21,9 @@ import {
   parseEntityPath,
 } from '@/lib/seo/entity-http';
 import { lookupEntity } from '@/lib/seo/entity-lookup';
-import { parseHubPath } from '@/lib/team/hub-paths';
+import { hubPath, parseHubPath } from '@/lib/team/hub-paths';
+import { resolveHubTeam } from '@/lib/team/resolve-hub-team';
+import { loadTeamHubFresh, tabHasContent } from '@/lib/team/load-team-hub';
 
 export const runtime = 'nodejs';
 
@@ -56,19 +58,74 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  const entity = parseEntityPath(pathname);
-  if (entity) {
-    // A team URL whose tab segment is not one of the locale's tabs never exists.
-    const hubRef = parseHubPath(pathname);
-    const existence =
-      hubRef && hubRef.tab === null
-        ? 'missing'
-        : await resolveExistence(entityCacheKey(entity), () => lookupEntity(entity));
-    const http = entityHttpResponse(entity, existence);
-    if (http) {
+  // Arabic new team routes are on hold; the existing /ar/equipe page stays as it is.
+  if (/^\/ar\/(club|national-team|selection)(\/|$)/.test(pathname)) {
+    const http = localeHttpResponse('ar', 'missing');
+    return new NextResponse(http.body, { status: http.status, headers: http.headers });
+  }
+
+  const hubRef = parseHubPath(pathname);
+  if (hubRef) {
+    // Invalid tab segment, unknown team, colliding bare name, or a tab with no content → real 404.
+    if (hubRef.tab === null) {
+      const http = localeHttpResponse(hubRef.locale, 'missing');
       return new NextResponse(http.body, { status: http.status, headers: http.headers });
     }
-    if (pathname.startsWith('/match/')) return NextResponse.next();
+    try {
+      const resolved = await resolveHubTeam(hubRef.slug, hubRef.kind);
+      if (!resolved) {
+        const http = localeHttpResponse(hubRef.locale, 'missing');
+        return new NextResponse(http.body, { status: http.status, headers: http.headers });
+      }
+      if (resolved.kind !== hubRef.kind || resolved.publicSlug !== hubRef.slug) {
+        const url = request.nextUrl.clone();
+        url.pathname = hubPath(hubRef.locale, resolved.kind, resolved.publicSlug, hubRef.tab);
+        return NextResponse.redirect(url, 308);
+      }
+      if (hubRef.tab !== 'overview') {
+        const data = await loadTeamHubFresh(resolved.storedSlug, hubRef.locale);
+        if (!data || !tabHasContent(data, hubRef.tab)) {
+          const http = localeHttpResponse(hubRef.locale, 'missing');
+          return new NextResponse(http.body, { status: http.status, headers: http.headers });
+        }
+      }
+    } catch {
+      const http = localeHttpResponse(hubRef.locale, 'unavailable');
+      return new NextResponse(http.body, { status: http.status, headers: http.headers });
+    }
+  } else {
+    const entity = parseEntityPath(pathname);
+    if (entity) {
+      const existence = await resolveExistence(entityCacheKey(entity), () => lookupEntity(entity));
+      const http = entityHttpResponse(entity, existence);
+      if (http) {
+        return new NextResponse(http.body, { status: http.status, headers: http.headers });
+      }
+      if (pathname.startsWith('/match/')) return NextResponse.next();
+    }
+  }
+
+  // en/fr /equipe → the new canonical page (308). The browser keeps a #hash; the client maps it.
+  // /ar/equipe is unchanged.
+  const legacyEquipe = /^\/(en|fr)\/equipe\/([^/]+)\/?$/.exec(pathname);
+  if (legacyEquipe) {
+    try {
+      const loc = legacyEquipe[1] as 'en' | 'fr';
+      let requested = legacyEquipe[2];
+      try {
+        requested = decodeURIComponent(requested);
+      } catch {
+        requested = legacyEquipe[2];
+      }
+      const resolved = await resolveHubTeam(requested);
+      if (resolved) {
+        const url = request.nextUrl.clone();
+        url.pathname = hubPath(loc, resolved.kind, resolved.publicSlug);
+        return NextResponse.redirect(url, 308);
+      }
+    } catch {
+      // fail open
+    }
   }
 
   // Renamed team/player slugs → 301 to the stored slug. Unknown ids fall through (not a 404 here).
@@ -148,7 +205,22 @@ export async function middleware(request: NextRequest) {
   const response = intlMiddleware(request);
   const link = response.headers.get('link');
   if (link) {
-    const fixed = pointXDefaultAtEnglish(link);
+    let fixed = pointXDefaultAtEnglish(link);
+    const hub = parseHubPath(pathname);
+    if (hub) {
+      try {
+        const resolved = await resolveHubTeam(hub.slug, hub.kind);
+        if (resolved) {
+          const origin = request.nextUrl.origin;
+          fixed = pointArabicTeamAlternate(
+            fixed,
+            `${origin}/ar/equipe/${encodeURIComponent(resolved.storedSlug)}`,
+          );
+        }
+      } catch {
+        // leave the header; the HTML hreflang is already correct
+      }
+    }
     if (fixed !== link) response.headers.set('link', fixed);
   }
   return response;

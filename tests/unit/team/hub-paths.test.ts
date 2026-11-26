@@ -8,41 +8,36 @@ import {
   TAB_SEGMENTS,
 } from '@/lib/team/hub-paths';
 import { parseEntityPath } from '@/lib/seo/entity-http';
+import { bareCollisionKey, bareTeamSlug, publicTeamSlug } from '@/lib/team/public-slug';
 
 describe('team hub paths', () => {
-  it('builds localised club and national-team paths', () => {
-    expect(hubPath('en', 'club', 'arsenal-42', 'squad')).toBe('/en/club/arsenal-42/squad');
-    expect(hubPath('en', 'national', 'morocco-31', 'matches')).toBe(
-      '/en/national-team/morocco-31/matches',
+  it('builds localised en/fr club and national-team paths with bare slugs', () => {
+    expect(hubPath('en', 'club', 'arsenal', 'squad')).toBe('/en/club/arsenal/squad');
+    expect(hubPath('en', 'national', 'morocco', 'matches')).toBe(
+      '/en/national-team/morocco/matches',
     );
-    expect(hubPath('fr', 'national', 'maroc-31', 'stats')).toBe(
-      '/fr/selection/maroc-31/statistiques-joueurs',
+    expect(hubPath('fr', 'national', 'maroc', 'stats')).toBe(
+      '/fr/selection/maroc/statistiques-joueurs',
     );
-    expect(hubPath('fr', 'club', 'arsenal-42')).toBe('/fr/club/arsenal-42');
-    expect(decodeURIComponent(hubPath('ar', 'club', 'arsenal-42', 'squad'))).toBe(
-      '/ar/club/arsenal-42/التشكيلة',
-    );
+    expect(hubPath('fr', 'club', 'arsenal')).toBe('/fr/club/arsenal');
   });
 
-  it('parses every path it builds, in every locale', () => {
-    for (const locale of ['en', 'fr', 'ar'] as const)
+  it('parses every path it builds, in en and fr', () => {
+    for (const locale of ['en', 'fr'] as const)
       for (const kind of ['club', 'national'] as const)
         for (const tab of ['overview', ...Object.keys(TAB_SEGMENTS.en)] as const) {
-          const p = hubPath(locale, kind, 'x-1', tab as never);
-          expect(parseHubPath(p)).toEqual({ locale, kind, slug: 'x-1', tab });
-          expect(parseHubPath(encodeURI(decodeURIComponent(p)))).toEqual({
-            locale,
-            kind,
-            slug: 'x-1',
-            tab,
-          });
+          const p = hubPath(locale, kind, 'arsenal', tab as never);
+          expect(parseHubPath(p)).toEqual({ locale, kind, slug: 'arsenal', tab });
         }
   });
 
-  it("does not accept another locale's segments or tabs", () => {
+  it("does not accept another locale's segments, Arabic new routes, or foreign tabs", () => {
     expect(parseHubPath('/en/selection/x-1')).toBeNull();
     expect(tabOfSegment('en', 'effectif')).toBeNull();
     expect(parseHubPath('/en/club/x-1/effectif')?.tab).toBeNull();
+    expect(parseHubPath('/ar/club/arsenal/squad')).toBeNull();
+    expect(parseHubPath('/ar/equipe/arsenal-42')).toBeNull();
+    expect(parseEntityPath('/ar/club/arsenal')).toBeNull();
     expect(HUB_SEGMENTS.fr.national).toBe('selection');
   });
 
@@ -55,22 +50,36 @@ describe('team hub paths', () => {
   });
 
   it('gives the middleware existence check the team of a tab URL', () => {
-    expect(parseEntityPath('/en/club/arsenal-42/squad')).toEqual({
+    expect(parseEntityPath('/en/club/arsenal/squad')).toEqual({
       locale: 'en',
       kind: 'team',
-      slug: 'arsenal-42',
-    });
-    expect(
-      parseEntityPath('/ar/national-team/morocco-31/' + encodeURIComponent('المباريات')),
-    ).toEqual({
-      locale: 'ar',
-      kind: 'team',
-      slug: 'morocco-31',
+      slug: 'arsenal',
     });
     expect(parseEntityPath('/en/equipe/arsenal-42')).toEqual({
       locale: 'en',
       kind: 'team',
       slug: 'arsenal-42',
     });
+    expect(parseEntityPath('/ar/equipe/morocco-31')).toEqual({
+      locale: 'ar',
+      kind: 'team',
+      slug: 'morocco-31',
+    });
+  });
+});
+
+describe('public team slugs', () => {
+  it('strips the trailing id to a bare name', () => {
+    expect(bareTeamSlug('arsenal-42')).toBe('arsenal');
+    expect(bareTeamSlug('france-u21-21')).toBe('france-u21');
+    expect(bareTeamSlug('france-w-10')).toBe('france-w');
+    expect(bareTeamSlug('already-bare')).toBe('already-bare');
+  });
+
+  it('keeps the stored id-slug only when that bare name collides in the same kind', () => {
+    const colliding = new Set([bareCollisionKey('sporting', false)]);
+    expect(publicTeamSlug('arsenal-42', false, colliding)).toBe('arsenal');
+    expect(publicTeamSlug('sporting-123', false, colliding)).toBe('sporting-123');
+    expect(publicTeamSlug('sporting-9', true, colliding)).toBe('sporting');
   });
 });

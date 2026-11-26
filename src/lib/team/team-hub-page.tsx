@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactElement } from 'react';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { cacheLife } from 'next/cache';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { buildTeamMeta } from '@/lib/seo/hub-metadata';
 import { isTeamIndexable } from '@/lib/seo/indexable';
@@ -11,11 +10,16 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { buildGraph, buildWebPage, buildSportsTeam, buildBreadcrumbList } from '@/lib/seo/jsonld';
 import { sameAsForTeam } from '@/lib/constants/entity-links';
 import { db } from '@/lib/db/client';
-import { getTeamBySlug } from '@/lib/db/queries/team';
 import { BASE_URL } from '@/lib/constants/site';
-import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { loadTeamHub, type TeamHubData } from '@/lib/team/load-team-hub';
-import { hubPath, type HubKind, type HubTab } from '@/lib/team/hub-paths';
+import { loadTeamHub, tabHasContent, type TeamHubData } from '@/lib/team/load-team-hub';
+import {
+  hubPath,
+  isPathLocale,
+  type HubKind,
+  type HubTab,
+  type PathLocale,
+} from '@/lib/team/hub-paths';
+import { resolveHubTeam } from '@/lib/team/resolve-hub-team';
 import { TeamHub } from '@/components/team-hub/TeamHub';
 import { CompetitionRail } from '@/components/match/centre/CompetitionRail';
 import { getRailProps } from '@/components/match/centre/rail-props';
@@ -31,28 +35,32 @@ export type TeamHubRoute = { mode: 'legacy' } | { mode: 'path'; kind: HubKind; t
 
 const baseUrl = BASE_URL;
 
-async function getCachedTeam(teamSlug: string) {
-  'use cache';
-  cacheLife('minutes');
-  return getTeamBySlug(db, teamSlug);
-}
-
-export function tabHasContent(data: TeamHubData, tab: HubTab): boolean {
-  if (tab === 'overview') return true;
-  if (tab === 'transfers') return data.populated.transfers && !data.team.isNational;
-  return data.populated[tab];
-}
-
-/** Localised path of each tab that has content. */
+/** Localised path of each tab that has content (en/fr new routes only). */
 export function tabPathsOf(
-  locale: Locale,
+  locale: PathLocale,
   kind: HubKind,
   data: TeamHubData,
 ): Partial<Record<HubTab, string>> {
   const out: Partial<Record<HubTab, string>> = {};
   for (const tab of ['overview', 'matches', 'squad', 'stats', 'transfers'] as const)
-    if (tabHasContent(data, tab)) out[tab] = hubPath(locale, kind, data.team.slug, tab);
+    if (tabHasContent(data, tab)) out[tab] = hubPath(locale, kind, data.publicSlug, tab);
   return out;
+}
+
+/**
+ * Canonical / hreflang URL for a locale.
+ * en/fr use the new club/national-team path; ar points at the existing /ar/equipe page
+ * (new Arabic routes are on hold).
+ */
+export function teamPagePath(
+  locale: Locale,
+  kind: HubKind,
+  publicSlug: string,
+  storedSlug: string,
+  tab: HubTab = 'overview',
+): string {
+  if (isPathLocale(locale)) return hubPath(locale, kind, publicSlug, tab);
+  return `/${locale}/equipe/${encodeURIComponent(storedSlug)}`;
 }
 
 // ── Metadata ──
@@ -63,28 +71,28 @@ export async function teamHubMetadata(
   route: TeamHubRoute,
 ): Promise<Metadata> {
   const typedLocale = locale as Locale;
-  const team = await getCachedTeam(teamSlug);
+  const resolved = await resolveHubTeam(teamSlug, route.mode === 'path' ? route.kind : undefined);
 
   // Unknown team → noindex. Middleware returns the real 404 (or 503 if the DB is down) before
   // this runs; the body still notFound()s so a request that skips middleware gets the 404 UI.
-  if (!team) return { title: 'Team | DimaScore', robots: { index: false, follow: false } };
+  if (!resolved) return { title: 'Team | DimaScore', robots: { index: false, follow: false } };
 
-  const name = getTeamDisplayName(team, typedLocale);
+  const data = await loadTeamHub(resolved.storedSlug, typedLocale);
+  if (!data) return { title: 'Team | DimaScore', robots: { index: false, follow: false } };
+  const name = data.team.name;
   // Data-gate: only index teams with real data (fixtures / squad / standings). Mirrors
   // teamIndexableSitemapCondition so the page and sitemap agree.
-  const indexable = await isTeamIndexable(db, team.id);
+  const indexable = await isTeamIndexable(db, data.team.id);
   const meta = buildTeamMeta({ team: name, locale });
   const { description } = meta;
   const tTab = await getTranslations({ locale, namespace: 'teamHub' });
-  const tab = route.mode === 'path' ? route.tab : 'overview';
+  // Arabic (and any leftover /equipe) has no tab segment; en/fr tab URLs stay tab-specific.
+  const tab: HubTab = route.mode === 'path' && isPathLocale(typedLocale) ? route.tab : 'overview';
   const title = tab === 'overview' ? meta.title : `${tTab(tab)} · ${meta.title}`;
-  const kind: HubKind = team.isNational ? 'national' : 'club';
+  const kind = resolved.kind;
   const urlFor = (loc: Locale) =>
-    route.mode === 'path'
-      ? `${baseUrl}${hubPath(loc, kind, team.slug, tab)}`
-      : `${baseUrl}/${loc}/equipe/${team.slug}`;
-  // Canonical uses the resolved stored slug (not the requested one) so a soft-rendered variant
-  // still declares the true URL — the SEO consolidation signal, alongside the self-heal redirect.
+    `${baseUrl}${teamPagePath(loc, kind, resolved.publicSlug, resolved.storedSlug, tab)}`;
+  // en/fr canonical is the new path; ar canonical is the existing /ar/equipe page.
   const pageUrl = urlFor(typedLocale);
 
   const languages: Record<string, string> = {};
@@ -124,25 +132,32 @@ export async function TeamHubPage({
   setRequestLocale(locale);
   const typedLocale = locale as Locale;
 
+  const resolved = await resolveHubTeam(teamSlug, route.mode === 'path' ? route.kind : undefined);
+  if (!resolved) notFound();
   const [data, tBc] = await Promise.all([
-    loadTeamHub(teamSlug, typedLocale),
+    loadTeamHub(resolved.storedSlug, typedLocale),
     getTranslations({ locale, namespace: 'breadcrumb' }),
   ]);
   if (!data) notFound();
   const { team } = data;
-  // Canonical URL uses the stored slug; 301 any stale/variant name-part (resolution was by ID).
-  const kind: HubKind = team.isNational ? 'national' : 'club';
-  const tabNow = route.mode === 'path' ? route.tab : 'overview';
+  const kind = resolved.kind;
+  const tabNow: HubTab = route.mode === 'path' ? route.tab : 'overview';
   if (route.mode === 'legacy') {
-    if (team.slug !== teamSlug) permanentRedirect(`/${locale}/equipe/${team.slug}`);
+    // en/fr /equipe → the new page. Hash is kept by the browser and mapped on the client.
+    // Arabic /equipe is unchanged (no redirect).
+    if (isPathLocale(typedLocale)) {
+      permanentRedirect(hubPath(typedLocale, kind, resolved.publicSlug));
+    } else if (team.slug !== teamSlug) {
+      permanentRedirect(`/${locale}/equipe/${team.slug}`);
+    }
   } else {
-    // A stale name-part or the wrong club/national-team segment → the right path, same tab.
-    if (team.slug !== teamSlug || route.kind !== kind)
-      permanentRedirect(hubPath(typedLocale, kind, team.slug, tabNow));
-    // A tab without content has no URL.
+    if (!isPathLocale(typedLocale)) notFound();
+    if (route.kind !== kind || teamSlug !== resolved.publicSlug)
+      permanentRedirect(hubPath(typedLocale, kind, resolved.publicSlug, tabNow));
     if (!tabHasContent(data, tabNow)) notFound();
   }
-  const tabPaths = route.mode === 'path' ? tabPathsOf(typedLocale, kind, data) : null;
+  const tabPaths =
+    route.mode === 'path' && isPathLocale(typedLocale) ? tabPathsOf(typedLocale, kind, data) : null;
   const railId = data.primaryCompetitionId ?? data.competitions[0]?.id ?? 0;
   const { rail, current } = await getRailProps(typedLocale, railId);
 
@@ -151,10 +166,7 @@ export async function TeamHubPage({
     data.competitions.find((c) => c.id === data.primaryCompetitionId) ?? data.competitions[0];
   if (crumbComp) breadcrumbs.push({ label: crumbComp.name, href: crumbComp.href ?? undefined });
   breadcrumbs.push({ label: team.name });
-  const pageUrl =
-    route.mode === 'path'
-      ? `${baseUrl}${hubPath(typedLocale, kind, team.slug, tabNow)}`
-      : `${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(team.slug)}`;
+  const pageUrl = `${baseUrl}${teamPagePath(typedLocale, kind, resolved.publicSlug, resolved.storedSlug, isPathLocale(typedLocale) ? tabNow : 'overview')}`;
 
   return (
     <>
