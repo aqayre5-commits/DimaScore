@@ -3,6 +3,8 @@ import {
   buildCupRounds,
   defaultCupRound,
   fixtureLegLabel,
+  isQualifyingRound,
+  leaguePhaseMatchday,
 } from '@/lib/competitions/domestic-ties';
 import type { FixtureWithTeams } from '@/lib/db/queries';
 
@@ -85,5 +87,41 @@ describe('buildCupRounds', () => {
     const tie = rounds[0].ties[0];
     expect(fixtureLegLabel(tie, tie.fixtures[0])).toBe(null);
     expect(fixtureLegLabel(tie, tie.fixtures[1])).toBe('replay');
+  });
+});
+
+describe('UEFA league-phase cups', () => {
+  it('orders qualifying, league-phase matchdays, then knockout rounds', () => {
+    const rounds = buildCupRounds(2, 2026, [
+      fx(1, 'Final', 1, 2, '2027-06-05T19:00:00Z'),
+      fx(2, 'Round of 16', 1, 3, '2027-03-09T20:00:00Z'),
+      fx(3, 'Knockout Round Play-offs', 4, 5, '2027-02-16T20:00:00Z'),
+      fx(4, 'Knockout Round Play-offs', 5, 4, '2027-02-24T20:00:00Z'),
+      fx(5, 'League Stage - 2', 6, 7, '2026-10-01T19:00:00Z'),
+      fx(6, 'League Stage - 1', 7, 8, '2026-09-16T19:00:00Z'),
+      fx(7, 'Play-offs', 9, 10, '2026-08-19T19:00:00Z'),
+      fx(8, '3rd Qualifying Round', 9, 11, '2026-08-05T19:00:00Z'),
+      fx(9, '1st Qualifying Round', 12, 13, '2026-07-08T19:00:00Z'),
+    ]);
+    expect(rounds.map((r) => r.slug)).toEqual([
+      '1st-qualifying-round',
+      '3rd-qualifying-round',
+      'play-offs',
+      'league-stage-1',
+      'league-stage-2',
+      'knockout-round-play-offs',
+      'round-of-16',
+      'final',
+    ]);
+    const po = rounds.find((r) => r.slug === 'knockout-round-play-offs')!;
+    expect(po.twoLegged).toBe(true);
+    expect(po.ties).toHaveLength(1);
+  });
+
+  it('reads the matchday from a league-phase round label', () => {
+    expect(leaguePhaseMatchday('League Stage - 5')).toBe(5);
+    expect(leaguePhaseMatchday('Round of 16')).toBeNull();
+    expect(isQualifyingRound('2nd Qualifying Round')).toBe(true);
+    expect(isQualifyingRound('Semi-finals')).toBe(false);
   });
 });

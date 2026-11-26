@@ -1211,6 +1211,13 @@
     }
   },
   "domesticCup": {
+    "leaguePhase": "Phase de ligue",
+    "leaguePhaseStandings": "Classement de la phase de ligue",
+    "whatNext": "Suite de la compétition",
+    "zoneR16": "Huitièmes de finale",
+    "zonePlayoff": "Barrages à élimination directe",
+    "zoneOut": "Éliminés",
+    "matchday": "Journée {n}",
     "stagesTab": "Phases",
     "todaysMatches": "Matchs du jour",
     "tomorrow": "Demain",

@@ -15,14 +15,25 @@ import { LocalTime } from '@/components/shared/LocalTime';
 import { matchHref } from '@/lib/seo/match-slug';
 import { previewFromFixtureRow } from '@/lib/match-header-preview';
 import { getMatchState, isFinished } from '@/lib/match-status';
-import { asDate, uniqueDayKeys, defaultDayKey, fixtureDayKey, groupFixturesByDay } from '@/lib/competitions/template-model';
+import {
+  asDate,
+  uniqueDayKeys,
+  defaultDayKey,
+  fixtureDayKey,
+  groupFixturesByDay,
+} from '@/lib/competitions/template-model';
 import {
   buildCupRounds,
   defaultCupRound,
   findCupRound,
   fixtureLegLabel,
+  leaguePhaseMatchday,
+  LEAGUE_PHASE_SLUG,
   type CupRound,
 } from '@/lib/competitions/domestic-ties';
+import type { StandingRow } from '@/lib/db/queries';
+import type { ZoneBand } from '@/lib/competitions/formats';
+import { LeaguePhaseTable, LeaguePhaseRules } from './LeaguePhase';
 import { buildTeamHref } from '@/lib/competitions/paths';
 import type { LogoStatus } from '@/lib/logos/status';
 import {
@@ -81,6 +92,8 @@ export interface DomesticCupPageProps {
   statsFromLabel?: string | null;
   hideStats?: boolean;
   initialRoundSlug?: string | null;
+  /** UEFA single-table league phase (CL / EL / ECL). Absent for domestic cups. */
+  leaguePhase?: { standings: StandingRow[]; zones: ZoneBand[] } | null;
 }
 
 const TAB_KEYS = ['overview', 'fixtures', 'stages', 'stats'] as const;
@@ -157,7 +170,11 @@ function CupFeatured({
     >
       <div className="herotop">
         <span className="round">{roundLabel}</span>
-        {phase ? <span className={`pl-phase${state === 'live' ? ' playing' : ''}`}>{phase}</span> : <span />}
+        {phase ? (
+          <span className={`pl-phase${state === 'live' ? ' playing' : ''}`}>{phase}</span>
+        ) : (
+          <span />
+        )}
       </div>
       <div className="herocore">
         <div className="cup-heroteam">
@@ -241,7 +258,12 @@ function WhenCard({
   return (
     <article className="cup-when-card">
       <h3>{title}</h3>
-      <MatchLink matchId={String(fixture.id)} href={href} preview={preview} className="cup-when-row">
+      <MatchLink
+        matchId={String(fixture.id)}
+        href={href}
+        preview={preview}
+        className="cup-when-row"
+      >
         <TeamMark
           className="mark"
           src={fixture.homeTeam?.logoUrl}
@@ -345,6 +367,7 @@ export function DomesticCupPage({
   statsFromLabel = null,
   hideStats = false,
   initialRoundSlug = null,
+  leaguePhase = null,
 }: DomesticCupPageProps) {
   const t = useTranslations('leaguePage');
   const tCup = useTranslations('domesticCup');
@@ -362,13 +385,37 @@ export function DomesticCupPage({
     [cupRounds, now],
   );
 
-  const [roundSlug, setRoundSlug] = useState(
-    () => initialRoundSlug ?? fallbackRound?.slug ?? '',
+  const knockoutRounds = useMemo(
+    () => (leaguePhase ? cupRounds.filter((r) => leaguePhaseMatchday(r.label) == null) : cupRounds),
+    [cupRounds, leaguePhase],
   );
-  const activeRound: CupRound | undefined =
-    findCupRound(cupRounds, roundSlug) ?? fallbackRound;
+  const initialIsPhase = !!leaguePhase && initialRoundSlug === LEAGUE_PHASE_SLUG;
+  const [roundSlug, setRoundSlug] = useState(
+    () => (initialIsPhase ? null : initialRoundSlug) ?? fallbackRound?.slug ?? '',
+  );
+  // Stages view: the league-phase table, or one knockout/qualifying round of the draw.
+  const [stageSlug, setStageSlug] = useState<string>(() => {
+    if (initialIsPhase) return LEAGUE_PHASE_SLUG;
+    if (initialRoundSlug && knockoutRounds.some((r) => r.slug === initialRoundSlug)) {
+      return initialRoundSlug;
+    }
+    if (!leaguePhase) return initialRoundSlug ?? fallbackRound?.slug ?? '';
+    // Main knockout rounds (not qualifying) with any fixture → open the draw; else the table.
+    const main = knockoutRounds.filter(
+      (r) => r.fixtures.length > 0 && !/qualifying|preliminary|^play-?offs$/.test(r.slug),
+    );
+    return defaultCupRound(main, now)?.slug ?? LEAGUE_PHASE_SLUG;
+  });
+  const stageRound = findCupRound(knockoutRounds, stageSlug);
+  const activeRound: CupRound | undefined = findCupRound(cupRounds, roundSlug) ?? fallbackRound;
 
-  const [tab, setTab] = useState<TabKey>(() => (initialRoundSlug ? 'stages' : 'overview'));
+  const [tab, setTab] = useState<TabKey>(() => {
+    if (!initialRoundSlug) return 'overview';
+    if (!leaguePhase || initialIsPhase) return 'stages';
+    // A league-phase matchday URL opens Fixtures; knockout/qualifying rounds open Stages.
+    const r = findCupRound(cupRounds, initialRoundSlug);
+    return r && leaguePhaseMatchday(r.label) != null ? 'fixtures' : 'stages';
+  });
   const [day, setDay] = useState(() => defaultDayKey(patched, now));
   const days = useMemo(() => uniqueDayKeys(patched), [patched]);
   const dayFixtures = useMemo(
@@ -403,10 +450,19 @@ export function DomesticCupPage({
     return `${root}/round/${slug}${hash}`;
   }
 
-  const labeledRounds = cupRounds.map((r) => ({
-    slug: r.slug,
-    label: r.earlier ? tCup('earlierRounds') : localizeRound(r.label, locale) || r.label,
-  }));
+  function roundLabel(r: { label: string; earlier?: boolean }): string {
+    if (r.earlier) return tCup('earlierRounds');
+    const md = leaguePhaseMatchday(r.label);
+    if (md != null) return tCup('matchday', { n: md });
+    return localizeRound(r.label, locale) || r.label;
+  }
+  const labeledRounds = cupRounds.map((r) => ({ slug: r.slug, label: roundLabel(r) }));
+  const stageLinks = leaguePhase
+    ? [
+        { slug: LEAGUE_PHASE_SLUG, label: tCup('leaguePhase') },
+        ...knockoutRounds.map((r) => ({ slug: r.slug, label: roundLabel(r) })),
+      ]
+    : [];
 
   useEffect(() => {
     function apply() {
@@ -463,10 +519,24 @@ export function DomesticCupPage({
     rounds: tCup('rounds'),
   };
 
+  const drawRounds = leaguePhase ? knockoutRounds : cupRounds;
+  const drawSlug = leaguePhase ? (stageRound?.slug ?? '') : (activeRound?.slug ?? '');
   const nextRound = (() => {
-    const i = cupRounds.findIndex((r) => r.slug === activeRound?.slug);
-    return i >= 0 && i < cupRounds.length - 1 ? cupRounds[i + 1] : undefined;
+    const i = drawRounds.findIndex((r) => r.slug === drawSlug);
+    return i >= 0 && i < drawRounds.length - 1 ? drawRounds[i + 1] : undefined;
   })();
+
+  const phaseTable = leaguePhase ? (
+    <LeaguePhaseTable
+      standings={leaguePhase.standings}
+      zones={leaguePhase.zones}
+      locale={locale}
+      caption={tCup('leaguePhaseStandings')}
+    />
+  ) : null;
+  const phaseRules = leaguePhase ? (
+    <LeaguePhaseRules zones={leaguePhase.zones} title={tCup('whatNext')} />
+  ) : null;
 
   const whenRail = (
     <section className="cup-when pl-coming">
@@ -499,7 +569,11 @@ export function DomesticCupPage({
   );
 
   return (
-    <div className={`pl pl-page cup-page ${mcFont.variable}`} data-pl-root data-season={seasonLabel}>
+    <div
+      className={`pl pl-page cup-page ${mcFont.variable}`}
+      data-pl-root
+      data-season={seasonLabel}
+    >
       <CompetitionIdentity
         competitionId={competitionId}
         name={competitionName}
@@ -542,9 +616,7 @@ export function DomesticCupPage({
                 <CupFeatured
                   fixture={featured}
                   locale={locale}
-                  roundLabel={
-                    featured.round ? localizeRound(featured.round, locale) || featured.round : null
-                  }
+                  roundLabel={featured.round ? roundLabel({ label: featured.round }) : null}
                   labels={tieLabels}
                 />
               ) : (
@@ -581,9 +653,7 @@ export function DomesticCupPage({
                     <div key={f.id}>
                       {leg ? (
                         <p className="ghead cup-day-head">
-                          <span>
-                            {parent ? localizeRound(parent.label, locale) || parent.label : ''}
-                          </span>
+                          <span>{parent ? roundLabel(parent) : ''}</span>
                           <span className="cup-leg-label">
                             {leg === 'first'
                               ? tCup('firstLeg')
@@ -600,6 +670,14 @@ export function DomesticCupPage({
               )}
             </section>
             {overviewScorers.length > 0 ? scorersRail : null}
+            {phaseTable ? (
+              <section className="pl-summary">
+                <div className="pl-head">
+                  <h2>{tCup('leaguePhaseStandings')}</h2>
+                </div>
+                {phaseTable}
+              </section>
+            ) : null}
           </div>
         </div>
 
@@ -642,7 +720,9 @@ export function DomesticCupPage({
                 weekGroups.map((g) => {
                   const sample = g.fixtures[0];
                   const parent = cupRounds.find((r) => r.fixtures.some((x) => x.id === sample?.id));
-                  const tie = parent?.ties.find((ti) => ti.fixtures.some((x) => x.id === sample?.id));
+                  const tie = parent?.ties.find((ti) =>
+                    ti.fixtures.some((x) => x.id === sample?.id),
+                  );
                   const leg = tie && sample ? fixtureLegLabel(tie, sample) : null;
                   const sameLeg = g.fixtures.every((f) => {
                     const t2 = parent?.ties.find((ti) => ti.fixtures.some((x) => x.id === f.id));
@@ -681,28 +761,48 @@ export function DomesticCupPage({
           <div className="pl-mobile-top">{whenRail}</div>
           <div className="pl-layout">
             <div className="pl-main">
-              {cupRounds.length === 0 ? (
+              {leaguePhase && (
+                <nav className="cup-round-nav cup-stage-nav" aria-label={tCup('stagesTab')}>
+                  <ul>
+                    {stageLinks.map((r) => (
+                      <li key={r.slug}>
+                        <a
+                          href={hrefFor(r.slug)}
+                          aria-current={r.slug === stageSlug ? 'page' : undefined}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setStageSlug(r.slug);
+                            window.history.replaceState(null, '', hrefFor(r.slug));
+                          }}
+                        >
+                          {r.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              )}
+              {leaguePhase && stageSlug === LEAGUE_PHASE_SLUG ? (
+                phaseTable
+              ) : drawRounds.length === 0 ? (
                 <p className="pl-empty">{t('comingSoon')}</p>
               ) : (
                 <DrawWindow
-                  rounds={cupRounds.map((r) => ({
-                    ...r,
-                    label: r.earlier ? tCup('earlierRounds') : localizeRound(r.label, locale) || r.label,
-                  }))}
-                  currentSlug={activeRound?.slug ?? ''}
+                  rounds={drawRounds.map((r) => ({ ...r, label: roundLabel(r) }))}
+                  currentSlug={drawSlug}
                   locale={locale}
                   hrefFor={hrefFor}
                   nextHref={nextRound ? hrefFor(nextRound.slug) : null}
-                  nextLabel={
-                    nextRound
-                      ? `${localizeRound(nextRound.label, locale) || nextRound.label}`
-                      : null
-                  }
+                  nextLabel={nextRound ? roundLabel(nextRound) : null}
                   labels={tieLabels}
                 />
               )}
+              {phaseRules ? <div className="pl-mobile-top">{phaseRules}</div> : null}
             </div>
-            <aside className="pl-side pl-aux-desktop">{whenRail}</aside>
+            <aside className="pl-side pl-aux-desktop">
+              {whenRail}
+              {phaseRules}
+            </aside>
           </div>
         </div>
 

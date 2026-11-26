@@ -68,7 +68,10 @@ function isTwoLeggedRound(competitionId: number, seasonYear: number, roundLabel:
 
 function isNamedKnockout(label: string): boolean {
   const slug = slugifyRound(label);
-  return NAMED_KNOCKOUT.includes(slug) || /round-of-\d+|semi|quarter|final|qualifying|preliminary/.test(slug);
+  return (
+    NAMED_KNOCKOUT.includes(slug) ||
+    /round-of-\d+|semi|quarter|final|qualifying|preliminary/.test(slug)
+  );
 }
 
 /** Stable display order: configured format order, else later knockout rounds last. */
@@ -84,6 +87,7 @@ const FALLBACK_ORDER = [
   'fifth-round',
   'round-of-64',
   'round-of-32',
+  'knockout-round-play-offs',
   'round-of-16',
   'quarter-finals',
   'quarterfinals',
@@ -92,8 +96,29 @@ const FALLBACK_ORDER = [
   'final',
 ];
 
+/** UEFA league-phase matchday ("League Stage - 5"); not a knockout round. */
+export const LEAGUE_PHASE_SLUG = 'league-phase';
+const LEAGUE_STAGE_RE = /^league[- ](stage|phase)\s*-\s*(\d+)$/i;
+
+export function leaguePhaseMatchday(label: string | null | undefined): number | null {
+  const m = LEAGUE_STAGE_RE.exec((label ?? '').trim());
+  return m ? Number(m[2]) : null;
+}
+
+/** UEFA qualifying rounds ("1st Qualifying Round", "Preliminary Round", qualifying "Play-offs"). */
+export function isQualifyingRound(label: string | null | undefined): boolean {
+  const slug = slugifyRound(label ?? '');
+  return /qualifying|preliminary/.test(slug) || slug === 'play-offs' || slug === 'playoffs';
+}
+
 function rankRound(label: string): number {
   const slug = slugifyRound(label);
+  // European cups: qualifying → play-offs → league-phase matchdays → knockout rounds.
+  const q = /^(\d+)(st|nd|rd|th)-qualifying-round$/.exec(slug);
+  if (q) return -3 + Number(q[1]) / 10;
+  if (slug === 'play-offs' || slug === 'playoffs') return -1.5;
+  const md = leaguePhaseMatchday(label);
+  if (md != null) return -1 + md / 100;
   const i = FALLBACK_ORDER.indexOf(slug);
   return i === -1 ? 50 : i;
 }
@@ -116,7 +141,9 @@ export function buildCupRounds(
     if (label && !byLabel.has(label)) byLabel.set(label, []);
   }
 
-  const labels = [...byLabel.keys()].sort((a, b) => rankRound(a) - rankRound(b) || a.localeCompare(b));
+  const labels = [...byLabel.keys()].sort(
+    (a, b) => rankRound(a) - rankRound(b) || a.localeCompare(b),
+  );
 
   // Coupe du Trône and similar: fold unverified preliminary/regional names together.
   const format = getCompetitionFormat(competitionId, seasonYear);
@@ -138,7 +165,14 @@ export function buildCupRounds(
 
   if (earlierFixtures.length > 0 || earlierLabels.length > 0) {
     rounds.unshift(
-      makeRound(competitionId, seasonYear, 'Earlier rounds', EARLIER_ROUNDS_SLUG, true, earlierFixtures),
+      makeRound(
+        competitionId,
+        seasonYear,
+        'Earlier rounds',
+        EARLIER_ROUNDS_SLUG,
+        true,
+        earlierFixtures,
+      ),
     );
   }
 
@@ -198,7 +232,10 @@ function groupTies(
   return ties.sort((a, b) => kickoffTime(a.fixtures[0]) - kickoffTime(b.fixtures[0]));
 }
 
-export function findCupRound(rounds: CupRound[], slug: string | null | undefined): CupRound | undefined {
+export function findCupRound(
+  rounds: CupRound[],
+  slug: string | null | undefined,
+): CupRound | undefined {
   if (!slug) return undefined;
   return rounds.find((r) => r.slug === slug);
 }
@@ -219,7 +256,10 @@ export function defaultCupRound(rounds: CupRound[], now: Date): CupRound | undef
   return rounds[rounds.length - 1];
 }
 
-export function fixtureLegLabel(tie: CupTie, fixture: FixtureWithTeams): 'first' | 'second' | 'replay' | null {
+export function fixtureLegLabel(
+  tie: CupTie,
+  fixture: FixtureWithTeams,
+): 'first' | 'second' | 'replay' | null {
   if (tie.fixtures.length < 2) return null;
   const index = tie.fixtures.findIndex((f) => f.id === fixture.id);
   if (index < 0) return null;
