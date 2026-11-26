@@ -185,27 +185,19 @@ function renderDocument(
 `;
 }
 
-/** Real HTTP 404/503 document, used by middleware so Cache Components cannot commit a 200 shell. */
-export function localeHttpResponse(
-  locale: Locale,
-  existence: Exclude<Existence, 'found'>,
-): EntityHttpResponse {
-  const status = existence === 'unavailable' ? 503 : 404;
-  const copy = status === 503 ? UNAVAILABLE_COPY[locale] : NOT_FOUND_COPY[locale];
-  const headers: Record<string, string> = {
-    'content-type': 'text/html; charset=utf-8',
-    'x-robots-tag': 'noindex, nofollow',
-    'cache-control': 'private, no-store',
-  };
-  if (status === 503) headers['retry-after'] = '120';
-  return { status, body: renderDocument(locale, status, copy), headers };
-}
-
 /** `null` when the entity exists and the page should render normally. */
 export function entityHttpResponse(
   ref: EntityRef,
   existence: Existence,
 ): EntityHttpResponse | null {
   if (existence === 'found') return null;
-  return localeHttpResponse(ref.locale, existence);
+  const status = existence === 'unavailable' ? 503 : 404;
+  const copy = status === 503 ? UNAVAILABLE_COPY[ref.locale] : NOT_FOUND_COPY[ref.locale];
+  const headers: Record<string, string> = {
+    'content-type': 'text/html; charset=utf-8',
+    'x-robots-tag': 'noindex, nofollow',
+    'cache-control': 'private, no-store',
+  };
+  if (status === 503) headers['retry-after'] = '120';
+  return { status, body: renderDocument(ref.locale, status, copy), headers };
 }
