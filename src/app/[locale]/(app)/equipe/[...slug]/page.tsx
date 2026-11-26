@@ -1,57 +1,25 @@
 import type { Metadata } from 'next';
-import { MoroccoHubLinks } from '@/components/hubs/MoroccoHubLinks';
-import { MOROCCO_TEAM_ID } from '@/lib/constants/morocco-hubs';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
+import { cacheLife } from 'next/cache';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { buildTeamMeta } from '@/lib/seo/hub-metadata';
 import { isTeamIndexable } from '@/lib/seo/indexable';
-import { notFound, permanentRedirect } from 'next/navigation';
 import { locales, defaultLocale, type Locale } from '@/lib/i18n/config';
-import { InnerPageShell } from '@/components/layout/InnerPageShell';
-import { SeoBreadcrumb, type BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
+import type { BreadcrumbSegment } from '@/components/chrome/SeoBreadcrumb';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { buildGraph, buildWebPage, buildSportsTeam, buildBreadcrumbList } from '@/lib/seo/jsonld';
 import { sameAsForTeam } from '@/lib/constants/entity-links';
-import {
-  findEntryByCompetitionId,
-  buildCompetitionHref,
-} from '@/lib/constants/competitions-mega-menu';
-import { TeamPageHeader } from '@/components/team/TeamPageHeader';
-import { TeamSquadTable } from '@/components/team/TeamSquadTable';
-import { TeamStandingsWithFilter } from '@/components/team/TeamStandingsWithFilter';
-import { TeamCompetitionTeams } from '@/components/team/TeamCompetitionTeams';
-import { LeagueLeftRail } from '@/components/league/LeagueLeftRail';
-import { TeamStatistics } from '@/components/team/TeamStatistics';
-import { TeamMatchesList } from '@/components/team/TeamMatchesList';
-import { TeamGroupStandingsCard } from '@/components/team/TeamGroupStandingsCard';
-import { KeyPlayersCard } from '@/components/team/KeyPlayersCard';
-import { TournamentScorersCard } from '@/components/team/TournamentScorersCard';
-import { FeaturedMatchCard } from '@/components/tournament/FeaturedMatchCard';
-
-import { CenterTabs } from '@/components/tournament/CenterTabs';
-import { TeamMediaSection } from '@/components/team/TeamMediaSection';
-import { WorldCupHistoryCard } from '@/components/team/WorldCupHistoryCard';
-import { getTeamWorldCupResults } from '@/lib/db/queries/team-world-cup';
-import { NationalTeamAboutCard } from '@/components/team/NationalTeamAboutCard';
-import { getNationalTeamContent } from '@/lib/constants/national-team-content';
 import { db } from '@/lib/db/client';
-import { getMatchState } from '@/lib/match-status';
-import {
-  getTeamBySlug,
-  getTeamFixturesWithCompetition,
-  getTeamSquad,
-  getTeamAllStandings,
-  getTeamSeasonStats,
-  getTeamsInSameCompetition,
-  getTeamFormResults,
-  getTeamPrimaryCompetition,
-  getTeamTournamentSquad,
-  getTeamKeyPlayers,
-  getTeamTournamentScorers,
-} from '@/lib/db/queries/team';
+import { getTeamBySlug } from '@/lib/db/queries/team';
 import { BASE_URL } from '@/lib/constants/site';
-import { cacheLife } from 'next/cache';
 import { getTeamDisplayName } from '@/lib/utils/team-name';
-import { arabicCompetitionName } from '@/lib/i18n/localized-names';
+import { loadTeamHub } from '@/lib/team/load-team-hub';
+import { TeamHub } from '@/components/team-hub/TeamHub';
+import { CompetitionRail } from '@/components/match/centre/CompetitionRail';
+import { getRailProps } from '@/components/match/centre/rail-props';
+import { NavCompetitionRegister } from '@/components/chrome/NavCompetitionRegister';
+import { mcFont } from '@/components/match/centre/font';
+import '@/components/match/centre/match-centre.css';
 
 interface PageProps {
   params: Promise<{ locale: string; slug: string[] }>;
@@ -59,65 +27,10 @@ interface PageProps {
 
 const baseUrl = BASE_URL;
 
-// ── Tab hash fragments per locale ──
-
-const TAB_HASHES: Record<
-  Locale,
-  { matches: string; standings: string; statistics: string; squad: string }
-> = {
-  fr: { matches: 'matchs', standings: 'classement', statistics: 'statistiques', squad: 'effectif' },
-  en: { matches: 'matches', standings: 'standings', statistics: 'statistics', squad: 'squad' },
-  ar: { matches: 'المباريات', standings: 'الترتيب', statistics: 'الإحصائيات', squad: 'التشكيلة' },
-};
-
-// ── Cached data ──
-
-async function getCachedTeamData(teamSlug: string, locale: string) {
+async function getCachedTeam(teamSlug: string) {
   'use cache';
   cacheLife('minutes');
-  const team = await getTeamBySlug(db, teamSlug);
-  if (!team) return null;
-
-  const [
-    fixtures,
-    squad,
-    tournamentSquad,
-    allStandings,
-    teamSeasonStats,
-    competitionTeams,
-    formResults,
-    primaryComp,
-    keyPlayers,
-    tournamentScorers,
-    worldCupResults,
-  ] = await Promise.all([
-    getTeamFixturesWithCompetition(db, team.id, 200),
-    getTeamSquad(db, team.id),
-    getTeamTournamentSquad(db, team.id),
-    getTeamAllStandings(db, team.id),
-    getTeamSeasonStats(db, team.id),
-    getTeamsInSameCompetition(db, team.id),
-    getTeamFormResults(db, team.id),
-    getTeamPrimaryCompetition(db, team.id),
-    getTeamKeyPlayers(db, team.id),
-    getTeamTournamentScorers(db, team.id, locale),
-    team.isNational ? getTeamWorldCupResults(db, team.id) : Promise.resolve([]),
-  ]);
-
-  return {
-    team,
-    fixtures,
-    squad,
-    tournamentSquad,
-    allStandings,
-    teamSeasonStats,
-    competitionTeams,
-    formResults,
-    primaryComp,
-    keyPlayers,
-    tournamentScorers,
-    worldCupResults,
-  };
+  return getTeamBySlug(db, teamSlug);
 }
 
 // ── Metadata ──
@@ -126,8 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { locale, slug: rawSlug } = await params;
   const typedLocale = locale as Locale;
   const teamSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
-  const data = await getCachedTeamData(teamSlug, locale);
-  const team = data?.team;
+  const team = await getCachedTeam(teamSlug);
 
   // Unknown team → noindex. Middleware returns the real 404 (or 503 if the DB is down) before
   // this runs; the body still notFound()s so a request that skips middleware gets the 404 UI.
@@ -174,252 +86,58 @@ export default async function TeamPage({ params }: PageProps) {
   const teamSlug = rawSlug.map(decodeURIComponent).pop() ?? '';
 
   const [data, tBc] = await Promise.all([
-    getCachedTeamData(teamSlug, locale),
+    loadTeamHub(teamSlug, typedLocale),
     getTranslations({ locale, namespace: 'breadcrumb' }),
   ]);
   if (!data) notFound();
-  const {
-    team,
-    fixtures,
-    squad,
-    tournamentSquad,
-    allStandings,
-    teamSeasonStats,
-    competitionTeams,
-    formResults,
-    primaryComp,
-    keyPlayers,
-    tournamentScorers,
-    worldCupResults,
-  } = data;
+  const { team } = data;
   // Canonical URL uses the stored slug; 301 any stale/variant name-part (resolution was by ID).
   if (team.slug !== teamSlug) {
     permanentRedirect(`/${locale}/equipe/${team.slug}`);
   }
-  const nationalTeamAbout = getNationalTeamContent(team.id, typedLocale);
-  const teamName = getTeamDisplayName(team, typedLocale);
+  const railId = data.primaryCompetitionId ?? data.competitions[0]?.id ?? 0;
+  const { rail, current } = await getRailProps(typedLocale, railId);
 
-  // Featured match priority: live > next upcoming > most recent completed
-  const liveMatch = fixtures.find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'live');
-  const nextUpcoming = fixtures.find(
-    (f) => getMatchState(f.statusCode, f.kickoffAt) === 'upcoming',
-  );
-  const mostRecentCompleted = [...fixtures]
-    .reverse()
-    .find((f) => getMatchState(f.statusCode, f.kickoffAt) === 'finished');
-  const upcomingFixture = liveMatch ?? nextUpcoming ?? mostRecentCompleted ?? null;
-
-  // Second featured card: the fixture following the first upcoming/live one.
-  const upcomingSeq = fixtures.filter((f) => {
-    const s = getMatchState(f.statusCode, f.kickoffAt);
-    return s === 'live' || s === 'upcoming';
-  });
-  const secondFixture = upcomingSeq[1] ?? null;
-
-  // Competition name for left rail team tiles
-  const compTeamsName = competitionTeams.competitionName
-    ? (competitionTeams.competitionName[typedLocale] ??
-      competitionTeams.competitionName['en'] ??
-      '')
-    : '';
-
-  // Breadcrumbs: Football > Competition > Team (no country level for teams).
-  // primaryComp is League-only (null for national teams). When absent, fall back
-  // to the team's default standings competition (e.g. World Cup 2026), linked via
-  // its mega-menu entry when one exists (else a plain text crumb).
   const breadcrumbs: BreadcrumbSegment[] = [{ label: tBc('football'), href: `/${locale}` }];
-  if (primaryComp) {
-    const compName =
-      arabicCompetitionName(primaryComp, typedLocale) ??
-      primaryComp.name[typedLocale] ??
-      primaryComp.name['en'] ??
-      primaryComp.slug;
-    const countrySlug = (primaryComp.countryCode ?? '').toLowerCase();
-    breadcrumbs.push({
-      label: compName,
-      href: `/${locale}/competition/${countrySlug}/${primaryComp.slug}`,
-    });
-  } else if (allStandings.competitions[0]) {
-    const fallbackComp = allStandings.competitions[0];
-    const fallbackName =
-      arabicCompetitionName(fallbackComp, typedLocale) ??
-      fallbackComp.name[typedLocale] ??
-      fallbackComp.name['en'];
-    if (fallbackName) {
-      const fallbackEntry = findEntryByCompetitionId(fallbackComp.id);
-      breadcrumbs.push({
-        label: fallbackName,
-        href: fallbackEntry ? buildCompetitionHref(fallbackEntry, typedLocale) : undefined,
-      });
-    }
-  }
-  breadcrumbs.push({ label: teamName });
-
-  // Center tabs — Standings, Statistics, Players (per schematic)
-  const hashes = TAB_HASHES[typedLocale];
-  const tabs = [
-    {
-      key: 'matches',
-      hash: hashes.matches,
-      labelKey: 'matches',
-      content: (
-        <div className="space-y-2.5">
-          <TeamMatchesList fixtures={fixtures} locale={typedLocale} teamId={team.id} />
-          <TeamGroupStandingsCard
-            team={team}
-            fixtures={fixtures}
-            allStandings={allStandings}
-            locale={typedLocale}
-            standingsHref={`#${hashes.standings}`}
-          />
-        </div>
-      ),
-    },
-    {
-      key: 'standings',
-      hash: hashes.standings,
-      labelKey: 'standings',
-      content: (
-        <TeamStandingsWithFilter
-          competitions={allStandings.competitions}
-          seasons={allStandings.seasons}
-          standingsByCompSeason={allStandings.standingsByCompSeason}
-          highlightTeamId={team.id}
-          locale={typedLocale}
-          defaultCompetitionId={primaryComp?.id}
-        />
-      ),
-    },
-    // Statistics tab only when there's data. Empty teamSeasonStats means either the team's
-    // leagues have league_coverage.statistics_fixtures=false (Algeria L1, Tunisia L1) or no
-    // matches have been played yet — in both cases an empty Stats tab is worse than no tab.
-    ...(Object.keys(teamSeasonStats.statsByCompSeason).length > 0
-      ? [
-          {
-            key: 'statistics',
-            hash: hashes.statistics,
-            labelKey: 'statistics',
-            content: <TeamStatistics data={teamSeasonStats} locale={typedLocale} />,
-          },
-        ]
-      : []),
-    {
-      key: 'squad',
-      hash: hashes.squad,
-      labelKey: 'squad',
-      content: tournamentSquad ? (
-        <div className="space-y-3">
-          <div className="rounded-xl border border-border-subtle bg-bg-surface px-4 py-2.5">
-            <h3 className="label-caps">
-              {tournamentSquad.competitionName[typedLocale] ??
-                tournamentSquad.competitionName['en'] ??
-                ''}{' '}
-              {tournamentSquad.seasonYear}
-            </h3>
-          </div>
-          <TeamSquadTable players={tournamentSquad.players} locale={typedLocale} />
-        </div>
-      ) : (
-        <TeamSquadTable players={squad} locale={typedLocale} />
-      ),
-    },
-  ];
+  const crumbComp =
+    data.competitions.find((c) => c.id === data.primaryCompetitionId) ?? data.competitions[0];
+  if (crumbComp) breadcrumbs.push({ label: crumbComp.name, href: crumbComp.href ?? undefined });
+  breadcrumbs.push({ label: team.name });
+  const pageUrl = `${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(team.slug)}`;
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 pt-px">
-        <SeoBreadcrumb segments={breadcrumbs} compact emitJsonLd={false} />
-        <JsonLd
-          graph={buildGraph(
-            buildWebPage({
-              url: `${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(teamSlug)}`,
-              name: teamName,
-              locale: typedLocale,
-              baseUrl,
-              hasBreadcrumb: true,
-              primaryImage: team.logoUrl,
-            }),
-            buildSportsTeam({
-              url: `${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(teamSlug)}`,
-              name: teamName,
-              logo: team.logoUrl,
-              competitionName: primaryComp
-                ? (arabicCompetitionName(primaryComp, typedLocale) ??
-                  primaryComp.name[typedLocale] ??
-                  primaryComp.name['en'])
-                : null,
-              sameAs: sameAsForTeam(team.id),
-            }),
-            buildBreadcrumbList(
-              breadcrumbs,
-              `${baseUrl}/${typedLocale}/equipe/${encodeURIComponent(teamSlug)}`,
-              baseUrl,
-            ),
-          )}
-        />
-      </div>
-
-      <InnerPageShell
-        pageHeader={<TeamPageHeader team={team} locale={typedLocale} formResults={formResults} />}
-        rightRailTop={
-          upcomingFixture ? (
-            <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
-          ) : undefined
-        }
-        leftRail={
-          <div className="space-y-2.5">
-            <LeagueLeftRail locale={typedLocale} activeCompetitionId={primaryComp?.id} />
-            {competitionTeams.teams.length > 0 && (
-              <TeamCompetitionTeams
-                teams={competitionTeams.teams}
-                competitionName={compTeamsName}
-                highlightTeamId={team.id}
-                locale={typedLocale}
-              />
-            )}
-          </div>
-        }
-        center={
-          <>
-            {/* Mobile/tablet-only Next/Last band above the tabs (lg+ shows it in rightRailTop) */}
-            {upcomingFixture && (
-              <div className="mb-2.5 lg:hidden">
-                <FeaturedMatchCard fixture={upcomingFixture} locale={typedLocale} />
-              </div>
-            )}
-            <CenterTabs tabs={tabs} />
-          </>
-        }
-        rightRail={
-          <div className="space-y-2.5">
-            {secondFixture && <FeaturedMatchCard fixture={secondFixture} locale={typedLocale} />}
-            <KeyPlayersCard players={keyPlayers} locale={typedLocale} />
-            <TournamentScorersCard data={tournamentScorers} locale={typedLocale} />
-          </div>
-        }
-        belowCenter={
-          <>
-            {/* Mobile-only: the desktop right-rail cards, surfaced below the tabs */}
-            <div className="mb-2.5 space-y-2.5 lg:hidden">
-              {secondFixture && <FeaturedMatchCard fixture={secondFixture} locale={typedLocale} />}
-              <KeyPlayersCard players={keyPlayers} locale={typedLocale} />
-              <TournamentScorersCard data={tournamentScorers} locale={typedLocale} />
-            </div>
-            {nationalTeamAbout && (
-              <div className="mb-2.5">
-                <NationalTeamAboutCard content={nationalTeamAbout} locale={typedLocale} />
-              </div>
-            )}
-            {team.isNational && worldCupResults.length > 0 && (
-              <div className="mb-2.5">
-                <WorldCupHistoryCard results={worldCupResults} locale={typedLocale} />
-              </div>
-            )}
-            <TeamMediaSection teamId={team.id} locale={typedLocale} />
-          </>
-        }
+      <JsonLd
+        graph={buildGraph(
+          buildWebPage({
+            url: pageUrl,
+            name: team.name,
+            locale: typedLocale,
+            baseUrl,
+            hasBreadcrumb: true,
+            primaryImage: team.logoUrl,
+          }),
+          buildSportsTeam({
+            url: pageUrl,
+            name: team.name,
+            logo: team.logoUrl,
+            competitionName: crumbComp?.name ?? null,
+            sameAs: sameAsForTeam(team.id),
+          }),
+          buildBreadcrumbList(breadcrumbs, pageUrl, baseUrl),
+        )}
       />
-      {team.id === MOROCCO_TEAM_ID && <MoroccoHubLinks locale={typedLocale} current="morocco" />}
+      <NavCompetitionRegister current={current} rail={rail} />
+      <div className={`mc ${mcFont.variable}`}>
+        <div className="shell">
+          <aside className="rail">
+            <CompetitionRail {...rail} />
+          </aside>
+          <div className="mc-mainarea">
+            <TeamHub data={data} locale={typedLocale} />
+          </div>
+        </div>
+      </div>
     </>
   );
 }
