@@ -457,7 +457,38 @@
 .stage-menu > summary::marker {
   content: '';
 }
-.stage-menu > summary:focus-visible {
+/* Closed trigger matches the reference .ds-period pill (CL Fixtures and Stages). */
+.pl .stage-menu > summary.ds-period {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 1 auto;
+  gap: 8px;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 44px;
+  padding-inline: 10px;
+  border: 1px solid var(--border, #a4aea9);
+  border-radius: 6px;
+  background: var(--field, #fff);
+  color: var(--ink);
+  box-sizing: border-box;
+  font: 580 var(--ds-period-size, 15px) / 1.2 var(--font);
+  font-variant-numeric: tabular-nums;
+}
+.pl .stage-menu > summary.ds-period > svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.stage-menu > summary:focus-visible,
+.pl .stage-menu > summary.ds-period:focus-visible {
   outline: 2px solid var(--focus, #176b51);
   outline-offset: 2px;
 }

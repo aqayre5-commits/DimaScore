@@ -474,11 +474,8 @@ export function DomesticCupPage({
   }, [topScorers]);
 
   const weekFixtures = activeRound?.fixtures ?? [];
-  const weekGroups = useMemo(() => {
-    const groups = groupFixturesByDay(weekFixtures);
-    // Finished season: most recent matchday first.
-    return seasonOver ? [...groups].reverse() : groups;
-  }, [weekFixtures, seasonOver]);
+  // Chronological within the selected round, including finished seasons (First leg before Second leg).
+  const weekGroups = useMemo(() => groupFixturesByDay(weekFixtures), [weekFixtures]);
 
   function hrefFor(slug: string): string {
     const current = currentSeasonYear != null && seasonYear === currentSeasonYear;
