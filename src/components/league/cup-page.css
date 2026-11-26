@@ -121,14 +121,26 @@
 .cup-leg:hover > .tie-cap,.cup-leg:focus-visible > .tie-cap,.is-selected > .tie-cap { text-decoration: underline; text-underline-offset: 3px; }
 .tie-identity a:hover,.tie-single-link:hover .tie-team bdi { text-decoration: underline; text-underline-offset: 3px; }
 .tie-note { grid-column: 1 / -1; margin-block-start: 5px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+.tie-wrap { margin: 0; min-width: 0; }
+.draw-node .tie-wrap { width: 100%; }
+.tie-when {
+  margin: 0 0 5px;
+  padding-inline: 2px;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 550;
+  color: var(--muted);
+  text-align: start;
+}
+.tie-when .ko { font-variant-numeric: tabular-nums; }
 .tie-double:focus-within { position: relative; }
 @media(max-width:400px) { .cup-pair { padding: 8px 10px; } }
-#destination-content .card:has(>.cup-pair:only-child){border:0;padding:0;background:transparent}
+#destination-content .card:has(>.cup-pair:only-child),#destination-content .card:has(>.tie-wrap:only-child){border:0;padding:0;background:transparent}
 .cup-leg:not(.is-selected)>.tie-cap{text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--border,var(--line));text-underline-offset:3px}
 /* The World Cup round window is shared by single-match and two-leg draws. */
 .draw-window{container-type:inline-size;min-width:0}
 .draw-tree{
-  --draw-gap:clamp(18px,2.1vw,36px);--slot:140px;--round-head:38px;
+  --draw-gap:clamp(18px,2.1vw,36px);--slot:160px;--round-head:38px;
   display:grid;grid-template-columns:var(--tracks);align-items:start;min-width:0;
 }
 .draw-round{min-width:0}
@@ -140,7 +152,7 @@
 .draw-matches,.draw-gutter svg{height:calc(var(--slots)*var(--slot))}
 .draw-matches{position:relative}
 .draw-node{position:absolute;inset-inline:0;top:calc(var(--position)*var(--slot));transform:translateY(-50%);min-width:0}
-.draw-node.draw-target>.cup-pair,.draw-node:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:8px}
+.draw-node.draw-target .cup-pair,.draw-node:focus-visible{outline:2px solid var(--green);outline-offset:2px;border-radius:8px}
 .draw-node .cup-pair{width:100%}
 .draw-gutter{padding-block-start:var(--round-head);width:var(--draw-gap)}
 .draw-gutter svg{display:block;overflow:visible;width:100%;fill:none;stroke:color-mix(in srgb,var(--muted) 63%,var(--line));stroke-width:1.4px;stroke-linejoin:round;stroke-linecap:round}
@@ -172,7 +184,7 @@
 .cup-draw .draw-window { overflow-x: auto; overscroll-behavior-inline: contain; }
 .draw-tree {
   --draw-gap: clamp(18px, 2.1vw, 36px);
-  --slot: 140px;
+  --slot: 160px;
   --round-head: 38px;
   display: grid;
   grid-template-columns: var(--tracks);
@@ -208,7 +220,7 @@
   transform: translateY(-50%);
   min-width: 0;
 }
-.draw-node.draw-target > .cup-pair, .draw-node:focus-visible {
+.draw-node.draw-target .cup-pair, .draw-node:focus-visible {
   outline: 2px solid var(--green);
   outline-offset: 2px;
   border-radius: 8px;
