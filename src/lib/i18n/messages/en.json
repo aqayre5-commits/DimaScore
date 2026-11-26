@@ -1140,7 +1140,8 @@
       "off": "Off",
       "assist": "Assist",
       "var": "VAR review",
-      "label": "Events"
+      "label": "Events",
+      "unknownPlayer": "Unknown player"
     },
     "stats": {
       "label": "Stats",
@@ -1173,6 +1174,7 @@
       "on": "Subbed on",
       "off": "Subbed off",
       "sent": "Sent off",
+      "unknownPlayer": "Unknown player",
       "subs": "Substitutions",
       "bench": "Substitutes",
       "unused": "Unused substitutes",

@@ -14,16 +14,20 @@ import { resolveTeamKits } from '@/lib/match/kit-colours';
 import { KIT_CORRECTIONS } from '@/lib/match/kit-corrections';
 import { resolveTeamKitsWithSeason, type FixtureKitContext } from '@/lib/match/season-kits';
 import { loadFixtureKitContext } from '@/lib/match/season-kit-db';
+import { isPersistablePlayerId, providerEventFields } from '@/lib/match/player-identity';
 import { chunkIds } from './chunk';
 
 // ── Events ──
 
 function mapEvent(fixtureId: number, e: NormalizedFixtureEvent) {
+  const who = providerEventFields(e);
   return {
     fixtureId,
     teamId: e.team?.id ?? null,
-    playerId: e.player?.id ?? null,
-    assistPlayerId: e.assist?.id ?? null,
+    playerId: who.playerId,
+    playerName: who.playerName,
+    assistPlayerId: who.assistPlayerId,
+    assistName: who.assistName,
     minute: e.time?.elapsed ?? null,
     extraMinute: e.time?.extra ?? null,
     type: e.type,
@@ -76,6 +80,9 @@ function mapPlayerStats(
   teamId: number,
   p: NormalizedFixturePlayer['players'][0],
 ) {
+  // A null id cannot be a fixture_player_stats key. Skipping it keeps the
+  // event/lineup write from failing on youth fixtures.
+  if (!isPersistablePlayerId(p.player?.id)) return null;
   const s = p.statistics[0];
   return {
     fixtureId,
@@ -160,6 +167,7 @@ export async function writeFixtureDetails(
       if (!team.players) continue;
       for (const p of team.players) {
         const row = mapPlayerStats(fixtureId, team.team.id, p);
+        if (!row) continue;
         await tx
           .insert(schema.fixturePlayerStats)
           .values(row)
@@ -243,9 +251,10 @@ export async function syncFixtureDetailsBatch(
           row.lineups.length > 0 ||
           row.statistics.length > 0 ||
           row.players.length > 0);
-      const counts = hasDetails && row
-        ? await writeFixtureDetails(db, id, row)
-        : await syncFixtureDetails(provider, db, id);
+      const counts =
+        hasDetails && row
+          ? await writeFixtureDetails(db, id, row)
+          : await syncFixtureDetails(provider, db, id);
       results.push({ fixtureId: id, ...counts });
     }
   }

@@ -36,6 +36,7 @@ import { useCentreData } from './useCentreData';
 import type { McMatch, McTable, McTeam, McUpcoming } from './types';
 import { TeamMark } from '@/components/shared/TeamMark';
 import type { LogoStatus } from '@/lib/logos/status';
+import { keyLineups, playerDisplayName } from '@/lib/match/player-identity';
 
 const LIVE = new Set<string>(LIVE_CODES_ARRAY);
 const FINISHED = new Set<string>(FINISHED_CODES_ARRAY);
@@ -187,7 +188,7 @@ function Board({
             };
             return (
               <small key={line.key} dir="ltr">
-                {line.player ? `${line.player} ` : null}
+                {`${playerDisplayName(line.player, null, t('events.unknownPlayer'))} `}
                 <bdi dir="ltr">{formatHeroScorerMinutes(line, tags)}</bdi>
               </small>
             );
@@ -371,6 +372,7 @@ function incidentLabel(i: Incident, t: T, teamName: string): { label: string; ex
 function IncidentRow({ i, m, t }: { i: Incident; m: McMatch; t: T }) {
   const team = i.side === 0 ? m.home : m.away;
   const min = <bdi>{minuteText(i)}</bdi>;
+  const who = (name: string | null) => playerDisplayName(name, null, t('events.unknownPlayer'));
   if (i.kind === 'sub') {
     return (
       <li className="mc-incident">
@@ -380,12 +382,12 @@ function IncidentRow({ i, m, t }: { i: Incident; m: McMatch; t: T }) {
           <strong>
             <EventIcon kind="on" className="mc-incident-icon" />
             <span className="sr">{t('events.on')} </span>
-            {i.inName ?? ''}
+            {who(i.inName)}
           </strong>
           <small>
             <EventIcon kind="off" className="mc-incident-icon" />
             <span className="sr">{t('events.off')} </span>
-            {`${i.outName ?? ''} · ${t('events.sub')}`}
+            {`${who(i.outName)} · ${t('events.sub')}`}
           </small>
         </span>
         <b />
@@ -418,7 +420,7 @@ function IncidentRow({ i, m, t }: { i: Incident; m: McMatch; t: T }) {
         {symbol}
       </span>
       <span className="mc-event-name">
-        <strong>{i.player ?? team.name}</strong>
+        <strong>{who(i.player)}</strong>
         <small>{`${label} · ${extra}`}</small>
       </span>
       <b className="mc-miniscore">{i.score ? pair(i.score[0], i.score[1]) : null}</b>
@@ -690,9 +692,11 @@ export function MatchCentre({ match: m, upcoming, table }: MatchCentreProps) {
   };
   const started = phase !== 'upcoming';
   const data = useCentreData(String(m.id), m.coverage, started);
+  // One id space for both teams, shared by the event list and the pitch.
+  const lineups = useMemo(() => keyLineups(data.lineups), [data.lineups]);
   const incidents = useMemo(
-    () => buildIncidents(data.events, m.home.id, data.lineups, m.locale),
-    [data.events, data.lineups, m.home.id, m.locale],
+    () => buildIncidents(data.events, m.home.id, lineups, m.locale),
+    [data.events, lineups, m.home.id, m.locale],
   );
   const statsBy = (id: number): MatchTeamStats | null =>
     data.teamStats.find((s) => s.teamId === id) ?? null;
@@ -709,7 +713,7 @@ export function MatchCentre({ match: m, upcoming, table }: MatchCentreProps) {
     }
   const hasFeedStats = [...metrics.keys()].some((k) => k !== 'yellow' && k !== 'reds');
   const lineupFor = (id: number): MatchLineup | null =>
-    data.lineups.find((l) => l.teamId === id) ?? null;
+    lineups.find((l) => l.teamId === id) ?? null;
   const homeLineup = lineupFor(m.home.id);
   const awayLineup = lineupFor(m.away.id);
   const hasLineups = !!(
