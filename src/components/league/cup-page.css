@@ -495,12 +495,16 @@
   transform: rotate(180deg);
 }
 .stage-options {
+  --picker-gutter: 16px;
   position: absolute;
   inset-inline-start: 0;
+  inset-inline-end: auto;
   top: calc(100% + 4px);
   z-index: 30;
-  min-width: max(100%, 208px);
-  max-width: min(320px, 86vw);
+  box-sizing: border-box;
+  min-inline-size: 100%;
+  max-inline-size: min(20rem, calc(100dvw - 2 * var(--picker-gutter)));
+  width: max-content;
   margin: 0;
   padding: 6px;
   list-style: none;
@@ -510,10 +514,12 @@
   box-shadow: 0 8px 24px #14241b1f;
   max-height: min(60vh, 440px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 .stage-options a {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   min-height: 44px;
   padding-inline: 8px;
@@ -521,7 +527,8 @@
   color: var(--ink);
   text-decoration: none;
   font: 560 15px/1.2 var(--font);
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .stage-options a:hover {
   background: var(--hover);
@@ -597,8 +604,13 @@
   .draw-tree:not([data-solo]) { min-width: 0; }
 }
 
-.stage-options .stage-detail { margin-inline-start: auto; padding-inline-start: 14px; color: var(--muted); font-weight: 500; font-size: 13px; font-variant-numeric: tabular-nums; }
+.stage-options .stage-detail { margin-inline-start: auto; padding-inline-start: 14px; color: var(--muted); font-weight: 500; font-size: 13px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .stage-options .stage-detail::before { content: none; }
 
-/* The Round menu sits at the toolbar's trailing edge, so it opens toward the start. */
-.cup-controls .stage-options { inset-inline-start: auto; inset-inline-end: 0; }
+/* Fixtures Round picker sits at the trailing edge of the toolbar, so its menu
+   grows toward the start and stays on-screen. Stages (and other start-edge
+   pickers that also use .cup-controls) keep the default inset-inline-start: 0. */
+.ds-fixture-toolbar .stage-options {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
