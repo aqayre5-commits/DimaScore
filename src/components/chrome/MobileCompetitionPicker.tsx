@@ -14,8 +14,8 @@ const SearchModal = dynamic(() => import('./SearchModal').then((m) => m.SearchMo
   ssr: false,
 });
 
-/** Pages that register a competition context (match and competition pages). */
-const PICKER_PATH = /^\/(?:[a-z]{2}\/)?(?:match|competition)\//;
+/** Pages that register a competition context (Home, plus match and competition pages). */
+const PICKER_PATH = /^\/(?:[a-z]{2}\/?)?$|^\/(?:[a-z]{2}\/)?(?:match|competition)\//;
 
 /**
  * Mobile navbar competition picker (template top bar: "PL ▾"). Below 768px only, where the match
