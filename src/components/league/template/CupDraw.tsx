@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties, ReactNode } from 'react';
+import { Fragment, type CSSProperties, type ReactNode } from 'react';
 import { TeamMark } from '@/components/shared/TeamMark';
 import { MatchLink } from '@/components/shared/MatchLink';
 import { LocalTime } from '@/components/shared/LocalTime';
@@ -143,6 +143,68 @@ function FixtureScore({ fixture, locale }: { fixture: FixtureWithTeams; locale: 
   );
 }
 
+const TIE_DATE_OPTS: Intl.DateTimeFormatOptions = {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+};
+
+function kickoffDate(value: Date | string | null | undefined): Date | null {
+  if (value == null) return null;
+  const d = asDate(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function fixtureNeedsTime(fixture: FixtureWithTeams): boolean {
+  const at = kickoffDate(fixture.kickoffAt);
+  return !isFinished(fixture.statusCode, at ?? undefined);
+}
+
+function TieStamp({ date, locale, withTime }: { date: Date; locale: Locale; withTime: boolean }) {
+  return (
+    <>
+      <LocalTime date={date} locale={locale} format="date" dateOptions={TIE_DATE_OPTS} />
+      {withTime ? (
+        <>
+          {', '}
+          <LocalTime date={date} locale={locale} format="time" className="ko" />
+        </>
+      ) : null}
+    </>
+  );
+}
+
+/** Start-aligned date caption above a tie card (Option B). */
+function TieWhen({
+  locale,
+  stamps,
+}: {
+  locale: Locale;
+  stamps: { date: Date | null; withTime: boolean }[];
+}) {
+  const items: { date: Date; withTime: boolean }[] = [];
+  for (const s of stamps) {
+    if (!s.date) continue;
+    const prev = items[items.length - 1];
+    if (prev && prev.date.toDateString() === s.date.toDateString()) {
+      prev.withTime = prev.withTime || s.withTime;
+      continue;
+    }
+    items.push({ date: s.date, withTime: s.withTime });
+  }
+  if (items.length === 0) return null;
+  return (
+    <figcaption className="tie-when">
+      {items.map((item, i) => (
+        <Fragment key={i}>
+          {i > 0 ? ' · ' : null}
+          <TieStamp date={item.date} locale={locale} withTime={item.withTime} />
+        </Fragment>
+      ))}
+    </figcaption>
+  );
+}
+
 export function SingleMatchCard({
   fixture,
   locale,
@@ -181,40 +243,39 @@ export function SingleMatchCard({
       : null;
 
   return (
-    <MatchLink
-      matchId={String(fixture.id)}
-      href={href}
-      preview={preview}
-      className="cup-pair tie-single-link"
-    >
-      <div className="tie-identity">
-        <span className="tie-cap">
-          <LocalTime
-            date={asDate(fixture.kickoffAt)}
-            locale={locale}
-            format="date"
-            dateOptions={{ weekday: 'short', day: 'numeric', month: 'short' }}
-          />
-        </span>
-        <div className={`tie-team${win === 'home' ? ' is-winner' : ''}`}>
-          <Mark team={fixture.homeTeam} locale={locale} />
-          <TeamName team={fixture.homeTeam} locale={locale} compact={compact} />
+    <figure className="tie-wrap">
+      <TieWhen
+        locale={locale}
+        stamps={[{ date: kickoffDate(fixture.kickoffAt), withTime: !finished }]}
+      />
+      <MatchLink
+        matchId={String(fixture.id)}
+        href={href}
+        preview={preview}
+        className="cup-pair tie-single-link"
+      >
+        <div className="tie-identity">
+          <span className="tie-cap" />
+          <div className={`tie-team${win === 'home' ? ' is-winner' : ''}`}>
+            <Mark team={fixture.homeTeam} locale={locale} />
+            <TeamName team={fixture.homeTeam} locale={locale} compact={compact} />
+          </div>
+          <div className={`tie-team${win === 'away' ? ' is-winner' : ''}`}>
+            <Mark team={fixture.awayTeam} locale={locale} />
+            <TeamName team={fixture.awayTeam} locale={locale} compact={compact} />
+          </div>
         </div>
-        <div className={`tie-team${win === 'away' ? ' is-winner' : ''}`}>
-          <Mark team={fixture.awayTeam} locale={locale} />
-          <TeamName team={fixture.awayTeam} locale={locale} compact={compact} />
+        <div className="tie-column">
+          <span className="tie-cap">{finished ? labels.fullTime : ''}</span>
+          <span className={`tie-num${win === 'home' ? ' is-winner' : ''}`}>
+            {hasScore ? fixture.homeScore : '–'}
+          </span>
+          <span className={`tie-num${win === 'away' ? ' is-winner' : ''}`}>
+            {hasScore ? fixture.awayScore : '–'}
+          </span>
         </div>
-      </div>
-      <div className="tie-column">
-        <span className="tie-cap">{finished ? labels.fullTime : ''}</span>
-        <span className={`tie-num${win === 'home' ? ' is-winner' : ''}`}>
-          {hasScore ? fixture.homeScore : '–'}
-        </span>
-        <span className={`tie-num${win === 'away' ? ' is-winner' : ''}`}>
-          {hasScore ? fixture.awayScore : '–'}
-        </span>
-      </div>
-    </MatchLink>
+      </MatchLink>
+    </figure>
   );
 }
 
@@ -236,9 +297,6 @@ export function TwoLegTieCard({
   const leg1 = tie.fixtures[0];
   const leg2 = tie.fixtures[1];
   const win = winnerId(tie);
-  const start = asDate(leg1.kickoffAt);
-  const end = asDate((leg2 ?? leg1).kickoffAt);
-  const dateRange = start.toDateString() === end.toDateString() ? start : [start, end];
 
   function col(fixture: FixtureWithTeams | undefined, cap: string) {
     if (!fixture) {
@@ -283,76 +341,62 @@ export function TwoLegTieCard({
   const aggB = aggregate(tie, idB);
 
   return (
-    <article className="cup-pair tie-double">
-      <div className="tie-identity">
-        <span className="tie-cap">
-          {Array.isArray(dateRange) ? (
-            <>
-              <LocalTime
-                date={dateRange[0]}
-                locale={locale}
-                format="date"
-                dateOptions={{ weekday: 'short', day: 'numeric', month: 'short' }}
-              />
-              {' – '}
-              <LocalTime
-                date={dateRange[1]}
-                locale={locale}
-                format="date"
-                dateOptions={{ weekday: 'short', day: 'numeric', month: 'short' }}
-              />
-            </>
-          ) : (
-            <LocalTime
-              date={dateRange}
-              locale={locale}
-              format="date"
-              dateOptions={{ weekday: 'short', day: 'numeric', month: 'short' }}
-            />
-          )}
-        </span>
-        <div className={`tie-team${win === idA ? ' is-winner' : ''}`}>
-          {teamA?.slug ? (
-            <a href={buildTeamHref(locale, teamA.slug)} title={teamName(teamA, locale)}>
-              <Mark team={teamA} locale={locale} />
-              <TeamName team={teamA} locale={locale} compact={compact} />
-            </a>
-          ) : (
-            <>
-              <Mark team={teamA} locale={locale} />
-              <TeamName team={teamA} locale={locale} compact={compact} />
-            </>
-          )}
+    <figure className="tie-wrap">
+      <TieWhen
+        locale={locale}
+        stamps={[
+          { date: kickoffDate(leg1.kickoffAt), withTime: fixtureNeedsTime(leg1) },
+          ...(leg2
+            ? [{ date: kickoffDate(leg2.kickoffAt), withTime: fixtureNeedsTime(leg2) }]
+            : []),
+        ]}
+      />
+      <article className="cup-pair tie-double">
+        <div className="tie-identity">
+          <span className="tie-cap" />
+          <div className={`tie-team${win === idA ? ' is-winner' : ''}`}>
+            {teamA?.slug ? (
+              <a href={buildTeamHref(locale, teamA.slug)} title={teamName(teamA, locale)}>
+                <Mark team={teamA} locale={locale} />
+                <TeamName team={teamA} locale={locale} compact={compact} />
+              </a>
+            ) : (
+              <>
+                <Mark team={teamA} locale={locale} />
+                <TeamName team={teamA} locale={locale} compact={compact} />
+              </>
+            )}
+          </div>
+          <div className={`tie-team${win === idB ? ' is-winner' : ''}`}>
+            {teamB?.slug ? (
+              <a href={buildTeamHref(locale, teamB.slug)} title={teamName(teamB, locale)}>
+                <Mark team={teamB} locale={locale} />
+                <TeamName team={teamB} locale={locale} compact={compact} />
+              </a>
+            ) : (
+              <>
+                <Mark team={teamB} locale={locale} />
+                <TeamName team={teamB} locale={locale} compact={compact} />
+              </>
+            )}
+          </div>
         </div>
-        <div className={`tie-team${win === idB ? ' is-winner' : ''}`}>
-          {teamB?.slug ? (
-            <a href={buildTeamHref(locale, teamB.slug)} title={teamName(teamB, locale)}>
-              <Mark team={teamB} locale={locale} />
-              <TeamName team={teamB} locale={locale} compact={compact} />
-            </a>
-          ) : (
-            <>
-              <Mark team={teamB} locale={locale} />
-              <TeamName team={teamB} locale={locale} compact={compact} />
-            </>
-          )}
+        {col(leg1, labels.leg1)}
+        {col(leg2, labels.leg2)}
+        <div className="tie-column tie-total">
+          <span className="tie-cap">
+            <abbr title={labels.aggTitle}>{labels.agg}</abbr>
+          </span>
+          <span className={`tie-num${win === idA ? ' is-winner' : ''}`}>{aggA ?? '–'}</span>
+          <span className={`tie-num${win === idB ? ' is-winner' : ''}`}>{aggB ?? '–'}</span>
         </div>
-      </div>
-      {col(leg1, labels.leg1)}
-      {col(leg2, labels.leg2)}
-      <div className="tie-column tie-total">
-        <span className="tie-cap">
-          <abbr title={labels.aggTitle}>{labels.agg}</abbr>
-        </span>
-        <span className={`tie-num${win === idA ? ' is-winner' : ''}`}>{aggA ?? '–'}</span>
-        <span className={`tie-num${win === idB ? ' is-winner' : ''}`}>{aggB ?? '–'}</span>
-      </div>
-      {tie.fixtures.slice(2).map((f) => (
-        <p key={f.id} className="tie-note">
-          <FixtureScore fixture={f} locale={locale} />
-        </p>
-      ))}
-    </article>
+        {tie.fixtures.slice(2).map((f) => (
+          <p key={f.id} className="tie-note">
+            <FixtureScore fixture={f} locale={locale} />
+          </p>
+        ))}
+      </article>
+    </figure>
   );
 }
 
