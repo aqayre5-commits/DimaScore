@@ -18,6 +18,7 @@ import {
   parseEntityPath,
 } from '@/lib/seo/entity-http';
 import { lookupEntity } from '@/lib/seo/entity-lookup';
+import { parseHubPath } from '@/lib/team/hub-paths';
 
 export const runtime = 'nodejs';
 
@@ -54,7 +55,12 @@ export async function middleware(request: NextRequest) {
 
   const entity = parseEntityPath(pathname);
   if (entity) {
-    const existence = await resolveExistence(entityCacheKey(entity), () => lookupEntity(entity));
+    // A team URL whose tab segment is not one of the locale's tabs never exists.
+    const hubRef = parseHubPath(pathname);
+    const existence =
+      hubRef && hubRef.tab === null
+        ? 'missing'
+        : await resolveExistence(entityCacheKey(entity), () => lookupEntity(entity));
     const http = entityHttpResponse(entity, existence);
     if (http) {
       return new NextResponse(http.body, { status: http.status, headers: http.headers });

@@ -9,6 +9,7 @@
 
 import { defaultLocale, isRtl, locales, type Locale } from '@/lib/i18n/config';
 import { parseTrailingId } from '@/lib/seo/entity-slug';
+import { parseHubPath } from '@/lib/team/hub-paths';
 
 export type EntityKind = 'match' | 'team' | 'player' | 'coach';
 export type Existence = 'found' | 'missing' | 'unavailable';
@@ -80,6 +81,12 @@ const UNAVAILABLE_COPY: Record<Locale, { heading: string; body: string; cta: str
 };
 
 export function parseEntityPath(pathname: string): EntityRef | null {
+  // Localised team pages: /en/club/arsenal-42/squad, /ar/منتخب/المغرب-31.
+  const hub = parseHubPath(pathname);
+  if (hub) {
+    const slug = hub.slug;
+    return !slug || slug.length > 200 ? null : { locale: hub.locale, kind: 'team', slug };
+  }
   const m = ENTITY_PATH_RE.exec(pathname);
   if (!m) return null;
   const locale = (m[1] ?? defaultLocale) as Locale;
