@@ -104,6 +104,18 @@ export interface TeamHubData {
   };
   transfers: { in: HubMove[]; out: HubMove[] } | null;
   primaryCompetitionId: number | null;
+  /** Which tabs have content. Empty tabs get no link and no URL (404). */
+  populated: { matches: boolean; squad: boolean; stats: boolean; transfers: boolean };
+  /**
+   * Scope of the squad Apps counts and the Stats tab: the seasons covered, the matches in scope,
+   * which of them have a match sheet (lineup), and the date of the latest covered one.
+   */
+  stats: {
+    seasonLabel: string;
+    fixtureIds: number[];
+    coveredIds: number[];
+    through: string | null;
+  };
 }
 
 const nameOfRecord = (n: Record<string, string> | null | undefined, locale: Locale) =>
@@ -350,6 +362,21 @@ export async function loadTeamHub(teamSlug: string, locale: Locale): Promise<Tea
         };
       });
 
+  const lineupIds = new Set(
+    sheets.lineups.filter((l) => l.starters.length > 0).map((l) => l.fixtureId),
+  );
+  const coveredScope = tallyScope.filter((f) => lineupIds.has(f.id));
+  const statsScope: TeamHubData['stats'] = {
+    // A national team's window is two seasons; a club's is the current season.
+    seasonLabel: national ? `${season - 1}\u2013${season}` : formatSeason(season),
+    fixtureIds: tallyScope.map((f) => f.id),
+    coveredIds: coveredScope.map((f) => f.id),
+    through: coveredScope.length
+      ? new Date(coveredScope[coveredScope.length - 1].kickoffAt).toISOString()
+      : null,
+  };
+  const transferOut = national ? null : { in: moves('in'), out: moves('out') };
+
   const hubTeam: HubTeam = {
     id: team.id,
     slug: team.slug,
@@ -398,7 +425,14 @@ export async function loadTeamHub(teamSlug: string, locale: Locale): Promise<Tea
       venue: team.venue?.name ?? null,
       founded: team.founded,
     },
-    transfers: national ? null : { in: moves('in'), out: moves('out') },
+    transfers: transferOut,
     primaryCompetitionId: primaryComp?.id ?? null,
+    populated: {
+      matches: hubFixtures.length > 0,
+      squad: squad.length > 0,
+      stats: tallies.length > 0,
+      transfers: !!transferOut && transferOut.in.length + transferOut.out.length > 0,
+    },
+    stats: statsScope,
   };
 }

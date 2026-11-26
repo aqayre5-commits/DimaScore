@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { useTranslations } from 'next-intl';
 import { mcFont } from '@/components/match/centre/font';
 import type { Locale } from '@/lib/i18n/config';
+import { LEGACY_HASHES, legacyHashTab, type HubTab } from '@/lib/team/hub-paths';
 import { TeamMark } from '@/components/shared/TeamMark';
 import { IntentLink } from '@/components/shared/IntentLink';
 import { LocalTime } from '@/components/shared/LocalTime';
@@ -29,57 +30,14 @@ import '@/components/league/competition-page.css';
 import '@/components/league/cup-page.css';
 import './team-hub.css';
 
-type TabKey = 'overview' | 'matches' | 'squad' | 'stats' | 'transfers' | 'table';
+type TabKey = HubTab | 'table';
 type Status = 'allStatus' | 'upcoming' | 'results';
 
-const HASHES: Record<Locale, Record<TabKey, string>> = {
-  en: {
-    overview: 'overview',
-    matches: 'matches',
-    squad: 'squad',
-    stats: 'stats',
-    transfers: 'transfers',
-    table: 'table',
-  },
-  fr: {
-    overview: 'apercu',
-    matches: 'matchs',
-    squad: 'effectif',
-    stats: 'stats',
-    transfers: 'transferts',
-    table: 'classement',
-  },
-  ar: {
-    overview: 'نظرة-عامة',
-    matches: 'المباريات',
-    squad: 'التشكيلة',
-    stats: 'الإحصاءات',
-    transfers: 'الانتقالات',
-    table: 'الترتيب',
-  },
-};
+/** Hash links of the earlier single-URL page, kept working (and mapped to the tab paths). */
+const keyFromHash = legacyHashTab;
 
-function keyFromHash(locale: Locale, raw: string): TabKey | null {
-  let h = raw;
-  try {
-    h = decodeURIComponent(raw);
-  } catch {
-    /* raw */
-  }
-  const found = (Object.entries(HASHES[locale]) as [TabKey, string][]).find(
-    ([k, v]) => v === h || k === h,
-  );
-  return found ? found[0] : null;
-}
-
-function initScript(locale: Locale): string {
-  const map: Record<string, TabKey> = {};
-  for (const [k, v] of Object.entries(HASHES[locale]) as [TabKey, string][]) {
-    map[v] = k;
-    map[k] = k;
-  }
-  return `(function(){try{var r=document.currentScript.parentElement;var h=decodeURIComponent(location.hash.slice(1));var a=${JSON.stringify(map)};var k=a[h];if(k)r.setAttribute('data-tab',k);}catch(e){}})();`;
-}
+/** Earlier URL with a #hash: pick the tab before paint (the effect below then maps it to the path). */
+const HASH_INIT = `(function(){try{var r=document.currentScript.parentElement;var h=decodeURIComponent(location.hash.slice(1));var m=${JSON.stringify(LEGACY_HASHES)};var k=m[h];if(k)r.setAttribute('data-tab',k);}catch(e){}})();`;
 
 function ArrowIcon() {
   return (
@@ -182,13 +140,24 @@ function Crest({
   );
 }
 
-export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale }) {
+export function TeamHub({
+  data,
+  locale,
+  initialTab = 'overview',
+  tabPaths = null,
+}: {
+  data: TeamHubData;
+  locale: Locale;
+  /** The tab the URL names; rendered on the server so a copied tab URL opens on it. */
+  initialTab?: HubTab;
+  /** Localised path of each populated tab. Null on the earlier `/equipe` URL (hash links only). */
+  tabPaths?: Partial<Record<HubTab, string>> | null;
+}) {
   const t = useTranslations('teamHub');
   const { team } = data;
   const national = team.isNational;
-  const hashes = HASHES[locale];
   const rootRef = useRef<HTMLDivElement>(null);
-  const [tab, setTab] = useState<TabKey>('overview');
+  const [tab, setTab] = useState<TabKey>(initialTab);
   const [comp, setComp] = useState<string>('all');
   const [status, setStatus] = useState<Status>('allStatus');
   const [position, setPosition] = useState<string>('allPositions');
@@ -196,33 +165,70 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
   const { followedTeams, toggleTeam } = useFollows();
   const following = followedTeams.has(team.id);
 
-  useEffect(() => {
-    function apply() {
-      const key = keyFromHash(locale, window.location.hash.slice(1));
-      if (key) {
-        setTab(key);
-        rootRef.current?.setAttribute('data-tab', key);
-      }
-    }
-    apply();
-    window.addEventListener('hashchange', apply);
-    return () => window.removeEventListener('hashchange', apply);
-  }, [locale]);
+  const tabHref = useCallback(
+    (key: TabKey) =>
+      tabPaths && key !== 'table' ? (tabPaths[key] ?? tabPaths.overview ?? '#') : `#${key}`,
+    [tabPaths],
+  );
 
   const select = useCallback(
     (key: TabKey) => {
       setTab(key);
       rootRef.current?.setAttribute('data-tab', key);
-      if (window.location.hash.slice(1) !== hashes[key])
-        window.history.replaceState(null, '', `#${hashes[key]}`);
+      const href = tabHref(key);
+      if (tabPaths && key !== 'table') {
+        if (window.location.pathname + window.location.search !== href)
+          window.history.pushState(null, '', href);
+      } else if (window.location.hash.slice(1) !== key) {
+        window.history.replaceState(null, '', href);
+      }
       rootRef.current?.scrollIntoView({ block: 'nearest' });
     },
-    [hashes],
+    [tabHref, tabPaths],
   );
+
+  useEffect(() => {
+    // Earlier links (#squad, #effectif, #التشكيلة …) pick the tab; on the path routes they are
+    // then rewritten to the tab's own path.
+    function fromHash() {
+      const raw = keyFromHash(window.location.hash);
+      if (!raw) return;
+      const p = data.populated;
+      const known =
+        raw === 'overview' ||
+        raw === 'table' ||
+        (raw === 'transfers' ? p.transfers && !data.team.isNational : p[raw]);
+      const key: TabKey = known ? raw : 'overview';
+      setTab(key);
+      rootRef.current?.setAttribute('data-tab', key);
+      if (tabPaths && key !== 'table') {
+        window.history.replaceState(null, '', tabPaths[key] ?? tabPaths.overview ?? '#');
+      }
+    }
+    // Back/forward between tab paths.
+    function fromPath() {
+      if (!tabPaths) return;
+      const here = decodeURIComponent(window.location.pathname);
+      const hit = (Object.entries(tabPaths) as [HubTab, string][]).find(
+        ([, v]) => decodeURIComponent(v) === here,
+      );
+      if (hit) {
+        setTab(hit[0]);
+        rootRef.current?.setAttribute('data-tab', hit[0]);
+      }
+    }
+    fromHash();
+    window.addEventListener('hashchange', fromHash);
+    window.addEventListener('popstate', fromPath);
+    return () => {
+      window.removeEventListener('hashchange', fromHash);
+      window.removeEventListener('popstate', fromPath);
+    };
+  }, [tabPaths, data.populated, data.team.isNational]);
 
   const tabLink = (key: TabKey, label: string, className = 'link', onBefore?: () => void) => (
     <a
-      href={`#${hashes[key]}`}
+      href={tabHref(key)}
       className={className}
       onClick={(e) => {
         e.preventDefault();
@@ -510,7 +516,7 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
           {data.progress.map((p) => (
             <a
               key={p.competitionId}
-              href={`#${hashes.matches}`}
+              href={tabHref('matches')}
               className="ars-stage"
               onClick={(e) => {
                 e.preventDefault();
@@ -675,7 +681,7 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
           {(['allStatus', 'upcoming', 'results'] as const).map((c) => (
             <a
               key={c}
-              href={`#${hashes.matches}`}
+              href={tabHref('matches')}
               className="nt-chip"
               aria-current={c === status ? 'true' : undefined}
               onClick={(e) => {
@@ -720,6 +726,11 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
     () => new Map(rankTallies(data.tallies, 'all', 'apps').map((e) => [e.key, e.value])),
     [data.tallies],
   );
+  // Match-sheet coverage: with none, a count would be a made-up 0, so the cell shows a dash.
+  const covered = data.stats.coveredIds.length;
+  const totalInScope = data.stats.fixtureIds.length;
+  const appsCell = (id: number) =>
+    covered === 0 ? '\u2014' : fmtNumber(apps.get(String(id)) ?? 0, locale);
   const shown = SQUAD_POSITIONS.filter((p) => position === 'allPositions' || p === position);
   const posLabel = (k: string) => t(k as SquadPosition | 'allPositions');
   const squadPanel = withSide(
@@ -745,6 +756,15 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
           ))}
         </PeriodSelect>
       </div>
+      {data.squad.length > 0 && (
+        <p className="nt-note" id="nt-apps-note">
+          {t(national ? 'appsNoteNational' : 'appsNoteClub', {
+            seasons: data.stats.seasonLabel,
+            covered: fmtNumber(covered, locale),
+            total: fmtNumber(totalInScope, locale),
+          })}
+        </p>
+      )}
       {data.squad.length === 0 ? (
         <p className="nt-empty nt-frame">{t('noData')}</p>
       ) : (
@@ -784,19 +804,14 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
                     {third}
                   </span>
                 </td>
-                <td>{fmtNumber(apps.get(String(p.id)) ?? 0, locale)}</td>
+                <td>{appsCell(p.id)}</td>
               </tr>
             );
           });
           return (
             <Section key={pos} title={t(pos)}>
               {table(
-                [
-                  '#',
-                  t('player'),
-                  t(national ? 'club' : 'nationality'),
-                  t(national ? 'caps' : 'apps'),
-                ],
+                ['#', t('player'), t(national ? 'club' : 'nationality'), t('caps')],
                 rows,
                 t(pos),
                 'nt-squad',
@@ -822,9 +837,13 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
   const metric: TallyMetric = metrics.includes(metricRaw) ? metricRaw : (metrics[0] ?? 'goals');
   const [full, setFull] = useState(false);
   const ranked = rankTable(statKey, metric, full ? 0 : 20);
+  const inScope = new Set(data.stats.fixtureIds);
   const scopeMatches = finished.filter(
-    (f) => statKey === 'all' || f.competitionId === statKey,
+    (f) => inScope.has(f.id) && (statKey === 'all' || f.competitionId === statKey),
   ).length;
+  const throughLabel = data.stats.through
+    ? formatDateLabel(toSiteDateKey(new Date(data.stats.through)), locale, '')
+    : null;
   const statsPanel = withSide(
     <>
       <div className="nt-tools">
@@ -860,7 +879,13 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
         )}
       </div>
       <p className="nt-scope">
-        {team.name} · {t('matchCount', { count: scopeMatches })}
+        {[
+          team.name,
+          data.stats.seasonLabel,
+          compLabel(statComp),
+          throughLabel ? t('dataUpTo', { date: throughLabel }) : t('noSheets'),
+          t('matchCount', { count: scopeMatches }),
+        ].join(' · ')}
       </p>
       {ranked.node}
       {ranked.total > 20 && (
@@ -945,9 +970,14 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
       )
     : null;
 
-  const tabs: TabKey[] = national
-    ? ['overview', 'matches', 'squad', 'stats']
-    : ['overview', 'matches', 'squad', 'stats', 'transfers'];
+  const pop = data.populated;
+  const tabs: HubTab[] = [
+    'overview',
+    ...(pop.matches ? (['matches'] as const) : []),
+    ...(pop.squad ? (['squad'] as const) : []),
+    ...(pop.stats ? (['stats'] as const) : []),
+    ...(pop.transfers && !national ? (['transfers'] as const) : []),
+  ];
   const tabLabel = (k: TabKey) =>
     k === 'squad' && national ? t('squadNational') : t(k as Exclude<TabKey, 'table'>);
   const asOfLabel = formatDateLabel(toSiteDateKey(new Date(data.asOf)), locale, '');
@@ -1001,12 +1031,12 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
       </div>
 
       <div ref={rootRef} className="pl-panels nt-panels" data-tab={tab} suppressHydrationWarning>
-        <script dangerouslySetInnerHTML={{ __html: initScript(locale) }} />
+        {tabPaths ? null : <script dangerouslySetInnerHTML={{ __html: HASH_INIT }} />}
         <nav className="pl-tabs nt-tabs" aria-label={team.name}>
           {tabs.map((k) => (
             <a
               key={k}
-              href={`#${hashes[k]}`}
+              href={tabHref(k)}
               className="pl-tab"
               data-pl-tab={k}
               aria-current={tab === k ? 'page' : undefined}
@@ -1020,10 +1050,12 @@ export function TeamHub({ data, locale }: { data: TeamHubData; locale: Locale })
           ))}
         </nav>
         <div data-pl-panel="overview">{overview}</div>
-        <div data-pl-panel="matches">{matchesPanel}</div>
-        <div data-pl-panel="squad">{squadPanel}</div>
-        <div data-pl-panel="stats">{statsPanel}</div>
-        {transfersPanel ? <div data-pl-panel="transfers">{transfersPanel}</div> : null}
+        {pop.matches ? <div data-pl-panel="matches">{matchesPanel}</div> : null}
+        {pop.squad ? <div data-pl-panel="squad">{squadPanel}</div> : null}
+        {pop.stats ? <div data-pl-panel="stats">{statsPanel}</div> : null}
+        {pop.transfers && transfersPanel ? (
+          <div data-pl-panel="transfers">{transfersPanel}</div>
+        ) : null}
         {!national && data.standings ? (
           <div data-pl-panel="table">
             {withSide(
