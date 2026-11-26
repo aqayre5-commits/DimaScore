@@ -129,7 +129,12 @@ export function leaguePhaseMatchday(label: string | null | undefined): number | 
 /** UEFA qualifying rounds ("1st Qualifying Round", "Preliminary Round", qualifying "Play-offs"). */
 export function isQualifyingRound(label: string | null | undefined): boolean {
   const slug = slugifyRound(label ?? '');
-  return /qualifying|preliminary/.test(slug) || slug === 'play-offs' || slug === 'playoffs';
+  return /qualifying|preliminary/.test(slug) || isQualifyingPlayoffs(slug);
+}
+
+/** The August qualifying play-off round ("Play-offs", "Playoff round", "Play-off Round"). */
+function isQualifyingPlayoffs(slug: string): boolean {
+  return /^play-?offs?(-round)?$/.test(slug);
 }
 
 function rankRound(label: string): number {
@@ -137,7 +142,7 @@ function rankRound(label: string): number {
   // European cups: qualifying → play-offs → league-phase matchdays → knockout rounds.
   const q = /^(\d+)(st|nd|rd|th)-qualifying-round$/.exec(slug);
   if (q) return -3 + Number(q[1]) / 10;
-  if (slug === 'play-offs' || slug === 'playoffs') return -1.5;
+  if (isQualifyingPlayoffs(slug)) return -1.5;
   const md = leaguePhaseMatchday(label);
   if (md != null) return -1 + md / 100;
   const i = FALLBACK_ORDER.indexOf(slug);
