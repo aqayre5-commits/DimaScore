@@ -62,6 +62,23 @@ describe('competitionSeasonRedirect (middleware 308s)', () => {
     expect(await competitionSeasonRedirect(`${FA}/round/round-of-32`, load)).toBeNull();
   });
 
+  it('308s retired Nth-finals slugs to the canonical round', async () => {
+    const trone = '/en/competition/morocco/coupe-du-trone';
+    expect(await competitionSeasonRedirect(`${trone}/2025/round/16th-finals`, load)).toBe(
+      `${trone}/2025/round/round-of-32`,
+    );
+    expect(await competitionSeasonRedirect(`${trone}/2025/round/8th-finals`, load)).toBe(
+      `${trone}/2025/round/round-of-16`,
+    );
+    expect(await competitionSeasonRedirect(`${FA}/round/1-128-finals`, load)).toBe(
+      `${FA}/round/round-of-256`,
+    );
+    // UEFA: one hop through the play-offs alias
+    expect(await competitionSeasonRedirect(`${UCL}/round/16th-finals`, load)).toBe(
+      `${UCL}/round/knockout-play-offs`,
+    );
+  });
+
   it('a out-of-window season wins over a round alias (one hop to the current-season URL)', async () => {
     expect(await competitionSeasonRedirect(`${UCL}/2024/round/round-of-32`, load)).toBe(UCL);
   });

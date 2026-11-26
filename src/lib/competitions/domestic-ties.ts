@@ -5,6 +5,7 @@
 
 import { getCompetitionFormat } from '@/lib/competitions/formats';
 import { slugifyRound } from '@/lib/competitions/paths';
+import { canonicalRoundLabel } from '@/lib/competitions/round-labels';
 import { normalizeTieRound, tieKey } from '@/lib/competitions/tie';
 import { isFinished, isLive } from '@/lib/match-status';
 import type { FixtureWithTeams } from '@/lib/db/queries';
@@ -85,6 +86,8 @@ const FALLBACK_ORDER = [
   'third-round-proper',
   'fourth-round',
   'fifth-round',
+  'round-of-256',
+  'round-of-128',
   'round-of-64',
   'round-of-32',
   'knockout-round-play-offs',
@@ -156,7 +159,10 @@ export function buildCupRounds(
   roundInfos: RoundInfo[] = [],
 ): CupRound[] {
   const uefaPhase = getCompetitionFormat(competitionId, seasonYear)?.leaguePhase != null;
-  const nameOf = (raw: string) => (uefaPhase ? canonicalUefaRound(raw) : raw);
+  const nameOf = (raw: string) => {
+    const name = canonicalRoundLabel(raw);
+    return uefaPhase ? canonicalUefaRound(name) : name;
+  };
   const byLabel = new Map<string, FixtureWithTeams[]>();
   for (const f of fixtures) {
     const label = nameOf((f.round ?? '').trim() || 'Round');

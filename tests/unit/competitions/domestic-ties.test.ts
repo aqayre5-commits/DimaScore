@@ -185,4 +185,17 @@ describe('round order across qualifying, league phase and knockout', () => {
     ]);
     expect(rounds.map((r) => r.slug)).toEqual(['play-offs', 'league-stage-1']);
   });
+
+  it('maps Coupe du Trône "8th/16th Finals" to Round of 16 / 32 and sorts them', () => {
+    const rounds = buildCupRounds(822, 2024, [
+      fx(1, '8th Finals', 1, 2, '2025-06-01T20:00:00Z'),
+      fx(2, '16th Finals', 3, 4, '2025-04-01T20:00:00Z'),
+      fx(3, 'Quarter-finals', 5, 6, '2025-07-01T20:00:00Z'),
+    ]);
+    expect(rounds.map((r) => [r.label, r.slug])).toEqual([
+      ['Round of 32', 'round-of-32'],
+      ['Round of 16', 'round-of-16'],
+      ['Quarter-finals', 'quarter-finals'],
+    ]);
+  });
 });

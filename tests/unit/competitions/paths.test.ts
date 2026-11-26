@@ -14,6 +14,9 @@ describe('slugifyRound', () => {
     expect(slugifyRound('1st Qualifying Round')).toBe('1st-qualifying-round');
     expect(slugifyRound('Knockout Round Play-offs')).toBe('knockout-round-play-offs');
     expect(slugifyRound('League Stage - 5')).toBe('league-stage-5');
+    expect(slugifyRound('16th Finals')).toBe('round-of-32');
+    expect(slugifyRound('8th Finals')).toBe('round-of-16');
+    expect(slugifyRound('1/128-finals')).toBe('round-of-256');
   });
 
   it('does not collide with reserved tab words that 301 to the hub', () => {
