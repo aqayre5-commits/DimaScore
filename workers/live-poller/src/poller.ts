@@ -9,6 +9,7 @@ import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
 import { VERIFIED_COMPETITIONS } from '@/lib/constants/competitions';
 import { computeDeltas, type FixtureRow } from './diff';
+import { createCompetitionIdCache, describePgError, filterKnownCompetitions } from './guards';
 import { trackCall, resetTick, isQuotaExhausted } from './quota';
 import { fixturesWithCompleteKits } from '@/lib/match/kit-colours';
 
@@ -18,6 +19,16 @@ const TRACKED_COMPETITION_IDS = new Set(VERIFIED_COMPETITIONS.map((c) => c.id));
 const EVENT_THROTTLE_MS = 120_000;
 // Per-fixture last events-sync time; persists across ticks in the long-running worker.
 const lastEventSync = new Map<number, number>();
+
+// Competition ids present in `competitions`. A fixture whose competition is missing would fail the
+// fixtures -> competitions foreign key on every tick, so it is skipped instead. Cached for 5 min.
+const COMPETITION_CACHE_TTL_MS = 5 * 60_000;
+const getKnownCompetitionIds = createCompetitionIdCache(async () => {
+  const rows = await db.select({ id: schema.competitions.id }).from(schema.competitions);
+  return rows.map((r) => r.id);
+}, COMPETITION_CACHE_TTL_MS);
+// Fixture ids already reported as skipped, so each is logged once, not every tick.
+const loggedSkips = new Set<number>();
 
 export interface PollResult {
   liveCount: number;
@@ -37,7 +48,19 @@ export async function pollLiveFixtures(): Promise<PollResult> {
   const allLive = await provider.getLiveFixtures();
   trackCall();
 
-  const liveFixtures = allLive.filter((f) => TRACKED_COMPETITION_IDS.has(f.league.id));
+  const trackedLive = allLive.filter((f) => TRACKED_COMPETITION_IDS.has(f.league.id));
+  const knownCompetitionIds =
+    trackedLive.length > 0 ? await getKnownCompetitionIds() : new Set<number>();
+  const { kept: liveFixtures, newlySkipped } = filterKnownCompetitions(
+    trackedLive,
+    knownCompetitionIds,
+    loggedSkips,
+  );
+  for (const f of newlySkipped) {
+    console.warn(
+      `  [skip] fixture=${f.id} competition=${f.league.id} is not in competitions; skipping (logged once)`,
+    );
+  }
 
   if (liveFixtures.length === 0) {
     const { tickCalls } = resetTick();
@@ -142,32 +165,42 @@ export async function pollLiveFixtures(): Promise<PollResult> {
   }
 
   const pusher = getPusherServer();
+  let upserted = 0;
 
   for (const delta of deltas) {
     const fixture = liveFixtures.find((f) => f.id === delta.fixtureId)!;
     const row = mapFixtureToInsert(fixture);
 
-    await db
-      .insert(schema.fixtures)
-      .values(row)
-      .onConflictDoUpdate({
-        target: schema.fixtures.id,
-        set: {
-          statusCode: row.statusCode,
-          minute: row.minute,
-          homeScore: row.homeScore,
-          awayScore: row.awayScore,
-          homeScoreHt: row.homeScoreHt,
-          awayScoreHt: row.awayScoreHt,
-          homeScoreFt: row.homeScoreFt,
-          awayScoreFt: row.awayScoreFt,
-          homeScoreEt: row.homeScoreEt,
-          awayScoreEt: row.awayScoreEt,
-          homeScorePen: row.homeScorePen,
-          awayScorePen: row.awayScorePen,
-          updatedAt: new Date(),
-        },
-      });
+    try {
+      await db
+        .insert(schema.fixtures)
+        .values(row)
+        .onConflictDoUpdate({
+          target: schema.fixtures.id,
+          set: {
+            statusCode: row.statusCode,
+            minute: row.minute,
+            homeScore: row.homeScore,
+            awayScore: row.awayScore,
+            homeScoreHt: row.homeScoreHt,
+            awayScoreHt: row.awayScoreHt,
+            homeScoreFt: row.homeScoreFt,
+            awayScoreFt: row.awayScoreFt,
+            homeScoreEt: row.homeScoreEt,
+            awayScoreEt: row.awayScoreEt,
+            homeScorePen: row.homeScorePen,
+            awayScorePen: row.awayScorePen,
+            updatedAt: new Date(),
+          },
+        });
+    } catch (upsertErr) {
+      // One bad row must not abort the tick: log the Postgres reason and move on to the next delta.
+      console.error(
+        `  [upsert] fixture=${delta.fixtureId} competition=${fixture.league.id} failed: ${describePgError(upsertErr)}`,
+      );
+      continue;
+    }
+    upserted++;
 
     const payload: ScoreUpdatePayload = {
       fixtureId: delta.fixtureId,
@@ -215,7 +248,7 @@ export async function pollLiveFixtures(): Promise<PollResult> {
   return {
     liveCount: allLive.length,
     trackedCount: liveFixtures.length,
-    updatedCount: deltas.length,
+    updatedCount: upserted,
     apiCalls: tickCalls,
   };
 }

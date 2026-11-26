@@ -1,5 +1,6 @@
 import { pollLiveFixtures } from './poller';
 import { getTotalCalls } from './quota';
+import { describePgError } from './guards';
 
 const LIVE_INTERVAL_MS = 15_000;
 const IDLE_INTERVAL_MS = 60_000;
@@ -28,7 +29,7 @@ async function main(): Promise<void> {
 
       await sleep(interval);
     } catch (err) {
-      console.error(`[${timestamp()}] poll error:`, err instanceof Error ? err.message : err);
+      console.error(`[${timestamp()}] poll error: ${describePgError(err)}`);
       await sleep(LIVE_INTERVAL_MS);
     }
   }
