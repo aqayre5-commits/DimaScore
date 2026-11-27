@@ -8,6 +8,7 @@ import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 import type { FixtureWithTeams } from './queries';
 import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 
 export type TeamSnapshot = {
   id: number;
@@ -105,11 +106,11 @@ export async function getTeamsMap(
 
   const map = new Map<number, TeamSnapshot>();
   for (const t of teams) {
-    const own = usableLogoUrl(t.logoUrl, t.logoStatus);
+    const own = resolveTeamLogo(t.id, t.logoUrl, t.logoStatus);
     const par = usableLogoUrl(t.parentLogoUrl, t.parentLogoStatus);
     const logoUrl = own ?? par;
     const logoStatus: LogoStatus | null = own
-      ? (t.logoStatus ?? 'ok')
+      ? 'ok'
       : par
         ? (t.parentLogoStatus ?? 'ok')
         : (t.logoStatus ?? (t.logoUrl || t.parentLogoUrl ? 'ok' : 'missing'));

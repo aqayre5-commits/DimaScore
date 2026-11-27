@@ -4,6 +4,7 @@ import { alias } from 'drizzle-orm/pg-core';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
 import { usableLogoUrl } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 
 export interface CareerEntry {
   team: { id: number; name: string; logo: string | null };
@@ -82,7 +83,7 @@ async function getCoachByIdImpl(
       ? {
           id: row.teamId,
           name: row.teamName as Record<string, string>,
-          logoUrl: usableLogoUrl(row.teamLogoUrl, row.teamLogoStatus ?? null),
+          logoUrl: resolveTeamLogo(row.teamId, row.teamLogoUrl, row.teamLogoStatus ?? null),
         }
       : null,
   };

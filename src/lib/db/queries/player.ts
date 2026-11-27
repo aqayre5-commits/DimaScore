@@ -8,6 +8,7 @@ import type { FixtureWithTeams } from '../queries';
 import { hydrateFixtures } from '../queries-hydrate';
 import { parseTrailingId } from '@/lib/seo/entity-slug';
 import { usableLogoUrl } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 
 // ── Types ──
 
@@ -147,7 +148,11 @@ async function getPlayerBySlugImpl(
     currentTeam: currentTeam
       ? {
           ...currentTeam,
-          logoUrl: usableLogoUrl(currentTeam.logoUrl, currentTeam.logoStatus ?? null),
+          logoUrl: resolveTeamLogo(
+            currentTeam.id,
+            currentTeam.logoUrl,
+            currentTeam.logoStatus ?? null,
+          ),
         }
       : null,
   };

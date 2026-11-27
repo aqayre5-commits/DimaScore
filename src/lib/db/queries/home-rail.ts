@@ -9,6 +9,7 @@ import { timedQuery } from '@/lib/db/timing';
 import type { Locale } from '@/lib/i18n/config';
 import { arabicTeamName } from '@/lib/i18n/localized-names';
 import { usableLogoUrl } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 
 /**
  * Leagues whose standings appear in the homepage rail (Botola first).
@@ -147,7 +148,8 @@ export async function getTopPerformances(locale: string, limit = 5): Promise<Top
         ) ??
         r.team_name ??
         '',
-      teamLogo: usableLogoUrl(
+      teamLogo: resolveTeamLogo(
+        r.team_id != null ? Number(r.team_id) : null,
         r.team_logo,
         (r.team_logo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
       ),

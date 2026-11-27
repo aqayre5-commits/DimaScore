@@ -34,6 +34,7 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
         <TeamMark
           src={team.logoUrl}
           status={team.logoStatus}
+          teamId={team.id}
           isNational={team.isNational}
           countryCode={team.countryCode}
           name={team.name}
@@ -48,6 +49,7 @@ export function TeamPageHeader({ team, locale, formResults }: TeamPageHeaderProp
         <TeamMark
           src={team.logoUrl}
           status={team.logoStatus}
+          teamId={team.id}
           isNational={team.isNational}
           countryCode={team.countryCode}
           name={team.name}

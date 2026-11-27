@@ -8,6 +8,7 @@ import { LIVE_CODES_ARRAY, FINISHED_CODES_ARRAY } from '@/lib/match-status';
 import { selectDefaultRound } from '@/lib/competitions/select-default-round';
 import { allowedSeasons } from '@/lib/competitions/allowed-seasons';
 import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 
 // ── Types ──
 
@@ -433,7 +434,7 @@ export async function getTopScorersForLeague(
         locale,
         (s.teamName as string) ?? '',
       ),
-      teamLogo: usableLogoUrl(r.teamLogoUrl, r.teamLogoStatus),
+      teamLogo: resolveTeamLogo(r.teamId, r.teamLogoUrl, r.teamLogoStatus),
       goals: Number(s.goals) || 0,
       assists: Number(s.assists) || 0,
     };
@@ -500,7 +501,7 @@ export async function getTopAssistsForLeague(
         locale,
         (s.teamName as string) ?? '',
       ),
-      teamLogo: usableLogoUrl(r.teamLogoUrl, r.teamLogoStatus),
+      teamLogo: resolveTeamLogo(r.teamId, r.teamLogoUrl, r.teamLogoStatus),
       goals: Number(s.goals) || 0,
       assists: Number(s.assists) || 0,
     };
@@ -529,6 +530,7 @@ export async function getEditionTopScorers(
            ) AS player_name,
            p.photo_url AS player_photo,
            p.photo_status AS player_photo_status,
+           t.id AS team_id,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
            COALESCE(t.logo_url, tp.logo_url) AS team_logo,
            COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
@@ -556,7 +558,8 @@ export async function getEditionTopScorers(
       (r.player_photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
     ),
     teamName: (r.team_name as string) ?? '',
-    teamLogo: usableLogoUrl(
+    teamLogo: resolveTeamLogo(
+      r.team_id != null ? Number(r.team_id) : null,
       (r.team_logo as string) ?? null,
       (r.team_logo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
     ),
@@ -581,6 +584,7 @@ export async function getEditionTopAssists(
            ) AS player_name,
            p.photo_url AS player_photo,
            p.photo_status AS player_photo_status,
+           t.id AS team_id,
            COALESCE(t.name->>${locale}, t.name->>'en') AS team_name,
            COALESCE(t.logo_url, tp.logo_url) AS team_logo,
            COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
@@ -609,7 +613,8 @@ export async function getEditionTopAssists(
       (r.player_photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
     ),
     teamName: (r.team_name as string) ?? '',
-    teamLogo: usableLogoUrl(
+    teamLogo: resolveTeamLogo(
+      r.team_id != null ? Number(r.team_id) : null,
       (r.team_logo as string) ?? null,
       (r.team_logo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
     ),
@@ -729,7 +734,7 @@ export async function getTopCardsForLeague(
         locale,
         (s.teamName as string) ?? '',
       ),
-      teamLogo: usableLogoUrl(r.teamLogoUrl, r.teamLogoStatus),
+      teamLogo: resolveTeamLogo(r.teamId, r.teamLogoUrl, r.teamLogoStatus),
       yellowCards: Number(s.yellowCards) || 0,
       redCards: Number(s.redCards) || 0,
     };
