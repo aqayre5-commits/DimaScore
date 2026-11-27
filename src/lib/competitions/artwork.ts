@@ -1,6 +1,6 @@
 /** Curated high-res logos override the low-res API-Football PNGs. */
 export const CURATED_LOGOS: Record<number, string> = {
-  1: '/competitions/wc-2026.svg',
+  1: '/competitions/wc-2026-128.webp',
   39: '/competitions/premier-league.png',
   2: '/competitions/champions-league.svg',
   6: '/competitions/afcon-trophy.svg',

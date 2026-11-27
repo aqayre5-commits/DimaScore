@@ -92,7 +92,7 @@ export function LeagueLeftRail({
   const [expanded, setExpanded] = useState(false);
 
   const compLogo = (id: number) =>
-    id === 1 ? '/competitions/wc-2026.svg' : (competitionLogos?.[id] ?? null);
+    id === 1 ? '/competitions/wc-2026-128.webp' : (competitionLogos?.[id] ?? null);
 
   const renderComps = (ids: number[]) =>
     ids.map((id) => {
