@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { computeDeltas, type FixtureRow } from '../../../workers/live-poller/src/diff';
+import {
+  areDetailsDue,
+  computeDeltas,
+  isDetailTriggerDelta,
+  type FixtureRow,
+} from '../../../workers/live-poller/src/diff';
 import type { NormalizedFixture } from '@/lib/data/types';
 
 function makeFixture(overrides: Partial<NormalizedFixture> & { id: number }): NormalizedFixture {
@@ -150,5 +155,77 @@ describe('computeDeltas', () => {
   it('returns empty array when no fixtures provided', () => {
     const deltas = computeDeltas([], new Map());
     expect(deltas).toHaveLength(0);
+  });
+});
+
+describe('isDetailTriggerDelta', () => {
+  it('is false for no delta and for a minute-only delta', () => {
+    expect(isDetailTriggerDelta(undefined)).toBe(false);
+    expect(isDetailTriggerDelta([])).toBe(false);
+    expect(isDetailTriggerDelta(['minute'])).toBe(false);
+  });
+
+  it.each(['new', 'homeScore', 'awayScore', 'statusCode'])('is true when %s changed', (change) => {
+    expect(isDetailTriggerDelta([change])).toBe(true);
+    expect(isDetailTriggerDelta(['minute', change])).toBe(true);
+  });
+});
+
+describe('areDetailsDue (events/statistics throttle)', () => {
+  const THROTTLE = 120_000;
+  const now = 1_000_000_000;
+
+  it('a minute-only delta does not bypass the throttle', () => {
+    expect(
+      areDetailsDue({ changes: ['minute'], lastSyncAt: now - 15_000, now, throttleMs: THROTTLE }),
+    ).toBe(false);
+    expect(
+      areDetailsDue({ changes: ['minute'], lastSyncAt: now - THROTTLE, now, throttleMs: THROTTLE }),
+    ).toBe(false);
+  });
+
+  it('with only minute deltas every 60s a fixture is fetched at most once per throttle window', () => {
+    let last: number | undefined = now;
+    let fetches = 0;
+    // 15 s ticks for 10 minutes, the minute ticking over every 4th tick
+    for (let t = 15_000; t <= 600_000; t += 15_000) {
+      const changes = t % 60_000 === 0 ? ['minute'] : undefined;
+      if (areDetailsDue({ changes, lastSyncAt: last, now: now + t, throttleMs: THROTTLE })) {
+        fetches++;
+        last = now + t;
+      }
+    }
+    // 600 s / (120 s throttle rounded up to the next 15 s tick = 135 s) -> 4 fetches, not 10
+    expect(fetches).toBe(4);
+  });
+
+  it('a minute-only delta still refreshes once the throttle has elapsed', () => {
+    expect(
+      areDetailsDue({
+        changes: ['minute'],
+        lastSyncAt: now - THROTTLE - 1,
+        now,
+        throttleMs: THROTTLE,
+      }),
+    ).toBe(true);
+  });
+
+  it('real deltas (goal, status, new fixture) fetch immediately, even right after a fetch', () => {
+    for (const change of ['homeScore', 'awayScore', 'statusCode', 'new']) {
+      expect(
+        areDetailsDue({
+          changes: [change, 'minute'],
+          lastSyncAt: now - 1,
+          now,
+          throttleMs: THROTTLE,
+        }),
+      ).toBe(true);
+    }
+  });
+
+  it('a fixture never fetched before is due even without a delta', () => {
+    expect(
+      areDetailsDue({ changes: undefined, lastSyncAt: undefined, now, throttleMs: THROTTLE }),
+    ).toBe(true);
   });
 });

@@ -9,7 +9,7 @@ import { getPusherServer } from '@/lib/realtime/pusher-server';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
 import { VERIFIED_COMPETITIONS } from '@/lib/constants/competitions';
-import { computeDeltas, type FixtureRow } from './diff';
+import { areDetailsDue, computeDeltas, type FixtureRow } from './diff';
 import {
   createCompetitionAutoLoader,
   createCompetitionIdCache,
@@ -148,14 +148,21 @@ export async function pollLiveFixtures(): Promise<PollResult> {
       .where(inArray(schema.fixtureLineups.fixtureId, fixtureIds));
     const hasCompleteKits = fixturesWithCompleteKits(existingLineups);
 
-    const deltaIds = new Set(deltas.map((d) => d.fixtureId));
+    const deltaChanges = new Map(deltas.map((d) => [d.fixtureId, d.changes]));
     const now = Date.now();
     for (const f of liveFixtures) {
       if (isQuotaExhausted()) break;
       const cov = resolveCov(f.league.id, f.league.season);
       if (!cov) continue;
       const wantLineups = cov.lineups && !hasCompleteKits.has(f.id);
-      const due = deltaIds.has(f.id) || now - (lastEventSync.get(f.id) ?? 0) > EVENT_THROTTLE_MS;
+      // A minute-only delta (every live fixture, about once a minute) must not bypass the throttle:
+      // only real changes (new fixture, score, status) fetch events/statistics immediately.
+      const due = areDetailsDue({
+        changes: deltaChanges.get(f.id),
+        lastSyncAt: lastEventSync.get(f.id),
+        now,
+        throttleMs: EVENT_THROTTLE_MS,
+      });
       const wantEvents = cov.events && due;
       const wantStatistics = cov.statistics && due;
       if (!wantLineups && !wantEvents && !wantStatistics) continue;
