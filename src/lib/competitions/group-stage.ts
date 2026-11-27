@@ -33,8 +33,21 @@ export const KNOCKOUT_PATH: { slug: string; label: string; re: RegExp }[] = [
   { slug: 'final', label: 'Final', re: /^final$/ },
 ];
 
-const GROUP_ROUND_RE = /group|league[ -](stage|phase)|regular season/i;
+const GROUP_ROUND_RE =
+  /group|league[ -](stage|phase)|regular season|world cup women u17\s*-\s*\d+/i;
 const THIRD_PLACE_RE = /^(3rd|third)[- ]place|^3rd-place|third-place/i;
+/** Feed ranking / combined tables that sit alongside the real groups. */
+const AGGREGATE_GROUP_RE = /^(group|groups|group stage|ranking of third-placed teams)$/i;
+
+/** "Groups - Group A" / "Group - Group A" → "Group A". */
+function normalizeGroupLabel(raw: string): string {
+  const label = raw.trim() || 'Group';
+  const leaf = /(?:^|\b)(group\s+[a-z0-9]+)$/i.exec(label);
+  if (leaf && /^(groups?|group stage)\s*-/i.test(label)) {
+    return leaf[1].replace(/^group/i, 'Group');
+  }
+  return label;
+}
 
 export function isGroupRound(label: string): boolean {
   return GROUP_ROUND_RE.test(label);
@@ -88,7 +101,8 @@ function divisionOf(label: string): string | null {
 export function buildGroups(standings: StandingRow[]): GroupTable[] {
   const by = new Map<string, StandingRow[]>();
   for (const row of standings) {
-    const label = (row.groupLabel || '').trim() || 'Group';
+    const label = normalizeGroupLabel(row.groupLabel || '');
+    if (AGGREGATE_GROUP_RE.test(label)) continue;
     const list = by.get(label) ?? [];
     list.push(row);
     by.set(label, list);

@@ -345,21 +345,34 @@ const FORMATS: EditionFormat[] = [
     groups: { count: 4, size: 4 },
     unverified: ['group count for the next Olympics'],
   },
+  // U20 World Cup 2025 (provider current): 24 teams, 6 groups of 4, top two plus
+  // 4 best thirds to the round of 16 (8 ties), plus a "3rd place" match.
+  // Source: production Neon standings/fixtures ingested from API-Football
+  // (490/2025: 36 group-stage fixtures, 8 R16, 1 "3rd place" — Colombia U20 1-0 France U20, 18 Oct 2025).
+  {
+    competitionId: 490,
+    seasonYear: 2025,
+    kind: 'finals-tournament',
+    groups: { count: 6, size: 4 },
+    bestThirdsAdvance: 4,
+    thirdPlaceMatch: true,
+  },
   {
     competitionId: 490,
     seasonYear: 'default',
     kind: 'finals-tournament',
     groups: { count: 6, size: 4 },
     bestThirdsAdvance: 4,
-    unverified: ['group count / thirds'],
+    thirdPlaceMatch: true,
   },
   // FIFA U-17 World Cup: 48 teams, 12 groups of 4, top two plus 8 best thirds
-  // to the round of 32, plus a third-place match. Verified for 2025 (Qatar,
-  // 3–27 Nov) from FIFA.com ("Everything you need to know about the FIFA U-17
-  // World Cup 2025"). The 2026 edition (Qatar, 19 Nov–13 Dec; group stage ends
-  // 27 Nov 2026) uses the same format (FIFA match schedule / inside.FIFA).
-  // Local PGlite has no league-587 fixtures, so this was not re-checked against
-  // the API-Football feed in this checkout. Qatar hosts annually through 2029.
+  // to the round of 32, plus a third-place match. 2026 is the provider's current
+  // season (label "2026", single-year). Source: production Neon (API-Football
+  // ingest) standings for 587/2026 — Groups A–L, 48 teams, plus a feed table
+  // "Ranking of third-placed teams" (12 sides); 72 group-stage fixtures. Knockout
+  // rounds and the third-place match are not in the feed yet (group stage ends
+  // 27 Nov 2026; FIFA schedule: R32 from 30 Nov, third-place and final 13 Dec).
+  // 2025 Qatar edition used the same format (FIFA.com).
   {
     competitionId: 587,
     seasonYear: 2025,
@@ -385,13 +398,39 @@ const FORMATS: EditionFormat[] = [
     bestThirdsAdvance: 8,
     thirdPlaceMatch: true,
   },
+  // U20 Women's World Cup 2026 (provider current): 24 teams, 6 groups of 4,
+  // top two plus 4 best thirds to the round of 16 (8 ties), plus a "3rd place"
+  // match. Not the older 16-team / quarter-final format. Source: production
+  // Neon standings/fixtures (920/2026: Groups A–F of 4, 36 group fixtures, 8 R16,
+  // "3rd place" Italy U20 W vs Colombia U20 W, 26 Sep 2026, PEN).
+  {
+    competitionId: 920,
+    seasonYear: 2026,
+    kind: 'finals-tournament',
+    groups: { count: 6, size: 4 },
+    bestThirdsAdvance: 4,
+    thirdPlaceMatch: true,
+  },
   {
     competitionId: 920,
     seasonYear: 'default',
     kind: 'finals-tournament',
     groups: { count: 6, size: 4 },
     bestThirdsAdvance: 4,
-    unverified: ['group count / thirds'],
+    thirdPlaceMatch: true,
+  },
+  // U17 Women's World Cup 2026 (provider current): same 24-team shape as 920
+  // (6×4, 4 best thirds, R16, "3rd place"). Group matchdays in the feed are
+  // named "World Cup Women U17 - 1/2/3", not "Group Stage". Source: production
+  // Neon standings/fixtures (950/2026: Groups A–F of 4, 36 group fixtures, 8 R16,
+  // "3rd place" North Korea U17 W 6-0 Brazil U17 W, 7 Nov 2026).
+  {
+    competitionId: 950,
+    seasonYear: 2026,
+    kind: 'finals-tournament',
+    groups: { count: 6, size: 4 },
+    bestThirdsAdvance: 4,
+    thirdPlaceMatch: true,
   },
   {
     competitionId: 950,
@@ -399,7 +438,7 @@ const FORMATS: EditionFormat[] = [
     kind: 'finals-tournament',
     groups: { count: 6, size: 4 },
     bestThirdsAdvance: 4,
-    unverified: ['group count / thirds'],
+    thirdPlaceMatch: true,
   },
   {
     competitionId: 538,
