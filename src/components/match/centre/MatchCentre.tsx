@@ -37,6 +37,7 @@ import type { McMatch, McTable, McTeam, McUpcoming } from './types';
 import { TeamMark } from '@/components/shared/TeamMark';
 import type { LogoStatus } from '@/lib/logos/status';
 import { keyLineups, playerDisplayName } from '@/lib/match/player-identity';
+import { lineupState as computeLineupState } from '@/lib/match/lineup-state';
 
 const LIVE = new Set<string>(LIVE_CODES_ARRAY);
 const FINISHED = new Set<string>(FINISHED_CODES_ARRAY);
@@ -716,12 +717,8 @@ export function MatchCentre({ match: m, upcoming, table }: MatchCentreProps) {
     lineups.find((l) => l.teamId === id) ?? null;
   const homeLineup = lineupFor(m.home.id);
   const awayLineup = lineupFor(m.away.id);
-  const hasLineups = !!(
-    homeLineup &&
-    awayLineup &&
-    homeLineup.starters.length > 0 &&
-    awayLineup.starters.length > 0
-  );
+  const lineupState = computeLineupState(lineups);
+  const hasLineups = lineupState !== 'none';
   const played =
     phase === 'live' ||
     phase === 'halftime' ||
@@ -853,6 +850,7 @@ export function MatchCentre({ match: m, upcoming, table }: MatchCentreProps) {
       ref={rootRef}
       className="pl-page pl-match mc-page"
       data-tab={active}
+      data-lineup-state={lineupState}
       suppressHydrationWarning
     >
       <script dangerouslySetInnerHTML={{ __html: initScript(tabs) }} />
@@ -917,6 +915,11 @@ export function MatchCentre({ match: m, upcoming, table }: MatchCentreProps) {
                     </div>
                   </Section>
                 )}
+                {lineupState === 'none' && (
+                  <p className="mc-lineups-unavailable" dir="auto">
+                    {t('overview.lineupsUnavailable')}
+                  </p>
+                )}
                 {standingsBlock(t('overview.preTable'))}
               </>,
             )}
@@ -962,7 +965,7 @@ export function MatchCentre({ match: m, upcoming, table }: MatchCentreProps) {
 
       {tabs.includes('lineups') && homeLineup && awayLineup && (
         <Panel id="lineups">
-          <section className="mc-lineups">
+          <section className="mc-lineups" data-lineup-state={lineupState}>
             <div className="mc-tactics">
               <div className="mc-linebody">
                 <Lineups
@@ -970,6 +973,7 @@ export function MatchCentre({ match: m, upcoming, table }: MatchCentreProps) {
                   phase={phase}
                   lineups={[homeLineup, awayLineup]}
                   incidents={incidents}
+                  state={lineupState}
                 />
               </div>
               {rail()}

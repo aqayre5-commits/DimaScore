@@ -2409,3 +2409,9 @@ html:not([data-theme='light']) .mc .mark.fallback {
     --hero-crest: 56px;
   }
 }
+
+/* Single pre-kickoff line when the league has no stored lineups. Not a box. */
+.mc-lineups-unavailable {
+  margin: 0 0 1rem;
+  color: var(--mc-muted, inherit);
+}

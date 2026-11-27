@@ -230,6 +230,8 @@ export function buildSportsEventMatch(args: {
     : [args.homeLogo, args.awayLogo].filter((x): x is string => !!x);
   // Only what the page shows: the venue strip (name, city), the share image, the answer sentence. No
   // score property (the visible H1 carries it), no organizer/offers/endDate (we don't have them).
+  // No athlete or lineup fields: those must stay omitted when the fixture has no stored lineups
+  // (lineupState === 'none'), and this builder does not emit them for any state.
   return {
     '@type': 'SportsEvent',
     '@id': `${args.url}#event`,
