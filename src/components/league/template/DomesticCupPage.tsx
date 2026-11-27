@@ -44,6 +44,7 @@ import {
   PeriodSelect,
   PlayerRanking,
   StatsBoard,
+  UpcomingCard,
   mapScorers,
   mapAssists,
   usePatchedFixtures,
@@ -202,6 +203,8 @@ function CupFeatured({
             className="mark"
             src={fixture.homeTeam?.logoUrl}
             status={fixture.homeTeam?.logoStatus}
+            isNational={fixture.homeTeam?.isNational}
+            countryCode={fixture.homeTeam?.countryCode}
             name={fixture.homeTeam?.name}
             shortName={fixture.homeTeam?.shortName}
             code={fixture.homeTeam?.code}
@@ -227,6 +230,8 @@ function CupFeatured({
             className="mark"
             src={fixture.awayTeam?.logoUrl}
             status={fixture.awayTeam?.logoStatus}
+            isNational={fixture.awayTeam?.isNational}
+            countryCode={fixture.awayTeam?.countryCode}
             name={fixture.awayTeam?.name}
             shortName={fixture.awayTeam?.shortName}
             code={fixture.awayTeam?.code}
@@ -261,50 +266,9 @@ function WhenCard({
   fixture: FixtureWithTeams | null;
   locale: Locale;
 }) {
+  // Shared UpcomingCard: both crests at --coming-crest, fallback shield if a logo is missing.
   if (!fixture) return null;
-  const href = matchHref(locale, {
-    id: fixture.id,
-    homeSlug: fixture.homeTeam?.slug,
-    awaySlug: fixture.awayTeam?.slug,
-  });
-  const preview = previewFromFixtureRow({
-    homeTeam: fixture.homeTeam,
-    awayTeam: fixture.awayTeam,
-    homeScore: fixture.homeScore,
-    awayScore: fixture.awayScore,
-    statusCode: fixture.statusCode,
-    kickoffAt: asDate(fixture.kickoffAt),
-  });
-  return (
-    <article className="cup-when-card">
-      <h3>{title}</h3>
-      <MatchLink
-        matchId={String(fixture.id)}
-        href={href}
-        preview={preview}
-        className="cup-when-row"
-      >
-        <TeamMark
-          className="mark"
-          src={fixture.homeTeam?.logoUrl}
-          status={fixture.homeTeam?.logoStatus}
-          name={fixture.homeTeam?.name}
-          sizeVar="20px"
-        />
-        <span className="names">
-          <bdi>{teamName(fixture.homeTeam, locale)}</bdi>
-          <bdi>{teamName(fixture.awayTeam, locale)}</bdi>
-        </span>
-        <span className="when">
-          {isFinished(fixture.statusCode) && fixture.homeScore != null ? (
-            `${fixture.homeScore}–${fixture.awayScore}`
-          ) : (
-            <LocalTime date={asDate(fixture.kickoffAt)} locale={locale} format="time" />
-          )}
-        </span>
-      </MatchLink>
-    </article>
-  );
+  return <UpcomingCard fixture={fixture} locale={locale} dayLabel={title} />;
 }
 
 function ClubDirectory({

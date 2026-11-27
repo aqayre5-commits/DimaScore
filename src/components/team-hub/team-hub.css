@@ -52,6 +52,7 @@
 .nt-fixture-date b{font-size:16px;line-height:1.25}
 .nt-fixture-date>span{color:var(--muted);font-size:12px}
 .nt-fixture-body .teamline{display:flex;align-items:center;gap:8px;font-weight:650;line-height:1.35;margin-block:2px}
+.nt-fixture-body .teamline :is(.cup-mark,img,svg){width:22px;height:22px;min-width:22px;min-height:22px;flex:none;overflow:visible;object-fit:contain}
 .nt-fixture-body .nt-time{font-weight:700;font-size:17px}
 .nt-frame{border:var(--ds-outline);border-radius:var(--card-radius);overflow:hidden}
 .nt-table{border:0;border-spacing:0;border-collapse:collapse;width:100%;text-align:start;font-size:var(--row-size);line-height:1.25}
@@ -161,8 +162,13 @@
   .nt-layout{display:grid;grid-template-columns:minmax(0,1fr)}
   .nt-layout>.nt-side{display:contents}
   .nt-layout>.nt-side>.nt-upcoming{order:-1}
-  .nt-page .nt-upcoming .upgrid{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:min(82%,250px);gap:8px;overflow-x:auto;scroll-snap-type:inline proximity;padding:1px 0 5px}
-  .nt-upcoming .sooncard{scroll-snap-align:start;padding:10px 12px}
+  /* Full-width next-match cards. Must beat .mc .pl-page .pl-coming .upgrid
+     (team hub roots are .mc .pl-page.nt-page and the rail is .pl-coming.nt-upcoming). */
+  .mc .nt-page.pl-page .pl-coming.nt-upcoming .upgrid,
+  .mc .nt-page .pl-coming .upgrid,
+  .nt-page.pl-page .pl-coming.nt-upcoming .upgrid,
+  .nt-page .nt-upcoming .upgrid{display:grid;grid-template-columns:minmax(0,1fr);grid-auto-flow:row;grid-auto-columns:auto;gap:8px;overflow:visible;padding:0;margin:0;scroll-snap-type:none}
+  .nt-upcoming .sooncard{scroll-snap-align:none;padding:10px 12px}
   .nt-feature-top b,.nt-fixture-date b{font-size:14px}
   .nt-feature-top span,.nt-feature-foot>span{font-size:12px}
   .nt-hero{min-height:190px;padding:10px 12px 3px}
@@ -180,8 +186,7 @@
   .nt-tools .ds-period{font-size:13px}
   .nt-fixture-date>span{font-size:11px}
   .nt-main,.nt-side{gap:20px}
-  .nt-page .nt-upcoming .upgrid{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:repeat(2,minmax(0,1fr));padding:0;overflow:visible}
-  .nt-upcoming .sooncard{padding:9px;scroll-snap-align:none}
+  .nt-upcoming .sooncard{padding:9px 12px}
   .nt-upcoming .nt-fixture-date>span{display:none}
   .nt-upcoming .nt-fixture-body .teamline{font-size:13px;gap:5px}
   .nt-upcoming .nt-fixture-body{gap:3px}
@@ -192,9 +197,8 @@
   .ars-over .nt-upcoming{order:-1}
   .ars-over .ars-secondary>.nt-section:has(.ars-table){order:1}
   .ars-over .ars-secondary>.nt-section:last-child{order:2}
-  .nt-page .nt-upcoming .upgrid{display:grid;grid-auto-flow:column;grid-auto-columns:min(80%,246px);grid-template-columns:none;overflow-x:auto;scroll-snap-type:x proximity;gap:8px;padding:1px 1px 5px}
   .nt-upcoming .nt-fixture-date>span{display:inline;font-size:11px}
-  .nt-upcoming .sooncard{scroll-snap-align:start;padding:9px 11px}
+  .nt-upcoming .sooncard{padding:9px 11px}
   .nt-page .nt-tabs{overflow-x:auto;max-width:100%}
   .nt-hero .teamblock>.cup-mark{width:60px;height:60px}
   .nt-tabs .pl-tab{white-space:nowrap;font-size:14px;padding-inline:5px}

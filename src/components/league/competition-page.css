@@ -597,8 +597,17 @@ html:not([data-theme='light']) .pl-phase.playing {
   letter-spacing: -0.026em;
 }
 
-.pl .sooncard .mark {
-  --m: var(--coming-crest);
+.pl .sooncard .mark,
+.pl .sooncard img.mark,
+.pl .sooncard svg.mark {
+  --m: var(--coming-crest, 28px);
+  width: var(--m);
+  height: var(--m);
+  min-width: var(--m);
+  min-height: var(--m);
+  flex: none;
+  overflow: visible;
+  object-fit: contain;
 }
 
 .pl .sooncard .teamline bdi {

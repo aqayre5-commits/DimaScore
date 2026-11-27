@@ -169,6 +169,8 @@ function Hero({
           className="mark"
           src={t?.logoUrl}
           status={t?.logoStatus}
+          isNational={t?.isNational}
+          countryCode={t?.countryCode}
           name={t?.name}
           shortName={t?.shortName}
           code={t?.code}

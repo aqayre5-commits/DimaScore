@@ -103,6 +103,8 @@ function Mark({ team, locale }: { team: FixtureWithTeams['homeTeam']; locale: Lo
       className="mark cup-mark"
       src={team?.logoUrl}
       status={team?.logoStatus}
+      isNational={team?.isNational}
+      countryCode={team?.countryCode}
       name={team?.name}
       shortName={team?.shortName}
       code={team?.code}
