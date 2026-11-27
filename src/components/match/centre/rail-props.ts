@@ -6,6 +6,7 @@ import { getRailCompetitionData } from '@/lib/db/queries/match-centre';
 import {
   directoryEntries,
   directoryTree,
+  ALWAYS_POPULAR_IDS,
   POPULAR_ORDER,
   POPULAR_VISIBLE,
   TOURNAMENT_IDS,
@@ -57,9 +58,10 @@ async function buildRailProps(
   });
   const byId = new Map(entries.map((e) => [e.competitionId, railEntry(e)]));
   const active = new Set(data.activeIds);
-  const popular = POPULAR_ORDER.filter((id) => active.has(id) && byId.has(id)).map(
-    (id) => byId.get(id)!,
-  );
+  const alwaysPopular = new Set<number>(ALWAYS_POPULAR_IDS);
+  const popular = POPULAR_ORDER.filter(
+    (id) => (active.has(id) || alwaysPopular.has(id)) && byId.has(id),
+  ).map((id) => byId.get(id)!);
   const zones = directoryTree(entries, locale, t('rail.continental')).map((z) => ({
     id: z.id,
     label: t(`rail.zone.${z.id}`),

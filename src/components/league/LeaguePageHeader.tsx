@@ -9,6 +9,7 @@ import type { CompetitionRecord } from '@/lib/db/queries/league';
 import Image from 'next/image';
 import { arabicCompetitionName } from '@/lib/i18n/localized-names';
 import { CURATED_LOGOS, DARK_LOGOS, countryFlag } from '@/lib/competitions/artwork';
+import { COMPETITION_LOGO_FULL } from '@/lib/constants/competition-logos';
 
 interface LeaguePageHeaderProps {
   competition: CompetitionRecord;
@@ -50,7 +51,8 @@ export function LeaguePageHeader({
     competition.name[locale] ??
     competition.name['en'] ??
     competition.slug;
-  const logoSrc = CURATED_LOGOS[competition.id] ?? competition.logoUrl;
+  const logoSrc =
+    COMPETITION_LOGO_FULL[competition.id] ?? CURATED_LOGOS[competition.id] ?? competition.logoUrl;
   const needsInvert = DARK_LOGOS.has(competition.id);
 
   function handleSeasonChange(e: React.ChangeEvent<HTMLSelectElement>) {

@@ -26,3 +26,18 @@ export function resolveCompetitionLogo(
   }
   return usableLogoUrl(dbLogoUrl, logoStatus);
 }
+
+/**
+ * Big competition-page header only. Prefers the full-resolution emblem when one
+ * is registered (senior World Cup SVG); compact surfaces keep resolveCompetitionLogo.
+ */
+export function resolveCompetitionHeaderLogo(
+  competitionId: number | null | undefined,
+  dbLogoUrl: string | null,
+  logoStatus?: LogoStatus | null,
+): string | null {
+  if (competitionId != null && COMPETITION_LOGO_FULL[competitionId]) {
+    return COMPETITION_LOGO_FULL[competitionId];
+  }
+  return resolveCompetitionLogo(competitionId, dbLogoUrl, logoStatus);
+}
