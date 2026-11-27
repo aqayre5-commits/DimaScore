@@ -1,6 +1,6 @@
 {
   "source": "football-logos.cc",
-  "note": "SVGs optimised with SVGO. Compact 64px WebP is generated when the SVG is over ~30 KB or embeds a raster. Served from /public via TEAM_LOGO_OVERRIDES; the DB is not written.",
+  "note": "SVGs optimised with SVGO (lossless / pixel-identical). Compact 64px WebP is generated when the SVG is over ~30 KB or embeds a raster. Served from /public via TEAM_LOGO_OVERRIDES; the DB is not written. Morocco national sides use Abdilahi's upload.",
   "entries": [
     {
       "teamId": 1,
@@ -283,15 +283,14 @@
     {
       "teamId": 31,
       "name": "Morocco",
-      "kind": "wc-senior",
-      "src": "/logos/teams/31.svg",
-      "bytes": 116237,
-      "sourcePage": "https://football-logos.cc/morocco/morocco-national-team/",
-      "sourceUrl": "https://images.football-logos.cc/morocco/morocco-national-team.f32b74c9.svg",
-      "sha256_original": "c07f943e8d891e448d91412b83bfa2d7174f20efbdb98801d5abd1173c6639af",
-      "optimizedBytes": 116237,
+      "kind": "morocco",
+      "src": "/logos/teams/morocco.svg",
+      "bytes": 116635,
+      "source": "Abdilahi upload",
+      "sha256_original": "c0a0f20ead0db4ab1ca31a3da712cda974e9ea20d9edc66ab10698270ecf9bfb",
+      "optimizedBytes": 116635,
       "hasRaster": false,
-      "compact": "/logos/teams/31-64.webp",
+      "compact": "/logos/teams/morocco-64.webp",
       "compactBytes": 1690
     },
     {
@@ -625,6 +624,32 @@
       "hasRaster": false
     },
     {
+      "teamId": 10179,
+      "name": "Morocco U23",
+      "kind": "morocco",
+      "src": "/logos/teams/morocco.svg",
+      "bytes": 116635,
+      "source": "Abdilahi upload",
+      "sha256_original": "c0a0f20ead0db4ab1ca31a3da712cda974e9ea20d9edc66ab10698270ecf9bfb",
+      "optimizedBytes": 116635,
+      "hasRaster": false,
+      "compact": "/logos/teams/morocco-64.webp",
+      "compactBytes": 1690
+    },
+    {
+      "teamId": 11039,
+      "name": "Morocco U20",
+      "kind": "morocco",
+      "src": "/logos/teams/morocco.svg",
+      "bytes": 116635,
+      "source": "Abdilahi upload",
+      "sha256_original": "c0a0f20ead0db4ab1ca31a3da712cda974e9ea20d9edc66ab10698270ecf9bfb",
+      "optimizedBytes": 116635,
+      "hasRaster": false,
+      "compact": "/logos/teams/morocco-64.webp",
+      "compactBytes": 1690
+    },
+    {
       "teamId": 12427,
       "name": "Al-Akhdar",
       "kind": "fallback",
@@ -637,6 +662,19 @@
       "hasRaster": false,
       "compact": "/logos/teams/12427-64.webp",
       "compactBytes": 4226
+    },
+    {
+      "teamId": 14461,
+      "name": "Morocco W",
+      "kind": "morocco",
+      "src": "/logos/teams/morocco.svg",
+      "bytes": 116635,
+      "source": "Abdilahi upload",
+      "sha256_original": "c0a0f20ead0db4ab1ca31a3da712cda974e9ea20d9edc66ab10698270ecf9bfb",
+      "optimizedBytes": 116635,
+      "hasRaster": false,
+      "compact": "/logos/teams/morocco-64.webp",
+      "compactBytes": 1690
     },
     {
       "teamId": 15562,
@@ -665,6 +703,45 @@
       "hasRaster": false,
       "compact": "/logos/teams/18753-64.webp",
       "compactBytes": 3736
+    },
+    {
+      "teamId": 19072,
+      "name": "Morocco U18",
+      "kind": "morocco",
+      "src": "/logos/teams/morocco.svg",
+      "bytes": 116635,
+      "source": "Abdilahi upload",
+      "sha256_original": "c0a0f20ead0db4ab1ca31a3da712cda974e9ea20d9edc66ab10698270ecf9bfb",
+      "optimizedBytes": 116635,
+      "hasRaster": false,
+      "compact": "/logos/teams/morocco-64.webp",
+      "compactBytes": 1690
+    },
+    {
+      "teamId": 20529,
+      "name": "Morocco U17 W",
+      "kind": "morocco",
+      "src": "/logos/teams/morocco.svg",
+      "bytes": 116635,
+      "source": "Abdilahi upload",
+      "sha256_original": "c0a0f20ead0db4ab1ca31a3da712cda974e9ea20d9edc66ab10698270ecf9bfb",
+      "optimizedBytes": 116635,
+      "hasRaster": false,
+      "compact": "/logos/teams/morocco-64.webp",
+      "compactBytes": 1690
+    },
+    {
+      "teamId": 21302,
+      "name": "Morocco U17",
+      "kind": "morocco",
+      "src": "/logos/teams/morocco.svg",
+      "bytes": 116635,
+      "source": "Abdilahi upload",
+      "sha256_original": "c0a0f20ead0db4ab1ca31a3da712cda974e9ea20d9edc66ab10698270ecf9bfb",
+      "optimizedBytes": 116635,
+      "hasRaster": false,
+      "compact": "/logos/teams/morocco-64.webp",
+      "compactBytes": 1690
     }
   ]
 }

@@ -2,11 +2,12 @@ import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
 
 /**
  * Team crest overrides shipped under /public/logos/teams.
- * World Cup 2026 senior national teams, plus unambiguous football-logos.cc
- * matches for sides that otherwise fall back to the shield. The database is
+ * World Cup 2026 senior national teams, Abdilahi's Morocco crest for every
+ * Morocco national side, and unambiguous football-logos.cc matches for sides
+ * that otherwise fall back to the shield. The database is
  * not written; queries and Flag/TeamMark prefer these paths at render time.
  */
-export type TeamLogoKind = 'wc-senior' | 'fallback';
+export type TeamLogoKind = 'wc-senior' | 'fallback' | 'morocco';
 
 export type TeamLogoOverride = {
   src: string;
@@ -37,7 +38,7 @@ export const TEAM_LOGO_OVERRIDES: Record<number, TeamLogoOverride> = {
   26: { src: '/logos/teams/26.svg', kind: 'wc-senior' },
   27: { src: '/logos/teams/27.svg', kind: 'wc-senior' },
   28: { src: '/logos/teams/28.svg', kind: 'wc-senior' },
-  31: { src: '/logos/teams/31.svg', kind: 'wc-senior', compact: '/logos/teams/31-64.webp' },
+  31: { src: '/logos/teams/morocco.svg', kind: 'morocco', compact: '/logos/teams/morocco-64.webp' },
   32: { src: '/logos/teams/32.svg', kind: 'wc-senior' },
   770: { src: '/logos/teams/770.svg', kind: 'wc-senior' },
   775: { src: '/logos/teams/775.svg', kind: 'wc-senior' },
@@ -64,9 +65,39 @@ export const TEAM_LOGO_OVERRIDES: Record<number, TeamLogoOverride> = {
   4673: { src: '/logos/teams/4673.svg', kind: 'wc-senior' },
   5529: { src: '/logos/teams/5529.svg', kind: 'wc-senior' },
   5530: { src: '/logos/teams/5530.svg', kind: 'wc-senior' },
+  10179: {
+    src: '/logos/teams/morocco.svg',
+    kind: 'morocco',
+    compact: '/logos/teams/morocco-64.webp',
+  },
+  11039: {
+    src: '/logos/teams/morocco.svg',
+    kind: 'morocco',
+    compact: '/logos/teams/morocco-64.webp',
+  },
   12427: { src: '/logos/teams/12427.svg', kind: 'fallback', compact: '/logos/teams/12427-64.webp' },
+  14461: {
+    src: '/logos/teams/morocco.svg',
+    kind: 'morocco',
+    compact: '/logos/teams/morocco-64.webp',
+  },
   15562: { src: '/logos/teams/15562.svg', kind: 'fallback', compact: '/logos/teams/15562-64.webp' },
   18753: { src: '/logos/teams/18753.svg', kind: 'fallback', compact: '/logos/teams/18753-64.webp' },
+  19072: {
+    src: '/logos/teams/morocco.svg',
+    kind: 'morocco',
+    compact: '/logos/teams/morocco-64.webp',
+  },
+  20529: {
+    src: '/logos/teams/morocco.svg',
+    kind: 'morocco',
+    compact: '/logos/teams/morocco-64.webp',
+  },
+  21302: {
+    src: '/logos/teams/morocco.svg',
+    kind: 'morocco',
+    compact: '/logos/teams/morocco-64.webp',
+  },
 };
 
 /** Same-origin curated crest/competition artwork under /public. */
