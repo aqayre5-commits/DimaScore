@@ -1129,6 +1129,7 @@
       "allStats": "Toutes les stats",
       "confirmed": "Compositions confirmées",
       "lineups": "Compositions",
+      "lineupsUnavailable": "Compositions non disponibles pour ce championnat",
       "preTable": "Classement avant-match",
       "liveTable": "Classement en direct",
       "resultTable": "Classement à la fin du match",

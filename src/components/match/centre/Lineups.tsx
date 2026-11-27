@@ -19,6 +19,7 @@ import { EventIcon, type EventArt } from './icons';
 import type { McMatch, McTeam } from './types';
 import { isGoalkeeperPos, kitCssVars, type KitPalette } from '@/lib/match/kit-colours';
 import { playerDisplayName } from '@/lib/match/player-identity';
+import type { LineupState } from '@/lib/match/lineup-state';
 import { TeamMark } from '@/components/shared/TeamMark';
 
 type Status = 'sent' | 'off' | 'starter' | 'ready' | 'live' | 'finished';
@@ -90,18 +91,26 @@ export function Lineups({
   phase,
   lineups,
   incidents,
+  state,
 }: {
   m: McMatch;
   phase: Phase;
   lineups: [MatchLineup, MatchLineup];
   incidents: Incident[];
+  state: LineupState;
 }) {
   const t = useTranslations('matchCentre.lineups');
   const [view, setView] = useState<'start' | 'live'>('start');
   const [shown, setShown] = useState<Side>(0);
   const [selected, setSelected] = useState<[Side, number] | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const sides = useMemo(() => lineups.map(pitchSide) as [PitchSide, PitchSide], [lineups]);
+  const sides = useMemo(() => {
+    const built = lineups.map(pitchSide) as [PitchSide, PitchSide];
+    // list: keep the XI and bench, but never infer a pitch from the formation string alone.
+    if (state === 'list')
+      return built.map((side) => ({ ...side, rows: null })) as [PitchSide, PitchSide];
+    return built;
+  }, [lineups, state]);
   const teams: [McTeam, McTeam] = [m.home, m.away];
   const started = phase !== 'upcoming';
   const n = (v: number) => v.toLocaleString(m.bcp);
@@ -332,7 +341,7 @@ export function Lineups({
     );
   };
 
-  const canSwitch = started;
+  const canSwitch = started && state === 'full';
   const kinds: BadgeKind[] = ['goal', 'yellow', 'red', 'on', 'off'];
   const sel = selected;
   const selPlayer = sel ? player(sel[0], sel[1]) : null;

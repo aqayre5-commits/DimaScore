@@ -1129,6 +1129,7 @@
       "allStats": "All match stats",
       "confirmed": "Confirmed line-ups",
       "lineups": "Line-ups",
+      "lineupsUnavailable": "Lineups not available for this league",
       "preTable": "Pre-match table",
       "liveTable": "Live standings",
       "resultTable": "Standings at full-time",
