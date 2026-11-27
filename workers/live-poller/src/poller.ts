@@ -3,13 +3,20 @@ import { getDataProvider } from '@/lib/data';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { mapFixtureToInsert } from '@/lib/ingestion/fixtures';
+import { syncCompetitionsWithSeasons } from '@/lib/ingestion/reference-data';
 import { syncLiveFixtureDetails, syncFixtureDetails } from '@/lib/ingestion/fixture-details';
 import { getPusherServer } from '@/lib/realtime/pusher-server';
 import { CHANNELS, EVENTS } from '@/lib/realtime/channels';
 import type { ScoreUpdatePayload } from '@/lib/realtime/channels';
 import { VERIFIED_COMPETITIONS } from '@/lib/constants/competitions';
 import { computeDeltas, type FixtureRow } from './diff';
-import { createCompetitionIdCache, describePgError, filterKnownCompetitions } from './guards';
+import {
+  createCompetitionAutoLoader,
+  createCompetitionIdCache,
+  describePgError,
+  filterKnownCompetitions,
+  missingCompetitionIds,
+} from './guards';
 import { trackCall, resetTick, isQuotaExhausted } from './quota';
 import { fixturesWithCompleteKits } from '@/lib/match/kit-colours';
 
@@ -29,6 +36,25 @@ const getKnownCompetitionIds = createCompetitionIdCache(async () => {
 }, COMPETITION_CACHE_TTL_MS);
 // Fixture ids already reported as skipped, so each is logged once, not every tick.
 const loggedSkips = new Set<number>();
+
+// An allow-listed competition missing from `competitions` (the 26 Nov U17 World Cup incident) is
+// loaded automatically: one league id, ~1 API-Football call (/leagues?id=). Each id is tried at most
+// once per cooldown, success or failure, and never blocks or aborts a tick.
+const AUTOLOAD_COOLDOWN_MS = 45 * 60_000;
+const autoLoadCompetitions = createCompetitionAutoLoader({
+  allowList: TRACKED_COMPETITION_IDS,
+  cooldownMs: AUTOLOAD_COOLDOWN_MS,
+  log: (message) => console.log(message),
+  onLoaded: () => getKnownCompetitionIds.invalidate(),
+  load: async (competitionId) => {
+    const meta = VERIFIED_COMPETITIONS.find((c) => c.id === competitionId);
+    if (!meta) throw new Error(`competition ${competitionId} is not on the allow-list`);
+    trackCall();
+    const res = await syncCompetitionsWithSeasons(getDataProvider(), db, [meta]);
+    if (res.competitions.updated === 0)
+      throw new Error('API-Football returned no league for this id');
+  },
+});
 
 export interface PollResult {
   liveCount: number;
@@ -56,6 +82,9 @@ export async function pollLiveFixtures(): Promise<PollResult> {
     knownCompetitionIds,
     loggedSkips,
   );
+  // Fire and forget: the loader never rejects and has its own cooldown, so it cannot block the tick.
+  const missingIds = missingCompetitionIds(trackedLive, knownCompetitionIds);
+  if (missingIds.length > 0) void autoLoadCompetitions(missingIds);
   for (const f of newlySkipped) {
     console.warn(
       `  [skip] fixture=${f.id} competition=${f.league.id} is not in competitions; skipping (logged once)`,
