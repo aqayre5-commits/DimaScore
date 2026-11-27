@@ -1,5 +1,6 @@
 /** Curated high-res logos override the low-res API-Football PNGs. */
 export const CURATED_LOGOS: Record<number, string> = {
+  1: '/competitions/wc-2026-128.webp',
   39: '/competitions/premier-league.png',
   2: '/competitions/champions-league.svg',
   6: '/competitions/afcon-trophy.svg',
@@ -13,7 +14,7 @@ export const CURATED_LOGOS: Record<number, string> = {
 /** Competition IDs whose API-Football logos are dark artwork that needs
  *  inversion (white) on our dark theme. Curated logos are included. */
 export const DARK_LOGOS: Set<number> = new Set([
-  2, 3, 29, 36, 39, 61, 82, 140, 203, 233, 525, 848, 922, 1, 1191,
+  2, 3, 29, 36, 39, 61, 82, 140, 203, 233, 525, 848, 922, 1191,
 ]);
 
 /** Sub-nation flag emojis (Unicode tag sequences). */

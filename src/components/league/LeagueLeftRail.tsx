@@ -92,7 +92,7 @@ export function LeagueLeftRail({
   const [expanded, setExpanded] = useState(false);
 
   const compLogo = (id: number) =>
-    id === 1 ? '/competitions/wc-2026-trophy.png' : (competitionLogos?.[id] ?? null);
+    id === 1 ? '/competitions/wc-2026-128.webp' : (competitionLogos?.[id] ?? null);
 
   const renderComps = (ids: number[]) =>
     ids.map((id) => {
@@ -235,6 +235,7 @@ function CompLink({
           width={20}
           height={20}
           className="size-5 shrink-0 object-contain"
+          unoptimized={logoUrl.endsWith('.svg')}
         />
       ) : (
         <div className="flex size-5 items-center justify-center rounded bg-bg-surface-2 text-[8px] font-bold text-text-tertiary">

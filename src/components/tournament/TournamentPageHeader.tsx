@@ -9,10 +9,12 @@ import { codeToFlag } from '@/lib/flags';
 import { getLocalizedCountryName } from '@/lib/constants/country-names-i18n';
 import { formatDateRange } from '@/lib/utils/date-range';
 import { type TournamentPhase } from './StatusDescriptor';
+import { COMPETITION_LOGO_FULL } from '@/lib/constants/competition-logos';
 
-/** Curated hero logos per competition (displayed in header like WC trophy). */
+/** Curated hero logos per competition (displayed in the page header).
+ *  The senior World Cup uses the full SVG here only; compact surfaces use the 128px WebP. */
 const CUP_LOGOS: Record<number, string> = {
-  1: '/competitions/wc-2026-trophy.png',
+  1: COMPETITION_LOGO_FULL[1],
   6: '/competitions/afcon-trophy.svg',
   922: '/competitions/wafcon-trophy.png',
 };
@@ -200,6 +202,7 @@ export function TournamentPageHeader({
               sizes="(min-width: 768px) 200px, 42vw"
               className="h-[200px] w-auto max-w-[42%] shrink-0 self-end object-contain object-bottom drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:h-full md:max-h-[160px] md:max-w-none"
               priority
+              unoptimized={logoSrc.endsWith('.svg')}
             />
           )}
 

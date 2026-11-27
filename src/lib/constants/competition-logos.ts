@@ -4,8 +4,13 @@ import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
  * (e.g. World Cup id 1), so we ship custom trophy assets under /public/competitions and prefer them
  * everywhere a competition logo is shown.
  */
+/** Full-resolution senior World Cup emblem — only for the big WC page header. */
+export const COMPETITION_LOGO_FULL: Record<number, string> = {
+  1: '/competitions/wc-2026.svg',
+};
+
 export const COMPETITION_LOGO_OVERRIDES: Record<number, string> = {
-  1: '/competitions/wc-2026-trophy.png', // World Cup — api-sports has only a placeholder
+  1: '/competitions/wc-2026-128.webp', // Senior WC light copy (sidebar, ticker, rails, etc.)
   6: '/competitions/afcon-trophy.svg', // AFCON
   922: '/competitions/wafcon-trophy.png', // WAFCON
 };
