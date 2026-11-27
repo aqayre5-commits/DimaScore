@@ -39,16 +39,19 @@ export function filterKnownCompetitions<T extends GuardFixture>(
 
 /**
  * Cache the set of competition ids for `ttlMs` so a tick does not query on every pass, while a
- * competition added later (e.g. by a backfill) is picked up without restarting the worker.
- * If a refresh fails, the previous set is kept when there is one.
+ * competition added later (e.g. by a backfill or the auto-loader) is picked up without restarting
+ * the worker. If a refresh fails, the previous set is kept when there is one.
+ * `invalidate()` forces the next call to reload (used right after the auto-loader inserts a row).
  */
+export type CompetitionIdCache = (() => Promise<ReadonlySet<number>>) & { invalidate: () => void };
+
 export function createCompetitionIdCache(
   load: () => Promise<number[]>,
   ttlMs: number,
   now: () => number = Date.now,
-): () => Promise<ReadonlySet<number>> {
+): CompetitionIdCache {
   let cached: { at: number; ids: Set<number> } | null = null;
-  return async () => {
+  const get = async () => {
     if (cached && now() - cached.at < ttlMs) return cached.ids;
     try {
       const ids = new Set(await load());
@@ -58,6 +61,115 @@ export function createCompetitionIdCache(
       if (cached) return cached.ids;
       throw err;
     }
+  };
+  return Object.assign(get, {
+    invalidate: () => {
+      if (cached) cached = { at: -Infinity, ids: cached.ids };
+    },
+  });
+}
+
+/** Distinct competition ids of `fixtures` that are not in `known`. */
+export function missingCompetitionIds<T extends GuardFixture>(
+  fixtures: readonly T[],
+  known: ReadonlySet<number>,
+): number[] {
+  const out = new Set<number>();
+  for (const f of fixtures) if (!known.has(f.league.id)) out.add(f.league.id);
+  return [...out];
+}
+
+export interface AutoLoadOptions {
+  /** Only these competition ids may ever be loaded (the VERIFIED_COMPETITIONS allow-list). */
+  allowList: ReadonlySet<number>;
+  /** Loads ONE competition (league + seasons + coverage). May throw; the loader never does. */
+  load: (competitionId: number) => Promise<void>;
+  /** Minimum time between two attempts for the same id, whether the last one worked or not. */
+  cooldownMs: number;
+  /** Cap on loads started by one call, so a feed glitch cannot fan out into many API calls. */
+  maxPerRun?: number;
+  now?: () => number;
+  log?: (message: string) => void;
+  /** Called after a successful load (e.g. to invalidate the known-competitions cache). */
+  onLoaded?: (competitionId: number) => void;
+}
+
+export interface AutoLoadResult {
+  loaded: number[];
+  failed: number[];
+  /** Skipped: attempted within the cooldown, or already loading. */
+  cooling: number[];
+  /** Skipped: not on the allow-list. */
+  ignored: number[];
+  /** Skipped: over `maxPerRun`; they are retried by a later call. */
+  deferred: number[];
+}
+
+/**
+ * Loads an allow-listed competition that is missing from the database, so the live poller stops
+ * skipping its fixtures. Safe to call every tick and to not await: it never throws, tries each id
+ * at most once per `cooldownMs` (a failed load is not retried until the cooldown ends) and never
+ * loads an id outside the allow-list.
+ */
+export function createCompetitionAutoLoader(opts: AutoLoadOptions) {
+  const now = opts.now ?? Date.now;
+  const log = opts.log ?? (() => {});
+  const maxPerRun = opts.maxPerRun ?? 3;
+  const lastAttempt = new Map<number, number>();
+  const inFlight = new Set<number>();
+
+  return async (ids: Iterable<number>): Promise<AutoLoadResult> => {
+    const result: AutoLoadResult = {
+      loaded: [],
+      failed: [],
+      cooling: [],
+      ignored: [],
+      deferred: [],
+    };
+    let started = 0;
+    for (const id of new Set(ids)) {
+      if (!opts.allowList.has(id)) {
+        result.ignored.push(id);
+        continue;
+      }
+      const last = lastAttempt.get(id);
+      if (inFlight.has(id) || (last !== undefined && now() - last < opts.cooldownMs)) {
+        result.cooling.push(id);
+        continue;
+      }
+      if (started >= maxPerRun) {
+        result.deferred.push(id);
+        continue;
+      }
+      started++;
+      lastAttempt.set(id, now());
+      inFlight.add(id);
+      try {
+        log(
+          `[autoload] competition=${id} is on the allow-list but not in competitions; loading it`,
+        );
+        await opts.load(id);
+        result.loaded.push(id);
+        log(`[autoload] competition=${id} loaded; its fixtures are picked up on the next tick`);
+        try {
+          opts.onLoaded?.(id);
+        } catch {
+          // a failing hook must not turn a successful load into a failure
+        }
+      } catch (err) {
+        result.failed.push(id);
+        try {
+          log(
+            `[autoload] competition=${id} load failed (no retry for ${Math.round(opts.cooldownMs / 60_000)} min): ${describePgError(err)}`,
+          );
+        } catch {
+          // logging must never throw
+        }
+      } finally {
+        inFlight.delete(id);
+      }
+    }
+    return result;
   };
 }
 
