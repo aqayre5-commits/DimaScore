@@ -1,9 +1,9 @@
-import { usableLogoUrl } from '@/lib/logos/status';
 import { cacheLife } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/lib/i18n/config';
 import { DomesticCupPage } from '@/components/league/template/DomesticCupPage';
-import { CURATED_LOGOS, DARK_LOGOS, countryFlag } from '@/lib/competitions/artwork';
+import { DARK_LOGOS, countryFlag } from '@/lib/competitions/artwork';
+import { resolveCompetitionHeaderLogo } from '@/lib/constants/competition-logos';
 import { JsonLd } from '@/components/seo/JsonLd';
 import {
   buildGraph,
@@ -206,8 +206,11 @@ export async function renderDomesticCupPage(
   ];
 
   const hashes = CUP_TAB_HASHES[locale];
-  const logoSrc =
-    CURATED_LOGOS[competition.id] ?? usableLogoUrl(competition.logoUrl, competition.logoStatus);
+  const logoSrc = resolveCompetitionHeaderLogo(
+    competition.id,
+    competition.logoUrl,
+    competition.logoStatus,
+  );
   const invertLogo = DARK_LOGOS.has(competition.id);
   const flag = countryFlag(competition.countryCode);
   const basePath = `/${rawLocale}/competition/${rawCountry}/${rawTournament}`;

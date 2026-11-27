@@ -17,6 +17,9 @@ export const POPULAR_ORDER = [
 
 export const POPULAR_VISIBLE = 8;
 
+/** Stay in Popular even with no fixture in the rail's ±10 day window (senior World Cup 2026). */
+export const ALWAYS_POPULAR_IDS = [1] as const;
+
 /** Tournament competitions listed in the "Tournament editions" dialog. */
 export const TOURNAMENT_IDS = [1, 6, 922, 5] as const;
 
