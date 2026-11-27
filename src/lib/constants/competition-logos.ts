@@ -5,7 +5,7 @@ import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
  * everywhere a competition logo is shown.
  */
 export const COMPETITION_LOGO_OVERRIDES: Record<number, string> = {
-  1: '/competitions/wc-2026-trophy.png', // World Cup — api-sports has only a placeholder
+  1: '/competitions/wc-2026.svg', // Senior World Cup emblem (league 1 only)
   6: '/competitions/afcon-trophy.svg', // AFCON
   922: '/competitions/wafcon-trophy.png', // WAFCON
 };

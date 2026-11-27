@@ -12,7 +12,7 @@ import { type TournamentPhase } from './StatusDescriptor';
 
 /** Curated hero logos per competition (displayed in header like WC trophy). */
 const CUP_LOGOS: Record<number, string> = {
-  1: '/competitions/wc-2026-trophy.png',
+  1: '/competitions/wc-2026.svg',
   6: '/competitions/afcon-trophy.svg',
   922: '/competitions/wafcon-trophy.png',
 };
@@ -200,6 +200,7 @@ export function TournamentPageHeader({
               sizes="(min-width: 768px) 200px, 42vw"
               className="h-[200px] w-auto max-w-[42%] shrink-0 self-end object-contain object-bottom drop-shadow-[0_2px_8px_rgba(30,58,138,0.15)] md:h-full md:max-h-[160px] md:max-w-none"
               priority
+              unoptimized={logoSrc.endsWith('.svg')}
             />
           )}
 

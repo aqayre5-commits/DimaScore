@@ -133,6 +133,7 @@ export function LeaguePageHeader({
               sizes="(min-width: 768px) 200px, 40vw"
               className={`h-[120px] w-auto max-w-[36%] shrink-0 self-end object-contain object-bottom md:h-full md:max-h-[160px] md:max-w-[200px]${needsInvert ? ' logo-invert' : ''}`}
               priority
+              unoptimized={logoSrc.endsWith('.svg')}
             />
           ) : (
             <div className="flex size-24 shrink-0 items-center justify-center self-end rounded-lg bg-bg-surface-2 md:size-32">
