@@ -299,14 +299,17 @@ export function bandForRank(rules: GroupRule[], rank: number): GroupRule['key'] 
 /**
  * Competitions on the group-stage cup template (PR A): World Cup 1, AFCON 6, WAFCON 922,
  * EURO 4, CAF Champions League 12, CAF Confederation Cup 20, UWCL 525, Women's Europa Cup 1191,
- * World Cup qualifiers (29–34, 37), AFCON qualifiers 36, EURO qualifiers 960, Nations League 5.
+ * World Cup qualifiers (29–34, 37), AFCON qualifiers 36, EURO qualifiers 960, Nations League 5,
+ * youth World Cups (U20 490, U17 587, U20 Women's 920, U17 Women's 950).
  */
 export const GROUP_STAGE_TEMPLATE_IDS: ReadonlySet<number> = new Set([
-  1, 6, 922, 4, 12, 20, 525, 1191, 1164, 29, 30, 31, 32, 33, 34, 37, 36, 960, 5,
+  1, 6, 922, 4, 12, 20, 525, 1191, 1164, 29, 30, 31, 32, 33, 34, 37, 36, 960, 5, 490, 587, 920, 950,
 ]);
 
 /** Finals tournaments played inside one calendar year: the edition reads "2026", not "2026/27". */
-export const SINGLE_YEAR_EDITION_IDS: ReadonlySet<number> = new Set([1, 6, 922, 4]);
+export const SINGLE_YEAR_EDITION_IDS: ReadonlySet<number> = new Set([
+  1, 6, 922, 4, 490, 587, 920, 950,
+]);
 
 /** Knockout-path slots that the edition's format plays over two legs. */
 export function twoLeggedSlots(format: EditionFormat | null): Set<string> {

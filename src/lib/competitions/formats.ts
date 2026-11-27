@@ -353,13 +353,37 @@ const FORMATS: EditionFormat[] = [
     bestThirdsAdvance: 4,
     unverified: ['group count / thirds'],
   },
+  // FIFA U-17 World Cup: 48 teams, 12 groups of 4, top two plus 8 best thirds
+  // to the round of 32, plus a third-place match. Verified for 2025 (Qatar,
+  // 3–27 Nov) from FIFA.com ("Everything you need to know about the FIFA U-17
+  // World Cup 2025"). The 2026 edition (Qatar, 19 Nov–13 Dec; group stage ends
+  // 27 Nov 2026) uses the same format (FIFA match schedule / inside.FIFA).
+  // Local PGlite has no league-587 fixtures, so this was not re-checked against
+  // the API-Football feed in this checkout. Qatar hosts annually through 2029.
   {
     competitionId: 587,
-    seasonYear: 'default',
+    seasonYear: 2025,
     kind: 'finals-tournament',
     groups: { count: 12, size: 4 },
     bestThirdsAdvance: 8,
-    unverified: ['group count / thirds'],
+    thirdPlaceMatch: true,
+  },
+  {
+    competitionId: 587,
+    seasonYear: 2026,
+    kind: 'finals-tournament',
+    groups: { count: 12, size: 4 },
+    bestThirdsAdvance: 8,
+    thirdPlaceMatch: true,
+  },
+  {
+    competitionId: 587,
+    seasonYear: 'default',
+    sinceSeason: 2025,
+    kind: 'finals-tournament',
+    groups: { count: 12, size: 4 },
+    bestThirdsAdvance: 8,
+    thirdPlaceMatch: true,
   },
   {
     competitionId: 920,
