@@ -69,6 +69,8 @@ function Crest({
   code,
   primary,
   secondary,
+  isNational,
+  countryCode,
   variant = 'team',
 }: {
   src: string | null | undefined;
@@ -80,6 +82,8 @@ function Crest({
   code?: string | null;
   primary?: string | null;
   secondary?: string | null;
+  isNational?: boolean | null;
+  countryCode?: string | null;
   variant?: 'team' | 'competition';
 }) {
   return (
@@ -94,6 +98,8 @@ function Crest({
       code={code}
       primary={primary}
       secondary={secondary}
+      isNational={isNational}
+      countryCode={countryCode}
       variant={variant}
     />
   );
@@ -271,6 +277,8 @@ export function UpcomingCard({
             <Crest
               src={fixture.homeTeam?.logoUrl}
               status={fixture.homeTeam?.logoStatus}
+              isNational={fixture.homeTeam?.isNational}
+              countryCode={fixture.homeTeam?.countryCode}
               name={fixture.homeTeam?.name}
               shortName={fixture.homeTeam?.shortName}
               code={fixture.homeTeam?.code}
@@ -283,6 +291,8 @@ export function UpcomingCard({
             <Crest
               src={fixture.awayTeam?.logoUrl}
               status={fixture.awayTeam?.logoStatus}
+              isNational={fixture.awayTeam?.isNational}
+              countryCode={fixture.awayTeam?.countryCode}
               name={fixture.awayTeam?.name}
               shortName={fixture.awayTeam?.shortName}
               code={fixture.awayTeam?.code}
@@ -375,6 +385,8 @@ export function FeaturedMatch({
           <Crest
             src={fixture.homeTeam?.logoUrl}
             status={fixture.homeTeam?.logoStatus}
+            isNational={fixture.homeTeam?.isNational}
+            countryCode={fixture.homeTeam?.countryCode}
             name={fixture.homeTeam?.name}
             shortName={fixture.homeTeam?.shortName}
             code={fixture.homeTeam?.code}
@@ -402,6 +414,8 @@ export function FeaturedMatch({
           <Crest
             src={fixture.awayTeam?.logoUrl}
             status={fixture.awayTeam?.logoStatus}
+            isNational={fixture.awayTeam?.isNational}
+            countryCode={fixture.awayTeam?.countryCode}
             name={fixture.awayTeam?.name}
             shortName={fixture.awayTeam?.shortName}
             code={fixture.awayTeam?.code}
@@ -489,6 +503,8 @@ export function CompetitionMatchRow({
             <Crest
               src={fixture.homeTeam?.logoUrl}
               status={fixture.homeTeam?.logoStatus}
+              isNational={fixture.homeTeam?.isNational}
+              countryCode={fixture.homeTeam?.countryCode}
               name={fixture.homeTeam?.name}
               shortName={fixture.homeTeam?.shortName}
               code={fixture.homeTeam?.code}
@@ -508,6 +524,8 @@ export function CompetitionMatchRow({
             <Crest
               src={fixture.awayTeam?.logoUrl}
               status={fixture.awayTeam?.logoStatus}
+              isNational={fixture.awayTeam?.isNational}
+              countryCode={fixture.awayTeam?.countryCode}
               name={fixture.awayTeam?.name}
               shortName={fixture.awayTeam?.shortName}
               code={fixture.awayTeam?.code}
@@ -659,6 +677,8 @@ export function StandingsTable({
                 <Crest
                   src={row.team?.logoUrl}
                   status={row.team?.logoStatus}
+                  isNational={row.team?.isNational}
+                  countryCode={row.team?.countryCode}
                   name={row.team?.name}
                   shortName={row.team?.shortName}
                   code={row.team?.code}

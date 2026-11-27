@@ -224,8 +224,17 @@
   font-size: var(--row-size);
   letter-spacing: -0.026em;
 }
-.mc .ds-home .soon .sooncard .mark {
-  --m: var(--coming-crest);
+.mc .ds-home .soon .sooncard .mark,
+.mc .ds-home .soon .sooncard img.mark,
+.mc .ds-home .soon .sooncard svg.mark {
+  --m: var(--coming-crest, 28px);
+  width: var(--m);
+  height: var(--m);
+  min-width: var(--m);
+  min-height: var(--m);
+  flex: none;
+  overflow: visible;
+  object-fit: contain;
 }
 
 /* ── Today's matches ── */
