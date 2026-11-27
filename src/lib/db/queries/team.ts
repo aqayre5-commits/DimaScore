@@ -8,6 +8,7 @@ import type { FixtureWithTeams, StandingRow } from '../queries';
 import { hydrateFixtures, getTeamsMap } from '../queries-hydrate';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 import { parseTrailingId } from '@/lib/seo/entity-slug';
 
 // ── Types ──
@@ -129,10 +130,10 @@ async function getTeamBySlugImpl(
     countryCode: team.countryCode,
     founded: team.founded,
     logoUrl:
-      usableLogoUrl(team.logoUrl, team.logoStatus) ??
+      resolveTeamLogo(team.id, team.logoUrl, team.logoStatus) ??
       usableLogoUrl(team.parentLogoUrl, team.parentLogoStatus),
-    logoStatus: usableLogoUrl(team.logoUrl, team.logoStatus)
-      ? (team.logoStatus ?? 'ok')
+    logoStatus: resolveTeamLogo(team.id, team.logoUrl, team.logoStatus)
+      ? 'ok'
       : usableLogoUrl(team.parentLogoUrl, team.parentLogoStatus)
         ? (team.parentLogoStatus ?? 'ok')
         : (team.logoStatus ?? 'missing'),

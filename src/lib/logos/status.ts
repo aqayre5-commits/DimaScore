@@ -73,6 +73,9 @@ export function usableLogoUrl(
 ): string | null {
   const trimmed = url?.trim() || null;
   if (!trimmed) return null;
+  // Same-origin curated artwork is always renderable, even when the DB row
+  // is still marked placeholder/missing (overrides are not written to the DB).
+  if (trimmed.startsWith('/logos/') || trimmed.startsWith('/competitions/')) return trimmed;
   if (status === 'missing' || status === 'placeholder') return null;
   return trimmed;
 }

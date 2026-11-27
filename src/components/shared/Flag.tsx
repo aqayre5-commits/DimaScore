@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { flagImageSrc } from '@/lib/logos/flag-src';
 import type { LogoStatus } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 import { TeamMark } from './TeamMark';
 
 export interface FlagProps {
@@ -51,22 +52,23 @@ export function Flag({
   alt = '',
   className,
 }: FlagProps) {
-  void teamId;
-  const cc = countryCode?.trim().toLowerCase();
-  const crestReady = flagImageSrc({ countryCode, logoUrl, isNational, logoStatus });
-  const asFlag =
-    !!cc &&
-    (isNational === true ||
-      (isNational == null &&
-        !flagImageSrc({ logoUrl, logoStatus, isNational: false, countryCode: null })));
+  const resolved = resolveTeamLogo(teamId, logoUrl ?? null, logoStatus);
+  const crestReady = flagImageSrc({
+    countryCode,
+    logoUrl: resolved,
+    isNational,
+    logoStatus: resolved ? 'ok' : logoStatus,
+  });
+  const asFlag = !!crestReady && /media\.api-sports\.io\/flags\//.test(crestReady);
   const width = size;
   const height = asFlag ? Math.round((size * 3) / 4) : size;
 
   return (
     <span style={{ width, height, display: 'inline-flex' }} className={cn('shrink-0', className)}>
       <TeamMark
-        src={logoUrl}
-        status={logoStatus}
+        src={resolved}
+        status={resolved ? 'ok' : logoStatus}
+        teamId={teamId}
         countryCode={countryCode}
         isNational={isNational}
         size={size}

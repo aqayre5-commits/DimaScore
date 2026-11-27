@@ -1,4 +1,5 @@
 import { usableLogoUrl, type LogoStatus } from '@/lib/logos/status';
+import { isCuratedLogoSrc, resolveTeamLogo } from '@/lib/constants/team-logos';
 /**
  * Strip the trailing women's-team marker that marks women's teams. We adopt Sofascore's
  * convention: on compact/standings/match-row surfaces, "Morocco Women" is redundant — the page
@@ -28,6 +29,7 @@ export function stripWomenSuffix(name: string | null | undefined): string {
  */
 export function getTeamFlagUrl(
   team: {
+    id?: number | null;
     logoUrl?: string | null;
     logoStatus?: LogoStatus | null;
     isNational?: boolean | null;
@@ -35,7 +37,7 @@ export function getTeamFlagUrl(
   } | null,
 ): string | null {
   if (!team) return null;
-  const logo = usableLogoUrl(team.logoUrl, team.logoStatus);
+  const logo = resolveTeamLogo(team.id, team.logoUrl ?? null, team.logoStatus);
   if (logo) return logo;
   if (team.isNational && team.countryCode)
     return `https://media.api-sports.io/flags/${team.countryCode.toLowerCase()}.svg`;
@@ -50,6 +52,7 @@ export function getTeamFlagUrl(
  */
 export function getNationalFlagUrl(
   team: {
+    id?: number | null;
     logoUrl?: string | null;
     logoStatus?: LogoStatus | null;
     isNational?: boolean | null;
@@ -57,7 +60,9 @@ export function getNationalFlagUrl(
   } | null,
 ): string | null {
   if (!team) return null;
+  const logo = resolveTeamLogo(team.id, team.logoUrl ?? null, team.logoStatus);
+  if (isCuratedLogoSrc(logo)) return logo;
   if (team.isNational && team.countryCode)
     return `https://media.api-sports.io/flags/${team.countryCode.toLowerCase()}.svg`;
-  return usableLogoUrl(team.logoUrl, team.logoStatus);
+  return logo;
 }

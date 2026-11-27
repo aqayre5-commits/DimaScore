@@ -4,6 +4,7 @@ import * as schema from '../schema';
 import { teamLabel } from '@/lib/i18n/localized-names';
 import { localizeInjuryType } from '@/lib/i18n/feed-labels';
 import { usableLogoUrl } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 
 export interface InjuryRow {
   id: number;
@@ -74,7 +75,7 @@ export async function getInjuriesForCompetition(
             locale,
             '—',
           ),
-    teamLogo: usableLogoUrl(r.teamLogo, r.teamLogoStatus ?? null),
+    teamLogo: resolveTeamLogo(r.teamId, r.teamLogo, r.teamLogoStatus ?? null),
     type: r.type ? localizeInjuryType(r.type, locale) : r.type,
     reason: r.reason,
     date: r.date,

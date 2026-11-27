@@ -5,6 +5,7 @@ import * as schema from '../schema';
 import { escapeLikePattern } from '@/lib/utils/sql';
 import { resolveCompetitionLogo } from '@/lib/constants/competition-logos';
 import { usableLogoUrl } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 
 // ── Types ──
 
@@ -171,7 +172,7 @@ export async function searchAll(
     teams: teams.map((t) => ({
       type: 'team' as const,
       ...t,
-      logoUrl: usableLogoUrl(t.logoUrl, t.logoStatus ?? null),
+      logoUrl: resolveTeamLogo(t.id, t.logoUrl, t.logoStatus ?? null),
     })),
     players: players.map((p) => {
       const team = p.currentTeamId ? teamMap.get(p.currentTeamId) : null;
@@ -185,7 +186,11 @@ export async function searchAll(
         position: p.position,
         photoUrl: usableLogoUrl(p.photoUrl, p.photoStatus ?? null),
         currentTeamName: team?.name ?? null,
-        currentTeamLogoUrl: usableLogoUrl(team?.logoUrl ?? null, team?.logoStatus ?? null),
+        currentTeamLogoUrl: resolveTeamLogo(
+          p.currentTeamId,
+          team?.logoUrl ?? null,
+          team?.logoStatus ?? null,
+        ),
       };
     }),
     competitions: competitions.map((c) => ({

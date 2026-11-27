@@ -10,6 +10,7 @@ import { hydrateTeams, type TeamSnapshot } from '../queries-hydrate';
 import { LIVE_CODES_ARRAY, SCORED_STATUSES_ARRAY } from '@/lib/match-status';
 import { toSiteDateKey } from '@/lib/utils/date';
 import { usableLogoUrl } from '@/lib/logos/status';
+import { resolveTeamLogo } from '@/lib/constants/team-logos';
 
 // ── Status code sets ──
 
@@ -889,6 +890,7 @@ export async function getRightRailTopScorers(
                  p.slug AS player_slug,
                  p.photo_url,
                  p.photo_status,
+                 t.id AS team_id,
                  COALESCE(t.name->>${locale}, t.name->>'en', 'Unknown') AS team_name,
                  COALESCE(t.logo_url, tp.logo_url) AS team_logo_url,
                  COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
@@ -917,6 +919,7 @@ export async function getRightRailTopScorers(
                  p.slug AS player_slug,
                  p.photo_url,
                  p.photo_status,
+                 t.id AS team_id,
                  COALESCE(t.name->>${locale}, t.name->>'en', 'Unknown') AS team_name,
                  COALESCE(t.logo_url, tp.logo_url) AS team_logo_url,
                  COALESCE(t.logo_status, tp.logo_status) AS team_logo_status,
@@ -957,6 +960,7 @@ export async function getRightRailTopScorers(
     player_slug: string;
     photo_url: string | null;
     photo_status: string | null;
+    team_id: string | null;
     team_name: string;
     team_logo_url: string | null;
     team_logo_status: string | null;
@@ -1004,7 +1008,8 @@ export async function getRightRailTopScorers(
           (r.photo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
         ),
         teamName: r.team_name,
-        teamLogoUrl: usableLogoUrl(
+        teamLogoUrl: resolveTeamLogo(
+          r.team_id != null ? Number(r.team_id) : null,
           r.team_logo_url,
           (r.team_logo_status as import('@/lib/logos/status').LogoStatus | null) ?? null,
         ),
