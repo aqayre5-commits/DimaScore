@@ -4,6 +4,7 @@ import { getDataProvider } from '@/lib/data';
 import { verifyCronSecret } from '@/lib/cron/auth';
 import { syncFixtures } from '@/lib/ingestion/fixtures';
 import { getCurrentSeasons } from '@/lib/db/queries';
+import { getIdleSeasonKeys, selectSeasonsToSync } from '@/lib/ingestion/idle-seasons';
 
 /**
  * Stop starting new competitions after this long, so the run always returns well inside the platform
@@ -20,8 +21,13 @@ export async function GET(request: Request) {
 
   try {
     const provider = getDataProvider();
-    const allSeasons = await getCurrentSeasons(db);
     const startedAt = Date.now();
+    // Idle seasons (nothing within -3/+30 days) sync once a day instead of every 30 minutes.
+    const { run: allSeasons, idleSkipped } = selectSeasonsToSync(
+      await getCurrentSeasons(db),
+      await getIdleSeasonKeys(db, new Date(startedAt)),
+      new Date(startedAt),
+    );
     const offset = allSeasons.length ? Math.floor(startedAt / 1_800_000) % allSeasons.length : 0;
     const currentSeasons = [...allSeasons.slice(offset), ...allSeasons.slice(0, offset)];
     const skipped: { competitionId: number; season: number }[] = [];
@@ -62,6 +68,7 @@ export async function GET(request: Request) {
       synced: results.length,
       failed: errors.length,
       skipped: skipped.length,
+      idleSkipped: idleSkipped.length,
       results,
       errors,
       skippedCompetitions: skipped,

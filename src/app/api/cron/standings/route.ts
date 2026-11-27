@@ -4,6 +4,7 @@ import { getDataProvider } from '@/lib/data';
 import { verifyCronSecret } from '@/lib/cron/auth';
 import { syncStandings } from '@/lib/ingestion/standings';
 import { getCurrentSeasons } from '@/lib/db/queries';
+import { getIdleSeasonKeys, selectSeasonsToSync } from '@/lib/ingestion/idle-seasons';
 
 export async function GET(request: Request) {
   if (!verifyCronSecret(request)) {
@@ -13,7 +14,11 @@ export async function GET(request: Request) {
   try {
     const provider = getDataProvider();
     const currentSeasons = await getCurrentSeasons(db);
-    const withStandings = currentSeasons.filter((cs) => cs.hasStandingsCoverage);
+    const { run: withStandings, idleSkipped } = selectSeasonsToSync(
+      currentSeasons.filter((cs) => cs.hasStandingsCoverage),
+      await getIdleSeasonKeys(db),
+      new Date(),
+    );
 
     const results: { competitionId: number; season: number; updated: number }[] = [];
     const errors: { competitionId: number; season: number; error: string }[] = [];
@@ -41,6 +46,7 @@ export async function GET(request: Request) {
       ok: true,
       synced: results.length,
       failed: errors.length,
+      idleSkipped: idleSkipped.length,
       results,
       errors,
     });
