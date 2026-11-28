@@ -437,7 +437,12 @@ export default async function MatchDetailPage({ params }: PageProps) {
         )}
       />
       <NavCompetitionRegister current={railCurrent} rail={rail} />
-      <div className={`mc ${mcFont.variable}`}>
+      {/* Edge cache TTL input (cf/edge-cache-policy.ts): status and kick-off already loaded above. */}
+      <div
+        className={`mc ${mcFont.variable}`}
+        data-edge-status={match.statusCode}
+        data-edge-ko={Math.floor(match.kickoffAt.getTime() / 1000)}
+      >
         <div className="shell">
           <aside className="rail">
             <CompetitionRail {...rail} />
